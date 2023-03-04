@@ -30,14 +30,13 @@ export default async function (req, res) {
       model: "text-davinci-003",
       prompt: message,
       temperature: 0.5,
+      user: 'user',
+      max_tokens: 1000,
+      top_p: 1,
     });
-    console.log(completion)
-    console.log(completion.data.choices.length,completion.data.choices[0].text)
     res.status(200).json({ result: completion.data.choices[0].text });
   } catch(error) {
-    // Consider adjusting the error handling logic for your use case
     if (error.response) {
-      console.error(error.response.status, error.response.data);
       res.status(error.response.status).json(error.response.data);
     } else {
       console.error(`Error with OpenAI API request: ${error.message}`);
