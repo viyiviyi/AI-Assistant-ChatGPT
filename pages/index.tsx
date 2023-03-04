@@ -1,6 +1,6 @@
 import Head from "next/head";
 import style from "../styles/index.module.css";
-import { FormEventHandler, useEffect, useState } from "react";
+import { FormEvent, FormEventHandler, useEffect, useState } from "react";
 
 import { unified } from "unified";
 import remarkParse from "remark-parse";
@@ -110,7 +110,7 @@ export default function Home() {
       "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg
     );
   }
-  async function onSubmit(event) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     pauseContent(messageInput, config.user || "user").then((html) => {
       setMessage((v) => {
