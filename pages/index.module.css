@@ -1,0 +1,49 @@
+
+.main,
+.main input {
+  font-size: 16px;
+  line-height: 24px;
+  color: #353740;
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+}
+.main form {
+  display: flex;
+  width: 100%;
+  padding: 0 20px 20px;
+  box-sizing: border-box;
+}
+.main input[type="text"] {
+  padding: 12px 16px;
+  border: 1px solid #10a37f;
+  border-radius: 4px;
+  outline-color: #10a37f;
+  flex: auto;
+}
+.main ::placeholder {
+  color: #8e8ea0;
+  opacity: 1;
+}
+.main input[type="submit"] {
+  padding: 12px 0;
+  color: #fff;
+  background-color: #10a37f;
+  border: none;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  width: 100px;
+}
+.content {
+  flex: auto;
+  overflow: auto;
+  padding: 20px;
+}
+.content > div {
+  border-bottom: 1px solid #ddd;
+  padding: 5px 10px;
+}
