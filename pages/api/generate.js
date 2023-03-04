@@ -31,6 +31,7 @@ export default async function (req, res) {
       prompt: message,
       temperature: 0.5,
     });
+    console.log(completion.data.choices.length,completion.data.choices[0].text)
     res.status(200).json({ result: completion.data.choices[0].text });
   } catch(error) {
     // Consider adjusting the error handling logic for your use case
