@@ -62,7 +62,7 @@ export default async function handler(
       });
       res.status(200).json({ result: completion.data.choices[0].text });
     }
-  } catch (error) {
+  } catch (error: any) {
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
