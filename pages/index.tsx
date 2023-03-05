@@ -1,7 +1,7 @@
 import Head from "next/head";
 import style from "../styles/index.module.css";
 import { FormEvent, FormEventHandler, useEffect, useState } from "react";
-
+import { autoToken } from "@/hooks/authToken";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
@@ -22,28 +22,14 @@ import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import React from "react";
+import { useRouter } from "next/router";
+
 // 创建解析方法
 async function markdownToHtml(markdown: string) {
   const result = await unified()
     .use(remarkParse)
     .use(remarkRehype)
     .use(remarkGfm)
-    .use(rehypeHighlight, {
-      languages: {
-        bash,
-        dockerfile,
-        javascript,
-        handlebars,
-        java,
-        json,
-        nginx,
-        shell,
-        sql,
-        typescript,
-        xml,
-        yaml,
-      },
-    })
     .use(rehypeSanitize, {
       ...defaultSchema,
       attributes: {
@@ -98,18 +84,44 @@ async function markdownToHtml(markdown: string) {
       },
     })
     .use(rehypeStringify)
+    .use(rehypeHighlight, {
+      languages: {
+        bash,
+        dockerfile,
+        javascript,
+        handlebars,
+        java,
+        json,
+        nginx,
+        shell,
+        sql,
+        typescript,
+        xml,
+        yaml,
+      },
+    })
     .process(markdown);
   return result.toString();
 }
 export default function Home() {
   const [messageInput, setmessageInput] = useState("");
   const [messages, setMessage] = useState<string[]>([]);
-  const [config, setConfig] = useState({ user: "user" });
+  const [token, setToken] = useState("");
+  const router = useRouter();
+  const [config, setConfig] = useState({
+    user: "user",
+    model: "gpt-3.5-turbo",
+  });
   function pauseContent(msg: string, user: string) {
     return markdownToHtml(
       "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg
     );
   }
+  useEffect(() => {
+    const tokenVal = autoToken();
+    setToken(tokenVal);
+    if (!tokenVal) router.push("/login");
+  }, []);
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     pauseContent(messageInput, config.user || "user").then((html) => {
@@ -124,7 +136,11 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: messageInput }),
+        body: JSON.stringify({
+          message: messageInput,
+          model: config.model,
+          token,
+        }),
       });
 
       const data = await response.json();
@@ -140,14 +156,12 @@ export default function Home() {
         });
       });
     } catch (error: any) {
-      // Consider implementing your own error handling logic here
       console.error(error);
       pauseContent(error.message, "Bot Error").then((html) => {
         setMessage((v) => {
           return [...v, html];
         });
       });
-      // setMessage([...messages, error.message]);
     }
   }
 
@@ -157,26 +171,47 @@ export default function Home() {
       if (div != null) div.scrollTop = div.scrollHeight;
     }, 300);
   }, [messages]);
-
+  let models = [
+    "text-davinci-003",
+    "code-davinci-002",
+    "text-davinci-002	",
+    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-0301",
+  ];
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Head>
         <title>助手 bot</title>
       </Head>
+      <div className={style.header}>
+        <select
+          style={{ height: "2em" }}
+          defaultValue={config.model}
+          onChange={(e) => {
+            setConfig((f) => Object.assign(f, { model: e.target.value }));
+          }}
+        >
+          {models.map((v, i) => (
+            <option value={v} key={i}>
+              {v}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className={style.content} id="content">
-        {messages.map((msg) => (
-          <div dangerouslySetInnerHTML={{ __html: msg }}></div>
+        {messages.map((msg, idx) => (
+          <div key={idx} dangerouslySetInnerHTML={{ __html: msg }}></div>
         ))}
       </div>
       <main className={style.main}>
         <form onSubmit={onSubmit}>
-          <input
-            type="text"
+          <textarea
+            autoFocus={true}
             name="message"
             placeholder="Enter an message"
             value={messageInput}
             onChange={(e) => setmessageInput(e.target.value)}
-          />
+          ></textarea>
           <input type="submit" />
         </form>
       </main>

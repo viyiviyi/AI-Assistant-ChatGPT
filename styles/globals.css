@@ -75,10 +75,10 @@
 
 html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  width: 100vw;
   padding: 0;
   margin: 0;
+  height: 100vh;
 }
 
 body {
