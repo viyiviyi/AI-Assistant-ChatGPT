@@ -44,7 +44,7 @@
   :root {
     --foreground-rgb: 207, 207, 207;
     --background-start-rgb: 48, 48, 48;
-    --background-end-rgb: 48, 48, 48;
+    --background-end-rgb: 54, 54, 54;
 
     --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
     --secondary-glow: linear-gradient(

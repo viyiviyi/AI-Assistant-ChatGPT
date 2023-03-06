@@ -4,23 +4,20 @@ import { FormEvent, useEffect, useState } from "react";
 import { autoToken } from "@/hooks/authToken";
 import React from "react";
 import { useRouter } from "next/router";
-import { markdownToHtml } from "@/hooks/markdownToHtml";
+import { MarkdownView } from "@/components/MarkdownView";
 
 export default function Home() {
   const [messageInput, setmessageInput] = useState("");
   const [messages, setMessage] = useState<string[]>([]);
   const [token, setToken] = useState("");
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState({
     user: "user",
     model: "gpt-3.5-turbo",
   });
   async function pauseContent(msg: string, user: string) {
-    return await markdownToHtml(
-      "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg
-    );
-    // return "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg;
+    return "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg;
   }
   useEffect(() => {
     const tokenVal = autoToken();
@@ -74,7 +71,17 @@ export default function Home() {
       setLoading(false);
     }, 500);
   }
-
+  const onTextareaTab = (
+    start: number,
+    end: number,
+    textarea: EventTarget & HTMLTextAreaElement
+  ) => {
+    setmessageInput((v) => v.substring(0, start) + "    " + v.substring(start));
+    setTimeout(() => {
+      textarea.selectionStart = start + 4;
+      textarea.selectionEnd = end + 4;
+    }, 0);
+  };
   useEffect(() => {
     setTimeout(() => {
       var div = document.getElementById("content");
@@ -112,8 +119,7 @@ export default function Home() {
 
       <div className={style.content} id="content">
         {messages.map((msg, idx) => (
-          // <MarkdownView key={idx}>{msg}</MarkdownView>
-          <div key={idx} dangerouslySetInnerHTML={{ __html: msg }}></div>
+          <MarkdownView key={idx} markdown={msg} />
         ))}
       </div>
       <div className={style.loading}>
@@ -139,6 +145,15 @@ export default function Home() {
             value={messageInput}
             onChange={(e) => setmessageInput(e.target.value)}
             onKeyUp={(e) => e.key === "s" && e.altKey && onSubmit(e)}
+            onKeyDown={(e) =>
+              e.key === "Tab" &&
+              (e.preventDefault(),
+              onTextareaTab(
+                e.currentTarget?.selectionStart,
+                e.currentTarget?.selectionEnd,
+                e.currentTarget
+              ))
+            }
           ></textarea>
           <input type="submit" />
         </form>
