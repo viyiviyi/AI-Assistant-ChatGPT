@@ -11,7 +11,7 @@ export default function Home() {
   const [messages, setMessage] = useState<string[]>([]);
   const [token, setToken] = useState("");
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [config, setConfig] = useState({
     user: "user",
     model: "gpt-3.5-turbo",
