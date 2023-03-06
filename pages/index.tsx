@@ -1,135 +1,42 @@
 import Head from "next/head";
 import style from "../styles/index.module.css";
-import { FormEvent, FormEventHandler, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { autoToken } from "@/hooks/authToken";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import rehypeStringify from "rehype-stringify";
-import bash from "highlight.js/lib/languages/bash";
-import dockerfile from "highlight.js/lib/languages/dockerfile";
-import javascript from "highlight.js/lib/languages/javascript";
-import handlebars from "highlight.js/lib/languages/handlebars";
-import java from "highlight.js/lib/languages/java";
-import json from "highlight.js/lib/languages/json";
-import nginx from "highlight.js/lib/languages/nginx";
-import shell from "highlight.js/lib/languages/shell";
-import sql from "highlight.js/lib/languages/sql";
-import typescript from "highlight.js/lib/languages/typescript";
-import xml from "highlight.js/lib/languages/xml";
-import yaml from "highlight.js/lib/languages/yaml";
 import React from "react";
 import { useRouter } from "next/router";
+import { markdownToHtml } from "@/hooks/markdownToHtml";
 
-// 创建解析方法
-async function markdownToHtml(markdown: string) {
-  const result = await unified()
-    .use(remarkParse)
-    .use(remarkRehype)
-    .use(remarkGfm)
-    .use(rehypeSanitize, {
-      ...defaultSchema,
-      attributes: {
-        ...defaultSchema.attributes,
-        span: [
-          ...(defaultSchema.attributes?.span || []),
-          // 这里配置代码块高亮的关键词:
-          [
-            "className",
-            "hljs-addition",
-            "hljs-attr",
-            "hljs-attribute",
-            "hljs-built_in",
-            "hljs-bullet",
-            "hljs-char",
-            "hljs-code",
-            "hljs-comment",
-            "hljs-deletion",
-            "hljs-doctag",
-            "hljs-emphasis",
-            "hljs-formula",
-            "hljs-keyword",
-            "hljs-link",
-            "hljs-literal",
-            "hljs-meta",
-            "hljs-name",
-            "hljs-number",
-            "hljs-operator",
-            "hljs-params",
-            "hljs-property",
-            "hljs-punctuation",
-            "hljs-quote",
-            "hljs-regexp",
-            "hljs-section",
-            "hljs-selector-attr",
-            "hljs-selector-class",
-            "hljs-selector-id",
-            "hljs-selector-pseudo",
-            "hljs-selector-tag",
-            "hljs-string",
-            "hljs-strong",
-            "hljs-subst",
-            "hljs-symbol",
-            "hljs-tag",
-            "hljs-template-tag",
-            "hljs-template-variable",
-            "hljs-title",
-            "hljs-type",
-            "hljs-variable",
-          ],
-        ],
-      },
-    })
-    .use(rehypeStringify)
-    .use(rehypeHighlight, {
-      languages: {
-        bash,
-        dockerfile,
-        javascript,
-        handlebars,
-        java,
-        json,
-        nginx,
-        shell,
-        sql,
-        typescript,
-        xml,
-        yaml,
-      },
-    })
-    .process(markdown);
-  return result.toString();
-}
 export default function Home() {
   const [messageInput, setmessageInput] = useState("");
   const [messages, setMessage] = useState<string[]>([]);
   const [token, setToken] = useState("");
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState({
     user: "user",
     model: "gpt-3.5-turbo",
   });
-  function pauseContent(msg: string, user: string) {
-    return markdownToHtml(
+  async function pauseContent(msg: string, user: string) {
+    return await markdownToHtml(
       "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg
     );
+    // return "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg;
   }
   useEffect(() => {
     const tokenVal = autoToken();
     setToken(tokenVal);
     if (!tokenVal) router.push("/login");
   }, []);
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    setLoading(true);
+    setmessageInput("");
     pauseContent(messageInput, config.user || "user").then((html) => {
       setMessage((v) => {
         return [...v, html];
       });
     });
-    setmessageInput("");
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -163,6 +70,9 @@ export default function Home() {
         });
       });
     }
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
   }
 
   useEffect(() => {
@@ -171,6 +81,7 @@ export default function Home() {
       if (div != null) div.scrollTop = div.scrollHeight;
     }, 300);
   }, [messages]);
+
   let models = [
     "text-davinci-003",
     "code-davinci-002",
@@ -198,19 +109,36 @@ export default function Home() {
           ))}
         </select>
       </div>
+
       <div className={style.content} id="content">
         {messages.map((msg, idx) => (
+          // <MarkdownView key={idx}>{msg}</MarkdownView>
           <div key={idx} dangerouslySetInnerHTML={{ __html: msg }}></div>
         ))}
+      </div>
+      <div className={style.loading}>
+        {loading ? (
+          <div className={style.loading}>
+            <div className={style.loadingBar}></div>
+            <div className={style.loadingBar}></div>
+            <div className={style.loadingBar}></div>
+            <div className={style.loadingBar}></div>
+            <div className={style.loadingBar}></div>
+          </div>
+        ) : (
+          <div className={style.loading}></div>
+        )}
       </div>
       <main className={style.main}>
         <form onSubmit={onSubmit}>
           <textarea
             autoFocus={true}
+            className={style.textdeitor}
             name="message"
             placeholder="Enter an message"
             value={messageInput}
             onChange={(e) => setmessageInput(e.target.value)}
+            onKeyUp={(e) => e.key === "s" && e.altKey && onSubmit(e)}
           ></textarea>
           <input type="submit" />
         </form>
