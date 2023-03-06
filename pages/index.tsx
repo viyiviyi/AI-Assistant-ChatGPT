@@ -14,6 +14,10 @@ let models = [
   "text-curie-001",
   "text-babbage-001",
   "text-ada-001",
+  "davinci",
+  "curie",
+  "babbage",
+  "ada",
 ];
 export default function Home() {
   const [messageInput, setmessageInput] = useState("");
