@@ -6,6 +6,15 @@ import React from "react";
 import { useRouter } from "next/router";
 import { MarkdownView } from "@/components/MarkdownView";
 
+let models = [
+  "gpt-3.5-turbo",
+  "gpt-3.5-turbo-0301",
+  "text-davinci-003",
+  "text-davinci-002	",
+  "text-curie-001",
+  "text-babbage-001",
+  "text-ada-001",
+];
 export default function Home() {
   const [messageInput, setmessageInput] = useState("");
   const [messages, setMessage] = useState<string[]>([]);
@@ -89,13 +98,6 @@ export default function Home() {
     }, 300);
   }, [messages]);
 
-  let models = [
-    "text-davinci-003",
-    "code-davinci-002",
-    "text-davinci-002	",
-    "gpt-3.5-turbo",
-    "gpt-3.5-turbo-0301",
-  ];
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Head>
