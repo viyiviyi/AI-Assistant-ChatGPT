@@ -1,5 +1,5 @@
 
-# 一个用于方法ChatGPT官方api的简单web应用
+# 一个用于访问ChatGPT官方api的简单web应用
 ---
 
 - 可以指定模型
