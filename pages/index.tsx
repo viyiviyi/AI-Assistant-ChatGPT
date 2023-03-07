@@ -9,6 +9,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { SettingOutlined } from "@ant-design/icons";
 import { Modal } from "@/components/Modal";
 import { AssistantSetting } from "@/components/AssistantSetting";
+import { KeyValueData } from "@/hooks/KeyValueData";
 
 let models = [
   "gpt-3.5-turbo",
@@ -48,11 +49,24 @@ export default function Home() {
     const tokenVal = autoToken();
     setToken(tokenVal);
     if (!tokenVal) router.push("/login");
+    const data = new KeyValueData(localStorage);
+    setAssistant((v) => {
+      v.name = data.getAssistantName();
+      v.prefix = data.getAssistantPrefix();
+      console.log(v)
+      return v;
+    });
   }, []);
-
   async function onSubmit(isPush: boolean) {
     setLoading(true);
+    let messageText = isPush
+      ? [...chats.map((m) => m.message), messageInput].join("\n")
+      : messageInput;
+    if (assistant.enable) {
+      messageText = assistant.prefix + "\n\n" + messageText;
+    }
     setmessageInput("");
+    if (!messageText.trim()) return;
     if (isPush) {
       setChats((v) => [
         ...v,
@@ -76,12 +90,6 @@ export default function Home() {
       ]);
     }
     try {
-      let messageText = isPush
-        ? [...chats.map((m) => m.message), messageInput].join("\n")
-        : messageInput;
-      if (assistant.enable) {
-        messageText = assistant.prefix + "\n\n" + messageText;
-      }
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
@@ -261,6 +269,9 @@ export default function Home() {
                 v.name = ass.name;
                 return v;
               });
+              const data = new KeyValueData(localStorage);
+              data.setAssistantName(assistant.name);
+              data.setAssistantPrefix(assistant.prefix);
               setSettingShow(false);
             }}
             onCacle={() => {
