@@ -34,7 +34,8 @@ export default function Home() {
   const [assistant, setAssistant] = useState({
     enable: false,
     name: "Bot",
-    prefix: "从现在开始，你将扮演我的私人助理Bot，如有必要，你可以在中括号内描述你的内心想法和行为动作。",
+    prefix:
+      "从现在开始，你将扮演我的私人助理Bot，如有必要，你可以在中括号内描述你的内心想法和行为动作。",
   });
   const [config, setConfig] = useState({
     user: "user",
@@ -76,18 +77,18 @@ export default function Home() {
     }
     try {
       let messageText = isPush
-        ? [...chats.map(m=>m.message), messageInput].join("\n")
+        ? [...chats.map((m) => m.message), messageInput].join("\n")
         : messageInput;
-      
+      if (assistant.enable) {
+        messageText = assistant.prefix + "\n\n" + messageText;
+      }
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: assistant.enable
-            ? assistant.prefix + "\n\n" + messageText
-            : messageText,
+          message: messageText,
           model: config.model,
           token,
         }),
@@ -171,6 +172,7 @@ export default function Home() {
           onChange={(e) => {
             setAssistant((v) => {
               v.enable = !v.enable;
+              console.log(v);
               return v;
             });
           }}
@@ -251,6 +253,8 @@ export default function Home() {
       <Modal isShow={settingIsShow}>
         {
           <AssistantSetting
+            name={assistant.name}
+            propPrefix={assistant.prefix}
             onOk={(ass) => {
               setAssistant((v) => {
                 v.prefix = ass.prefix;

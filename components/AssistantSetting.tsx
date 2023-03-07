@@ -1,14 +1,18 @@
 import { useState } from "react";
 
 export const AssistantSetting = ({
+  name,
+  propPrefix,
   onOk,
   onCacle,
 }: {
+  name: string;
+  propPrefix: string;
   onOk: (value: { name: string; prefix: string }) => void;
   onCacle: () => void;
 }) => {
-  const [assistanName, setName] = useState("");
-  const [prefix, setPrefix] = useState("");
+  const [assistanName, setName] = useState(name);
+  const [prefix, setPrefix] = useState(propPrefix);
 
   return (
     <div
