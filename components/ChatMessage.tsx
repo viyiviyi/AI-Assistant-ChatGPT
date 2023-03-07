@@ -2,58 +2,55 @@ import { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { MarkdownView } from "./MarkdownView";
 import style from "../styles/index.module.css";
+import { CopyOutlined, RollbackOutlined } from "@ant-design/icons";
+import { Message } from "@/Models/models";
 
-export const PushMessage = ({
-  nickname,
-  timestamp,
-  message,
-  isPull,
+export const ChatMessage = ({
+  msg,
+  rBak,
 }: {
-  nickname: string;
-  timestamp: number;
-  message: string;
-  isPull: boolean;
+  msg: Message;
+  rBak: (v: Message) => void;
 }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 1000);
-  };
-
+  const { isPull, tagColor, timestamp, message, nickname } = msg;
   return (
     <div className={style.message}>
       {isPull ? (
         <div
-          style={{ height: "100%", width: "10px", backgroundColor: "#10a37f" }}
+          style={{ height: "100%", width: "10px", backgroundColor: tagColor }}
         ></div>
       ) : (
         <></>
       )}
-      <div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <div className={style.message__header}></div>
         <div className={style.message__body}>
           <MarkdownView markdown={message} />
         </div>
-        <div className={style.message__header}>
+        <div className={style.message__footer}>
           <span className={style.message__nickname}>{nickname}</span>
-          <span className={style.message__timestamp}>{timestamp}</span>
-        </div>
-        <div
-          className={style.message__footer}
-          style={{ justifyContent: isPull ? "flex-start" : "flex-end" }}
-        >
-          <CopyToClipboard text={message} onCopy={handleCopy}>
-            <span>Copy</span>
+          <span style={{ marginLeft: "10px" }}></span>
+          <span className={style.message__timestamp}>
+            {new Date(timestamp).toLocaleString()}
+          </span>
+          <span style={{ marginLeft: "10px" }}></span>
+          <CopyToClipboard text={message}>
+            <CopyOutlined />
           </CopyToClipboard>
+          <span style={{ marginLeft: "10px" }}></span>
+          <RollbackOutlined
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              rBak(msg);
+            }}
+          />
         </div>
       </div>
       {isPull ? (
         <></>
       ) : (
         <div
-          style={{ height: "100%", width: "10px", backgroundColor: "#10a37f" }}
+          style={{ height: "100%", width: "10px", backgroundColor: tagColor }}
         ></div>
       )}
     </div>
