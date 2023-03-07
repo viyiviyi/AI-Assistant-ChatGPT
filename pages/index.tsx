@@ -34,9 +34,8 @@ export default function Home() {
   const [settingIsShow, setSettingShow] = useState(false);
   const [assistant, setAssistant] = useState({
     enable: false,
-    name: "Bot",
-    prefix:
-      "从现在开始，你将扮演我的私人助理Bot，如有必要，你可以在中括号内描述你的内心想法和行为动作。",
+    name: "",
+    prefix:'',
   });
   const [config, setConfig] = useState({
     user: "user",
@@ -58,7 +57,6 @@ export default function Home() {
     });
   }, []);
   async function onSubmit(isPush: boolean) {
-    setLoading(true);
     let messageText = isPush
       ? [...chats.map((m) => m.message), messageInput].join("\n")
       : messageInput;
@@ -67,6 +65,7 @@ export default function Home() {
     }
     setmessageInput("");
     if (!messageText.trim()) return;
+    setLoading(true);
     if (isPush) {
       setChats((v) => [
         ...v,
@@ -180,7 +179,6 @@ export default function Home() {
           onChange={(e) => {
             setAssistant((v) => {
               v.enable = !v.enable;
-              console.log(v);
               return v;
             });
           }}
