@@ -1,7 +1,6 @@
 import Head from "next/head";
 import style from "../styles/index.module.css";
 import { useEffect, useState } from "react";
-import { autoToken } from "@/hooks/authToken";
 import React from "react";
 import { useRouter } from "next/router";
 import { Message } from "@/Models/models";
@@ -28,10 +27,10 @@ export default function Home() {
   const [messageInput, setmessageInput] = useState("");
   const [messages, setMessage] = useState<Message[][]>([]);
   const [chats, setChats] = useState<Message[]>([]);
-  const [token, setToken] = useState("");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [settingIsShow, setSettingShow] = useState(false);
+  const [valueDataset, setValueDataset] = useState<KeyValueData>();
   const [assistant, setAssistant] = useState({
     enable: false,
     name: "",
@@ -45,10 +44,9 @@ export default function Home() {
     return index % 2 ? "#2db7f5" : "#f50";
   }
   useEffect(() => {
-    const tokenVal = autoToken();
-    setToken(tokenVal);
-    if (!tokenVal) router.push("/login");
     const data = new KeyValueData(localStorage);
+    setValueDataset(data);
+    if (!data.getAutoToken()) router.push("/login");
     setAssistant((v) => {
       v.name = data.getAssistantName();
       v.prefix = data.getAssistantPrefix();
@@ -77,7 +75,7 @@ export default function Home() {
             message: messageInput,
             timestamp: Date.now(),
             isPull: false,
-            isSkip:false
+            isSkip: false,
           },
         ]);
     } else {
@@ -90,7 +88,7 @@ export default function Home() {
             message: messageInput,
             timestamp: Date.now(),
             isPull: false,
-            isSkip:false
+            isSkip: false,
           },
         ]);
       else {
@@ -106,7 +104,7 @@ export default function Home() {
         body: JSON.stringify({
           message: messageText,
           model: config.model,
-          token,
+          token:valueDataset?.getAutoToken(),
         }),
       });
 
@@ -124,7 +122,7 @@ export default function Home() {
           message: data.result,
           timestamp: Date.now(),
           isPull: true,
-          isSkip:false
+          isSkip: false,
         },
       ]);
     } catch (error: any) {
@@ -135,7 +133,7 @@ export default function Home() {
           message: error.message,
           timestamp: Date.now(),
           isPull: true,
-          isSkip:false
+          isSkip: false,
         },
       ]);
     }
@@ -248,8 +246,8 @@ export default function Home() {
                 setChats((v) => {
                   const index = v.findIndex((f) => f.timestamp === m.timestamp);
                   if (index !== -1) {
-                    v[index] = Object.assign({}, v[index])
-                    v[index].isSkip = !v[index].isSkip
+                    v[index] = Object.assign({}, v[index]);
+                    v[index].isSkip = !v[index].isSkip;
                   }
                   return [...v];
                 });

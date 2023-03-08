@@ -25,13 +25,20 @@ export const ChatMessage = ({
   return (
     <div className={style.message}>
       {isPull ? (
-        <div
-          style={{ width: "10px", backgroundColor: tagColor }}
-        ></div>
+        <div style={{ width: "10px", backgroundColor: tagColor }}></div>
       ) : (
         <></>
       )}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column",padding:'5px 10px' }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          padding: "5px 10px",
+          boxSizing: "border-box",
+          maxWidth: "100%",
+        }}
+      >
         <div className={style.message__header}></div>
         <div className={style.message__body}>
           <MarkdownView markdown={message} />
@@ -74,9 +81,7 @@ export const ChatMessage = ({
       {isPull ? (
         <></>
       ) : (
-        <div
-          style={{  width: "10px", backgroundColor: tagColor}}
-          ></div>
+        <div style={{ width: "10px", backgroundColor: tagColor }}></div>
       )}
     </div>
   );

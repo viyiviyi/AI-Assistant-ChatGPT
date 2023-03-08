@@ -26,4 +26,13 @@ export class KeyValueData {
     this._AssistantPrefix = value;
     this.provider.setItem(this.dataKeyPrefix + "AssistantPrefix", value);
   }
+  private _autoToken = "";
+  getAutoToken(): string {
+    if (this._autoToken) return this._autoToken;
+    return this.provider.getItem(this.dataKeyPrefix + "autoToken") || "";
+  }
+  setAutoToken(value: string) {
+    this._autoToken = value;
+    this.provider.setItem(this.dataKeyPrefix + "autoToken", value);
+  }
 }

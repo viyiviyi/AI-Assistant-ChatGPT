@@ -1,5 +1,6 @@
-import { autoToken } from "@/hooks/authToken";
-import { Router, useRouter } from "next/router";
+
+import { KeyValueData } from "@/hooks/KeyValueData";
+import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
 
@@ -31,7 +32,7 @@ const Login = () => {
         setMessage(result.error.message);
         return;
       }
-      autoToken(result.result);
+      new KeyValueData(localStorage).setAutoToken(result.result)
       router.back();
     });
   }
