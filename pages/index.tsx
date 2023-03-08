@@ -53,7 +53,7 @@ export default function Home() {
     setAssistant((v) => {
       v.name = data.getAssistantName();
       v.prefix = data.getAssistantPrefix();
-      console.log(v)
+      console.log(v);
       return v;
     });
   }, []);
@@ -68,26 +68,28 @@ export default function Home() {
     setmessageInput("");
     if (!messageText.trim()) return;
     if (isPush) {
-      setChats((v) => [
-        ...v,
-        {
-          nickname: "User",
-          message: messageInput,
-          timestamp: Date.now(),
-          isPull: false,
-        },
-      ]);
+      if (messageInput.trim())
+        setChats((v) => [
+          ...v,
+          {
+            nickname: "User",
+            message: messageInput,
+            timestamp: Date.now(),
+            isPull: false,
+          },
+        ]);
     } else {
       const pChats = chats;
       setMessage((v) => [...v, pChats]);
-      setChats([
-        {
-          nickname: "User",
-          message: messageInput,
-          timestamp: Date.now(),
-          isPull: false,
-        },
-      ]);
+      if (messageInput.trim())
+        setChats([
+          {
+            nickname: "User",
+            message: messageInput,
+            timestamp: Date.now(),
+            isPull: false,
+          },
+        ]);
     }
     try {
       const response = await fetch("/api/generate", {

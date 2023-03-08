@@ -6,4 +6,5 @@
 }
 .message .message__footer {
   display: flex;
+  translate: .6;
 }

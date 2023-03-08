@@ -4,4 +4,5 @@ export type Message = {
   message: string;
   isPull: boolean;
   tagColor?: string;
+  isSkip?:boolean
 };

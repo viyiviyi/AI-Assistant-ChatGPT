@@ -2,15 +2,19 @@ import { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { MarkdownView } from "./MarkdownView";
 import style from "../styles/index.module.css";
-import { CopyOutlined, RollbackOutlined } from "@ant-design/icons";
+import { CopyOutlined, DeleteOutlined, FunnelPlotOutlined, RollbackOutlined } from "@ant-design/icons";
 import { Message } from "@/Models/models";
 
 export const ChatMessage = ({
   msg,
   rBak,
+  onDel,
+onSkip
 }: {
   msg: Message;
-  rBak: (v: Message) => void;
+    rBak: (v: Message) => void;
+    onDel?: () => void;
+    onSkip?:()=>void
 }) => {
   const { isPull, tagColor, timestamp, message, nickname } = msg;
   return (
@@ -44,6 +48,11 @@ export const ChatMessage = ({
               rBak(msg);
             }}
           />
+          <span style={{ marginLeft: "10px" }}></span>
+          <DeleteOutlined style={{ cursor: "pointer" }}/>
+          
+          <span style={{ marginLeft: "10px" }}></span>
+          <FunnelPlotOutlined style={{ cursor: "pointer" }}/>
         </div>
       </div>
       {isPull ? (
