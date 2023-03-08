@@ -51,8 +51,6 @@
 }
 .content > div {
   border-bottom: 1px solid rgb(var(--callout-border-rgb));
-  padding: 5px 10px;
-  margin-bottom: 5px;
 }
 .content > div:nth-child(odd) {
   background-color: rgba(var(--background-start-rgb), 1);
@@ -110,4 +108,21 @@
     transform: translate(0px);
   }
 }
-@import "./index.message.css";
+
+.message {
+  display: flex;
+}
+.message .message__header {
+  display: flex;
+}
+.message .message__footer {
+  display: flex;
+  align-items: flex-end;
+  opacity:.5;
+}
+.message .message__footer .message__nickname{
+  font-size: 14px;
+}
+.message .message__footer .message__timestamp{
+  font-size: 12px;
+}

@@ -35,14 +35,14 @@ export default function Home() {
   const [assistant, setAssistant] = useState({
     enable: false,
     name: "",
-    prefix:'',
+    prefix: "",
   });
   const [config, setConfig] = useState({
     user: "user",
     model: "gpt-3.5-turbo",
   });
-  async function pauseContent(msg: string, user: string) {
-    return "*" + new Date().toLocaleString() + "* **" + user + "** \n\n " + msg;
+  function getMsgColor(index: number): string {
+    return index % 2 ? "#2db7f5" : "#f50";
   }
   useEffect(() => {
     const tokenVal = autoToken();
@@ -52,13 +52,15 @@ export default function Home() {
     setAssistant((v) => {
       v.name = data.getAssistantName();
       v.prefix = data.getAssistantPrefix();
-      console.log(v);
       return v;
     });
   }, []);
   async function onSubmit(isPush: boolean) {
     let messageText = isPush
-      ? [...chats.map((m) => m.message), messageInput].join("\n")
+      ? [
+          ...chats.filter((f) => !f.isSkip).map((m) => m.message),
+          messageInput,
+        ].join("\n")
       : messageInput;
     if (assistant.enable) {
       messageText = assistant.prefix + "\n\n" + messageText;
@@ -75,6 +77,7 @@ export default function Home() {
             message: messageInput,
             timestamp: Date.now(),
             isPull: false,
+            isSkip:false
           },
         ]);
     } else {
@@ -87,8 +90,12 @@ export default function Home() {
             message: messageInput,
             timestamp: Date.now(),
             isPull: false,
+            isSkip:false
           },
         ]);
+      else {
+        setChats([]);
+      }
     }
     try {
       const response = await fetch("/api/generate", {
@@ -116,7 +123,8 @@ export default function Home() {
           nickname: assistant.enable ? assistant.name : "Bot",
           message: data.result,
           timestamp: Date.now(),
-          isPull: false,
+          isPull: true,
+          isSkip:false
         },
       ]);
     } catch (error: any) {
@@ -126,7 +134,8 @@ export default function Home() {
           nickname: "Bot Error",
           message: error.message,
           timestamp: Date.now(),
-          isPull: false,
+          isPull: true,
+          isSkip:false
         },
       ]);
     }
@@ -152,7 +161,6 @@ export default function Home() {
       if (div != null) div.scrollTop = div.scrollHeight;
     }, 300);
   }, [chats]);
-
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Head>
@@ -177,10 +185,11 @@ export default function Home() {
           type="checkbox"
           name="assistant.enable"
           id="assistant.enable"
+          // checked={assistant.enable}
           style={{ cursor: "pointer" }}
           onChange={(e) => {
             setAssistant((v) => {
-              v.enable = !v.enable;
+              v.enable = e.target.checked;
               return v;
             });
           }}
@@ -193,22 +202,64 @@ export default function Home() {
       </div>
 
       <div className={style.content} id="content">
-        {messages.map((msgs) =>
-          msgs.map((msg, idx) => (
+        {messages.map((msgs, index) =>
+          msgs.map((msg, idx) => {
+            msg.tagColor = getMsgColor(index);
+            return (
+              <ChatMessage
+                key={idx}
+                msg={msg}
+                onDel={(m) => {
+                  setMessage((v) => {
+                    return v
+                      .map((g) => g.filter((f) => f.timestamp !== m.timestamp))
+                      .filter((g) => g.length);
+                  });
+                }}
+                onSkip={(m) => {
+                  setMessage((v) => {
+                    const ls = [...v];
+                    let item = Object.assign({}, ls[index][idx]);
+                    ls[index][idx] = Object.assign(item, {
+                      isSkip: !v[index][idx],
+                    });
+                    return ls;
+                  });
+                }}
+                rBak={(v) =>
+                  setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)
+                }
+              />
+            );
+          })
+        )}
+        {chats.map((msg, idx) => {
+          msg.tagColor = getMsgColor(messages.length);
+          return (
             <ChatMessage
               key={idx}
               msg={msg}
-              rBak={(v) => setmessageInput((m) => m + "\n" + v.message)}
+              onDel={(m) => {
+                setChats((v) => {
+                  return v.filter((f) => f.timestamp !== m.timestamp);
+                });
+              }}
+              onSkip={(m) => {
+                setChats((v) => {
+                  const index = v.findIndex((f) => f.timestamp === m.timestamp);
+                  if (index !== -1) {
+                    v[index] = Object.assign({}, v[index])
+                    v[index].isSkip = !v[index].isSkip
+                  }
+                  return [...v];
+                });
+              }}
+              rBak={(v) =>
+                setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)
+              }
             />
-          ))
-        )}
-        {chats.map((msg, idx) => (
-          <ChatMessage
-            key={idx}
-            msg={msg}
-            rBak={(v) => setmessageInput((m) => m + "\n" + v.message)}
-          />
-        ))}
+          );
+        })}
       </div>
       <div className={style.loading}>
         {loading ? (
