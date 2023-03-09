@@ -3,6 +3,5 @@ export type Message = {
   timestamp: number;
   message: string;
   isPull: boolean;
-  tagColor?: string;
   isSkip?:boolean
 };

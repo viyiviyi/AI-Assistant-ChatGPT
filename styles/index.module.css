@@ -33,8 +33,7 @@
   color: #8e8ea0;
   opacity: 1;
 }
-.main input[type="button"] {
-  padding: 12px 0;
+.main button {
   color: rgb(var(--foreground-rgb));
   background-color: #10a37f;
   border: none;
@@ -42,7 +41,7 @@
   text-align: center;
   cursor: pointer;
   width: 80px;
-  max-height: 40px;
+  height: 3em;
 }
 .content {
   flex: auto;

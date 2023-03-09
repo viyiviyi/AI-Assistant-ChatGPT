@@ -40,24 +40,50 @@ export default function Home() {
     user: "user",
     model: "gpt-3.5-turbo",
   });
-  function getMsgColor(index: number): string {
-    return index % 2 ? "#2db7f5" : "#f50";
-  }
   useEffect(() => {
     const data = new KeyValueData(localStorage);
     setValueDataset(data);
     if (!data.getAutoToken()) router.push("/login");
     setAssistant((v) => {
-      v.name = data.getAssistantName()||'助理';
-      v.prefix = data.getAssistantPrefix()||`你是ChatGPT,一个OpenAI语言模型。
-接下来，你将严格按照以下要求扮演设定的角色。
-**扮演过程中，你将不再是ChatGPT、AI！而是扮演的角色！你将拥有扮演角色的情感与身体,这非常重要！！！
-你的动作、神态和心理需要生动的写在中括号内。
-整个扮演过程中，你只能使用第一人称。**
-设定:我的私人助理;拥有openai的完整能力。`;
+      v.name = data.getAssistantName();
+      v.prefix = data.getAssistantPrefix();
       return v;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      var div = document.getElementById("content");
+      if (div != null) div.scrollTop = div.scrollHeight;
+    }, 300);
+  }, [chats]);
+
+  function getMsgColor(index: number): string {
+    return index % 2 ? "#2db7f5" : "#f50";
+  }
+  function deleteChatMsg(msg: Message, isChats?: boolean): void {
+    let pMessages = messages;
+    let pChats = chats;
+    if (!isChats || isChats === undefined) {
+      pMessages = pMessages
+        .map((g) => g.filter((f) => f.timestamp !== msg.timestamp))
+        .filter((g) => g.length);
+    }
+    if (isChats || isChats === undefined) {
+      pChats = pChats.filter((f) => f.timestamp !== msg.timestamp);
+      if (pChats.length == 0 && pMessages.length > 0) {
+        pChats = pMessages.splice(pMessages.length - 1, 1)[0];
+      }
+    }
+    setMessage(pMessages);
+    setChats(pChats);
+  }
+  /**
+   * 提交内容
+   * @param isPush 是否对话模式
+   * @returns
+   */
   async function onSubmit(isPush: boolean) {
     let messageText = isPush
       ? [
@@ -69,37 +95,24 @@ export default function Home() {
       messageText = assistant.prefix + "\n\n" + messageText;
     }
     setmessageInput("");
-    if (!messageText.trim()) return;
+    messageText = messageText.trim();
+    if (!messageText) return;
     setLoading(true);
-    if (isPush) {
-      if (messageInput.trim())
-        setChats((v) => [
-          ...v,
-          {
-            nickname: "",
-            message: messageInput,
-            timestamp: Date.now(),
-            isPull: false,
-            isSkip: false,
-          },
-        ]);
-    } else {
-      const pChats = chats;
-      setMessage((v) => [...v, pChats]);
-      if (messageInput.trim())
-        setChats([
-          {
-            nickname: "",
-            message: messageInput,
-            timestamp: Date.now(),
-            isPull: false,
-            isSkip: false,
-          },
-        ]);
-      else {
-        setChats([]);
-      }
+    let pChats = [...chats];
+    if (!isPush) {
+      const _pChats = pChats;
+      setMessage((v) => [...v, _pChats]);
+      pChats = [];
     }
+    if (messageInput.trim())
+      pChats.push({
+        nickname: "",
+        message: messageInput.trim(),
+        timestamp: Date.now(),
+        isPull: false,
+        isSkip: false,
+      });
+    setChats(pChats);
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -109,7 +122,7 @@ export default function Home() {
         body: JSON.stringify({
           message: messageText,
           model: config.model,
-          token:valueDataset?.getAutoToken(),
+          token: valueDataset?.getAutoToken(),
         }),
       });
 
@@ -158,12 +171,6 @@ export default function Home() {
       textarea.selectionEnd = end + 4;
     }, 0);
   };
-  useEffect(() => {
-    setTimeout(() => {
-      var div = document.getElementById("content");
-      if (div != null) div.scrollTop = div.scrollHeight;
-    }, 300);
-  }, [chats]);
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Head>
@@ -188,7 +195,6 @@ export default function Home() {
           type="checkbox"
           name="assistant.enable"
           id="assistant.enable"
-          // checked={assistant.enable}
           style={{ cursor: "pointer" }}
           onChange={(e) => {
             setAssistant((v) => {
@@ -205,64 +211,29 @@ export default function Home() {
       </div>
 
       <div className={style.content} id="content">
-        {messages.map((msgs, index) =>
-          msgs.map((msg, idx) => {
-            msg.tagColor = getMsgColor(index);
-            return (
-              <ChatMessage
-                key={idx}
-                msg={msg}
-                onDel={(m) => {
-                  setMessage((v) => {
-                    return v
-                      .map((g) => g.filter((f) => f.timestamp !== m.timestamp))
-                      .filter((g) => g.length);
-                  });
-                }}
-                onSkip={(m) => {
-                  setMessage((v) => {
-                    const ls = [...v];
-                    let item = Object.assign({}, ls[index][idx]);
-                    ls[index][idx] = Object.assign(item, {
-                      isSkip: !v[index][idx],
-                    });
-                    return ls;
-                  });
-                }}
-                rBak={(v) =>
-                  setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)
-                }
-              />
-            );
-          })
-        )}
-        {chats.map((msg, idx) => {
-          msg.tagColor = getMsgColor(messages.length);
-          return (
-            <ChatMessage
-              key={idx}
-              msg={msg}
-              onDel={(m) => {
-                setChats((v) => {
-                  return v.filter((f) => f.timestamp !== m.timestamp);
-                });
-              }}
-              onSkip={(m) => {
-                setChats((v) => {
-                  const index = v.findIndex((f) => f.timestamp === m.timestamp);
-                  if (index !== -1) {
-                    v[index] = Object.assign({}, v[index]);
-                    v[index].isSkip = !v[index].isSkip;
-                  }
-                  return [...v];
-                });
-              }}
-              rBak={(v) =>
-                setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)
-              }
-            />
-          );
-        })}
+        {messages.map((msgs, index) => (
+          <ChatMessage
+            key={index}
+            msgs={msgs}
+            tagColor={getMsgColor(index)}
+            onDel={(m) => {
+              deleteChatMsg(m, false);
+            }}
+            onSkip={(m) => {}}
+            rBak={(v) =>
+              setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)
+            }
+          />
+        ))}
+        <ChatMessage
+          msgs={chats}
+          tagColor={getMsgColor(messages.length)}
+          onDel={(m) => {
+            deleteChatMsg(m, true);
+          }}
+          onSkip={(m) => {}}
+          rBak={(v) => setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)}
+        />
       </div>
       <div className={style.loading}>
         {loading ? (
@@ -286,7 +257,10 @@ export default function Home() {
             placeholder="Enter an message"
             value={messageInput}
             onChange={(e) => setmessageInput(e.target.value)}
-            onKeyUp={(e) => e.key === "s" && e.altKey && onSubmit(true)}
+            onKeyUp={(e) =>
+              (e.key === "s" && e.altKey && onSubmit(true)) ||
+              (e.key === "Enter" && e.ctrlKey && onSubmit(false))
+            }
             onKeyDown={(e) =>
               e.key === "Tab" &&
               (e.preventDefault(),
@@ -298,17 +272,24 @@ export default function Home() {
             }
           ></textarea>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <input
+            <button
               type="button"
-              value={"对话"}
               onClick={() => onSubmit(true)}
               style={{ marginBottom: "5px" }}
-            />
-            <input
+            >
+              对话
+              <br />
+              <span style={{ fontSize: "12px" }}>Alt S</span>
+            </button>
+            <button
               type="button"
-              value={"提交"}
+              value={"提交\nCtrl Enter"}
               onClick={() => onSubmit(false)}
-            />
+            >
+              提交
+              <br />
+              <span style={{ fontSize: "12px" }}>Ctrl Enter</span>
+            </button>
           </div>
         </form>
       </main>
