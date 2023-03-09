@@ -122,6 +122,7 @@ export default function Home() {
         body: JSON.stringify({
           message: messageText,
           model: config.model,
+          user:config.user,
           token: valueDataset?.getAutoToken(),
         }),
       });

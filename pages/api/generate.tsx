@@ -27,7 +27,7 @@ export default async function handler(
   const message: string = req.body.message || "";
   const model: string = req.body.model || "text-davinci-003";
   const temperature: number = req.body.temperature || 0.5;
-  const user: string = req.body.user || "user";
+  const user: string = req.body.user || "assistant";
   const top_p: number = req.body.top_p || 1;
   if (message.trim().length === 0) {
     res.status(400).json({
