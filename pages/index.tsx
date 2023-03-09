@@ -37,7 +37,7 @@ export default function Home() {
     prefix: "",
   });
   const [config, setConfig] = useState({
-    user: "user",
+    user: "assistant",
     model: "gpt-3.5-turbo",
   });
   useEffect(() => {
