@@ -1,6 +1,10 @@
 import { checkToken } from "@/server/liteAuth";
 import { NextApiRequest, NextApiResponse } from "next";
-import { Configuration, OpenAIApi } from "openai";
+import {
+  ChatCompletionRequestMessageRoleEnum,
+  Configuration,
+  OpenAIApi,
+} from "openai";
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -27,7 +31,7 @@ export default async function handler(
   const message: string = req.body.message || "";
   const model: string = req.body.model || "text-davinci-003";
   const temperature: number = req.body.temperature || 0.5;
-  const user: string = req.body.user || "assistant";
+  const user: string = req.body.user || "master";
   const top_p: number = req.body.top_p || 1;
   if (message.trim().length === 0) {
     res.status(400).json({
@@ -44,14 +48,16 @@ export default async function handler(
         model,
         messages: [
           {
-            role: "user",
+            role: ChatCompletionRequestMessageRoleEnum.Assistant,
             content: message,
+            name: user,
           },
         ],
         temperature,
         user,
         max_tokens: 1000,
         top_p,
+        n:1
       });
       res
         .status(200)
@@ -64,6 +70,7 @@ export default async function handler(
         user,
         max_tokens: 1000,
         top_p,
+        n: 1,
       });
       res.status(200).json({ result: completion.data.choices[0].text });
     }
