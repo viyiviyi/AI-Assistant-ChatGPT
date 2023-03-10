@@ -36,8 +36,11 @@ export default function Home() {
     name: "",
     prefix: "",
   });
-  const [config, setConfig] = useState({
-    user: "assistant",
+  const [config, setConfig] = useState<{
+    role: "assistant" | "user" | "system";
+    model: string;
+  }>({
+    role: "assistant",
     model: "gpt-3.5-turbo",
   });
   useEffect(() => {
@@ -85,18 +88,43 @@ export default function Home() {
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    let messageText = isPush
-      ? [
-          ...chats.filter((f) => !f.isSkip).map((m) => m.message),
-          messageInput,
-        ].join("\n")
-      : messageInput;
+    let contexts: Array<{
+      role: "assistant" | "user" | "system";
+      content: string;
+      name: string;
+    }> = [];
+    if (messageInput.trim())
+      contexts = [
+        {
+          role: config.role,
+          content: messageInput,
+          name: "user",
+        },
+      ];
+    if (isPush) {
+      contexts = [
+        ...chats
+          .filter((f) => !f.isSkip && f.message)
+          .map((v) => ({
+            role: config.role,
+            content: v.message,
+            name: v.nickname === assistant.name ? "assistant" : "user",
+          })),
+        ...contexts,
+      ];
+    }
     if (assistant.enable) {
-      messageText = assistant.prefix + "\n\n" + messageText;
+      contexts = [
+        {
+          role: config.role,
+          content: assistant.prefix,
+          name: "user",
+        },
+        ...contexts,
+      ];
     }
     setmessageInput("");
-    messageText = messageText.trim();
-    if (!messageText) return;
+    if (!contexts.length) return;
     setLoading(true);
     let pChats = [...chats];
     if (!isPush) {
@@ -120,9 +148,9 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: messageText,
+          message: contexts,
           model: config.model,
-          user:config.user,
+          user: 'user',
           token: valueDataset?.getAutoToken(),
         }),
       });

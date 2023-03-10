@@ -5,3 +5,7 @@ export type Message = {
   isPull: boolean;
   isSkip?:boolean
 };
+
+export type AskReq ={
+
+}

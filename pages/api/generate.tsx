@@ -1,3 +1,4 @@
+import { AskReq } from "@/Models/models";
 import { checkToken } from "@/server/liteAuth";
 import { NextApiRequest, NextApiResponse } from "next";
 import {
@@ -28,12 +29,16 @@ export default async function handler(
     });
     return;
   }
-  const message: string = req.body.message || "";
+  const message: Array<{
+    role: ChatCompletionRequestMessageRoleEnum;
+    content: string;
+    name: string;
+  }> = req.body.message || [];
   const model: string = req.body.model || "text-davinci-003";
   const temperature: number = req.body.temperature || 0.5;
   const user: string = req.body.user || "master";
   const top_p: number = req.body.top_p || 1;
-  if (message.trim().length === 0) {
+  if (message.length === 0 || !message.join("").trim()) {
     res.status(400).json({
       error: {
         message: "Please enter a valid message",
@@ -46,18 +51,12 @@ export default async function handler(
     if (model.startsWith("gpt-3")) {
       const completion = await openai.createChatCompletion({
         model,
-        messages: [
-          {
-            role: ChatCompletionRequestMessageRoleEnum.Assistant,
-            content: message,
-            name: user,
-          },
-        ],
+        messages: message,
         temperature,
         user,
         max_tokens: 1000,
         top_p,
-        n:1
+        n: 1,
       });
       res
         .status(200)
@@ -65,7 +64,7 @@ export default async function handler(
     } else {
       const completion = await openai.createCompletion({
         model,
-        prompt: message,
+        prompt: message.map((v) => v.content),
         temperature,
         user,
         max_tokens: 1000,
