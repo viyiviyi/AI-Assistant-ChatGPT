@@ -8,12 +8,12 @@ export const AssistantSetting = ({
 }: {
   name: string;
   propPrefix: string;
-  onOk: (value: { name: string; prefix: string,msgCount:number }) => void;
+  onOk: (value: { name: string; prefix: string; msgCount: number }) => void;
   onCacle: () => void;
 }) => {
   const [assistanName, setName] = useState(name);
   const [prefix, setPrefix] = useState(propPrefix);
-  const [msgCount,setMsgCount] = useState(4)
+  const [msgCount, setMsgCount] = useState(4);
 
   return (
     <div
@@ -21,6 +21,7 @@ export const AssistantSetting = ({
         width: "min(95vw, 420px)",
         padding: "20px",
         borderRadius: "5px",
+        backgroundColor: "rgb(var(--background-start-rgb))",
         border: "1px solid rgb(var(--foreground-rgb))",
       }}
     >
@@ -51,7 +52,7 @@ export const AssistantSetting = ({
             height: "10em",
             minHeight: "5em",
             maxHeight: "20em",
-            resize:'vertical',
+            resize: "vertical",
             lineHeight: 1.4,
             padding: "1em",
             boxSizing: "border-box",
@@ -64,23 +65,35 @@ export const AssistantSetting = ({
         />
       </div>
       <div>
-      <div style={{marginTop: "10px",display:'flex',flexDirection:'column' }}>
-        <div>消息数量: (对话时发送用于维持状态的对话数量, 设为0表示全部)</div>
-        <input
+        <div
           style={{
-            height: "32px",
-            textIndent: "1em",
+            marginTop: "10px",
+            display: "flex",
+            flexDirection: "column",
           }}
-          onChange={(e) => {
-            setMsgCount(Number(e.target.value));
-          }}
-          type="number"
-          name="msgCount"
-          value={msgCount}
-        />
+        >
+          <div>消息数量: (对话时发送用于维持状态的对话数量, 设为0表示全部)</div>
+          <input
+            style={{
+              height: "32px",
+              textIndent: "1em",
+            }}
+            onChange={(e) => {
+              setMsgCount(Number(e.target.value));
+            }}
+            type="number"
+            name="msgCount"
+            value={msgCount}
+          />
+        </div>
       </div>
-      </div>
-      <div style={{ display: "flex", justifyContent: "flex-end",marginTop:'10px' }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginTop: "10px",
+        }}
+      >
         <button
           style={{
             marginRight: "15px",
@@ -94,7 +107,7 @@ export const AssistantSetting = ({
         <button
           style={{ cursor: "pointer", padding: "8px 16px" }}
           onClick={() => {
-            onOk({ name: assistanName, prefix ,msgCount});
+            onOk({ name: assistanName, prefix, msgCount });
           }}
         >
           确定
