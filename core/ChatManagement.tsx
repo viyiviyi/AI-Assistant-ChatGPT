@@ -1,19 +1,26 @@
 import { Assistant, Chat, GptConfig, Message, User } from "@/Models/models";
 
 export class CahtManagement {
-  readonly user: User | undefined;
-  readonly assistant: Assistant = {
-    key: "",
-    name: "助理",
-    prefix: `接下来，你将继承设定角色的所有属性！
+  constructor() {
+    this.config = {
+      key: "lite_page.data.chat." + Date.now(),
+      name: "New Chat",
+    };
+    this.assistant = {
+      key: "lite_page.data.assistant." + Date.now(),
+      name: "助理",
+      prefix: `接下来，你将继承设定角色的所有属性！
 只能输出设定角色第一人称的台词！
 (在[]内输出动作细节!)
 设定角色:私人助理,主动,优雅,女性.`,
-  };
+    };
+  }
+  readonly user: User | undefined;
+  readonly assistant: Assistant;
   private messages: Message[] = [];
-  readonly config: Chat = { key: "", name: "" };
+  readonly config: Chat;
   gptConfig: GptConfig = {
-    key: "",
+    key: "lite_page.data.config",
     model: "gpt-3.5-turbo",
     role: "assistant",
     max_tokens: 300,
@@ -23,14 +30,20 @@ export class CahtManagement {
   };
   static async provide(chatKey?: string): Promise<CahtManagement> {
     if (chatKey) {
-      let chat = CahtManagement.chatList.find(f => f.config.key === chatKey);
+      let chat = CahtManagement.chatList.find((f) => f.config.key === chatKey);
       if (chat) return chat;
     }
-    return new CahtManagement();
+    const chat = new CahtManagement();
+    CahtManagement.chatList.push(chat);
+    return chat;
   }
-  private static chatList: CahtManagement[] = [];
+  private static readonly chatList: CahtManagement[] = [];
   static async list(): Promise<Chat[]> {
+    // 暂时这样写，等把数据库功能完成后从数据库获取
     return CahtManagement.chatList.map((v) => v.config);
+  }
+  static getList(): CahtManagement[] {
+    return this.chatList;
   }
   private static async create(name = "new Caht"): Promise<Chat> {
     return { key: "", name };

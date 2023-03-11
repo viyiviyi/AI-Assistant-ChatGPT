@@ -1,0 +1,22 @@
+.item {
+  display: flex;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 20px;
+  text-align: center;
+  cursor: pointer;
+  min-width: min(300px, 95vw);
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+.list {
+  max-height: 70vh;
+  overflow: auto;
+}
+.listWrap {
+  border-radius: 10px;
+  padding: 60px 20px 10px;
+  border: 1px solid #ddd;
+  background-color: rgb(var(--background-start-rgb));
+}

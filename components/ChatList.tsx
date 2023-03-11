@@ -1,26 +1,42 @@
 import { CahtManagement } from "@/core/ChatManagement";
 import { useEffect, useState } from "react";
-
-export const ChatList = ({ cb }: { cb: (chatMgt: CahtManagement) => void }) => {
-  const [chatList, setChatList] = useState<CahtManagement[]>([]);
-  useEffect(() => {
-    CahtManagement.list().then((v) => {
-      setChatList(chatList);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+import style from "../styles/chat-list.module.css";
+export const ChatList = ({
+  onSelected,
+  onCacle,
+}: {
+  onCacle: () => void;
+  onSelected: (chatMgt: CahtManagement) => void;
+}) => {
+  async function create() {
+    await CahtManagement.provide().then(onSelected);
+  }
   return (
     <>
-      <div style={{ padding: "40px 20px", margin: "20px 10px" }}>
-        <div>
-          {chatList.map((v, idx) => (
-            <div style={{ display: "flex" }} key={idx}>
+      <div className={style.listWrap}>
+        <div className={style.list}>
+          {CahtManagement.getList().map((v, idx) => (
+            <div className={style.item} key={idx} onClick={() => onSelected(v)}>
               <div></div>
               <div>
                 <span>{v.config.name}</span>
               </div>
             </div>
           ))}
+
+          <div className={style.item} onClick={() => create()}>
+            <div></div>
+            <div>
+              <span>新建</span>
+            </div>
+          </div>
+          <div
+            className={style.item}
+            style={{ marginTop: "30px", justifyContent: "center" }}
+            onClick={() => onCacle()}
+          >
+            <span>关闭</span>
+          </div>
         </div>
       </div>
     </>

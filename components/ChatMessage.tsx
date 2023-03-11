@@ -23,10 +23,10 @@ export const ChatMessage = ({
 }) => {
   return (
     <>
-      {msgs.map((msg) => {
+      {msgs.map((msg, idx) => {
         const { isPull, timestamp, message, nickname } = msg;
         return (
-          <div className={style.message}>
+          <div className={style.message} key={idx}>
             <div
               style={{
                 flex: 1,

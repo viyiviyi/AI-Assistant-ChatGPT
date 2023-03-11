@@ -5,11 +5,12 @@ import React from "react";
 import { useRouter } from "next/router";
 import { Message } from "@/Models/models";
 import { ChatMessage } from "@/components/ChatMessage";
-import { SettingOutlined } from "@ant-design/icons";
+import { SettingOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { Modal } from "@/components/Modal";
 import { AssistantSetting } from "@/components/AssistantSetting";
 import { KeyValueData } from "@/core/KeyValueData";
 import { CahtManagement } from "@/core/ChatManagement";
+import { ChatList } from "@/components/ChatList";
 
 function scrollToBotton() {
   setTimeout(() => {
@@ -32,12 +33,13 @@ let models = [
   "ada",
 ];
 export default function Home() {
-  const [chatMgt, setChatMgt] = useState<CahtManagement>(new CahtManagement());
-  const [messageInput, setmessageInput] = useState("");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [settingIsShow, setSettingShow] = useState(false);
+  const [chatMgt, setChatMgt] = useState<CahtManagement>(new CahtManagement());
+  const [messageInput, setmessageInput] = useState("");
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
+  const [settingIsShow, setSettingShow] = useState(false);
+  const [listIsShow, setlistIsShow] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -165,8 +167,14 @@ export default function Home() {
         </label>
         <span style={{ marginLeft: "10px" }}></span>
         <SettingOutlined onClick={() => setSettingShow(true)} />
+        <span style={{ flex: 1 }}></span>
+        <UnorderedListOutlined
+          onClick={() => {
+            setlistIsShow(true);
+          }}
+          style={{ marginLeft: "10px" }}
+        />
       </div>
-
       <div className={style.content} id="content">
         <ChatMessage
           msgs={chatMgt.getMessages()}
@@ -255,6 +263,17 @@ export default function Home() {
             }}
           ></AssistantSetting>
         }
+      </Modal>
+      <Modal isShow={listIsShow}>
+        <ChatList
+          onCacle={() => {
+            setlistIsShow(false);
+          }}
+          onSelected={(mgt) => {
+            setChatMgt(mgt);
+            setlistIsShow(false);
+          }}
+        ></ChatList>
       </Modal>
     </div>
   );
