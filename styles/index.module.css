@@ -3,13 +3,11 @@
 .main .textdeitor {
   font-size: 16px;
   line-height: 1.3;
-  color: #353740;
 }
 .main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 10px;
 }
 .main form {
   display: flex;
@@ -19,15 +17,19 @@
   align-items: flex-end;
 }
 .main .textdeitor {
-  padding: 12px 16px;
+  padding: 5px 10px;
   color: rgb(var(--foreground-rgb));
-  border: 1px solid #10a37f;
-  border-radius: 4px;
-  outline-color: #10a37f;
-  min-height: 4em;
+  border: 1px solid rgb(var(--foreground-rgb));
+  border-radius: 12px 10px 10px 12px;
+  outline-color: rgb(var(--foreground-rgb));
+  min-height: 79px;
   max-height: 50vh;
   margin-right: 5px;
   flex: auto;
+}
+.main .textdeitor:focus-visible{
+  border-width: 1px;
+  outline:none;
 }
 .main ::placeholder {
   color: #8e8ea0;
@@ -35,18 +37,19 @@
 }
 .main button {
   color: rgb(var(--foreground-rgb));
-  background-color: #10a37f;
-  border: none;
-  border-radius: 4px;
+  background-color: field;
+  border: 1px solid rgb(var(--foreground-rgb));
+  border-radius:8px;
   text-align: center;
   cursor: pointer;
   width: 80px;
-  height: 3em;
+  height: 42px;
 }
 .content {
   flex: auto;
   overflow: auto;
   padding: 10px;
+  overscroll-behavior-y: contain;
 }
 .content > div {
   border-bottom: 1px solid rgb(var(--callout-border-rgb));
@@ -65,14 +68,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 30px;
+  height: 16px;
 }
 
 .loading .loadingBar {
   width: 20px;
-  height: 5px;
+  height: 4px;
   margin: 0 15px;
-  background-color: rgb(var(--callout-border-rgb));
+  background-color: var(--color3);
   animation: loading 2.5s ease-in-out infinite;
 }
 

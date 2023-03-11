@@ -8,18 +8,17 @@ export const AssistantSetting = ({
 }: {
   name: string;
   propPrefix: string;
-  onOk: (value: { name: string; prefix: string }) => void;
+  onOk: (value: { name: string; prefix: string,msgCount:number }) => void;
   onCacle: () => void;
 }) => {
   const [assistanName, setName] = useState(name);
   const [prefix, setPrefix] = useState(propPrefix);
+  const [msgCount,setMsgCount] = useState(4)
 
   return (
     <div
       style={{
-        width: "420px",
-        height: "260px",
-        backgroundColor: "rgba(var(--foreground-rgb), .5)",
+        width: "min(95vw, 420px)",
         padding: "20px",
         borderRadius: "5px",
         border: "1px solid rgb(var(--foreground-rgb))",
@@ -51,8 +50,8 @@ export const AssistantSetting = ({
             marginTop: "5px",
             height: "10em",
             minHeight: "5em",
-            maxHeight: "11em",
-            maxWidth: "100%",
+            maxHeight: "20em",
+            resize:'vertical',
             lineHeight: 1.4,
             padding: "1em",
             boxSizing: "border-box",
@@ -64,7 +63,24 @@ export const AssistantSetting = ({
           value={prefix}
         />
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div>
+      <div style={{marginTop: "10px",display:'flex',flexDirection:'column' }}>
+        <div>消息数量: (对话时发送用于维持状态的对话数量, 设为0表示全部)</div>
+        <input
+          style={{
+            height: "32px",
+            textIndent: "1em",
+          }}
+          onChange={(e) => {
+            setMsgCount(Number(e.target.value));
+          }}
+          type="number"
+          name="msgCount"
+          value={msgCount}
+        />
+      </div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "flex-end",marginTop:'10px' }}>
         <button
           style={{
             marginRight: "15px",
@@ -78,7 +94,7 @@ export const AssistantSetting = ({
         <button
           style={{ cursor: "pointer", padding: "8px 16px" }}
           onClick={() => {
-            onOk({ name: assistanName, prefix });
+            onOk({ name: assistanName, prefix ,msgCount});
           }}
         >
           确定

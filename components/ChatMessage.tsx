@@ -30,7 +30,7 @@ export const ChatMessage = ({
         return (
           <div className={style.message}>
             {isPull ? (
-              <div style={{ width: "10px", backgroundColor: tagColor }}></div>
+              <div style={{ width: "2px", backgroundColor: tagColor }}></div>
             ) : (
               <></>
             )}
@@ -65,7 +65,7 @@ export const ChatMessage = ({
                     rBak(msg);
                   }}
                 />
-                <span style={{ marginLeft: "10px" }}></span>
+                <span style={{ marginLeft: "10px",flex:1 }}></span>
                 <DeleteOutlined
                   style={{ cursor: "pointer" }}
                   onClick={(e) => {
@@ -86,7 +86,7 @@ export const ChatMessage = ({
             {isPull ? (
               <></>
             ) : (
-              <div style={{ width: "10px", backgroundColor: tagColor }}></div>
+              <div style={{ width: "2px", backgroundColor: tagColor }}></div>
             )}
           </div>
         );

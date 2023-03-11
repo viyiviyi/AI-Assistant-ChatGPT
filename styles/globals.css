@@ -38,6 +38,9 @@
   --callout-border-rgb: 172, 175, 176;
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
+  --color1: #10a37f;
+  --color2: #10a37f;
+  --color3: #10a37f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -70,15 +73,19 @@
     --callout-border-rgb: 108, 108, 108;
     --card-rgb: 100, 100, 100;
     --card-border-rgb: 200, 200, 200;
+    --color1: #10a37f;
+    --color2: #10a37f;
+    --color3: #10a37f;
   }
 }
 
 html,
-body {
-  width: 100vw;
+body,#__next {
+  width: 100%;
   padding: 0;
   margin: 0;
-  height: 100vh;
+  height: 100%;
+  overscroll-behavior-y: contain;
 }
 
 body {

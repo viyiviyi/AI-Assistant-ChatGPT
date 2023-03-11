@@ -35,6 +35,7 @@ export default function Home() {
     enable: false,
     name: "",
     prefix: "",
+    msgCount: 4,
   });
   const [config, setConfig] = useState<{
     role: "assistant" | "user" | "system";
@@ -54,13 +55,6 @@ export default function Home() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setTimeout(() => {
-      var div = document.getElementById("content");
-      if (div != null) div.scrollTop = div.scrollHeight;
-    }, 300);
-  }, [chats]);
 
   function getMsgColor(index: number): string {
     return index % 2 ? "#2db7f5" : "#f50";
@@ -102,16 +96,15 @@ export default function Home() {
         },
       ];
     if (isPush) {
-      contexts = [
-        ...chats
-          .filter((f) => !f.isSkip && f.message)
-          .map((v) => ({
-            role: config.role,
-            content: v.message,
-            name: v.nickname === assistant.name ? "assistant" : "user",
-          })),
-        ...contexts,
-      ];
+      let ls = chats
+        .filter((f) => !f.isSkip && f.message)
+        .map((v) => ({
+          role: config.role,
+          content: v.message,
+          name: v.nickname === assistant.name ? "assistant" : "user",
+        }))
+        .slice(-assistant.msgCount);
+      contexts = [...ls, ...contexts];
     }
     if (assistant.enable) {
       contexts = [
@@ -150,7 +143,7 @@ export default function Home() {
         body: JSON.stringify({
           message: contexts,
           model: config.model,
-          user: 'user',
+          user: "user",
           token: valueDataset?.getAutoToken(),
         }),
       });
@@ -176,7 +169,7 @@ export default function Home() {
       setChats((v) => [
         ...v,
         {
-          nickname: "Bot Error",
+          nickname: "Client Error",
           message: error.message,
           timestamp: Date.now(),
           isPull: true,
@@ -186,6 +179,8 @@ export default function Home() {
     }
     setTimeout(() => {
       setLoading(false);
+      var div = document.getElementById("content");
+      if (div != null) div.scrollTop = div.scrollHeight;
     }, 500);
   }
 
@@ -201,7 +196,14 @@ export default function Home() {
     }, 0);
   };
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100%",
+        maxHeight: "100%",
+      }}
+    >
       <Head>
         <title>助手 bot</title>
       </Head>
@@ -331,11 +333,11 @@ export default function Home() {
               setAssistant((v) => {
                 v.prefix = ass.prefix;
                 v.name = ass.name;
+                v.msgCount = ass.msgCount;
                 return v;
               });
-              const data = new KeyValueData(localStorage);
-              data.setAssistantName(assistant.name);
-              data.setAssistantPrefix(assistant.prefix);
+              valueDataset?.setAssistantName(assistant.name);
+              valueDataset?.setAssistantPrefix(assistant.prefix);
               setSettingShow(false);
             }}
             onCacle={() => {
