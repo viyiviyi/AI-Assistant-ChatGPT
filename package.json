@@ -33,6 +33,8 @@
     "remark-math": "^5.1.1",
     "remark-parse": "^10.0.1",
     "remark-rehype": "^10.1.0",
+    "rxdb": "^14.2.3",
+    "rxjs": "^7.8.0",
     "sha1": "^1.1.1",
     "typescript": "4.9.5",
     "unified": "^10.1.2"

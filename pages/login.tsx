@@ -1,5 +1,5 @@
 
-import { KeyValueData } from "@/hooks/KeyValueData";
+import { KeyValueData } from "@/core/KeyValueData";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";

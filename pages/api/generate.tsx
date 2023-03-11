@@ -1,4 +1,3 @@
-import { AskReq } from "@/Models/models";
 import { checkToken } from "@/server/liteAuth";
 import { NextApiRequest, NextApiResponse } from "next";
 import {
@@ -34,10 +33,13 @@ export default async function handler(
     content: string;
     name: string;
   }> = req.body.message || [];
-  const model: string = req.body.model || "text-davinci-003";
-  const temperature: number = req.body.temperature || 0.5;
-  const user: string = req.body.user || "master";
-  const top_p: number = req.body.top_p || 1;
+  const {
+    max_tokens = 300,
+    top_p = 1,
+    user = "master",
+    temperature = 0.5,
+    model = "gpt-3.5-turbo",
+  } = req.body;
   if (message.length === 0 || !message.join("").trim()) {
     res.status(400).json({
       error: {
@@ -54,7 +56,7 @@ export default async function handler(
         messages: message,
         temperature,
         user,
-        max_tokens: 300,
+        max_tokens,
         top_p,
         n: 1,
       });
@@ -64,10 +66,10 @@ export default async function handler(
     } else {
       const completion = await openai.createCompletion({
         model,
-        prompt: message.map((v) => v.content),
+        prompt: message.map((v) => v.content).join('\n\n'),
         temperature,
         user,
-        max_tokens: 300,
+        max_tokens,
         top_p,
         n: 1,
       });

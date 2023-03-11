@@ -15,13 +15,11 @@ export const ChatMessage = ({
   rBak,
   onDel,
   onSkip,
-  tagColor,
 }: {
   msgs: Message[];
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   onSkip: (v: Message) => void;
-  tagColor: string;
 }) => {
   return (
     <>
@@ -29,11 +27,6 @@ export const ChatMessage = ({
         const { isPull, timestamp, message, nickname } = msg;
         return (
           <div className={style.message}>
-            {isPull ? (
-              <div style={{ width: "2px", backgroundColor: tagColor }}></div>
-            ) : (
-              <></>
-            )}
             <div
               style={{
                 flex: 1,
@@ -65,7 +58,7 @@ export const ChatMessage = ({
                     rBak(msg);
                   }}
                 />
-                <span style={{ marginLeft: "10px",flex:1 }}></span>
+                <span style={{ marginLeft: "10px", flex: 1 }}></span>
                 <DeleteOutlined
                   style={{ cursor: "pointer" }}
                   onClick={(e) => {
@@ -83,11 +76,6 @@ export const ChatMessage = ({
           {msg.isSkip ?<span style={{fontSize:'12px',textIndent:'1em'}}>从记录中排除</span>:<></> } */}
               </div>
             </div>
-            {isPull ? (
-              <></>
-            ) : (
-              <div style={{ width: "2px", backgroundColor: tagColor }}></div>
-            )}
           </div>
         );
       })}

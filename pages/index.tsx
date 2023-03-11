@@ -8,7 +8,15 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { SettingOutlined } from "@ant-design/icons";
 import { Modal } from "@/components/Modal";
 import { AssistantSetting } from "@/components/AssistantSetting";
-import { KeyValueData } from "@/hooks/KeyValueData";
+import { KeyValueData } from "@/core/KeyValueData";
+import { CahtManagement } from "@/core/ChatManagement";
+
+function scrollToBotton() {
+  setTimeout(() => {
+    var div = document.getElementById("content");
+    if (div != null) div.scrollTop = div.scrollHeight;
+  }, 300);
+}
 
 let models = [
   "gpt-3.5-turbo",
@@ -24,116 +32,50 @@ let models = [
   "ada",
 ];
 export default function Home() {
+  const [chatMgt, setChatMgt] = useState<CahtManagement>(new CahtManagement());
   const [messageInput, setmessageInput] = useState("");
-  const [messages, setMessage] = useState<Message[][]>([]);
-  const [chats, setChats] = useState<Message[]>([]);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [settingIsShow, setSettingShow] = useState(false);
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
-  const [assistant, setAssistant] = useState({
-    enable: false,
-    name: "",
-    prefix: "",
-    msgCount: 4,
-  });
-  const [config, setConfig] = useState<{
-    role: "assistant" | "user" | "system";
-    model: string;
-  }>({
-    role: "assistant",
-    model: "gpt-3.5-turbo",
-  });
+
   useEffect(() => {
-    const data = new KeyValueData(localStorage);
-    setValueDataset(data);
-    if (!data.getAutoToken()) router.push("/login");
-    setAssistant((v) => {
-      v.name = data.getAssistantName();
-      v.prefix = data.getAssistantPrefix();
-      return v;
-    });
+    async function init() {
+      let ls = await CahtManagement.list();
+      let chatMgt: CahtManagement;
+      if (ls.length == 0) {
+        chatMgt = await CahtManagement.provide();
+      } else {
+        chatMgt = await CahtManagement.provide(ls.slice(-1)[0].key);
+      }
+      const data = new KeyValueData(localStorage);
+      chatMgt.assistant.name = data.getAssistantName();
+      chatMgt.assistant.prefix = data.getAssistantPrefix();
+      if (!data.getAutoToken()) router.push("/login");
+      setChatMgt(chatMgt);
+      setValueDataset(data);
+    }
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function getMsgColor(index: number): string {
-    return index % 2 ? "#2db7f5" : "#f50";
-  }
   function deleteChatMsg(msg: Message, isChats?: boolean): void {
-    let pMessages = messages;
-    let pChats = chats;
-    if (!isChats || isChats === undefined) {
-      pMessages = pMessages
-        .map((g) => g.filter((f) => f.timestamp !== msg.timestamp))
-        .filter((g) => g.length);
-    }
-    if (isChats || isChats === undefined) {
-      pChats = pChats.filter((f) => f.timestamp !== msg.timestamp);
-      if (pChats.length == 0 && pMessages.length > 0) {
-        pChats = pMessages.splice(pMessages.length - 1, 1)[0];
-      }
-    }
-    setMessage(pMessages);
-    setChats(pChats);
+    chatMgt?.removeMessage(msg);
+    setChatMgt(chatMgt);
   }
+
   /**
    * 提交内容
    * @param isPush 是否对话模式
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    let contexts: Array<{
-      role: "assistant" | "user" | "system";
-      content: string;
-      name: string;
-    }> = [];
-    if (messageInput.trim())
-      contexts = [
-        {
-          role: config.role,
-          content: messageInput,
-          name: "user",
-        },
-      ];
-    if (isPush) {
-      let ls = chats
-        .filter((f) => !f.isSkip && f.message)
-        .map((v) => ({
-          role: config.role,
-          content: v.message,
-          name: v.nickname === assistant.name ? "assistant" : "user",
-        }))
-        .slice(-assistant.msgCount);
-      contexts = [...ls, ...contexts];
-    }
-    if (assistant.enable) {
-      contexts = [
-        {
-          role: config.role,
-          content: assistant.prefix,
-          name: "user",
-        },
-        ...contexts,
-      ];
-    }
+    await chatMgt.pushMessage(messageInput, isPush);
     setmessageInput("");
-    if (!contexts.length) return;
+    if (!chatMgt.getAskContext().length) return;
     setLoading(true);
-    let pChats = [...chats];
-    if (!isPush) {
-      const _pChats = pChats;
-      setMessage((v) => [...v, _pChats]);
-      pChats = [];
-    }
-    if (messageInput.trim())
-      pChats.push({
-        nickname: "",
-        message: messageInput.trim(),
-        timestamp: Date.now(),
-        isPull: false,
-        isSkip: false,
-      });
-    setChats(pChats);
+    setChatMgt(chatMgt);
+    scrollToBotton();
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -141,13 +83,12 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: contexts,
-          model: config.model,
+          message: chatMgt.getAskContext(),
+          model: chatMgt.gptConfig.model,
           user: "user",
           token: valueDataset?.getAutoToken(),
         }),
       });
-
       const data = await response.json();
       if (response.status !== 200) {
         throw (
@@ -155,32 +96,14 @@ export default function Home() {
           new Error(`Request failed with status ${response.status}`)
         );
       }
-      setChats((v) => [
-        ...v,
-        {
-          nickname: assistant.enable ? assistant.name : "Bot",
-          message: data.result,
-          timestamp: Date.now(),
-          isPull: true,
-          isSkip: false,
-        },
-      ]);
+      chatMgt.pushMessage(data.result, true);
     } catch (error: any) {
-      setChats((v) => [
-        ...v,
-        {
-          nickname: "Client Error",
-          message: error.message,
-          timestamp: Date.now(),
-          isPull: true,
-          isSkip: false,
-        },
-      ]);
+      chatMgt.pushMessage(error.message, true, "Client Error");
     }
+    setChatMgt(chatMgt);
+    scrollToBotton();
     setTimeout(() => {
       setLoading(false);
-      var div = document.getElementById("content");
-      if (div != null) div.scrollTop = div.scrollHeight;
     }, 500);
   }
 
@@ -210,9 +133,12 @@ export default function Home() {
       <div className={style.header}>
         <select
           style={{ height: "2em" }}
-          defaultValue={config.model}
+          defaultValue={chatMgt?.gptConfig.model}
           onChange={(e) => {
-            setConfig((f) => Object.assign(f, { model: e.target.value }));
+            setChatMgt((v) => {
+              v!.gptConfig.model = e.target.value;
+              return v;
+            });
           }}
         >
           {models.map((v, i) => (
@@ -228,8 +154,8 @@ export default function Home() {
           id="assistant.enable"
           style={{ cursor: "pointer" }}
           onChange={(e) => {
-            setAssistant((v) => {
-              v.enable = e.target.checked;
+            setChatMgt((v) => {
+              chatMgt.config.enableAssistant = e.target.checked;
               return v;
             });
           }}
@@ -242,23 +168,8 @@ export default function Home() {
       </div>
 
       <div className={style.content} id="content">
-        {messages.map((msgs, index) => (
-          <ChatMessage
-            key={index}
-            msgs={msgs}
-            tagColor={getMsgColor(index)}
-            onDel={(m) => {
-              deleteChatMsg(m, false);
-            }}
-            onSkip={(m) => {}}
-            rBak={(v) =>
-              setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)
-            }
-          />
-        ))}
         <ChatMessage
-          msgs={chats}
-          tagColor={getMsgColor(messages.length)}
+          msgs={chatMgt.getMessages()}
           onDel={(m) => {
             deleteChatMsg(m, true);
           }}
@@ -327,17 +238,16 @@ export default function Home() {
       <Modal isShow={settingIsShow}>
         {
           <AssistantSetting
-            name={assistant.name}
-            propPrefix={assistant.prefix}
+            name={chatMgt?.assistant.name || ""}
+            propPrefix={chatMgt?.assistant.prefix || ""}
             onOk={(ass) => {
-              setAssistant((v) => {
-                v.prefix = ass.prefix;
-                v.name = ass.name;
-                v.msgCount = ass.msgCount;
+              setChatMgt((v) => {
+                v.assistant.prefix = ass.prefix;
+                v.assistant.name = ass.name;
                 return v;
               });
-              valueDataset?.setAssistantName(assistant.name);
-              valueDataset?.setAssistantPrefix(assistant.prefix);
+              valueDataset?.setAssistantName(ass.name);
+              valueDataset?.setAssistantPrefix(ass.prefix);
               setSettingShow(false);
             }}
             onCacle={() => {
