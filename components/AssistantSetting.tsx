@@ -24,6 +24,7 @@ export const AssistantSetting = ({
         backgroundColor: "rgb(var(--background-start-rgb))",
         border: "1px solid rgb(var(--foreground-rgb))",
       }}
+      onClick={e=>e.stopPropagation()}
     >
       <div style={{ display: "flex", marginBottom: "15px" }}>
         <span>助理名称:</span>
