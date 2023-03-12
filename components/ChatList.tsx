@@ -12,7 +12,7 @@ export const ChatList = ({
   }
   return (
     <>
-      <div className={style.listWrap}>
+      <div className={style.listWrap} onClick={e=>e.stopPropagation()}>
         <div className={style.list}>
           {CahtManagement.getList().map((v, idx) => (
             <div className={style.item} key={idx} onClick={() => onSelected(v)}>
