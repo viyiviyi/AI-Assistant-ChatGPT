@@ -1,9 +1,8 @@
 import Head from "next/head";
 import style from "../styles/index.module.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import { useRouter } from "next/router";
-import { Message } from "@/Models/models";
 import { ChatMessage } from "@/components/ChatMessage";
 import { SettingOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { Modal } from "@/components/Modal";
@@ -11,6 +10,7 @@ import { AssistantSetting } from "@/components/AssistantSetting";
 import { KeyValueData } from "@/core/KeyValueData";
 import { CahtManagement } from "@/core/ChatManagement";
 import { ChatList } from "@/components/ChatList";
+import { Message } from "@/Models/DataBase";
 
 function scrollToBotton() {
   setTimeout(() => {
@@ -32,38 +32,38 @@ let models = [
   "babbage",
   "ada",
 ];
+
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [chatMgt, setChatMgt] = useState<CahtManagement>(new CahtManagement());
+  const [chatMgt, setChatMgt] = useState<CahtManagement>();
   const [messageInput, setmessageInput] = useState("");
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
-
-  useEffect(() => {
-    async function init() {
-      let ls = await CahtManagement.list();
-      let chatMgt: CahtManagement;
-      if (ls.length == 0) {
-        chatMgt = await CahtManagement.provide();
-      } else {
-        chatMgt = await CahtManagement.provide(ls.slice(-1)[0].key);
-      }
-      const data = new KeyValueData(localStorage);
-      chatMgt.assistant.name = data.getAssistantName();
-      chatMgt.assistant.prefix = data.getAssistantPrefix();
-      if (!data.getAutoToken()) router.push("/login");
-      setChatMgt(chatMgt);
-      setValueDataset(data);
+  let init = useCallback(async () => {
+    let ls = await CahtManagement.list();
+    let chatMgt: CahtManagement;
+    if (ls.length == 0) {
+      chatMgt = await CahtManagement.provide("", "default");
+    } else {
+      chatMgt = await CahtManagement.provide(ls.slice(-1)[0].id);
     }
-    init();
+    const data = new KeyValueData(localStorage);
+    if (!data.getAutoToken()) router.push("/login");
+    setChatMgt(chatMgt);
+    setValueDataset(data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [init]);
 
-  function deleteChatMsg(msg: Message, isChats?: boolean): void {
-    chatMgt?.removeMessage(msg);
-    setChatMgt(chatMgt);
+  function deleteChatMsg(msg: Message): void {
+    chatMgt?.removeMessage(msg).then(() => {
+      setChatMgt(chatMgt);
+    });
   }
 
   /**
@@ -72,9 +72,10 @@ export default function Home() {
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    await chatMgt.pushMessage(messageInput, isPush);
+    if (!isPush) chatMgt?.newTopic(messageInput);
+    await chatMgt?.pushMessage(messageInput, isPush);
     setmessageInput("");
-    if (!chatMgt.getAskContext().length) return;
+    if (!chatMgt?.getAskContext().length) return;
     setLoading(true);
     setChatMgt(chatMgt);
     scrollToBotton();
@@ -100,7 +101,7 @@ export default function Home() {
       }
       chatMgt.pushMessage(data.result, true);
     } catch (error: any) {
-      chatMgt.pushMessage(error.message, true, "Client Error");
+      chatMgt.pushMessage(error.message, true);
     }
     setChatMgt(chatMgt);
     scrollToBotton();
@@ -155,11 +156,10 @@ export default function Home() {
           name="assistant.enable"
           id="assistant.enable"
           style={{ cursor: "pointer" }}
+          defaultChecked={chatMgt?.config.enableVirtualRole}
           onChange={(e) => {
-            setChatMgt((v) => {
-              chatMgt.config.enableAssistant = e.target.checked;
-              return v;
-            });
+            chatMgt!.config.enableVirtualRole = e.target.checked;
+            setChatMgt(chatMgt);
           }}
         />
         <label style={{ cursor: "pointer" }} htmlFor="assistant.enable">
@@ -177,12 +177,12 @@ export default function Home() {
       </div>
       <div className={style.content} id="content">
         <ChatMessage
-          msgs={chatMgt.getMessages()}
+          chat={chatMgt}
           onDel={(m) => {
-            deleteChatMsg(m, true);
+            deleteChatMsg(m);
           }}
           onSkip={(m) => {}}
-          rBak={(v) => setmessageInput((m) => (m ? m + "\n\n" : m) + v.message)}
+          rBak={(v) => setmessageInput((m) => (m ? m + "\n\n" : m) + v.text)}
         />
       </div>
       <div className={style.loading}>
@@ -243,19 +243,19 @@ export default function Home() {
           </div>
         </form>
       </main>
-      <Modal isShow={settingIsShow}>
+      <Modal
+        isShow={settingIsShow}
+        onCancel={() => {
+          setSettingShow(false);
+        }}
+      >
         {
           <AssistantSetting
-            name={chatMgt?.assistant.name || ""}
-            propPrefix={chatMgt?.assistant.prefix || ""}
+            name={chatMgt?.virtualRole.name || ""}
+            propPrefix={chatMgt?.virtualRole.bio || ""}
             onOk={(ass) => {
-              setChatMgt((v) => {
-                v.assistant.prefix = ass.prefix;
-                v.assistant.name = ass.name;
-                return v;
-              });
-              valueDataset?.setAssistantName(ass.name);
-              valueDataset?.setAssistantPrefix(ass.prefix);
+              chatMgt?.setVirtualRoleBio(ass.name, ass.prefix);
+              setChatMgt(chatMgt);
               setSettingShow(false);
             }}
             onCacle={() => {
@@ -264,7 +264,12 @@ export default function Home() {
           ></AssistantSetting>
         }
       </Modal>
-      <Modal isShow={listIsShow}>
+      <Modal
+        isShow={listIsShow}
+        onCancel={() => {
+          setlistIsShow(false);
+        }}
+      >
         <ChatList
           onCacle={() => {
             setlistIsShow(false);

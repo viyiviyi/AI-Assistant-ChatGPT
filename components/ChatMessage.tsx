@@ -8,23 +8,24 @@ import {
   FunnelPlotOutlined,
   RollbackOutlined,
 } from "@ant-design/icons";
-import { Message } from "@/Models/models";
+import { Message } from "@/Models/DataBase";
+import { CahtManagement } from "@/core/ChatManagement";
 
 export const ChatMessage = ({
-  msgs,
+  chat,
   rBak,
   onDel,
   onSkip,
 }: {
-  msgs: Message[];
+  chat?: CahtManagement;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   onSkip: (v: Message) => void;
-}) => {
+  }) => {
+  if (!chat) return <></>
   return (
     <>
-      {msgs.map((msg, idx) => {
-        const { isPull, timestamp, message, nickname } = msg;
+      {chat.getMessages().map((msg, idx) => {
         return (
           <div className={style.message} key={idx}>
             <div
@@ -39,16 +40,18 @@ export const ChatMessage = ({
             >
               <div className={style.message__header}></div>
               <div className={style.message__body}>
-                <MarkdownView markdown={message} />
+                <MarkdownView markdown={msg.text} />
               </div>
               <div className={style.message__footer}>
-                <span className={style.message__nickname}>{nickname}</span>
-                <span style={{ marginLeft: "10px" }}></span>
-                <span className={style.message__timestamp}>
-                  {new Date(timestamp).toLocaleString()}
+                <span className={style.message__nickname}>
+                  {msg.virtualRoleId ? chat.virtualRole.name : chat.user?.name}
                 </span>
                 <span style={{ marginLeft: "10px" }}></span>
-                <CopyToClipboard text={message}>
+                <span className={style.message__timestamp}>
+                  {new Date(msg.timestamp).toLocaleString()}
+                </span>
+                <span style={{ marginLeft: "10px" }}></span>
+                <CopyToClipboard text={msg.text}>
                   <CopyOutlined />
                 </CopyToClipboard>
                 <span style={{ marginLeft: "10px" }}></span>

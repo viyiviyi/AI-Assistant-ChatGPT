@@ -2,17 +2,19 @@ import { ReactElement, useEffect } from "react";
 
 export const Modal = ({
   isShow = false,
+  onCancel = () => {},
   children,
 }: {
   isShow: boolean;
   children: ReactElement<any, any>;
-  }) => {
+  onCancel?: () => void;
+}) => {
   return (
     <>
       {isShow ? (
         <div
           onClick={() => {
-            isShow = false;
+            onCancel();
           }}
           style={{
             position: "fixed",

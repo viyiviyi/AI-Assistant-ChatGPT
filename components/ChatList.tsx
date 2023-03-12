@@ -1,5 +1,4 @@
 import { CahtManagement } from "@/core/ChatManagement";
-import { useEffect, useState } from "react";
 import style from "../styles/chat-list.module.css";
 export const ChatList = ({
   onSelected,
@@ -19,7 +18,7 @@ export const ChatList = ({
             <div className={style.item} key={idx} onClick={() => onSelected(v)}>
               <div></div>
               <div>
-                <span>{v.config.name}</span>
+                <span>{v.group.name + " " + v.virtualRole.name}</span>
               </div>
             </div>
           ))}
