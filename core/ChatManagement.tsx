@@ -132,7 +132,7 @@ export class CahtManagement {
     name: string;
   }> {
     let ctx = this.messages
-      .filter((f) => f.topicId === this.topic.slice(-1)[0].name)
+      .filter((f) => f.topicId === this.topic.slice(-1)[0].id)
       .slice(-this.gptConfig.msgCount)
       .map((v) => ({
         role: this.gptConfig.role,
@@ -180,7 +180,7 @@ export class CahtManagement {
       text: message.trim(),
       virtualRoleId: virtualRoleMsg ? this.virtualRole.id : undefined,
       senderId: virtualRoleMsg ? undefined : this.user?.id,
-      topicId: "",
+      topicId: this.topic.slice(-1)[0].id,
       groupId: this.group.id,
     };
     this.messages.push(msg);
@@ -189,8 +189,13 @@ export class CahtManagement {
     let delIdx = this.messages.findIndex((f) => f.id === message.id);
     if (delIdx !== -1) {
       this.messages.splice(delIdx, 1);
-      if (this.topic.length > 1&&this.messages.length&&this.messages.slice(-1)[0].topicId!==message.topicId) {
-        this.topic.splice(-1);
+      if (
+        this.topic.length > 1 &&
+        this.messages.length &&
+        this.messages.slice(-1)[0].topicId !== message.topicId
+      ) {
+        let d = this.topic.findIndex((f) => f.id === message.topicId);
+        if (d !== -1) this.topic.splice(d, 1);
       }
     }
   }

@@ -36,7 +36,7 @@ let models = [
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [chatMgt, setChatMgt] = useState<CahtManagement>();
+  const [chatMgt, setChatMgt] = useState<CahtManagement[]>([]);
   const [messageInput, setmessageInput] = useState("");
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
   const [settingIsShow, setSettingShow] = useState(false);
@@ -51,7 +51,7 @@ export default function Home() {
     }
     const data = new KeyValueData(localStorage);
     if (!data.getAutoToken()) router.push("/login");
-    setChatMgt(chatMgt);
+    setChatMgt([chatMgt]);
     setValueDataset(data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -61,8 +61,8 @@ export default function Home() {
   }, [init]);
 
   function deleteChatMsg(msg: Message): void {
-    chatMgt?.removeMessage(msg).then(() => {
-      setChatMgt(chatMgt);
+    chatMgt[0]?.removeMessage(msg).then(() => {
+      setChatMgt([...chatMgt]);
     });
   }
 
@@ -72,12 +72,12 @@ export default function Home() {
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    if (!isPush) chatMgt?.newTopic(messageInput);
-    await chatMgt?.pushMessage(messageInput, isPush);
+    if (!isPush) chatMgt[0]!.newTopic(messageInput);
+    await chatMgt[0]?.pushMessage(messageInput, isPush);
     setmessageInput("");
-    if (!chatMgt?.getAskContext().length) return;
+    if (!chatMgt[0]?.getAskContext().length) return;
     setLoading(true);
-    setChatMgt(chatMgt);
+    setChatMgt([...chatMgt]);
     scrollToBotton();
     try {
       const response = await fetch("/api/generate", {
@@ -86,8 +86,8 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: chatMgt.getAskContext(),
-          model: chatMgt.gptConfig.model,
+          message: chatMgt[0].getAskContext(),
+          model: chatMgt[0].gptConfig.model,
           user: "user",
           token: valueDataset?.getAutoToken(),
         }),
@@ -99,11 +99,11 @@ export default function Home() {
           new Error(`Request failed with status ${response.status}`)
         );
       }
-      chatMgt.pushMessage(data.result, true);
+      chatMgt[0].pushMessage(data.result, true);
     } catch (error: any) {
-      chatMgt.pushMessage(error.message, true);
+      chatMgt[0].pushMessage(error.message, true);
     }
-    setChatMgt(chatMgt);
+    setChatMgt([...chatMgt]);
     scrollToBotton();
     setTimeout(() => {
       setLoading(false);
@@ -136,12 +136,10 @@ export default function Home() {
       <div className={style.header}>
         <select
           style={{ height: "2em" }}
-          defaultValue={chatMgt?.gptConfig.model}
+          defaultValue={chatMgt[0]?.gptConfig.model}
           onChange={(e) => {
-            setChatMgt((v) => {
-              v!.gptConfig.model = e.target.value;
-              return v;
-            });
+            chatMgt[0]!.gptConfig.model = e.target.value
+            setChatMgt([...chatMgt]);
           }}
         >
           {models.map((v, i) => (
@@ -156,10 +154,10 @@ export default function Home() {
           name="assistant.enable"
           id="assistant.enable"
           style={{ cursor: "pointer" }}
-          defaultChecked={chatMgt?.config.enableVirtualRole}
+          defaultChecked={chatMgt[0]?.config.enableVirtualRole}
           onChange={(e) => {
-            chatMgt!.config.enableVirtualRole = e.target.checked;
-            setChatMgt(chatMgt);
+            chatMgt[0]!.config.enableVirtualRole = e.target.checked;
+            setChatMgt([...chatMgt]);
           }}
         />
         <label style={{ cursor: "pointer" }} htmlFor="assistant.enable">
@@ -177,7 +175,7 @@ export default function Home() {
       </div>
       <div className={style.content} id="content">
         <ChatMessage
-          chat={chatMgt}
+          chat={chatMgt[0]}
           onDel={(m) => {
             deleteChatMsg(m);
           }}
@@ -251,11 +249,11 @@ export default function Home() {
       >
         {
           <AssistantSetting
-            name={chatMgt?.virtualRole.name || ""}
-            propPrefix={chatMgt?.virtualRole.bio || ""}
+            name={chatMgt[0]?.virtualRole.name || ""}
+            propPrefix={chatMgt[0]?.virtualRole.bio || ""}
             onOk={(ass) => {
-              chatMgt?.setVirtualRoleBio(ass.name, ass.prefix);
-              setChatMgt(chatMgt);
+              chatMgt[0]?.setVirtualRoleBio(ass.name, ass.prefix);
+              setChatMgt([...chatMgt]);
               setSettingShow(false);
             }}
             onCacle={() => {
@@ -275,7 +273,7 @@ export default function Home() {
             setlistIsShow(false);
           }}
           onSelected={(mgt) => {
-            setChatMgt(mgt);
+            setChatMgt([mgt]);
             setlistIsShow(false);
           }}
         ></ChatList>
