@@ -54,7 +54,7 @@ export default async function handler(
         messages: message,
         temperature,
         user,
-        max_tokens: 300,
+        max_tokens: 2000,
         top_p,
         n: 1,
       });
@@ -67,7 +67,7 @@ export default async function handler(
         prompt: message.map((v) => v.content),
         temperature,
         user,
-        max_tokens: 300,
+        max_tokens: 2000,
         top_p,
         n: 1,
       });
