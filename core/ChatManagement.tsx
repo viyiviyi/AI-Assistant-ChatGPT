@@ -158,6 +158,8 @@ export class CahtManagement {
       this.keyValData.setAssistantName(name);
       this.keyValData.setAssistantPrefix(bio);
     }
+    this.virtualRole.name = name;
+    this.virtualRole.bio = bio;
   }
   newTopic(message: string) {
     this.topic.push({
