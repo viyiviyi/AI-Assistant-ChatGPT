@@ -64,15 +64,15 @@ export const ChatMessage = ({
           style={{
             flex: 1,
             display: "flex",
+            maxWidth: "calc(100% - 64px)",
             flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
           }}
         >
-          <Avatar icon={<UserOutlined />} />
+          <Avatar style={{minWidth:'32px'}} icon={<UserOutlined />} />
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              flex: 1,
             }}
           >
             <div
@@ -98,7 +98,7 @@ export const ChatMessage = ({
                 border: "1px solid " + token.colorFillAlter,
                 backgroundColor: token.colorFillContent,
                 marginBottom: "12px",
-                boxShadow: token.boxShadowTertiary
+                boxShadow: token.boxShadowTertiary,
               }}
             >
               <div>
@@ -121,7 +121,7 @@ export const ChatMessage = ({
                 <RollbackOutlined
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                      rBak(msg);
+                    rBak(msg);
                   }}
                 />
                 <span style={{ marginLeft: "30px" }}></span>
