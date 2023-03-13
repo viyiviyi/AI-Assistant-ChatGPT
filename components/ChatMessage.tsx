@@ -8,10 +8,19 @@ import {
   EditOutlined,
   FunnelPlotOutlined,
   RollbackOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import { Message, Topic } from "@/Models/DataBase";
 import { ChatManagement } from "@/core/ChatManagement";
-import { Avatar, Collapse, GlobalToken, Popover, theme } from "antd";
+import {
+  Avatar,
+  Collapse,
+  GlobalToken,
+  Input,
+  message,
+  Popover,
+  theme,
+} from "antd";
 import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 
 const { Panel } = Collapse;
@@ -46,7 +55,15 @@ export const ChatMessage = ({
           {chat
             ?.getMessages()
             .filter((f) => f.topicId === topic.id)
-            .map((v, i) => Messages(v, i))}
+            .map((v, i) => (
+              <MessagesBox
+                msg={v}
+                chat={chat}
+                onDel={onDel}
+                rBak={rBak}
+                key={i}
+              ></MessagesBox>
+            ))}
         </Panel>
       );
     }
@@ -158,3 +175,141 @@ export const ChatMessage = ({
     </Collapse>
   );
 };
+
+function MessagesBox({
+  msg,
+  chat,
+  rBak,
+  onDel,
+}: {
+  msg: Message;
+  chat?: ChatManagement;
+  rBak: (v: Message) => void;
+  onDel: (v: Message) => void;
+}) {
+  const { token } = theme.useToken();
+  const [edit, setEdit] = useState(false);
+  const [message, setMessage] = useState(msg.text);
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: msg.virtualRoleId ? "flex-start" : "flex-end",
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          maxWidth: "calc(100% - 48px)",
+          flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
+        }}
+      >
+        <Avatar
+          style={{ width: "32px", height: "32px" }}
+          icon={<UserOutlined />}
+        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              padding: "0 5px",
+              flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
+            }}
+          >
+            <span>
+              {msg.virtualRoleId ? chat?.virtualRole.name : chat?.user?.name}
+            </span>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              padding: "5px 10px",
+              flexDirection: "column",
+              boxSizing: "border-box",
+              borderRadius: token.borderRadiusLG,
+              border: "1px solid " + token.colorFillAlter,
+              backgroundColor: token.colorFillContent,
+              marginBottom: "12px",
+              boxShadow: token.boxShadowTertiary,
+            }}
+          >
+            <div>
+              {edit ? (
+                <Input.TextArea
+                  value={message}
+                  autoSize
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                  }}
+                />
+              ) : (
+                <MarkdownView markdown={msg.text} />
+              )}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                borderTop: "1px solid #ccc3",
+                justifyContent: "flex-end",
+              }}
+            >
+              <span
+                onClick={() => {
+                  setEdit(false);
+                }}
+              >
+                {new Date(msg.timestamp).toLocaleTimeString()}
+              </span>
+              <span style={{ flex: 1 }}></span>
+              {edit ? (
+                <SaveOutlined
+                  onClick={() => {
+                    msg.text = message;
+                    chat?.setMessage(msg);
+                    setEdit(false);
+                  }}
+                  style={{ marginLeft: "16px" }}
+                />
+              ) : (
+                <></>
+              )}
+              <span style={{ marginLeft: "16px" }}></span>
+              <EditOutlined
+                onClick={() => {
+                  if (!edit) setMessage(msg.text);
+                  setEdit(!edit);
+                }}
+              />
+              <span style={{ marginLeft: "16px" }}></span>
+              <CopyToClipboard text={msg.text}>
+                <CopyOutlined />
+              </CopyToClipboard>
+              <span style={{ marginLeft: "16px" }}></span>
+              <RollbackOutlined
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  rBak(msg);
+                }}
+              />
+              <span style={{ marginLeft: "30px" }}></span>
+              <DeleteOutlined
+                style={{ cursor: "pointer" }}
+                onClick={(e) => {
+                  onDel(msg);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
