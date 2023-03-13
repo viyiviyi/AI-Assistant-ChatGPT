@@ -10,7 +10,7 @@ import {
 } from "@ant-design/icons";
 import { Message, Topic } from "@/Models/DataBase";
 import { ChatManagement } from "@/core/ChatManagement";
-import { Avatar, Collapse, Popover, theme } from "antd";
+import { Avatar, Collapse, GlobalToken, Popover, theme } from "antd";
 import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 
 const { Panel } = Collapse;
@@ -18,29 +18,29 @@ export const ChatMessage = ({
   chat,
   rBak,
   onDel,
-  onSkip,
 }: {
   chat?: ChatManagement;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
-  onSkip: (v: Message) => void;
 }) => {
   const { token } = theme.useToken();
-  const panelStyle = {
-    marginBottom: 24,
-    background: token.colorBgContainer,
-    borderRadius: token.borderRadiusLG,
-    border: "none",
-  };
+  const [activeKeys, setActiveKeys] = useState([
+    ...(chat?.topic.map((v) => v.id) || []),
+  ]);
   if (!chat) return <></>;
-  function Topic(topic: Topic) {
+  function rendTopic(topic: Topic,idx:number) {
     let messages = chat?.getMessages().filter((f) => f.topicId === topic.id);
     if (messages?.length) {
       return (
         <Panel
           header={topic.name + " " + topic.createdAt.toLocaleString()}
-          key={topic.id}
-          style={panelStyle}
+          key={idx}
+          style={{
+            marginBottom: 24,
+            background: token.colorBgContainer,
+            borderRadius: token.borderRadiusLG,
+            border: "none",
+          }}
         >
           {chat
             ?.getMessages()
@@ -51,6 +51,7 @@ export const ChatMessage = ({
     }
     return <></>;
   }
+
   function Messages(msg: Message, idx: number) {
     return (
       <div
@@ -68,7 +69,7 @@ export const ChatMessage = ({
             flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
           }}
         >
-          <Avatar style={{minWidth:'32px'}} icon={<UserOutlined />} />
+          <Avatar style={{ minWidth: "32px" }} icon={<UserOutlined />} />
           <div
             style={{
               display: "flex",
@@ -147,7 +148,7 @@ export const ChatMessage = ({
       )}
       style={{ background: token.colorBgContainer }}
     >
-      {chat.topic.map(Topic)}
+      {chat.topic.map(rendTopic)}
     </Collapse>
   );
 };

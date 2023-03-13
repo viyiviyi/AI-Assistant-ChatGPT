@@ -8,6 +8,8 @@ import {
   SettingOutlined,
   UnorderedListOutlined,
   SendOutlined,
+  MessageOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import { Modal } from "@/components/Modal";
 import { AssistantSetting } from "@/components/AssistantSetting";
@@ -167,7 +169,6 @@ export default function Home() {
           onDel={(m) => {
             deleteChatMsg(m);
           }}
-          onSkip={(m) => {}}
           rBak={(v) => {
             setmessageInput((m) => (m ? m + "\n\n" : m) + v.text);
             inputRef.current?.focus();
@@ -195,7 +196,7 @@ export default function Home() {
             justifyContent: "flex-end",
             display: "flex",
             alignItems: "center",
-            marginBottom: "1px",
+            marginBottom: "2px",
           }}
         >
           <Checkbox
@@ -212,14 +213,16 @@ export default function Home() {
             onClick={() => {
               setlistIsShow(true);
             }}
-            style={{ marginLeft: "10px" }}
+            style={{ marginLeft: "10px", marginRight: "10px" }}
           />
-          <Button shape="circle" onClick={() => onSubmit(false)}>
-            #
-          </Button>
           <Button
             shape="circle"
-            icon={<SendOutlined />}
+            icon={<CommentOutlined />}
+            onClick={() => onSubmit(false)}
+          ></Button>
+          <Button
+            shape="circle"
+            icon={<MessageOutlined />}
             onClick={() => onSubmit(true)}
           ></Button>
         </Space>
