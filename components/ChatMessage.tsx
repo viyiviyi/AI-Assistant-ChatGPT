@@ -5,6 +5,7 @@ import { MarkdownView } from "./MarkdownView";
 import {
   CopyOutlined,
   DeleteOutlined,
+  EditOutlined,
   FunnelPlotOutlined,
   RollbackOutlined,
 } from "@ant-design/icons";
@@ -28,7 +29,7 @@ export const ChatMessage = ({
     ...(chat?.topic.map((v) => v.id) || []),
   ]);
   if (!chat) return <></>;
-  function rendTopic(topic: Topic,idx:number) {
+  function rendTopic(topic: Topic, idx: number) {
     let messages = chat?.getMessages().filter((f) => f.topicId === topic.id);
     if (messages?.length) {
       return (
@@ -45,14 +46,14 @@ export const ChatMessage = ({
           {chat
             ?.getMessages()
             .filter((f) => f.topicId === topic.id)
-            .map(Messages)}
+            .map((v, i) => Messages(v, i))}
         </Panel>
       );
     }
     return <div key={idx}></div>;
   }
 
-  function Messages(msg: Message, idx: number) {
+  function Messages(msg: Message, idx: number, onEdit?: (msg: string) => void) {
     return (
       <div
         key={idx}
@@ -65,11 +66,14 @@ export const ChatMessage = ({
           style={{
             flex: 1,
             display: "flex",
-            maxWidth: "calc(100% - 64px)",
+            maxWidth: "calc(100% - 48px)",
             flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
           }}
         >
-          <Avatar style={{ width: "32px",height:'32px' }} icon={<UserOutlined />} />
+          <Avatar
+            style={{ width: "32px", height: "32px" }}
+            icon={<UserOutlined />}
+          />
           <div
             style={{
               display: "flex",
@@ -114,6 +118,8 @@ export const ChatMessage = ({
               >
                 <span style={{ marginLeft: "10px" }}></span>
                 <span>{new Date(msg.timestamp).toLocaleString()}</span>
+                <span style={{ marginLeft: "16px" }}></span>
+                <EditOutlined />
                 <span style={{ marginLeft: "16px" }}></span>
                 <CopyToClipboard text={msg.text}>
                   <CopyOutlined />

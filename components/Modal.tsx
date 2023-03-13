@@ -1,3 +1,4 @@
+import { theme } from "antd";
 import { ReactElement, useEffect } from "react";
 
 export const Modal = ({
@@ -9,6 +10,7 @@ export const Modal = ({
   children: ReactElement<any, any>;
   onCancel?: () => void;
 }) => {
+  const { token } = theme.useToken();
   return (
     <>
       {isShow ? (
@@ -22,10 +24,19 @@ export const Modal = ({
             height: "100vh",
             display: "flex",
             justifyContent: "center",
+            backgroundColor: token.colorBgMask,
             alignItems: "center",
           }}
         >
-          {children}
+          <div
+            style={{
+              padding: token.paddingSM,
+              backgroundColor: token.colorBgElevated,
+              borderRadius: token.borderRadiusLG,
+            }}
+          >
+            {children}
+          </div>
         </div>
       ) : (
         ""

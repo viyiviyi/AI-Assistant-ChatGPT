@@ -18,6 +18,7 @@ import { ChatManagement } from "@/core/ChatManagement";
 import { ChatList } from "@/components/ChatList";
 import { Message } from "@/Models/DataBase";
 import { Layout, theme, Button, Input, Space, Checkbox, Select } from "antd";
+import { Setting } from "@/components/Setting";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -138,7 +139,7 @@ export default function Home() {
       style={{
         display: "flex",
         flexDirection: "column",
-        minHeight: "100%",
+        height: "100%",
         maxHeight: "100%",
         backgroundColor: token.colorBgContainer,
       }}
@@ -252,6 +253,9 @@ export default function Home() {
           />
         </div>
       </div>
+      <Modal isShow={false}>
+        <Setting chatMgt={chatMgt[0]}></Setting>
+      </Modal>
       <Modal
         isShow={settingIsShow}
         onCancel={() => {
