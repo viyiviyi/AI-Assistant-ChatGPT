@@ -4,13 +4,20 @@ import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import { useRouter } from "next/router";
 import { ChatMessage } from "@/components/ChatMessage";
-import { SettingOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import {
+  SettingOutlined,
+  UnorderedListOutlined,
+  SendOutlined,
+} from "@ant-design/icons";
 import { Modal } from "@/components/Modal";
 import { AssistantSetting } from "@/components/AssistantSetting";
 import { KeyValueData } from "@/core/KeyValueData";
 import { CahtManagement } from "@/core/ChatManagement";
 import { ChatList } from "@/components/ChatList";
 import { Message } from "@/Models/DataBase";
+import { Layout, theme, Button, Input, Space, Checkbox, Select } from "antd";
+
+const { Header, Content, Footer, Sider } = Layout;
 
 function scrollToBotton() {
   setTimeout(() => {
@@ -35,7 +42,7 @@ let models = [
 
 export default function Home() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [chatMgt, setChatMgt] = useState<CahtManagement[]>([]);
   const [messageInput, setmessageInput] = useState("");
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
@@ -73,7 +80,7 @@ export default function Home() {
    */
   async function onSubmit(isPush: boolean) {
     if (!isPush) chatMgt[0]!.newTopic(messageInput);
-    await chatMgt[0]?.pushMessage(messageInput, isPush);
+    await chatMgt[0]?.pushMessage(messageInput, false);
     setmessageInput("");
     if (!chatMgt[0]?.getAskContext().length) return;
     setLoading(true);
@@ -122,7 +129,7 @@ export default function Home() {
     }, 0);
   };
   return (
-    <div
+    <Layout
       style={{
         display: "flex",
         flexDirection: "column",
@@ -133,47 +140,24 @@ export default function Home() {
       <Head>
         <title>助手 bot</title>
       </Head>
-      <div className={style.header}>
-        <select
-          style={{ height: "2em" }}
+      <Space
+        wrap={false}
+        style={{
+          width: "100%",
+          justifyContent: "flex-start",
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "1px",
+          padding: "10px 10px 10px",
+        }}
+      >
+        <Select
+          style={{ width: "160px" }}
           defaultValue={chatMgt[0]?.gptConfig.model}
-          onChange={(e) => {
-            chatMgt[0]!.gptConfig.model = e.target.value
-            setChatMgt([...chatMgt]);
-          }}
-        >
-          {models.map((v, i) => (
-            <option value={v} key={i}>
-              {v}
-            </option>
-          ))}
-        </select>
-        <span style={{ marginLeft: "10px" }}></span>
-        <input
-          type="checkbox"
-          name="assistant.enable"
-          id="assistant.enable"
-          style={{ cursor: "pointer" }}
-          defaultChecked={chatMgt[0]?.config.enableVirtualRole}
-          onChange={(e) => {
-            chatMgt[0]!.config.enableVirtualRole = e.target.checked;
-            setChatMgt([...chatMgt]);
-          }}
+          options={models.map((v) => ({ value: v, label: v }))}
         />
-        <label style={{ cursor: "pointer" }} htmlFor="assistant.enable">
-          助理模式
-        </label>
-        <span style={{ marginLeft: "10px" }}></span>
-        <SettingOutlined onClick={() => setSettingShow(true)} />
-        <span style={{ flex: 1 }}></span>
-        <UnorderedListOutlined
-          onClick={() => {
-            setlistIsShow(true);
-          }}
-          style={{ marginLeft: "10px" }}
-        />
-      </div>
-      <div className={style.content} id="content">
+      </Space>
+      <Content id="content" style={{ overflow: "auto" }}>
         <ChatMessage
           chat={chatMgt[0]}
           onDel={(m) => {
@@ -182,7 +166,7 @@ export default function Home() {
           onSkip={(m) => {}}
           rBak={(v) => setmessageInput((m) => (m ? m + "\n\n" : m) + v.text)}
         />
-      </div>
+      </Content>
       <div className={style.loading}>
         {loading ? (
           <div className={style.loading}>
@@ -196,18 +180,54 @@ export default function Home() {
           <div className={style.loading}></div>
         )}
       </div>
-      <main className={style.main}>
-        <form>
-          <textarea
+      <div style={{ width: "100%", padding: "0px 10px 25px" }}>
+        <Space
+          wrap={false}
+          style={{
+            width: "100%",
+            justifyContent: "flex-end",
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "1px",
+          }}
+        >
+          <Checkbox
+            checked={chatMgt[0]?.config.enableVirtualRole}
+            onChange={(e) => {
+              chatMgt[0]!.config.enableVirtualRole = e.target.checked;
+              setChatMgt([...chatMgt]);
+            }}
+          >
+            {"助理"}
+          </Checkbox>
+          <SettingOutlined onClick={() => setSettingShow(true)} />
+          <UnorderedListOutlined
+            onClick={() => {
+              setlistIsShow(true);
+            }}
+            style={{ marginLeft: "10px" }}
+          />
+          <Button shape="circle" onClick={() => onSubmit(false)}>
+            #
+          </Button>
+          <Button
+            shape="circle"
+            icon={<SendOutlined />}
+            onClick={() => onSubmit(true)}
+          ></Button>
+        </Space>
+        <div style={{ width: "100%" }}>
+          <Input.TextArea
+            placeholder="使用 Alt S 或 Ctrl Enter 发送内容"
+            autoSize
+            allowClear
             autoFocus={true}
-            className={style.textdeitor}
-            name="message"
-            placeholder="Enter an message"
             value={messageInput}
+            style={{ flex: 1 }}
             onChange={(e) => setmessageInput(e.target.value)}
             onKeyUp={(e) =>
               (e.key === "s" && e.altKey && onSubmit(true)) ||
-              (e.key === "Enter" && e.ctrlKey && onSubmit(false))
+              (e.key === "Enter" && e.ctrlKey && onSubmit(true))
             }
             onKeyDown={(e) =>
               e.key === "Tab" &&
@@ -218,29 +238,9 @@ export default function Home() {
                 e.currentTarget
               ))
             }
-          ></textarea>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <button
-              type="button"
-              onClick={() => onSubmit(true)}
-              style={{ marginBottom: "5px" }}
-            >
-              对话
-              <br />
-              <span style={{ fontSize: "12px" }}>Alt S</span>
-            </button>
-            <button
-              type="button"
-              value={"提交\nCtrl Enter"}
-              onClick={() => onSubmit(false)}
-            >
-              提交
-              <br />
-              <span style={{ fontSize: "12px" }}>Ctrl Enter</span>
-            </button>
-          </div>
-        </form>
-      </main>
+          />
+        </div>
+      </div>
       <Modal
         isShow={settingIsShow}
         onCancel={() => {
@@ -278,6 +278,6 @@ export default function Home() {
           }}
         ></ChatList>
       </Modal>
-    </div>
+    </Layout>
   );
 }

@@ -191,14 +191,6 @@ export class CahtManagement {
     let delIdx = this.messages.findIndex((f) => f.id === message.id);
     if (delIdx !== -1) {
       this.messages.splice(delIdx, 1);
-      if (
-        this.topic.length > 1 &&
-        this.messages.length &&
-        this.messages.slice(-1)[0].topicId !== message.topicId
-      ) {
-        let d = this.topic.findIndex((f) => f.id === message.topicId);
-        if (d !== -1) this.topic.splice(d, 1);
-      }
     }
   }
   async remove() {}

@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { MarkdownView } from "./MarkdownView";
-import style from "../styles/index.module.css";
+// import style from "../styles/index.module.css";
 import {
   CopyOutlined,
   DeleteOutlined,
   FunnelPlotOutlined,
   RollbackOutlined,
 } from "@ant-design/icons";
-import { Message } from "@/Models/DataBase";
+import { Message, Topic } from "@/Models/DataBase";
 import { CahtManagement } from "@/core/ChatManagement";
+import { Avatar, Collapse, Popover, theme } from "antd";
+import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 
+const { Panel } = Collapse;
 export const ChatMessage = ({
   chat,
   rBak,
@@ -22,78 +25,119 @@ export const ChatMessage = ({
   onDel: (v: Message) => void;
   onSkip: (v: Message) => void;
 }) => {
+  const { token } = theme.useToken();
+  const panelStyle = {
+    marginBottom: 24,
+    background: token.colorFillAlter,
+    borderRadius: token.borderRadiusLG,
+    border: "none",
+  };
   if (!chat) return <></>;
-  let lastTopicId = chat.topic[0].id;
-  function Topic(topicId: string) {
-    if (lastTopicId != topicId) {
-      lastTopicId = topicId;
+  function Topic(topic: Topic) {
+    let messages = chat?.getMessages().filter((f) => f.topicId === topic.id);
+    if (messages?.length) {
       return (
-        <div
-          style={{
-            height: "15px",
-            marginBottom: "15px",
-            borderBottom: "2px dotted #fa6",
-          }}
-        ></div>
+        <Panel
+          header={topic.name + " " + topic.createdAt.toLocaleString()}
+          key={topic.id}
+          style={panelStyle}
+        >
+          {chat
+            ?.getMessages()
+            .filter((f) => f.topicId === topic.id)
+            .map(Messages)}
+        </Panel>
       );
     }
     return <></>;
   }
-  return (
-    <>
-      {chat.getMessages().map((msg, idx) => {
-        return (
-          <>
-            {Topic(msg.topicId)}
-            <div className={style.message} key={idx}>
+  function Messages(msg: Message, idx: number) {
+    return (
+      <div
+        key={idx}
+        style={{
+          display: "flex",
+          justifyContent: msg.virtualRoleId ? "flex-start" : "flex-end",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
+          }}
+        >
+          <Avatar icon={<UserOutlined />} style={{ marginRight: "10px" }} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+            }}
+          >
+            <span>
+              {msg.virtualRoleId ? chat?.virtualRole.name : chat?.user?.name}
+            </span>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                padding: "5px 10px",
+                flexDirection: "column",
+                boxSizing: "border-box",
+                borderRadius: token.borderRadiusLG,
+                border: "1px solid " + token.colorFillAlter,
+                marginBottom: "12px",
+                boxShadow: "5px 5px 8px " + token.colorFillAlter,
+              }}
+            >
+              <div>
+                <MarkdownView markdown={msg.text} />
+              </div>
               <div
                 style={{
-                  flex: 1,
                   display: "flex",
-                  flexDirection: "column",
-                  padding: "5px 10px",
-                  boxSizing: "border-box",
-                  maxWidth: "100%",
+                  borderTop: "1px solid #ccc3",
+                  justifyContent: "flex-end",
                 }}
               >
-                <div className={style.message__header}></div>
-                <div className={style.message__body}>
-                  <MarkdownView markdown={msg.text} />
-                </div>
-                <div className={style.message__footer}>
-                  <span className={style.message__nickname}>
-                    {msg.virtualRoleId
-                      ? chat.virtualRole.name
-                      : chat.user?.name}
-                  </span>
-                  <span style={{ marginLeft: "10px" }}></span>
-                  <span className={style.message__timestamp}>
-                    {new Date(msg.timestamp).toLocaleString()}
-                  </span>
-                  <span style={{ marginLeft: "10px" }}></span>
-                  <CopyToClipboard text={msg.text}>
-                    <CopyOutlined />
-                  </CopyToClipboard>
-                  <span style={{ marginLeft: "10px" }}></span>
-                  <RollbackOutlined
-                    style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      rBak(msg);
-                    }}
-                  />
-                  <span style={{ marginLeft: "10px", flex: 1 }}></span>
-                  <DeleteOutlined
-                    style={{ cursor: "pointer" }}
-                    onClick={(e) => {
-                      onDel(msg);
-                    }}
-                  />
-                </div>
+                <span style={{ marginLeft: "10px" }}></span>
+                <span>{new Date(msg.timestamp).toLocaleString()}</span>
+                <span style={{ marginLeft: "16px" }}></span>
+                <CopyToClipboard text={msg.text}>
+                  <CopyOutlined />
+                </CopyToClipboard>
+                <span style={{ marginLeft: "16px" }}></span>
+                <RollbackOutlined
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    rBak(msg);
+                  }}
+                />
+                <span style={{ marginLeft: "30px" }}></span>
+                <DeleteOutlined
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => {
+                    onDel(msg);
+                  }}
+                />
               </div>
             </div>
-          </>
-        );
-      })}
-    </>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <Collapse
+      bordered={false}
+      defaultActiveKey={[chat.topic.slice(-1)[0].id]}
+      expandIcon={({ isActive }) => (
+        <CaretRightOutlined rotate={isActive ? 90 : 0} />
+      )}
+      style={{ background: token.colorBgContainer }}
+    >
+      {chat.topic.map(Topic)}
+    </Collapse>
   );
 };
