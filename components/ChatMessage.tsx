@@ -69,7 +69,7 @@ export const ChatMessage = ({
             flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
           }}
         >
-          <Avatar style={{ minWidth: "32px" }} icon={<UserOutlined />} />
+          <Avatar style={{ width: "32px",height:'32px' }} icon={<UserOutlined />} />
           <div
             style={{
               display: "flex",
