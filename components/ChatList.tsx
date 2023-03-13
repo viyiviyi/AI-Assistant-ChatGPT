@@ -1,20 +1,20 @@
-import { CahtManagement } from "@/core/ChatManagement";
+import { ChatManagement } from "@/core/ChatManagement";
 import style from "../styles/chat-list.module.css";
 export const ChatList = ({
   onSelected,
   onCacle,
 }: {
   onCacle: () => void;
-  onSelected: (chatMgt: CahtManagement) => void;
+  onSelected: (chatMgt: ChatManagement) => void;
 }) => {
   async function create() {
-    await CahtManagement.provide().then(onSelected);
+    await ChatManagement.provide().then(onSelected);
   }
   return (
     <>
       <div className={style.listWrap} onClick={e=>e.stopPropagation()}>
         <div className={style.list}>
-          {CahtManagement.getList().map((v, idx) => (
+          {ChatManagement.getList().map((v, idx) => (
             <div className={style.item} key={idx} onClick={() => onSelected(v)}>
               <div></div>
               <div>

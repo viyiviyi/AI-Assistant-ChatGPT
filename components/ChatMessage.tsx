@@ -9,7 +9,7 @@ import {
   RollbackOutlined,
 } from "@ant-design/icons";
 import { Message, Topic } from "@/Models/DataBase";
-import { CahtManagement } from "@/core/ChatManagement";
+import { ChatManagement } from "@/core/ChatManagement";
 import { Avatar, Collapse, Popover, theme } from "antd";
 import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 
@@ -20,7 +20,7 @@ export const ChatMessage = ({
   onDel,
   onSkip,
 }: {
-  chat?: CahtManagement;
+  chat?: ChatManagement;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   onSkip: (v: Message) => void;
@@ -28,7 +28,7 @@ export const ChatMessage = ({
   const { token } = theme.useToken();
   const panelStyle = {
     marginBottom: 24,
-    background: token.colorFillAlter,
+    background: token.colorBgContainer,
     borderRadius: token.borderRadiusLG,
     border: "none",
   };
@@ -67,7 +67,7 @@ export const ChatMessage = ({
             flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
           }}
         >
-          <Avatar icon={<UserOutlined />} style={{ marginRight: "10px" }} />
+          <Avatar icon={<UserOutlined />} />
           <div
             style={{
               display: "flex",
@@ -75,9 +75,18 @@ export const ChatMessage = ({
               flex: 1,
             }}
           >
-            <span>
-              {msg.virtualRoleId ? chat?.virtualRole.name : chat?.user?.name}
-            </span>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                padding: "0 5px",
+                flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
+              }}
+            >
+              <span>
+                {msg.virtualRoleId ? chat?.virtualRole.name : chat?.user?.name}
+              </span>
+            </div>
             <div
               style={{
                 flex: 1,
@@ -87,8 +96,9 @@ export const ChatMessage = ({
                 boxSizing: "border-box",
                 borderRadius: token.borderRadiusLG,
                 border: "1px solid " + token.colorFillAlter,
+                backgroundColor: token.colorFillContent,
                 marginBottom: "12px",
-                boxShadow: "5px 5px 8px " + token.colorFillAlter,
+                boxShadow: token.boxShadowTertiary
               }}
             >
               <div>
@@ -111,7 +121,7 @@ export const ChatMessage = ({
                 <RollbackOutlined
                   style={{ cursor: "pointer" }}
                   onClick={() => {
-                    rBak(msg);
+                      rBak(msg);
                   }}
                 />
                 <span style={{ marginLeft: "30px" }}></span>

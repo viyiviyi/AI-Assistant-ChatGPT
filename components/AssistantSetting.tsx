@@ -1,19 +1,18 @@
 import { useState } from "react";
+import { ChatManagement } from "@/core/ChatManagement";
 
 export const AssistantSetting = ({
-  name,
-  propPrefix,
+  chatMgt,
   onOk,
   onCacle,
 }: {
-  name: string;
-  propPrefix: string;
+  chatMgt?: ChatManagement;
   onOk: (value: { name: string; prefix: string; msgCount: number }) => void;
   onCacle: () => void;
 }) => {
-  const [assistanName, setName] = useState(name);
-  const [prefix, setPrefix] = useState(propPrefix);
-  const [msgCount, setMsgCount] = useState(4);
+  const [assistanName, setName] = useState(chatMgt?.virtualRole.name || "");
+  const [prefix, setPrefix] = useState(chatMgt?.virtualRole.bio || "");
+  const [msgCount, setMsgCount] = useState(chatMgt?.gptConfig.msgCount || 4);
 
   return (
     <div
@@ -24,7 +23,7 @@ export const AssistantSetting = ({
         backgroundColor: "rgb(var(--background-start-rgb))",
         border: "1px solid rgb(var(--foreground-rgb))",
       }}
-      onClick={e=>e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
     >
       <div style={{ display: "flex", marginBottom: "15px" }}>
         <span>助理名称:</span>

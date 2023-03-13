@@ -47,7 +47,7 @@ function getUuid() {
     return (c === "x" ? random : (random & 0x3) | 0x8).toString(16);
   });
 }
-export class CahtManagement {
+export class ChatManagement {
   keyValData: KeyValueData;
   constructor(groupName: string) {
     this.keyValData = new KeyValueData(localStorage);
@@ -73,8 +73,14 @@ export class CahtManagement {
       id: getUuid(),
       name: groupName,
     };
+    this.user = {
+      id: getUuid(),
+      name: "user",
+      bio: "",
+      avatar: "",
+    };
   }
-  readonly user: User | undefined;
+  readonly user: User;
   readonly virtualRole: VirtualRole;
   readonly topic: Topic[] = [];
   private readonly messages: Message[] = [];
@@ -94,27 +100,27 @@ export class CahtManagement {
   static async provide(
     groupId?: string,
     groupName = "新对话"
-  ): Promise<CahtManagement> {
+  ): Promise<ChatManagement> {
     if (groupId) {
-      let chat = CahtManagement.chatList.find((f) => f.group.id === groupId);
+      let chat = ChatManagement.chatList.find((f) => f.group.id === groupId);
       if (chat) return chat;
     }
     if (groupName == "default") {
-      const defaultChat = CahtManagement.chatList.find(
+      const defaultChat = ChatManagement.chatList.find(
         (f) => f.group.name === "default"
       );
       if (defaultChat) return defaultChat;
     }
-    const chat = new CahtManagement(groupName);
-    CahtManagement.chatList.push(chat);
+    const chat = new ChatManagement(groupName);
+    ChatManagement.chatList.push(chat);
     return chat;
   }
-  private static readonly chatList: CahtManagement[] = [];
+  private static readonly chatList: ChatManagement[] = [];
   static async list(): Promise<Group[]> {
     // 暂时这样写，等把数据库功能完成后从数据库获取
-    return CahtManagement.chatList.map((v) => v.group);
+    return ChatManagement.chatList.map((v) => v.group);
   }
-  static getList(): CahtManagement[] {
+  static getList(): ChatManagement[] {
     return this.chatList;
   }
   private static async create(name = "new Caht"): Promise<Group> {
@@ -160,6 +166,11 @@ export class CahtManagement {
     }
     this.virtualRole.name = name;
     this.virtualRole.bio = bio;
+  }
+  setGptConfig(config: { [key in keyof GptConfig]?: any }) {
+    config.id = this.gptConfig.id;
+    Object.assign(this.gptConfig, config);
+    console.log(this.gptConfig);
   }
   newTopic(message: string) {
     this.topic.push({

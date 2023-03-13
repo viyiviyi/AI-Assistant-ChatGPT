@@ -12,7 +12,7 @@ import {
 import { Modal } from "@/components/Modal";
 import { AssistantSetting } from "@/components/AssistantSetting";
 import { KeyValueData } from "@/core/KeyValueData";
-import { CahtManagement } from "@/core/ChatManagement";
+import { ChatManagement } from "@/core/ChatManagement";
 import { ChatList } from "@/components/ChatList";
 import { Message } from "@/Models/DataBase";
 import { Layout, theme, Button, Input, Space, Checkbox, Select } from "antd";
@@ -41,20 +41,23 @@ let models = [
 ];
 
 export default function Home() {
+  const { token } = theme.useToken();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [chatMgt, setChatMgt] = useState<CahtManagement[]>([]);
+  const inputRef = React.createRef<HTMLInputElement>();
+  const [loading, setLoading] = useState(false);
+  const [chatMgt, setChatMgt] = useState<ChatManagement[]>([]);
   const [messageInput, setmessageInput] = useState("");
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
+
   let init = useCallback(async () => {
-    let ls = await CahtManagement.list();
-    let chatMgt: CahtManagement;
+    let ls = await ChatManagement.list();
+    let chatMgt: ChatManagement;
     if (ls.length == 0) {
-      chatMgt = await CahtManagement.provide("", "default");
+      chatMgt = await ChatManagement.provide("", "default");
     } else {
-      chatMgt = await CahtManagement.provide(ls.slice(-1)[0].id);
+      chatMgt = await ChatManagement.provide(ls.slice(-1)[0].id);
     }
     const data = new KeyValueData(localStorage);
     if (!data.getAutoToken()) router.push("/login");
@@ -135,6 +138,7 @@ export default function Home() {
         flexDirection: "column",
         minHeight: "100%",
         maxHeight: "100%",
+        backgroundColor: token.colorBgContainer,
       }}
     >
       <Head>
@@ -153,7 +157,7 @@ export default function Home() {
       >
         <Select
           style={{ width: "160px" }}
-          defaultValue={chatMgt[0]?.gptConfig.model}
+          defaultValue={chatMgt[0]?.gptConfig.model || models[0]}
           options={models.map((v) => ({ value: v, label: v }))}
         />
       </Space>
@@ -164,7 +168,10 @@ export default function Home() {
             deleteChatMsg(m);
           }}
           onSkip={(m) => {}}
-          rBak={(v) => setmessageInput((m) => (m ? m + "\n\n" : m) + v.text)}
+          rBak={(v) => {
+            setmessageInput((m) => (m ? m + "\n\n" : m) + v.text);
+            inputRef.current?.focus();
+          }}
         />
       </Content>
       <div className={style.loading}>
@@ -221,6 +228,7 @@ export default function Home() {
             placeholder="使用 Alt S 或 Ctrl Enter 发送内容"
             autoSize
             allowClear
+            ref={inputRef}
             autoFocus={true}
             value={messageInput}
             style={{ flex: 1 }}
@@ -249,10 +257,10 @@ export default function Home() {
       >
         {
           <AssistantSetting
-            name={chatMgt[0]?.virtualRole.name || ""}
-            propPrefix={chatMgt[0]?.virtualRole.bio || ""}
+            chatMgt={chatMgt[0]}
             onOk={(ass) => {
               chatMgt[0]?.setVirtualRoleBio(ass.name, ass.prefix);
+              chatMgt[0]?.setGptConfig({ msgCount: ass.msgCount });
               setChatMgt([...chatMgt]);
               setSettingShow(false);
             }}
