@@ -49,7 +49,7 @@ export const ChatMessage = ({
         </Panel>
       );
     }
-    return <></>;
+    return <div key={idx}></div>;
   }
 
   function Messages(msg: Message, idx: number) {

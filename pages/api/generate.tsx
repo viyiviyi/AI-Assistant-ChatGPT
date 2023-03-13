@@ -34,7 +34,7 @@ export default async function handler(
     name: string;
   }> = req.body.message || [];
   const {
-    max_tokens = 1000,
+    max_tokens = 2000,
     top_p = 1,
     user = "master",
     temperature = 0.5,
