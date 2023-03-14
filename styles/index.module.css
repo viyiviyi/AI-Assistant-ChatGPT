@@ -10,7 +10,6 @@
   width: 20px;
   height: 4px;
   margin: 0 15px;
-  background-color: var(--color3);
   animation: loading 2.5s ease-in-out infinite;
 }
 

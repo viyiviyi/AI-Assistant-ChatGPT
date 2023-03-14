@@ -12,7 +12,6 @@ import {
   CommentOutlined,
 } from "@ant-design/icons";
 import { Modal } from "@/components/Modal";
-import { AssistantSetting } from "@/components/AssistantSetting";
 import { KeyValueData } from "@/core/KeyValueData";
 import { ChatManagement } from "@/core/ChatManagement";
 import { ChatList } from "@/components/ChatList";
@@ -40,7 +39,6 @@ export default function Home() {
   const { token } = theme.useToken();
   const router = useRouter();
   const inputRef = React.createRef<HTMLInputElement>();
-  const newMsgRef = React.createRef<HTMLInputElement>();
   const [loading, setLoading] = useState(false);
   const [chatMgt, setChatMgt] = useState<ChatManagement[]>([]);
   const [messageInput, setmessageInput] = useState("");
@@ -171,11 +169,13 @@ export default function Home() {
       <div className={style.loading}>
         {loading ? (
           <div className={style.loading}>
-            <div className={style.loadingBar}></div>
-            <div className={style.loadingBar}></div>
-            <div className={style.loadingBar}></div>
-            <div className={style.loadingBar}></div>
-            <div className={style.loadingBar}></div>
+            {[0, 1, 2, 3, 4].map((v) => (
+              <div
+                key={v}
+                style={{ backgroundColor: token.colorPrimary }}
+                className={style.loadingBar}
+              ></div>
+            ))}
           </div>
         ) : (
           <div className={style.loading}></div>
@@ -245,29 +245,22 @@ export default function Home() {
           />
         </div>
       </div>
-      <Modal isShow={false}>
-        <Setting chatMgt={chatMgt[0]}></Setting>
-      </Modal>
       <Modal
         isShow={settingIsShow}
         onCancel={() => {
           setSettingShow(false);
         }}
       >
-        {
-          <AssistantSetting
-            chatMgt={chatMgt[0]}
-            onOk={(ass) => {
-              chatMgt[0]?.setVirtualRoleBio(ass.name, ass.prefix);
-              chatMgt[0]?.setGptConfig({ msgCount: ass.msgCount });
-              setChatMgt([...chatMgt]);
-              setSettingShow(false);
-            }}
-            onCacle={() => {
-              setSettingShow(false);
-            }}
-          ></AssistantSetting>
-        }
+        <Setting
+          onCancel={() => {
+            setSettingShow(false);
+          }}
+          onSaved={() => {
+            setChatMgt([...chatMgt]);
+            setSettingShow(false);
+          }}
+          chatMgt={chatMgt[0]}
+        ></Setting>
       </Modal>
       <Modal
         isShow={listIsShow}

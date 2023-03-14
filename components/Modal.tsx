@@ -29,6 +29,7 @@ export const Modal = ({
           }}
         >
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
               padding: token.paddingSM,
               backgroundColor: token.colorBgElevated,

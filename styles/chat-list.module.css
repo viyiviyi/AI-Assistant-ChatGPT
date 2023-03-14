@@ -15,8 +15,5 @@
   overflow: auto;
 }
 .listWrap {
-  border-radius: 10px;
   padding: 60px 20px 10px;
-  border: 1px solid #ddd;
-  background-color: rgb(var(--background-start-rgb));
 }
