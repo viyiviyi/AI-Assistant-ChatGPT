@@ -51,11 +51,7 @@ export class ChatManagement {
   keyValData: KeyValueData;
   constructor(groupName: string) {
     this.keyValData = new KeyValueData(localStorage);
-    this.topic.push({
-      id: getUuid(),
-      name: "new chat",
-      createdAt: new Date(),
-    });
+    this.newTopic("新话题");
     this.virtualRole = {
       id: getUuid(),
       name: this.keyValData.getAssistantName() || "助理",
@@ -85,6 +81,7 @@ export class ChatManagement {
   readonly topic: Topic[] = [];
   private readonly messages: Message[] = [];
   readonly group: Group;
+  activityTopicId!: string;
   readonly config = { enableVirtualRole: false };
   gptConfig: GptConfig = {
     id: getUuid(),
@@ -138,7 +135,7 @@ export class ChatManagement {
     name: string;
   }> {
     let ctx = this.messages
-      .filter((f) => f.topicId === this.topic.slice(-1)[0].id)
+      .filter((f) => f.topicId === this.activityTopicId)
       .slice(-this.gptConfig.msgCount)
       .map((v) => ({
         role: this.gptConfig.role,
@@ -172,12 +169,24 @@ export class ChatManagement {
     Object.assign(this.gptConfig, config);
     console.log(this.gptConfig);
   }
-  newTopic(message: string) {
-    this.topic.push({
-      id: getUuid(),
-      name: message.substring(0, 10),
-      createdAt: new Date(),
+  getMsgCountByTopic(topicId?: string): number {
+    if (!topicId) topicId = this.activityTopicId;
+    let count = 0;
+    this.messages.forEach((v) => {
+      if (v.topicId === topicId) {
+        count++;
+      }
     });
+    return count;
+  }
+  newTopic(message: string) {
+    const topic = {
+      id: getUuid(),
+      name: message.substring(0, 18),
+      createdAt: new Date(),
+    };
+    this.activityTopicId = topic.id;
+    this.topic.push(topic);
   }
   async setMessage(message: Message) {
     var item = this.messages.find((f) => f.id === message.id);
@@ -187,13 +196,20 @@ export class ChatManagement {
   }
   async pushMessage(message: string, virtualRoleMsg: boolean) {
     if (!message.trim()) return;
+    if (!this.activityTopicId) {
+      if (this.topic.length == 0) {
+        this.newTopic("新话题");
+      } else {
+        this.activityTopicId = this.topic.slice(-1)[0].id;
+      }
+    }
     let msg: Message = {
       id: getUuid(),
       timestamp: Date.now(),
       text: message.trim(),
       virtualRoleId: virtualRoleMsg ? this.virtualRole.id : undefined,
       senderId: virtualRoleMsg ? undefined : this.user?.id,
-      topicId: this.topic.slice(-1)[0].id,
+      topicId: this.activityTopicId,
       groupId: this.group.id,
     };
     this.messages.push(msg);
@@ -203,6 +219,9 @@ export class ChatManagement {
     if (delIdx !== -1) {
       this.messages.splice(delIdx, 1);
     }
+    let topics = this.topic.filter((f) => this.getMsgCountByTopic(f.id) > 0);
+    this.topic.splice(0, this.topic.length);
+    this.topic.push(...topics);
   }
   async remove() {}
 }

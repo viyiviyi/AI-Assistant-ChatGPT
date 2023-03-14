@@ -22,13 +22,6 @@ import { Setting } from "@/components/Setting";
 
 const { Header, Content, Footer, Sider } = Layout;
 
-function scrollToBotton() {
-  setTimeout(() => {
-    var div = document.getElementById("content");
-    if (div != null) div.scrollTop = div.scrollHeight;
-  }, 300);
-}
-
 let models = [
   "gpt-3.5-turbo",
   "gpt-3.5-turbo-0301",
@@ -47,12 +40,15 @@ export default function Home() {
   const { token } = theme.useToken();
   const router = useRouter();
   const inputRef = React.createRef<HTMLInputElement>();
+  const newMsgRef = React.createRef<HTMLInputElement>();
   const [loading, setLoading] = useState(false);
   const [chatMgt, setChatMgt] = useState<ChatManagement[]>([]);
   const [messageInput, setmessageInput] = useState("");
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
+
+
 
   let init = useCallback(async () => {
     let ls = await ChatManagement.list();
@@ -91,7 +87,6 @@ export default function Home() {
     if (!chatMgt[0]?.getAskContext().length) return;
     setLoading(true);
     setChatMgt([...chatMgt]);
-    scrollToBotton();
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -117,7 +112,6 @@ export default function Home() {
       chatMgt[0].pushMessage(error.message, true);
     }
     setChatMgt([...chatMgt]);
-    scrollToBotton();
     setTimeout(() => {
       setLoading(false);
     }, 500);
@@ -229,7 +223,7 @@ export default function Home() {
         </Space>
         <div style={{ width: "100%" }}>
           <Input.TextArea
-            placeholder="使用 Alt S 或 Ctrl Enter 发送内容"
+            placeholder="Alt s 继续  Ctrl Enter新话题"
             autoSize
             allowClear
             ref={inputRef}
@@ -239,7 +233,7 @@ export default function Home() {
             onChange={(e) => setmessageInput(e.target.value)}
             onKeyUp={(e) =>
               (e.key === "s" && e.altKey && onSubmit(true)) ||
-              (e.key === "Enter" && e.ctrlKey && onSubmit(true))
+              (e.key === "Enter" && e.ctrlKey && onSubmit(false))
             }
             onKeyDown={(e) =>
               e.key === "Tab" &&
