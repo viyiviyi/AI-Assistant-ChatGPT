@@ -227,7 +227,6 @@ export default function Home() {
             ref={inputRef}
             autoFocus={true}
             value={messageInput}
-            style={{ flex: 1 }}
             onChange={(e) => setmessageInput(e.target.value)}
             onKeyUp={(e) =>
               (e.key === "s" && e.altKey && onSubmit(true)) ||

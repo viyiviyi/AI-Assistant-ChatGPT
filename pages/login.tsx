@@ -1,5 +1,6 @@
-
 import { KeyValueData } from "@/core/KeyValueData";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { Button, Form, Input } from "antd";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
@@ -31,7 +32,7 @@ const Login = () => {
         setMessage(result.error.message);
         return;
       }
-      new KeyValueData(localStorage).setAutoToken(result.result)
+      new KeyValueData(localStorage).setAutoToken(result.result);
       router.back();
     });
   }
@@ -47,7 +48,7 @@ const Login = () => {
       <p style={{ textAlign: "center", padding: "20px" }}>
         {loading ? "loading..." : message}
       </p>
-      <form
+      <Form
         style={{
           width: "300px",
           padding: "20px",
@@ -55,50 +56,39 @@ const Login = () => {
           flexDirection: "column",
         }}
       >
-        <input
-          style={{
-            marginBottom: "10px",
-            lineHeight: 1.5,
-            fontSize: "16px",
-            height: "2em",
-            textIndent: "1em",
-          }}
-          autoFocus={true}
-          onChange={(e) => setUser(e.target.value)}
-          onKeyUp={(e) => e.key === "Enter" && passRef.current?.focus()}
-          type="text"
+        <Form.Item
           name="username"
-          id=""
-        />
-        <input
-          style={{
-            marginBottom: "10px",
-            lineHeight: 1.5,
-            fontSize: "16px",
-            height: "2em",
-            textIndent: "1em",
-          }}
-          ref={passRef}
-          onChange={(e) => setPass(e.target.value)}
-          onKeyUp={(e) => e.key === "Enter" && submit()}
-          type="password"
+          rules={[{ required: true, message: "Please input your Username!" }]}
+        >
+          <Input
+            onChange={(e) => setUser(e.target.value)}
+            prefix={<UserOutlined className="site-form-item-icon" />}
+            placeholder="Username"
+          />
+        </Form.Item>
+        <Form.Item
           name="password"
-          id=""
-        />
-        <input
-          style={{
-            marginBottom: "10px",
-            lineHeight: 2,
-            fontSize: "16px",
-            height: "2.5em",
-            textIndent: "1em",
-            cursor: "pointer",
-          }}
-          onClick={submit}
-          type="button"
-          value="登录"
-        />
-      </form>
+          rules={[{ required: true, message: "Please input your Password!" }]}
+        >
+          <Input
+            onChange={(e) => setPass(e.target.value)}
+            onKeyUp={(e) => e.key === "Enter" && submit()}
+            prefix={<LockOutlined className="site-form-item-icon" />}
+            type="password"
+            placeholder="Password"
+          />
+        </Form.Item>
+        <Form.Item>
+          <Button block
+            onClick={submit}
+            type="primary"
+            htmlType="submit"
+            className="login-form-button"
+          >
+            登录
+          </Button>
+        </Form.Item>
+      </Form>
     </div>
   );
 };

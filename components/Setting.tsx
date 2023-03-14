@@ -101,7 +101,7 @@ export const Setting = ({
                     </Form.Item>
                   </Form.Item>
                 ))}
-                <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面一起发生">
+                <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
                   <Button
                     type="dashed"
                     onClick={() => {
@@ -158,14 +158,14 @@ export const Setting = ({
             <Form.Item
               name="setting_apitoken"
               label="openapi token"
-              extra="当该项有值时，将从浏览器直接访问openapi，请保持网络可以访问openapi"
+              extra="当该项有值时，将从浏览器直接访问接口，请保持网络可用（功能还没写）"
             >
               <Input type="password" />
             </Form.Item>
             <Form.Item
               name="GptConfig_msgCount"
               label="上下文数量"
-              extra="对话模式下发生的最大前文数量，0表示全部"
+              extra="对话模式下发送的最大前文数量，0表示全部"
             >
               <Input.TextArea autoSize />
             </Form.Item>
