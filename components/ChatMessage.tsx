@@ -28,7 +28,7 @@ export const ChatMessage = ({
   onDel: (v: Message) => void;
 }) => {
   const { token } = theme.useToken();
-  const [activityKey, setActivityKey] = useState("");
+  const [activityKey, setActivityKey] = useState(chat?.activityTopicId);
   const newMsgRef = React.createRef<HTMLInputElement>();
   useEffect(() => {
     if (newMsgRef != null && newMsgRef.current != null)
@@ -45,7 +45,6 @@ export const ChatMessage = ({
               onClick={(e) => {
                 e.stopPropagation();
                 chat!.activityTopicId = topic.id;
-                console.log(chat!.activityTopicId);
                 setActivityKey(chat!.activityTopicId);
               }}
             >

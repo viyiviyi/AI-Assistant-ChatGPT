@@ -21,7 +21,6 @@ const Login = () => {
       body: JSON.stringify({ user, pass }),
     }).then(async (res) => {
       if (res.status != 200) {
-        console.log(await res.json());
         setLoading(false);
         setMessage("登录失败");
         return;

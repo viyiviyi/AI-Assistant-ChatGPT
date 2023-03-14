@@ -167,7 +167,6 @@ export class ChatManagement {
   setGptConfig(config: { [key in keyof GptConfig]?: any }) {
     config.id = this.gptConfig.id;
     Object.assign(this.gptConfig, config);
-    console.log(this.gptConfig);
   }
   getMsgCountByTopic(topicId?: string): number {
     if (!topicId) topicId = this.activityTopicId;
@@ -198,7 +197,7 @@ export class ChatManagement {
     if (!message.trim()) return;
     if (!this.activityTopicId) {
       if (this.topic.length == 0) {
-        this.newTopic("新话题");
+        this.newTopic(message);
       } else {
         this.activityTopicId = this.topic.slice(-1)[0].id;
       }
@@ -222,9 +221,7 @@ export class ChatManagement {
     let topics = this.topic.filter((f) => this.getMsgCountByTopic(f.id) > 0);
     this.topic.splice(0, this.topic.length);
     this.topic.push(...topics);
-    if (topics.length == 0) {
-      this.newTopic('新话题');
-    }
+    if (topics.length == 0) this.activityTopicId = "";
   }
   async remove() {}
   toJson() {
