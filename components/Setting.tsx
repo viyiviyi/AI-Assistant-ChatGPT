@@ -212,7 +212,108 @@ export const Setting = ({
           GptConfig_temperature: chatMgt?.gptConfig.temperature,
         }}
       >
-        <Tabs defaultActiveKey="1" items={items} />
+        <div
+          style={{
+            maxHeight: "70vh",
+            width: "min(90vw, 500px)",
+            overflow: "auto",
+          }}
+        >
+          <Form.Item name="virtualRole_name" label="助理名称">
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="virtualRole_bio"
+            label="助理设定"
+            extra="当助理模式开启时，所有发送的内容都将以此内容开头"
+          >
+            <Input.TextArea autoSize />
+          </Form.Item>
+          <Form.List
+            name="virtualRole_settings"
+            initialValue={chatMgt?.virtualRole.settings}
+          >
+            {(fields, { add, remove }, { errors }) => (
+              <div style={{ overflow: "auto" }}>
+                {fields.map((field, index) => (
+                  <Form.Item required={false} key={field.key}>
+                    <Form.Item
+                      {...field}
+                      validateTrigger={["onChange", "onBlur"]}
+                      noStyle
+                    >
+                      <Input
+                        placeholder="追加内容"
+                        value={chatMgt?.virtualRole.settings[index]}
+                        suffix={
+                          <MinusCircleOutlined
+                            className="dynamic-delete-button"
+                            onClick={() => {
+                              chatMgt?.virtualRole.settings.splice(index, 1);
+                              remove(field.name);
+                            }}
+                          />
+                        }
+                      />
+                    </Form.Item>
+                  </Form.Item>
+                ))}
+                <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
+                  <Button
+                    type="dashed"
+                    onClick={() => {
+                      chatMgt?.virtualRole.settings.push("");
+                      add();
+                    }}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    增加设定
+                  </Button>
+                  <Form.ErrorList errors={errors} />
+                </Form.Item>
+              </div>
+            )}
+          </Form.List>
+          <Form.Item name="user_name" label="用户名称">
+            <Input />
+          </Form.Item>
+          <Form.Item name="user_bio" label="用户简介">
+            <Input.TextArea autoSize />
+          </Form.Item>
+          <Form.Item
+            name="setting_apitoken"
+            label="openapi token"
+            extra="当该项有值时，将从浏览器直接访问接口，请保持网络可用（功能还没写）"
+          >
+            <Input type="password" />
+          </Form.Item>
+          <Form.Item
+            name="GptConfig_msgCount"
+            label="上下文数量"
+            extra="对话模式下发送的最大前文数量，0表示全部"
+          >
+            <Input.TextArea autoSize />
+          </Form.Item>
+          <Form.Item label="接口参数">
+            <Form.Item name="GptConfig_role" label="role">
+              <Radio.Group>
+                <Radio.Button value="assistant">assistant</Radio.Button>
+                <Radio.Button value="system">system</Radio.Button>
+                <Radio.Button value="user">user</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item name="GptConfig_max_tokens" label="max_tokens">
+              <InputNumber step="50" min={50} max={2048} />
+            </Form.Item>
+            <Form.Item name="GptConfig_top_p" label="top_p">
+              <InputNumber step="0.1" min={0} max={1} />
+            </Form.Item>
+            <Form.Item name="GptConfig_temperature" label="max_tokens">
+              <InputNumber step="0.1" min={0} max={1} />
+            </Form.Item>
+          </Form.Item>
+        </div>
         <Button.Group style={{ width: "100%" }}>
           <Button
             block
