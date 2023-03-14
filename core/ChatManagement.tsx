@@ -140,7 +140,7 @@ export class ChatManagement {
       .map((v) => ({
         role: this.gptConfig.role,
         content: v.text,
-        name: "user",
+        name: v.virtualRoleId ? "assistant" : "user",
       }));
 
     if (this.config.enableVirtualRole) {
@@ -150,6 +150,11 @@ export class ChatManagement {
           content: this.virtualRole.bio,
           name: "user",
         },
+        ...this.virtualRole.settings.map((v) => ({
+          role: this.gptConfig.role,
+          content: v,
+          name: "user",
+        })),
         ...ctx,
       ];
     }
