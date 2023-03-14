@@ -222,6 +222,12 @@ export class ChatManagement {
     let topics = this.topic.filter((f) => this.getMsgCountByTopic(f.id) > 0);
     this.topic.splice(0, this.topic.length);
     this.topic.push(...topics);
+    if (topics.length == 0) {
+      this.newTopic('新话题');
+    }
   }
   async remove() {}
+  toJson() {
+    return JSON.stringify(this, null, 4);
+  }
 }

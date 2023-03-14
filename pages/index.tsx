@@ -48,8 +48,6 @@ export default function Home() {
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
 
-
-
   let init = useCallback(async () => {
     let ls = await ChatManagement.list();
     let chatMgt: ChatManagement;
