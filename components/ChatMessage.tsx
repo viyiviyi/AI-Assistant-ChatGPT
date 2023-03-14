@@ -15,7 +15,7 @@ import { Avatar, Collapse, Input, theme } from "antd";
 import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 import React from "react";
 function scrollToBotton(dom: HTMLElement) {
-  dom.scrollIntoView({ behavior: 'smooth' });
+  dom.scrollIntoView({ behavior: "smooth" });
 }
 const { Panel } = Collapse;
 export const ChatMessage = ({
@@ -136,6 +136,7 @@ function MessagesBox({
         <div
           style={{
             display: "flex",
+            flex: edit ? 1 : undefined,
             maxWidth: "calc(100vw - 100px)",
             wordWrap: "break-word",
             flexDirection: "column",
