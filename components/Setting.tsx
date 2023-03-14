@@ -37,17 +37,21 @@ export const Setting = ({
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    chatMgt.virtualRole.name = values.virtualRole_name;
-    chatMgt.virtualRole.bio = values.virtualRole_bio;
-    chatMgt.virtualRole.settings =
-      values.virtualRole_settings?.filter((f) => f) || [];
+    chatMgt.setVirtualRoleBio(
+      values.virtualRole_name,
+      values.virtualRole_bio,
+      chatMgt.virtualRole.settings
+    );
+    chatMgt.setGptConfig({
+      max_tokens: values.GptConfig_max_tokens,
+      role: values.GptConfig_role,
+      msgCount: values.GptConfig_msgCount,
+      temperature: values.GptConfig_temperature,
+      top_p: values.GptConfig_top_p,
+    });
+    chatMgt.setGptConfig;
     chatMgt.user.name = values.user_name;
     chatMgt.user.bio = values.user_bio;
-    chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
-    chatMgt.gptConfig.role = values.GptConfig_role;
-    chatMgt.gptConfig.msgCount = values.GptConfig_msgCount;
-    chatMgt.gptConfig.temperature = values.GptConfig_temperature;
-    chatMgt.gptConfig.top_p = values.GptConfig_top_p;
     onSaved();
   }
   return (

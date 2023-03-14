@@ -161,11 +161,12 @@ export class ChatManagement {
     return ctx;
   }
 
-  setVirtualRoleBio(name: string, bio: string) {
+  setVirtualRoleBio(name: string, bio: string, settings: string[]) {
     if (this.group.name === "default") {
       this.keyValData.setAssistantName(name);
       this.keyValData.setAssistantPrefix(bio);
     }
+    this.virtualRole.settings = settings.filter((f) => f);
     this.virtualRole.name = name;
     this.virtualRole.bio = bio;
   }
