@@ -1,13 +1,14 @@
+pre>code{
+    display: block;
+}
 code,
 .hljs {
-  display: block;
   overflow-x: auto;
-  padding: 0.5em;
+  padding: 0.2em 0.5em;
   color: #abb2bf;
   background: #282c34;
-  line-height: 1.3;
   font-family: Consolas, "Courier New", monospace;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 .hljs-comment {
   color: #5c6370;
