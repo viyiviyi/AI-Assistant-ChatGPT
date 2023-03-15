@@ -6,6 +6,7 @@ import {
   User,
   VirtualRole,
 } from "@/Models/DataBase";
+import { Modal } from "antd";
 import { KeyValueData } from "./KeyValueData";
 function getUuid() {
   if (typeof crypto === "object") {
@@ -228,6 +229,16 @@ export class ChatManagement {
     this.topic.splice(0, this.topic.length);
     this.topic.push(...topics);
     if (topics.length == 0) this.activityTopicId = "";
+  }
+  removeTopic(topic: Topic) {
+    console.log(topic, this.topic.length);
+    let topics = this.topic.filter((f) => topic.id !== f.id);
+    this.topic.splice(0, this.topic.length);
+    this.topic.push(...topics);
+    let msgs = this.messages.filter((f) => f.topicId !== topic.id);
+    this.messages.splice(0, this.messages.length);
+    this.messages.push(...msgs);
+    console.log(this);
   }
   async remove() {}
   toJson() {

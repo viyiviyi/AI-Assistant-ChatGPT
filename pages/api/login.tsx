@@ -1,12 +1,11 @@
 import { getToken } from "@/server/liteAuth";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const users: { user: string; pass: string }[] = require("../../users.json");
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<{ result?: string; error?: { message: string } }>
 ) {
+  const users: { user: string; pass: string }[] = require("../../users.json");
   let { user, pass } = req.body;
   const u = users.find((f) => f.user === user);
   if (!u || !user) {

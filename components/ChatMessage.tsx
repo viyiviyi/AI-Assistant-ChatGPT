@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { Message, Topic } from "@/Models/DataBase";
 import { ChatManagement } from "@/core/ChatManagement";
-import { Avatar, Collapse, Input, theme } from "antd";
+import { Avatar, Collapse, Input, Popconfirm, theme, Typography } from "antd";
 import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 import React from "react";
 function scrollToBotton(dom: HTMLElement) {
@@ -28,7 +28,9 @@ export const ChatMessage = ({
   onDel: (v: Message) => void;
 }) => {
   const { token } = theme.useToken();
-  const [activityKey, setActivityKey] = useState(chat?.activityTopicId);
+  const [activityKey, setActivityKey] = useState(
+    chat ? [...chat.topic.map((v) => v.id)] : []
+  );
   const newMsgRef = React.createRef<HTMLInputElement>();
   useEffect(() => {
     if (newMsgRef != null && newMsgRef.current != null)
@@ -41,14 +43,46 @@ export const ChatMessage = ({
       return (
         <Panel
           header={
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                chat!.activityTopicId = topic.id;
-                setActivityKey(chat!.activityTopicId);
-              }}
-            >
-              {topic.name + " " + topic.createdAt.toLocaleString()}
+            <div style={{ display: "flex" }}>
+              <Typography.Title
+                editable={{ onChange: (e) => (topic.name = e) }}
+                level={5}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  let v = [...activityKey];
+                  if (v.includes(topic.id)) {
+                    v = v.filter((f) => f !== topic.id);
+                    chat!.activityTopicId = chat?.topic.slice(-1)[0].id || "";
+                  } else {
+                    chat!.activityTopicId = topic.id;
+                    v.push(topic.id);
+                  }
+                  setActivityKey(v);
+                }}
+                style={{
+                  color:
+                    chat!.activityTopicId == topic.id
+                      ? token.colorPrimary
+                      : undefined,
+                }}
+              >
+                {topic.name + " " + topic.createdAt.toLocaleString()}
+              </Typography.Title>
+              <span style={{ marginLeft: "30px" }}></span>
+              <Typography.Title level={5}>
+                <Popconfirm
+                  title="确定删除？"
+                  description="删除话题和相关消息"
+                  onConfirm={() => {
+                    chat?.removeTopic(topic);
+                    setActivityKey([...activityKey]);
+                  }}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <DeleteOutlined></DeleteOutlined>
+                </Popconfirm>
+              </Typography.Title>
             </div>
           }
           key={topic.id}
@@ -85,9 +119,8 @@ export const ChatMessage = ({
   return (
     <Collapse
       ghost
-      accordion
       bordered={false}
-      activeKey={activityKey}
+      activeKey={[...activityKey, chat.activityTopicId]}
       defaultActiveKey={chat.activityTopicId}
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />

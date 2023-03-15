@@ -24,6 +24,9 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 // 创建解析方法
 export function MarkdownView({ markdown }: { markdown: string }) {
+  if (/^</.test(markdown) && isXML(markdown)) {
+    markdown = "```xml\n" + markdown + "\n```";
+  }
   const [html, setHtml] = useState("");
   useEffect(() => {
     unified()
@@ -33,7 +36,7 @@ export function MarkdownView({ markdown }: { markdown: string }) {
       .use(remarkMath)
       .use(rehypeKatex)
       .use(rehypeHighlight, {
-        ignoreMissing:true,
+        ignoreMissing: true,
         plainText: ["txt", "text"],
         languages: {
           bash,
@@ -110,4 +113,13 @@ export function MarkdownView({ markdown }: { markdown: string }) {
       .then(setHtml);
   }, [markdown]);
   return <div dangerouslySetInnerHTML={{ __html: html }}></div>;
+}
+function isXML(str: string) {
+  try {
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(str, "text/xml");
+    return true;
+  } catch (error) {
+    return false;
+  }
 }

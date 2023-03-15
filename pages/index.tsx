@@ -92,9 +92,9 @@ export default function Home() {
         body: JSON.stringify({
           message: chatMgt[0].getAskContext(),
           model: chatMgt[0].gptConfig.model,
-          max_tokens:chatMgt[0].gptConfig.max_tokens,
-          top_p :chatMgt[0].gptConfig.top_p,
-          temperature:chatMgt[0].gptConfig.temperature,
+          max_tokens: chatMgt[0].gptConfig.max_tokens,
+          top_p: chatMgt[0].gptConfig.top_p,
+          temperature: chatMgt[0].gptConfig.temperature,
           user: "user",
           token: valueDataset?.getAutoToken(),
         }),
@@ -134,6 +134,7 @@ export default function Home() {
         flexDirection: "column",
         height: "100%",
         maxHeight: "100%",
+        color: token.colorTextBase,
         backgroundColor: token.colorBgContainer,
       }}
     >
