@@ -45,8 +45,13 @@ export default function Home() {
   const [valueDataset, setValueDataset] = useState<KeyValueData>();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   let init = useCallback(async () => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener("resize", handleResize);
     let ls = await ChatManagement.list();
     let chatMgt: ChatManagement;
     if (ls.length == 0) {
@@ -58,6 +63,9 @@ export default function Home() {
     if (!data.getAutoToken()) router.push("/login");
     setChatMgt([chatMgt]);
     setValueDataset(data);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
@@ -131,9 +139,10 @@ export default function Home() {
     <Layout
       style={{
         display: "flex",
-        flexDirection: "column",
         height: "100%",
+        flexDirection: "row",
         maxHeight: "100%",
+        flexWrap: "nowrap",
         color: token.colorTextBase,
         backgroundColor: token.colorBgContainer,
       }}
@@ -141,136 +150,158 @@ export default function Home() {
       <Head>
         <title>助手 bot</title>
       </Head>
-      <Space
-        wrap={false}
+
+      <div
         style={{
-          width: "100%",
-          justifyContent: "flex-start",
           display: "flex",
-          alignItems: "center",
-          marginBottom: "1px",
-          padding: "10px 10px 10px",
+          flex: 1,
+          flexDirection: "column",
+          height: "100%",
+          maxHeight: "100%",
         }}
       >
-        <Select
-          style={{ width: "160px" }}
-          defaultValue={chatMgt[0]?.gptConfig.model || models[0]}
-          options={models.map((v) => ({ value: v, label: v }))}
-        />
-      </Space>
-      <Content id="content" style={{ overflow: "auto" }}>
-        <ChatMessage
-          chat={chatMgt[0]}
-          onDel={(m) => {
-            deleteChatMsg(m);
-          }}
-          rBak={(v) => {
-            setmessageInput((m) => (m ? m + "\n\n" : m) + v.text);
-            inputRef.current?.focus();
-          }}
-        />
-      </Content>
-      <div className={style.loading}>
-        {loading ? (
-          <div className={style.loading}>
-            {[0, 1, 2, 3, 4].map((v) => (
-              <div
-                key={v}
-                style={{ backgroundColor: token.colorPrimary }}
-                className={style.loadingBar}
-              ></div>
-            ))}
-          </div>
-        ) : (
-          <div className={style.loading}></div>
-        )}
-      </div>
-      <div style={{ width: "100%", padding: "0px 10px 25px" }}>
         <Space
           wrap={false}
           style={{
             width: "100%",
-            justifyContent: "flex-end",
+            justifyContent: "flex-start",
             display: "flex",
             alignItems: "center",
-            marginBottom: "2px",
+            marginBottom: "1px",
+            padding: "10px 10px 10px",
           }}
         >
-          <Checkbox
-            checked={chatMgt[0]?.config.enableVirtualRole}
-            onChange={(e) => {
-              chatMgt[0]!.config.enableVirtualRole = e.target.checked;
-              setChatMgt([...chatMgt]);
+          <Select
+            style={{ width: "160px" }}
+            defaultValue={chatMgt[0]?.gptConfig.model || models[0]}
+            options={models.map((v) => ({ value: v, label: v }))}
+          />
+        </Space>
+        <Content id="content" style={{ overflow: "auto" }}>
+          <ChatMessage
+            chat={chatMgt[0]}
+            onDel={(m) => {
+              deleteChatMsg(m);
+            }}
+            rBak={(v) => {
+              setmessageInput((m) => (m ? m + "\n\n" : m) + v.text);
+              inputRef.current?.focus();
+            }}
+          />
+        </Content>
+        <div className={style.loading}>
+          {loading ? (
+            <div className={style.loading}>
+              {[0, 1, 2, 3, 4].map((v) => (
+                <div
+                  key={v}
+                  style={{ backgroundColor: token.colorPrimary }}
+                  className={style.loadingBar}
+                ></div>
+              ))}
+            </div>
+          ) : (
+            <div className={style.loading}></div>
+          )}
+        </div>
+        <div style={{ width: "100%", padding: "0px 10px 25px" }}>
+          <Space
+            wrap={false}
+            style={{
+              width: "100%",
+              justifyContent: "flex-end",
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "2px",
             }}
           >
-            {"助理"}
-          </Checkbox>
-          <SettingOutlined onClick={() => setSettingShow(true)} />
-          <UnorderedListOutlined
-            onClick={() => {
-              setlistIsShow(true);
-            }}
-            style={{ marginLeft: "10px", marginRight: "10px" }}
-          />
-          <Button
-            shape="circle"
-            icon={<CommentOutlined />}
-            onClick={() => onSubmit(false)}
-          ></Button>
-          <Button
-            shape="circle"
-            icon={<MessageOutlined />}
-            onClick={() => onSubmit(true)}
-          ></Button>
-        </Space>
-        <div style={{ width: "100%" }}>
-          <Input.TextArea
-            placeholder="Alt s 继续  Ctrl Enter新话题"
-            autoSize
-            allowClear
-            ref={inputRef}
-            autoFocus={true}
-            value={messageInput}
-            onChange={(e) => setmessageInput(e.target.value)}
-            onKeyUp={(e) =>
-              (e.key === "s" && e.altKey && onSubmit(true)) ||
-              (e.key === "Enter" && e.ctrlKey && onSubmit(false))
-            }
-            onKeyDown={(e) =>
-              e.key === "Tab" &&
-              (e.preventDefault(),
-              onTextareaTab(
-                e.currentTarget?.selectionStart,
-                e.currentTarget?.selectionEnd,
-                e.currentTarget
-              ))
-            }
-          />
+            <Checkbox
+              checked={chatMgt[0]?.config.enableVirtualRole}
+              onChange={(e) => {
+                chatMgt[0]!.config.enableVirtualRole = e.target.checked;
+                setChatMgt([...chatMgt]);
+              }}
+            >
+              {"助理"}
+            </Checkbox>
+            <SettingOutlined onClick={() => setSettingShow(true)} />
+            <UnorderedListOutlined
+              onClick={() => {
+                setlistIsShow(true);
+              }}
+              style={{ marginLeft: "10px", marginRight: "10px" }}
+            />
+            <Button
+              shape="circle"
+              icon={<CommentOutlined />}
+              onClick={() => onSubmit(false)}
+            ></Button>
+            <Button
+              shape="circle"
+              icon={<MessageOutlined />}
+              onClick={() => onSubmit(true)}
+            ></Button>
+          </Space>
+          <div style={{ width: "100%" }}>
+            <Input.TextArea
+              placeholder="Alt s 继续  Ctrl Enter新话题"
+              autoSize
+              allowClear
+              ref={inputRef}
+              autoFocus={true}
+              value={messageInput}
+              onChange={(e) => setmessageInput(e.target.value)}
+              onKeyUp={(e) =>
+                (e.key === "s" && e.altKey && onSubmit(true)) ||
+                (e.key === "Enter" && e.ctrlKey && onSubmit(false))
+              }
+              onKeyDown={(e) =>
+                e.key === "Tab" &&
+                (e.preventDefault(),
+                onTextareaTab(
+                  e.currentTarget?.selectionStart,
+                  e.currentTarget?.selectionEnd,
+                  e.currentTarget
+                ))
+              }
+            />
+          </div>
         </div>
-      </div>
-      <Modal
-        isShow={settingIsShow}
-        onCancel={() => {
-          setSettingShow(false);
-        }}
-      >
-        <Setting
+        <Modal
+          isShow={settingIsShow}
           onCancel={() => {
             setSettingShow(false);
           }}
-          onSaved={() => {
-            setChatMgt([...chatMgt]);
-            setSettingShow(false);
+        >
+          <Setting
+            onCancel={() => {
+              setSettingShow(false);
+            }}
+            onSaved={() => {
+              setChatMgt([...chatMgt]);
+              setSettingShow(false);
+            }}
+            chatMgt={chatMgt[0]}
+          ></Setting>
+        </Modal>
+        <Modal
+          isShow={listIsShow}
+          onCancel={() => {
+            setlistIsShow(false);
           }}
-          chatMgt={chatMgt[0]}
-        ></Setting>
-      </Modal>
-      <Modal
-        isShow={listIsShow}
-        onCancel={() => {
-          setlistIsShow(false);
-        }}
-      >
+        >
+          <ChatList
+            onCacle={() => {
+              setlistIsShow(false);
+            }}
+            onSelected={(mgt) => {
+              setChatMgt([mgt]);
+              setlistIsShow(false);
+            }}
+          ></ChatList>
+        </Modal>
+      </div>
+      {windowWidth > 1120 ? (
         <ChatList
           onCacle={() => {
             setlistIsShow(false);
@@ -280,7 +311,9 @@ export default function Home() {
             setlistIsShow(false);
           }}
         ></ChatList>
-      </Modal>
+      ) : (
+        <></>
+      )}
     </Layout>
   );
 }

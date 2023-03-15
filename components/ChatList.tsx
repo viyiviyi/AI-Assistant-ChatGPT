@@ -1,5 +1,12 @@
 import { ChatManagement } from "@/core/ChatManagement";
-import style from "../styles/chat-list.module.css";
+import {
+  CheckOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import { Avatar, Button, Card, theme, Typography } from "antd";
+import { useState } from "react";
 export const ChatList = ({
   onSelected,
   onCacle,
@@ -7,37 +14,115 @@ export const ChatList = ({
   onCacle: () => void;
   onSelected: (chatMgt: ChatManagement) => void;
 }) => {
+  const { token } = theme.useToken();
+  const [groups, setGroups] = useState<ChatManagement[]>(
+    ChatManagement.getList()
+  );
   async function create() {
     await ChatManagement.provide().then(onSelected);
   }
   return (
     <>
-      <div className={style.listWrap} onClick={e=>e.stopPropagation()}>
-        <div className={style.list}>
-          {ChatManagement.getList().map((v, idx) => (
-            <div className={style.item} key={idx} onClick={() => onSelected(v)}>
-              <div></div>
-              <div>
-                <span>{v.group.name + " " + v.virtualRole.name}</span>
-              </div>
-            </div>
+      <div
+        style={{
+          padding: token.paddingSM,
+          width: "min(90vw, 460px)",
+          display: "flex",
+          flexDirection: "column",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{
+            flex: 1,
+            overflow: "auto",
+            marginBottom: "20px",
+            paddingRight: "10px",
+          }}
+        >
+          {groups.map((v, idx) => (
+            <Card
+              key={idx}
+              actions={[
+                <DownloadOutlined
+                  key="download"
+                  onClick={() => {
+                    downloadJson(
+                      v.toJson(),
+                      v.group.name + "_" + v.virtualRole.name
+                    );
+                  }}
+                />,
+                <UploadOutlined key="upload" />,
+                <CheckOutlined
+                  key="selected"
+                  onClick={() => {
+                    onSelected(v);
+                  }}
+                />,
+                <DeleteOutlined
+                  key="delete"
+                  onClick={() => {
+                    v.remove().then(() => {
+                      setGroups([...ChatManagement.getList()]);
+                    });
+                  }}
+                />,
+              ]}
+              style={{ marginBottom: "20px" }}
+            >
+              <Card.Meta
+                avatar={<Avatar src={v.virtualRole.avatar} />}
+                title={
+                  <Typography.Title
+                    level={5}
+                    editable={{
+                      onChange: (val) => {
+                        v.group.name = val;
+                      },
+                    }}
+                  >
+                    {v.group.name}
+                  </Typography.Title>
+                }
+                description={v.virtualRole.name}
+              />
+            </Card>
           ))}
-
-          <div className={style.item} onClick={() => create()}>
-            <div></div>
-            <div>
-              <span>新建</span>
-            </div>
-          </div>
-          <div
-            className={style.item}
-            style={{ marginTop: "30px", justifyContent: "center" }}
-            onClick={() => onCacle()}
-          >
-            <span>关闭</span>
-          </div>
         </div>
+
+        <Button
+          block
+          onClick={(e) => {
+            e.stopPropagation();
+            create().then(() => {
+              setGroups([...ChatManagement.getList()]);
+            });
+          }}
+        >
+          <div>
+            <span>新建</span>
+          </div>
+        </Button>
+        <Button
+          block
+          style={{ marginTop: "10px", justifyContent: "center" }}
+          onClick={() => onCacle()}
+        >
+          <span>关闭</span>
+        </Button>
       </div>
     </>
   );
 };
+function downloadJson(jsonData: string, filename: string) {
+  const blob = new Blob([jsonData], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
