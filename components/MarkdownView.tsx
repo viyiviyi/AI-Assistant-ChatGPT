@@ -19,100 +19,125 @@ import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import dart from "highlight.js/lib/languages/dart";
 import remarkParse from "remark-parse";
-import { useEffect, useState } from "react";
+import { createElement, Fragment, useEffect, useState } from "react";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeReact from "rehype-react";
+import React from "react";
+import CopyToClipboard from "react-copy-to-clipboard";
+import { CopyOutlined } from "@ant-design/icons";
 
 // 创建解析方法
 export function MarkdownView({ markdown }: { markdown: string }) {
   if (/^</.test(markdown) && isXML(markdown)) {
     markdown = "```xml\n" + markdown + "\n```";
   }
-  const [html, setHtml] = useState("");
-  useEffect(() => {
-    unified()
-      .use(remarkParse)
-      .use(remarkRehype)
-      .use(remarkGfm)
-      .use(remarkMath)
-      .use(rehypeKatex)
-      .use(rehypeHighlight, {
-        ignoreMissing: true,
-        plainText: ["txt", "text"],
-        languages: {
-          bash,
-          dockerfile,
-          javascript,
-          handlebars,
-          java,
-          json,
-          nginx,
-          shell,
-          sql,
-          typescript,
-          xml,
-          yaml,
-          dart,
-        },
-      })
-      .use(rehypeSanitize, {
-        ...defaultSchema,
-        attributes: {
-          ...defaultSchema.attributes,
-          span: [
-            ...(defaultSchema.attributes?.span || []),
-            // List of all allowed tokens:
-            [
-              "className",
-              "hljs-addition",
-              "hljs-attr",
-              "hljs-attribute",
-              "hljs-built_in",
-              "hljs-bullet",
-              "hljs-char",
-              "hljs-code",
-              "hljs-comment",
-              "hljs-deletion",
-              "hljs-doctag",
-              "hljs-emphasis",
-              "hljs-formula",
-              "hljs-keyword",
-              "hljs-link",
-              "hljs-literal",
-              "hljs-meta",
-              "hljs-name",
-              "hljs-number",
-              "hljs-operator",
-              "hljs-params",
-              "hljs-property",
-              "hljs-punctuation",
-              "hljs-quote",
-              "hljs-regexp",
-              "hljs-section",
-              "hljs-selector-attr",
-              "hljs-selector-class",
-              "hljs-selector-id",
-              "hljs-selector-pseudo",
-              "hljs-selector-tag",
-              "hljs-string",
-              "hljs-strong",
-              "hljs-subst",
-              "hljs-symbol",
-              "hljs-tag",
-              "hljs-template-tag",
-              "hljs-template-variable",
-              "hljs-title",
-              "hljs-type",
-              "hljs-variable",
-            ],
+  let processor = unified()
+    .use(remarkParse)
+    .use(remarkRehype)
+    .use(remarkGfm)
+    .use(remarkMath)
+    .use(rehypeKatex)
+    .use(rehypeHighlight, {
+      ignoreMissing: true,
+      plainText: ["txt", "text"],
+      languages: {
+        bash,
+        dockerfile,
+        javascript,
+        handlebars,
+        java,
+        json,
+        nginx,
+        shell,
+        sql,
+        typescript,
+        xml,
+        yaml,
+        dart,
+      },
+    })
+    .use(rehypeSanitize, {
+      ...defaultSchema,
+      attributes: {
+        ...defaultSchema.attributes,
+        span: [
+          ...(defaultSchema.attributes?.span || []),
+          // List of all allowed tokens:
+          [
+            "className",
+            "hljs-addition",
+            "hljs-attr",
+            "hljs-attribute",
+            "hljs-built_in",
+            "hljs-bullet",
+            "hljs-char",
+            "hljs-code",
+            "hljs-comment",
+            "hljs-deletion",
+            "hljs-doctag",
+            "hljs-emphasis",
+            "hljs-formula",
+            "hljs-keyword",
+            "hljs-link",
+            "hljs-literal",
+            "hljs-meta",
+            "hljs-name",
+            "hljs-number",
+            "hljs-operator",
+            "hljs-params",
+            "hljs-property",
+            "hljs-punctuation",
+            "hljs-quote",
+            "hljs-regexp",
+            "hljs-section",
+            "hljs-selector-attr",
+            "hljs-selector-class",
+            "hljs-selector-id",
+            "hljs-selector-pseudo",
+            "hljs-selector-tag",
+            "hljs-string",
+            "hljs-strong",
+            "hljs-subst",
+            "hljs-symbol",
+            "hljs-tag",
+            "hljs-template-tag",
+            "hljs-template-variable",
+            "hljs-title",
+            "hljs-type",
+            "hljs-variable",
           ],
+        ],
+      },
+    })
+    .use(rehypeStringify)
+    .use(rehypeReact, {
+      createElement,
+      Fragment,
+      components: {
+        code: (
+          props: React.DetailedHTMLProps<
+            React.HTMLAttributes<HTMLElement>,
+            HTMLElement
+          >
+        ) => {
+          const { className, children } = props;
+          return (
+            <code
+              className={className}
+            >
+              <CopyToClipboard text={children?.toString()||''}>
+                <CopyOutlined
+                  className="code-copy"
+                />
+              </CopyToClipboard>
+              {children}
+            </code>
+          );
         },
-      })
-      .use(rehypeStringify)
-      .process(markdown)
-      .then((vfile) => String(vfile))
-      .then(setHtml);
-  }, [markdown]);
-  return <div dangerouslySetInnerHTML={{ __html: html }}></div>;
+      },
+    });
+  const renderedMarkdown = processor.processSync(markdown).result;
+  return <div>{renderedMarkdown}</div>;
 }
 function isXML(str: string) {
   try {

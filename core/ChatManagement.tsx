@@ -6,6 +6,7 @@ import {
   User,
   VirtualRole,
 } from "@/Models/DataBase";
+import { message } from "antd";
 import { KeyValueData } from "./KeyValueData";
 function getUuid() {
   if (typeof crypto === "object") {
@@ -199,7 +200,12 @@ export class ChatManagement {
       Object.assign(item, message);
     }
   }
-  async pushMessage(message: string, virtualRoleMsg: boolean) {
+  async pushMessage(
+    message: string,
+    virtualRoleMsg: boolean,
+    topicId = this.activityTopicId,
+    group = this.group.id
+  ) {
     if (!message.trim()) return;
     if (!this.activityTopicId) {
       if (this.topic.length == 0) {
@@ -214,8 +220,8 @@ export class ChatManagement {
       text: message.trim(),
       virtualRoleId: virtualRoleMsg ? this.virtualRole.id : undefined,
       senderId: virtualRoleMsg ? undefined : this.user?.id,
-      topicId: this.activityTopicId,
-      groupId: this.group.id,
+      topicId: topicId,
+      groupId: group,
     };
     this.messages.push(msg);
   }
@@ -248,6 +254,23 @@ export class ChatManagement {
     }
   }
   toJson() {
-    return JSON.stringify(this, null, 4);
+    const obj = Object.assign({}, this) as any;
+    obj.keyValData = undefined;
+    return JSON.stringify(obj, null, 4);
+  }
+  fromJson(json: string) {
+    try {
+      const obj = JSON.parse(json);
+      Object.keys(obj).forEach((key) => {
+        if (key in this) {
+          if (typeof obj[key] === "object")
+            Object.assign((this as any)[key], obj[key]);
+          else (this as any)[key] = obj[key];
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      message.error("错误的json文件");
+    }
   }
 }

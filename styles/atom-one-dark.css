@@ -1,5 +1,14 @@
-pre>code{
-    display: block;
+pre > code {
+  display: block;
+  position: relative;
+  padding-top: 1em;
+}
+.code-copy {
+  display: none;
+  position: absolute;
+  top: .5em;
+  right: .5em;
+  font-size: 1.4em;
 }
 code,
 .hljs {
@@ -9,6 +18,9 @@ code,
   background: #282c34;
   font-family: Consolas, "Courier New", monospace;
   border-radius: 4px;
+}
+pre > code:hover > .code-copy {
+  display: block;
 }
 .hljs-comment {
   color: #5c6370;

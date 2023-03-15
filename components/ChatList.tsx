@@ -3,10 +3,21 @@ import {
   CheckOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  StarOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import { Avatar, Button, Card, theme, Typography } from "antd";
+import {
+  Avatar,
+  Button,
+  Card,
+  message,
+  theme,
+  Typography,
+  Upload,
+  UploadProps,
+} from "antd";
 import { useState } from "react";
+
 export const ChatList = ({
   onSelected,
   onCacle,
@@ -21,6 +32,7 @@ export const ChatList = ({
   async function create() {
     await ChatManagement.provide().then(onSelected);
   }
+
   return (
     <>
       <div
@@ -30,7 +42,6 @@ export const ChatList = ({
           display: "flex",
           flexDirection: "column",
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         <div
           style={{
@@ -53,7 +64,26 @@ export const ChatList = ({
                     );
                   }}
                 />,
-                <UploadOutlined key="upload" />,
+                <Upload
+                  {...{
+                    beforeUpload(file, FileList) {
+                      const fr = new FileReader();
+                      fr.onloadend = (e) => {
+                        if (e.target?.result) {
+                          v.fromJson(e.target.result.toString());
+                          setGroups([...ChatManagement.getList()]);
+                          onSelected(v)
+                        }
+                      };
+                      fr.readAsText(file);
+                      return false;
+                    },
+                    defaultFileList: [],
+                    showUploadList: false,
+                  }}
+                >
+                  <UploadOutlined key="upload" />
+                </Upload>,
                 <CheckOutlined
                   key="selected"
                   onClick={() => {

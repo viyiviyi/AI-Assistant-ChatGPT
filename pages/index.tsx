@@ -92,6 +92,8 @@ export default function Home() {
     if (!chatMgt[0]?.getAskContext().length) return;
     setLoading(true);
     setChatMgt([...chatMgt]);
+    const chat = chatMgt[0];
+    const topicId = chat.activityTopicId;
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -99,11 +101,11 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: chatMgt[0].getAskContext(),
-          model: chatMgt[0].gptConfig.model,
-          max_tokens: chatMgt[0].gptConfig.max_tokens,
-          top_p: chatMgt[0].gptConfig.top_p,
-          temperature: chatMgt[0].gptConfig.temperature,
+          message: chat.getAskContext(),
+          model: chat.gptConfig.model,
+          max_tokens: chat.gptConfig.max_tokens,
+          top_p: chat.gptConfig.top_p,
+          temperature: chat.gptConfig.temperature,
           user: "user",
           token: valueDataset?.getAutoToken(),
         }),
@@ -115,9 +117,9 @@ export default function Home() {
           new Error(`Request failed with status ${response.status}`)
         );
       }
-      chatMgt[0].pushMessage(data.result, true);
+      chat.pushMessage(data.result, true,topicId);
     } catch (error: any) {
-      chatMgt[0].pushMessage(error.message, true);
+      chat.pushMessage(error.message, true,topicId);
     }
     setChatMgt([...chatMgt]);
     setTimeout(() => {
@@ -302,7 +304,7 @@ export default function Home() {
           ></ChatList>
         </Modal>
       </div>
-      {windowWidth > 1120 ? (
+      {windowWidth > 1420 ? (
         <ChatList
           onCacle={() => {
             setlistIsShow(false);

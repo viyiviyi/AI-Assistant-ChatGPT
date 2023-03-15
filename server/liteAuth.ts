@@ -1,7 +1,7 @@
 import sha1 from "sha1";
 
 function getSalt(): string {
-  if (!process.env.SALT) {
+  if (!process.env.SALT || process.env.SALT == "$SALT") {
     process.env.SALT = sha1("" + Math.random() + Date.now());
   }
   return process.env.SALT;
