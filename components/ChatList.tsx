@@ -80,6 +80,9 @@ export const ChatList = ({
                       onChange: (val) => {
                         v.group.name = val;
                       },
+                      onCancel: () => {
+                        setGroups([...ChatManagement.getList()]);
+                      },
                     }}
                   >
                     {v.group.name}

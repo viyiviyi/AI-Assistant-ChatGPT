@@ -51,6 +51,7 @@ export default function Home() {
     function handleResize() {
       setWindowWidth(window.innerWidth);
     }
+    setWindowWidth(window.innerWidth || 0);
     window.addEventListener("resize", handleResize);
     let ls = await ChatManagement.list();
     let chatMgt: ChatManagement;
