@@ -83,7 +83,7 @@ export class ChatManagement {
   private readonly messages: Message[] = [];
   readonly group: Group;
   activityTopicId!: string;
-  readonly config = { enableVirtualRole: false };
+  readonly config = { enableVirtualRole: false, saveKey: false, baseUrl: "" };
   gptConfig: GptConfig = {
     id: getUuid(),
     model: "gpt-3.5-turbo",
@@ -185,14 +185,15 @@ export class ChatManagement {
     });
     return count;
   }
-  newTopic(message: string) {
+  newTopic(message: string): Topic {
     const topic = {
       id: getUuid(),
-      name: message.substring(0, 18),
+      name: message.substring(0, 18) + " " + new Date().toLocaleString(),
       createdAt: new Date(),
     };
     this.activityTopicId = topic.id;
     this.topic.push(topic);
+    return topic;
   }
   async setMessage(message: Message) {
     var item = this.messages.find((f) => f.id === message.id);

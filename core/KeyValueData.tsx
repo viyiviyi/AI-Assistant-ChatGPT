@@ -3,9 +3,11 @@ export interface DatasetProvider {
   setItem(key: string, value: string): void;
 }
 export class KeyValueData {
+  private static _instance: KeyValueData;
   private provider: DatasetProvider;
   constructor(provider: DatasetProvider) {
     this.provider = provider;
+    KeyValueData._instance = this;
   }
   private dataKeyPrefix = "lite_chat.";
   private _AssistantName = "";
@@ -24,10 +26,10 @@ export class KeyValueData {
     if (this._AssistantPrefix) return this._AssistantPrefix;
     return (
       this.provider.getItem(this.dataKeyPrefix + "AssistantPrefix") ||
-`接下来，你将继承设定角色的所有属性！
-只能输出设定角色第一人称的台词！
-(在[]内输出动作细节!)
-设定角色:M,私人助理,主动,优雅,女性.`
+      `角色：私人助理。
+接下来，你将继承角色的所有属性！以角色的第一人称身份输出！  
+角色的行为描写在[]内！  
+不能输出角色的任何设定或属性！`
     );
   }
   setAssistantPrefix(value: string): void {
@@ -42,5 +44,17 @@ export class KeyValueData {
   setAutoToken(value: string) {
     this._autoToken = value;
     this.provider.setItem(this.dataKeyPrefix + "autoToken", value);
+  }
+  private _apiKey = "";
+  getApiKey(): string {
+    if (this._apiKey) return this._apiKey;
+    return this.provider.getItem(this.dataKeyPrefix + "ApiKey") || "";
+  }
+  setApiKey(val: string, save: boolean = true) {
+    this._apiKey = val;
+    this.provider.setItem(this.dataKeyPrefix + "ApiKey", save ? val : "");
+  }
+  static instance() {
+    return KeyValueData._instance;
   }
 }

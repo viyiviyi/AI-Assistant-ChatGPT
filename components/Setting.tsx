@@ -1,11 +1,14 @@
 import { ChatManagement } from "@/core/ChatManagement";
+import { KeyValueData } from "@/core/KeyValueData";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
+  Checkbox,
   Form,
   Input,
   InputNumber,
   Radio,
+  Switch,
   Tabs,
   TabsProps,
   theme,
@@ -33,6 +36,8 @@ export const Setting = ({
     GptConfig_max_tokens: number;
     GptConfig_top_p: number;
     GptConfig_temperature: number;
+    config_saveKey: boolean;
+    setting_baseurl: string;
   }>();
   function onSave() {
     let values = form.getFieldsValue();
@@ -52,6 +57,13 @@ export const Setting = ({
     chatMgt.setGptConfig;
     chatMgt.user.name = values.user_name;
     chatMgt.user.bio = values.user_bio;
+    chatMgt.config.saveKey = values.config_saveKey;
+    chatMgt.config.baseUrl = values.setting_baseurl;
+    KeyValueData.instance().setApiKey(
+      values.setting_apitoken,
+      values.config_saveKey
+    );
+    console.log(values);
     onSaved();
   }
   return (
@@ -66,12 +78,14 @@ export const Setting = ({
           virtualRole_settings: chatMgt?.virtualRole.settings,
           user_name: chatMgt?.user.name,
           user_bio: chatMgt?.user.bio,
-          setting_apitoken: "",
+          setting_apitoken: KeyValueData.instance().getApiKey(),
           GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
           GptConfig_role: chatMgt?.gptConfig.role,
           GptConfig_max_tokens: chatMgt?.gptConfig.max_tokens,
           GptConfig_top_p: chatMgt?.gptConfig.top_p,
           GptConfig_temperature: chatMgt?.gptConfig.temperature,
+          config_saveKey: chatMgt?.config.saveKey,
+          setting_baseurl: chatMgt?.config.baseUrl,
         }}
       >
         <div
@@ -147,9 +161,22 @@ export const Setting = ({
           <Form.Item
             name="setting_apitoken"
             label="openapi token"
-            extra="当该项有值时，将从浏览器直接访问接口，请保持网络可用（功能还没写）"
+            extra="当该项有值时，将从浏览器直接访问接口，有可能被封禁"
           >
             <Input type="password" />
+          </Form.Item>
+          <Form.Item
+            name="config_saveKey"
+            label="保存key到浏览器（不加密，请在私人设备时才勾选）"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            name="setting_baseurl"
+            label="接口访问地址"
+            extra="一般情况下填一个api代理地址"
+          >
+            <Input type="text" />
           </Form.Item>
           <Form.Item
             name="GptConfig_msgCount"
