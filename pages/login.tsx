@@ -9,7 +9,6 @@ const Login = () => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [message, setMessage] = useState("请登录");
-  const passRef = React.createRef<HTMLInputElement>();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   function submit() {

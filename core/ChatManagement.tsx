@@ -185,7 +185,7 @@ export class ChatManagement {
     });
     return count;
   }
-  newTopic(message: string) {
+  newTopic(message: string): Topic {
     const topic = {
       id: getUuid(),
       name: message.substring(0, 18),
@@ -193,6 +193,7 @@ export class ChatManagement {
     };
     this.activityTopicId = topic.id;
     this.topic.push(topic);
+    return topic;
   }
   async setMessage(message: Message) {
     var item = this.messages.find((f) => f.id === message.id);
