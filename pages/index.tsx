@@ -37,7 +37,6 @@ let models = [
 
 export default function Home() {
   const { token } = theme.useToken();
-  const router = useRouter();
   const inputRef = React.createRef<HTMLInputElement>();
   const [loading, setLoading] = useState(false);
   const [chatMgt, setChatMgt] = useState<ChatManagement[]>([]);
@@ -61,7 +60,6 @@ export default function Home() {
       chatMgt = await ChatManagement.provide(ls.slice(-1)[0].id);
     }
     const data = new KeyValueData(localStorage);
-    if (!data.getAutoToken()) router.push("/login");
     setChatMgt([chatMgt]);
     setValueDataset(data);
     return () => {
