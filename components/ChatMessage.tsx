@@ -22,15 +22,21 @@ export const ChatMessage = ({
   chat,
   rBak,
   onDel,
+  handerCloseAll,
 }: {
   chat?: ChatManagement;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
+  handerCloseAll: (closeAll: () => void) => void;
 }) => {
   const { token } = theme.useToken();
   const [activityKey, setActivityKey] = useState(
     chat ? [...chat.topic.map((v) => v.id)] : []
   );
+  const [closeAll, setCloasAll] = useState(false);
+  handerCloseAll(() => {
+    setCloasAll(true);
+  });
   const newMsgRef = React.createRef<HTMLInputElement>();
   useEffect(() => {
     if (newMsgRef != null && newMsgRef.current != null)
@@ -50,6 +56,10 @@ export const ChatMessage = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   let v = [...activityKey];
+                  if (closeAll) {
+                    v = [];
+                    setCloasAll(false);
+                  }
                   if (v.includes(topic.id)) {
                     v = v.filter((f) => f !== topic.id);
                     chat!.activityTopicId = chat?.topic.slice(-1)[0].id || "";
@@ -120,7 +130,11 @@ export const ChatMessage = ({
     <Collapse
       ghost
       bordered={false}
-      activeKey={[...activityKey, chat.activityTopicId]}
+      activeKey={
+        closeAll
+          ? []
+          : [...activityKey, chat.activityTopicId]
+      }
       defaultActiveKey={chat.activityTopicId}
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />

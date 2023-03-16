@@ -6,6 +6,7 @@ import {
   UnorderedListOutlined,
   MessageOutlined,
   CommentOutlined,
+  VerticalAlignMiddleOutlined,
 } from "@ant-design/icons";
 import style from "../styles/index.module.css";
 import { Layout, Button, Input, Space, Checkbox, Select, theme } from "antd";
@@ -50,6 +51,7 @@ export const Chat = ({
       setLoading(false);
     }, 500);
   }
+  let closeAllTopic: () => void = () => {};
   const onTextareaTab = (
     start: number,
     end: number,
@@ -61,6 +63,7 @@ export const Chat = ({
       textarea.selectionEnd = end + 4;
     }, 0);
   };
+
   return (
     <div
       style={{
@@ -98,6 +101,7 @@ export const Chat = ({
             setmessageInput((m) => (m ? m + "\n\n" : m) + v.text);
             inputRef.current?.focus();
           }}
+          handerCloseAll={(cb) => (closeAllTopic = cb)}
         />
       </Content>
       <div className={style.loading}>
@@ -126,6 +130,16 @@ export const Chat = ({
             marginBottom: "2px",
           }}
         >
+          <Button
+            shape="round"
+            size="small"
+            onClick={() => {
+              closeAllTopic();
+            }}
+          >
+            <CommentOutlined />
+            <VerticalAlignMiddleOutlined />
+          </Button>
           <Checkbox
             checked={chat?.config.enableVirtualRole}
             onChange={(e) => {

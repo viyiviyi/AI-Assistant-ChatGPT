@@ -50,7 +50,8 @@ export default async function handler(
   }
 
   try {
-    if (model.startsWith("gpt-3")) {
+      if (model.startsWith("gpt-3")) {
+        
       const completion = await openai.createChatCompletion({
         model,
         messages: message,
