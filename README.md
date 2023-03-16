@@ -6,6 +6,7 @@
 可以方便的让ChatGPT模拟虚拟角色。  
 可以灵活的修改对话内容，让ChatGPT更易于控制。
 
+可以方式 [https://litechat.22733.site](https://litechat.22733.site) 用自己的key体验
 
 ## 功能说明
 **以api调用ChatGPT与之前的不同，api的方式将不会记录状态，ChatGPT将使用接收到历史对话来获取之前的状态，这使得可以通过修改历史对话内容的方式调整ChatGPT的状态，极大的提高了可控性**
@@ -34,37 +35,6 @@
 
 可以参考这个 [https://www.kaggle.com/code/viyiviyi/lite-chat-by-chatgpt](https://www.kaggle.com/code/viyiviyi/lite-chat-by-chatgpt)
 
-1. 克隆仓库
-```shell
-git clone https://github.com/viyiviyi/ChatGPTLitePage.git
-```
-2. 安装依赖
-```shell
-cd ChatGPTLitePage
-yarn
-# or
-npm i
-```
-4. api token
-```shell
-echo "OPENAI_API_KEY="$(cat /kaggle/input/configs/openai_token.txt) > .env
-```
-5. 写入默认的访问用户名
-*简单实现，只是用来简单的限制未知用户的调用*
-```shell
-# 如果使用 npm run build + npm run start 的方式启动，此步骤需要在编译前操作 也就是 npm run build之前
-echo '[{"user": "2333","pass": "123456"}]' > users.json
-```
-6. 启动测试
-```shell
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-
----
 
 #### 助理设定方式
 **设定方式无非就是让ChatGPT在对话过程中限制以某个角色的身份行动，如果限制让ChatGPT去做不合理的内容被拒绝，如果把限制加在角色身上就会很容易**
