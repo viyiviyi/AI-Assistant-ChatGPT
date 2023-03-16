@@ -51,6 +51,6 @@ export async function sendMessageToChatGpt({
     }
     return data.choices[0].message?.content;
   } catch (error: any) {
-    return error;
+    return String(error);
   }
 }
