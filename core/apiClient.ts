@@ -21,36 +21,32 @@ export async function sendMessageToChatGpt({
   token: string;
   baseUrl?: string;
 }): Promise<string> {
-  try {
-    const response = await fetch(
-      baseUrl.replace(/\/$/, "") + "/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          stream: false,
-          temperature,
-          top_p,
-          max_tokens,
-          n: 1,
-          user,
-        }),
-      }
-    );
-
-    const data = await response.json();
-    if (response.status !== 200) {
-      throw (
-        data.error || new Error(`Request failed with status ${response.status}`)
-      );
+  const response = await fetch(
+    baseUrl.replace(/\/$/, "") + "/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: false,
+        temperature,
+        top_p,
+        max_tokens,
+        n: 1,
+        user,
+      }),
     }
-    return data.choices[0].message?.content;
-  } catch (error: any) {
-    return String(error);
+  );
+
+  const data = await response.json();
+  if (response.status !== 200) {
+    throw (
+      data.error || new Error(`Request failed with status ${response.status}`)
+    );
   }
+  return data.choices[0].message?.content;
 }

@@ -63,7 +63,6 @@ export const Setting = ({
       values.setting_apitoken,
       values.config_saveKey
     );
-    console.log(values);
     onSaved();
   }
   return (
@@ -108,7 +107,6 @@ export const Setting = ({
           </Form.Item>
           <Form.List
             name="virtualRole_settings"
-            initialValue={chatMgt?.virtualRole.settings}
           >
             {(fields, { add, remove }, { errors }) => (
               <div style={{ overflow: "auto" }}>
@@ -167,6 +165,7 @@ export const Setting = ({
           </Form.Item>
           <Form.Item
             name="config_saveKey"
+            valuePropName="checked"
             label="保存key到浏览器（不加密，请在私人设备时才勾选）"
           >
             <Switch />
