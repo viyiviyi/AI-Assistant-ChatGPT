@@ -159,11 +159,12 @@ export const Chat = ({
           }}
         >
           <Typography.Text
-            style={{ marginRight: "20px", flex: 1 }}
+            style={{ marginRight: "20px", maxWidth: "40vw" }}
             ellipsis={true}
           >
             {chat.topic.filter((f) => f.id === chat.activityTopicId)[0].name}
           </Typography.Text>
+          <span style={{ flex: 1 }}></span>
           <Button
             shape="round"
             size="small"
