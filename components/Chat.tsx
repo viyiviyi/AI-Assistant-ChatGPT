@@ -9,7 +9,16 @@ import {
   VerticalAlignMiddleOutlined,
 } from "@ant-design/icons";
 import style from "../styles/index.module.css";
-import { Layout, Button, Input, Space, Checkbox, Select, theme } from "antd";
+import {
+  Layout,
+  Button,
+  Input,
+  Space,
+  Checkbox,
+  Select,
+  theme,
+  Typography,
+} from "antd";
 import React from "react";
 import { KeyValueData } from "@/core/KeyValueData";
 import { Message } from "@/Models/DataBase";
@@ -74,14 +83,15 @@ export const Chat = ({
         maxHeight: "100%",
       }}
     >
-      <Space
-        wrap={false}
+      <div
         style={{
+          flexWrap: "nowrap",
+          gap: "10px",
           width: "100%",
-          justifyContent: "flex-start",
+          justifyContent: "flex-end",
           display: "flex",
           alignItems: "center",
-          marginBottom: "1px",
+          marginBottom: "3px",
           padding: "10px 10px 10px",
         }}
       >
@@ -90,7 +100,24 @@ export const Chat = ({
           defaultValue={chat?.gptConfig.model || models[0]}
           options={models.map((v) => ({ value: v, label: v }))}
         />
-      </Space>
+        <span style={{ flex: 1 }}></span>
+        <Checkbox
+          checked={chat?.config.enableVirtualRole}
+          onChange={(e) => {
+            chat!.config.enableVirtualRole = e.target.checked;
+            setChatMgt([...chatMgt]);
+          }}
+        >
+          {"助理"}
+        </Checkbox>
+        <SettingOutlined onClick={() => setSettingShow(true)} />
+        <UnorderedListOutlined
+          onClick={() => {
+            setlistIsShow(true);
+          }}
+          style={{ marginLeft: "10px", marginRight: "10px" }}
+        />
+      </div>
       <Content id="content" style={{ overflow: "auto" }}>
         <ChatMessage
           chat={chat}
@@ -120,16 +147,23 @@ export const Chat = ({
         )}
       </div>
       <div style={{ width: "100%", padding: "0px 10px 25px" }}>
-        <Space
-          wrap={false}
+        <div
           style={{
+            flexWrap: "nowrap",
+            gap: "10px",
             width: "100%",
             justifyContent: "flex-end",
             display: "flex",
             alignItems: "center",
-            marginBottom: "2px",
+            marginBottom: "3px",
           }}
         >
+          <Typography.Text
+            style={{ marginRight: "20px", flex: 1 }}
+            ellipsis={true}
+          >
+            {chat.topic.filter((f) => f.id === chat.activityTopicId)[0].name}
+          </Typography.Text>
           <Button
             shape="round"
             size="small"
@@ -140,22 +174,6 @@ export const Chat = ({
             <CommentOutlined />
             <VerticalAlignMiddleOutlined />
           </Button>
-          <Checkbox
-            checked={chat?.config.enableVirtualRole}
-            onChange={(e) => {
-              chat!.config.enableVirtualRole = e.target.checked;
-              setChatMgt([...chatMgt]);
-            }}
-          >
-            {"助理"}
-          </Checkbox>
-          <SettingOutlined onClick={() => setSettingShow(true)} />
-          <UnorderedListOutlined
-            onClick={() => {
-              setlistIsShow(true);
-            }}
-            style={{ marginLeft: "10px", marginRight: "10px" }}
-          />
           <Button
             shape="circle"
             icon={<CommentOutlined />}
@@ -166,7 +184,7 @@ export const Chat = ({
             icon={<MessageOutlined />}
             onClick={() => onSubmit(true)}
           ></Button>
-        </Space>
+        </div>
         <div style={{ width: "100%" }}>
           <Input.TextArea
             placeholder="Alt s 继续  Ctrl Enter新话题"

@@ -51,7 +51,12 @@ export const ChatMessage = ({
           header={
             <div style={{ display: "flex" }}>
               <Typography.Title
-                editable={{ onChange: (e) => (topic.name = e) }}
+                editable={{
+                  onChange: (e) => (topic.name = e),
+                  onCancel: () => {
+                    setActivityKey([...activityKey]);
+                  },
+                }}
                 level={5}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -76,7 +81,7 @@ export const ChatMessage = ({
                       : undefined,
                 }}
               >
-                {topic.name + " " + topic.createdAt.toLocaleString()}
+                {topic.name}
               </Typography.Title>
               <span style={{ marginLeft: "30px" }}></span>
               <Typography.Title level={5}>
@@ -130,11 +135,7 @@ export const ChatMessage = ({
     <Collapse
       ghost
       bordered={false}
-      activeKey={
-        closeAll
-          ? []
-          : [...activityKey, chat.activityTopicId]
-      }
+      activeKey={closeAll ? [] : [...activityKey, chat.activityTopicId]}
       defaultActiveKey={chat.activityTopicId}
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />
