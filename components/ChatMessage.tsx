@@ -102,7 +102,7 @@ export const ChatMessage = ({
           }
           key={topic.id}
           style={{
-            marginBottom: 24,
+            marginBottom: 4,
             background: token.colorBgContainer,
             borderRadius: token.borderRadiusLG,
             border: "none",
@@ -178,7 +178,7 @@ function MessagesBox({
         }}
       >
         <Avatar
-          style={{ width: "32px", height: "32px" }}
+          style={{ minWidth: "32px" }}
           icon={<UserOutlined />}
         />
         <div
