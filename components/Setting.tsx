@@ -1,18 +1,20 @@
 import { ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { useState } from "react";
 import {
+  Avatar,
   Button,
-  Checkbox,
   Form,
   Input,
   InputNumber,
+  Modal,
   Radio,
+  Space,
   Switch,
-  Tabs,
-  TabsProps,
   theme,
 } from "antd";
+import AvatarUpload from "./AvatarUpload";
 
 export const Setting = ({
   chatMgt,
@@ -23,6 +25,10 @@ export const Setting = ({
   onSaved: () => void;
   onCancel: () => void;
 }) => {
+  const [virtualRole_Avatar, setVirtualRole_Avatar] = useState(
+    chatMgt?.virtualRole.avatar
+  );
+  const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
     virtualRole_name: string;
@@ -39,13 +45,15 @@ export const Setting = ({
     config_saveKey: boolean;
     setting_baseurl: string;
   }>();
+
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
     chatMgt.setVirtualRoleBio(
       values.virtualRole_name,
       values.virtualRole_bio,
-      values.virtualRole_settings
+      values.virtualRole_settings,
+      virtualRole_Avatar || ""
     );
     chatMgt.setGptConfig({
       max_tokens: values.GptConfig_max_tokens,
@@ -57,6 +65,7 @@ export const Setting = ({
     chatMgt.setGptConfig;
     chatMgt.user.name = values.user_name;
     chatMgt.user.bio = values.user_bio;
+    chatMgt.user.avatar = user_Avatar || "";
     chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
     KeyValueData.instance().setApiKey(
@@ -96,6 +105,12 @@ export const Setting = ({
             padding: token.paddingContentHorizontalSM + "px",
           }}
         >
+          <Form.Item>
+            <AvatarUpload
+              avatar={virtualRole_Avatar}
+              onSave={setVirtualRole_Avatar}
+            />
+          </Form.Item>
           <Form.Item name="virtualRole_name" label="助理名称">
             <Input />
           </Form.Item>
@@ -149,6 +164,9 @@ export const Setting = ({
               </div>
             )}
           </Form.List>
+          <Form.Item>
+            <AvatarUpload avatar={user_Avatar} onSave={setUser_Avatar} />
+          </Form.Item>
           <Form.Item name="user_name" label="用户名称">
             <Input />
           </Form.Item>

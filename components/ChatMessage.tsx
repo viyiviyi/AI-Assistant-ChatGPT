@@ -174,7 +174,9 @@ function MessagesBox({
         }}
       >
         <Avatar
-          style={{ minWidth: "32px" }}
+          src={msg.virtualRoleId ? chat?.virtualRole.avatar : chat?.user.avatar}
+          size={"large"}
+          style={{ minWidth: "40px", minHeight: "40px" }}
           icon={<UserOutlined />}
         />
         <div

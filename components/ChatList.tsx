@@ -3,19 +3,16 @@ import {
   CheckOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  StarOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
   Button,
   Card,
-  message,
   Popconfirm,
   theme,
   Typography,
   Upload,
-  UploadProps,
 } from "antd";
 import { useState } from "react";
 
@@ -66,6 +63,7 @@ export const ChatList = ({
                   }}
                 />,
                 <Upload
+                  accept=".json"
                   {...{
                     beforeUpload(file, FileList) {
                       const fr = new FileReader();

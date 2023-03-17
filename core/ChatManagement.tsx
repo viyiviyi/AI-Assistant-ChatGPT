@@ -200,14 +200,16 @@ export class ChatManagement {
     return ctx;
   }
 
-  setVirtualRoleBio(name: string, bio: string, settings: string[]) {
-    if (this.group.name === "default") {
-      this.keyValData.setAssistantName(name);
-      this.keyValData.setAssistantPrefix(bio);
-    }
+  setVirtualRoleBio(
+    name: string,
+    bio: string,
+    settings: string[],
+    avatar: string
+  ) {
     this.virtualRole.settings = settings.filter((f) => f);
     this.virtualRole.name = name;
     this.virtualRole.bio = bio;
+    this.virtualRole.avatar = avatar;
   }
   setGptConfig(config: { [key in keyof GptConfig]?: any }) {
     config.id = this.gptConfig.id;
