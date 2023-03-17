@@ -318,7 +318,6 @@ export class ChatManagement {
   }
   fromJsonData(jsonData: any) {
     if (!jsonData) return;
-    console.log(jsonData);
     try {
       Object.keys(jsonData).forEach((key) => {
         if (key in this) {
