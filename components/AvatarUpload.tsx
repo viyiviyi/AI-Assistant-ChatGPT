@@ -56,8 +56,8 @@ const AvatarUpload = ({
           <AvatarEditor
             ref={(editor) => setEditor(editor)}
             image={image}
-            width={40}
-            height={40}
+            width={128}
+            height={128}
             border={20}
             borderRadius={0}
             scale={scale}
