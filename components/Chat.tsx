@@ -107,6 +107,7 @@ export const Chat = ({
           onChange={(e) => {
             chat!.config.enableVirtualRole = e.target.checked;
             setChatMgt([...chatMgt]);
+            ChatManagement.save();
           }}
         >
           {"助理"}

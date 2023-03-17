@@ -50,7 +50,7 @@ function getUuid() {
 }
 export class ChatManagement {
   keyValData: KeyValueData;
-  constructor(groupName: string) {
+  constructor(groupName: string, jsonData?: any) {
     this.keyValData = new KeyValueData(localStorage);
     this.newTopic("新话题");
     this.virtualRole = {
@@ -76,6 +76,7 @@ export class ChatManagement {
       bio: "",
       avatar: "",
     };
+    this.fromJsonData(jsonData);
   }
   readonly user: User;
   readonly virtualRole: VirtualRole;
@@ -121,12 +122,46 @@ export class ChatManagement {
   static getList(): ChatManagement[] {
     return this.chatList;
   }
-  private static async create(name = "new Caht"): Promise<Group> {
-    return { id: getUuid(), name };
+  private static timer = setTimeout(() => {}, 0);
+
+  static save() {
+    if (!KeyValueData.instance()) return message.error("保存数据失败");
+    let data = JSON.stringify(this.chatList);
+    if (data.length * 2 > 1024 * 1024 * 1024)
+      return message.error("内容过多，无法储存");
+    clearTimeout(this.timer);
+    let ls = this.chatList.map((v) => ({
+      group: v.group,
+      gptConfig: v.gptConfig,
+      config: v.config,
+      activityTopicId: v.activityTopicId,
+      messages: v.messages,
+      topic: v.topic,
+      virtualRole: v.virtualRole,
+      user: v.user,
+    }));
+    setTimeout(() => {
+      KeyValueData.instance().setGroups(JSON.stringify(ls));
+    }, 1000 * 3);
   }
-  private static async query(key: string): Promise<Group> {
-    return { id: getUuid(), name: "" };
+  static load() {
+    if (!KeyValueData.instance()) return message.error("加载本地存储");
+    let json = KeyValueData.instance().getGroups();
+    try {
+      let arr = JSON.parse(json);
+      if (Array.isArray(arr)) {
+        arr.forEach((v, idx) => {
+          if (idx === 0 && this.chatList.length)
+            this.chatList[0].fromJsonData(v);
+          else this.chatList.push(new ChatManagement("", v));
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return message.error("加载本地数据失败");
+    }
   }
+
   getActivityTopic(): Topic | undefined {
     return this.topic.find((f) => f.id == this.activityTopicId);
   }
@@ -203,6 +238,7 @@ export class ChatManagement {
     if (item != null) {
       Object.assign(item, message);
     }
+    ChatManagement.save();
   }
   async pushMessage(
     message: string,
@@ -228,6 +264,7 @@ export class ChatManagement {
       groupId: group,
     };
     this.messages.push(msg);
+    ChatManagement.save();
   }
   async removeMessage(message: Message) {
     let delIdx = this.messages.findIndex((f) => f.id === message.id);
@@ -238,6 +275,7 @@ export class ChatManagement {
     this.topic.splice(0, this.topic.length);
     this.topic.push(...topics);
     if (topics.length == 0) this.activityTopicId = "";
+    ChatManagement.save();
   }
   removeTopic(topic: Topic) {
     let topics = this.topic.filter((f) => topic.id !== f.id);
@@ -246,6 +284,7 @@ export class ChatManagement {
     let msgs = this.messages.filter((f) => f.topicId !== topic.id);
     this.messages.splice(0, this.messages.length);
     this.messages.push(...msgs);
+    ChatManagement.save();
   }
   async remove() {
     const ls = ChatManagement.chatList.filter(
@@ -256,6 +295,7 @@ export class ChatManagement {
     if (ChatManagement.chatList.length == 0) {
       await ChatManagement.provide();
     }
+    ChatManagement.save();
   }
   toJson() {
     const obj = Object.assign({}, this) as any;
@@ -265,16 +305,26 @@ export class ChatManagement {
   fromJson(json: string) {
     try {
       const obj = JSON.parse(json);
-      Object.keys(obj).forEach((key) => {
+      this.fromJsonData(obj);
+    } catch (error) {
+      console.error(error);
+      message.error("错误的json文件");
+    }
+  }
+  fromJsonData(jsonData: any) {
+    if (!jsonData) return;
+    console.log(jsonData);
+    try {
+      Object.keys(jsonData).forEach((key) => {
         if (key in this) {
-          if (typeof obj[key] === "object")
-            Object.assign((this as any)[key], obj[key]);
-          else (this as any)[key] = obj[key];
+          if (typeof jsonData[key] === "object")
+            Object.assign((this as any)[key], jsonData[key]);
+          else (this as any)[key] = jsonData[key];
         }
       });
     } catch (error) {
       console.error(error);
-      message.error("错误的json文件");
+      message.error("还原数据失败");
     }
   }
 }

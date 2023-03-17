@@ -22,6 +22,8 @@ export default function Home() {
     }
     setWindowWidth(window.innerWidth || 0);
     window.addEventListener("resize", handleResize);
+    new KeyValueData(localStorage);
+    ChatManagement.load();
     let ls = await ChatManagement.list();
     let chatMgt: ChatManagement;
     if (ls.length == 0) {
@@ -29,7 +31,6 @@ export default function Home() {
     } else {
       chatMgt = await ChatManagement.provide(ls.slice(-1)[0].id);
     }
-    const data = new KeyValueData(localStorage);
     setChatMgt([chatMgt]);
     return () => {
       window.removeEventListener("resize", handleResize);

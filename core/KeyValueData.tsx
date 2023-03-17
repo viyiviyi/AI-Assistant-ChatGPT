@@ -3,7 +3,7 @@ export interface DatasetProvider {
   setItem(key: string, value: string): void;
 }
 export class KeyValueData {
-  private static _instance: KeyValueData;
+  private static _instance: KeyValueData | undefined;
   private provider: DatasetProvider;
   constructor(provider: DatasetProvider) {
     this.provider = provider;
@@ -54,7 +54,18 @@ export class KeyValueData {
     this._apiKey = val;
     this.provider.setItem(this.dataKeyPrefix + "ApiKey", save ? val : "");
   }
-  static instance() {
-    return KeyValueData._instance;
+  private _groups = "";
+  getGroups(): string {
+    if (this._groups) return this._groups;
+    return this.provider.getItem(this.dataKeyPrefix + "Groups") || "[]";
+  }
+  setGroups(val: string) {
+    this._groups = val;
+    this.provider.setItem(this.dataKeyPrefix + "Groups", val);
+  }
+  static instance(): KeyValueData {
+    return KeyValueData._instance
+      ? KeyValueData._instance
+      : new KeyValueData(localStorage);
   }
 }

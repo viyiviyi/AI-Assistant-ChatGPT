@@ -63,6 +63,7 @@ export const Setting = ({
       values.setting_apitoken,
       values.config_saveKey
     );
+    ChatManagement.save();
     onSaved();
   }
   return (
@@ -105,9 +106,7 @@ export const Setting = ({
           >
             <Input.TextArea autoSize />
           </Form.Item>
-          <Form.List
-            name="virtualRole_settings"
-          >
+          <Form.List name="virtualRole_settings">
             {(fields, { add, remove }, { errors }) => (
               <div style={{ overflow: "auto" }}>
                 {fields.map((field, index) => (
