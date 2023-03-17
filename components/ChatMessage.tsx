@@ -33,7 +33,7 @@ export const ChatMessage = ({
   const [activityKey, setActivityKey] = useState(
     chat ? [...chat.topic.map((v) => v.id)] : []
   );
-  const [closeAll, setCloasAll] = useState(false);
+  const [closeAll, setCloasAll] = useState(true);
   handerCloseAll(() => {
     setCloasAll(true);
   });
@@ -87,7 +87,6 @@ export const ChatMessage = ({
               <Typography.Title level={5}>
                 <Popconfirm
                   title="确定删除？"
-                  description="删除话题和相关消息"
                   onConfirm={() => {
                     chat?.removeTopic(topic);
                     setActivityKey([...activityKey]);
@@ -102,9 +101,6 @@ export const ChatMessage = ({
           }
           key={topic.id}
           style={{
-            marginBottom: 4,
-            background: token.colorBgContainer,
-            borderRadius: token.borderRadiusLG,
             border: "none",
           }}
         >

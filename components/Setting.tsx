@@ -45,7 +45,7 @@ export const Setting = ({
     chatMgt.setVirtualRoleBio(
       values.virtualRole_name,
       values.virtualRole_bio,
-      chatMgt.virtualRole.settings
+      values.virtualRole_settings
     );
     chatMgt.setGptConfig({
       max_tokens: values.GptConfig_max_tokens,

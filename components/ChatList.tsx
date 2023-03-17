@@ -11,6 +11,7 @@ import {
   Button,
   Card,
   message,
+  Popconfirm,
   theme,
   Typography,
   Upload,
@@ -72,7 +73,7 @@ export const ChatList = ({
                         if (e.target?.result) {
                           v.fromJson(e.target.result.toString());
                           setGroups([...ChatManagement.getList()]);
-                          onSelected(v)
+                          onSelected(v);
                         }
                       };
                       fr.readAsText(file);
@@ -90,14 +91,18 @@ export const ChatList = ({
                     onSelected(v);
                   }}
                 />,
-                <DeleteOutlined
-                  key="delete"
-                  onClick={() => {
+                <Popconfirm
+                  title="确定删除？"
+                  onConfirm={() => {
                     v.remove().then(() => {
                       setGroups([...ChatManagement.getList()]);
                     });
                   }}
-                />,
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <DeleteOutlined />
+                </Popconfirm>,
               ]}
               style={{ marginBottom: "20px" }}
             >

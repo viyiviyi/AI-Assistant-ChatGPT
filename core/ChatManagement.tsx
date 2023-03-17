@@ -226,7 +226,10 @@ export class ChatManagement {
   newTopic(message: string): Topic {
     const topic = {
       id: getUuid(),
-      name: message.substring(0, 18) + " " + new Date().toLocaleString(),
+      name:
+        message.substring(0, 18) +
+        " " +
+        (message ? "" : new Date().toLocaleString()),
       createdAt: new Date(),
     };
     this.activityTopicId = topic.id;
