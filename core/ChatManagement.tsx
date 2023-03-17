@@ -127,6 +127,9 @@ export class ChatManagement {
   private static async query(key: string): Promise<Group> {
     return { id: getUuid(), name: "" };
   }
+  getActivityTopic(): Topic | undefined {
+    return this.topic.find((f) => f.id == this.activityTopicId);
+  }
   getMessages(): Message[] {
     return this.messages;
   }
