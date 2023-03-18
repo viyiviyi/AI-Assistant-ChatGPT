@@ -13,7 +13,6 @@ import {
   Layout,
   Button,
   Input,
-  Space,
   Checkbox,
   Select,
   theme,
@@ -51,8 +50,15 @@ export const Chat = ({
    */
   async function onSubmit(isPush: boolean) {
     if (!messageInput.trim() && !chat.config.enableVirtualRole) return;
-    if (!isPush) chat.newTopic(messageInput);
-    await chat.pushMessage(messageInput, false);
+    if (!isPush) await chat.newTopic(messageInput); 
+    await chat.pushMessage({
+      id: "",
+      groupId: chat.group.id,
+      senderId: chat.user.id,
+      text: messageInput,
+      timestamp: Date.now(),
+      topicId: chat.config.activityTopicId,
+    });
     setmessageInput("");
     setLoading(true);
     await sendMessage(chat);
@@ -107,7 +113,6 @@ export const Chat = ({
           onChange={(e) => {
             chat!.config.enableVirtualRole = e.target.checked;
             setChatMgt([...chatMgt]);
-            ChatManagement.save();
           }}
         >
           {"助理"}
@@ -242,7 +247,7 @@ let models = [
 async function sendMessage(chat: ChatManagement) {
   const messages = chat.getAskContext();
   if (messages.length == 0) return;
-  const topicId = chat.activityTopicId;
+  const topicId = chat.config.activityTopicId;
   try {
     if (KeyValueData.instance().getApiKey()) {
       const res = await sendMessageToChatGpt({
@@ -251,11 +256,19 @@ async function sendMessage(chat: ChatManagement) {
         max_tokens: chat.gptConfig.max_tokens,
         top_p: chat.gptConfig.top_p,
         temperature: chat.gptConfig.temperature,
+        n: chat.gptConfig.n,
         user: "user",
         token: KeyValueData.instance().getApiKey(),
         baseUrl: chat.config.baseUrl || undefined,
       });
-      return chat.pushMessage(res, true, topicId);
+      return chat.pushMessage({
+        id: "",
+        groupId: chat.group.id,
+        virtualRoleId: chat.virtualRole.id,
+        text: res,
+        timestamp: Date.now(),
+        topicId: chat.config.activityTopicId,
+      });
     }
     const response = await fetch("/api/generate", {
       method: "POST",
@@ -278,8 +291,22 @@ async function sendMessage(chat: ChatManagement) {
         data.error || new Error(`Request failed with status ${response.status}`)
       );
     }
-    chat.pushMessage(data.result, true, topicId);
+    chat.pushMessage({
+      id: "",
+      groupId: chat.group.id,
+      virtualRoleId: chat.virtualRole.id,
+      text: data.result,
+      timestamp: Date.now(),
+      topicId: chat.config.activityTopicId,
+    });
   } catch (error: any) {
-    chat.pushMessage(error.message, true, topicId);
+    chat.pushMessage({
+      id: "",
+      groupId: chat.group.id,
+      virtualRoleId: chat.virtualRole.id,
+      text: error.message,
+      timestamp: Date.now(),
+      topicId: chat.config.activityTopicId,
+    });
   }
 }

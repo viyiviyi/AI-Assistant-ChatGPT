@@ -44,18 +44,25 @@ export const Setting = ({
     GptConfig_temperature: number;
     config_saveKey: boolean;
     setting_baseurl: string;
+    GptConfig_n: number;
   }>();
 
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    chatMgt.setVirtualRoleBio(
-      values.virtualRole_name,
-      values.virtualRole_bio,
-      values.virtualRole_settings,
-      virtualRole_Avatar || ""
-    );
+    chatMgt.setVirtualRoleBio({
+      id: chatMgt.virtualRole.id,
+      groupId: chatMgt.virtualRole.groupId,
+      name: values.virtualRole_name,
+      bio: values.virtualRole_bio,
+      settings: values.virtualRole_settings,
+      avatar: virtualRole_Avatar || "",
+    });
     chatMgt.setGptConfig({
+      id: chatMgt.gptConfig.id,
+      groupId: chatMgt.gptConfig.groupId,
+      model: chatMgt.gptConfig.model,
+      n: values.GptConfig_n,
       max_tokens: values.GptConfig_max_tokens,
       role: values.GptConfig_role,
       msgCount: values.GptConfig_msgCount,
@@ -66,13 +73,14 @@ export const Setting = ({
     chatMgt.user.name = values.user_name;
     chatMgt.user.bio = values.user_bio;
     chatMgt.user.avatar = user_Avatar || "";
+    chatMgt.setUser(chatMgt.user);
     chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
+    chatMgt.setConfig(chatMgt.config);
     KeyValueData.instance().setApiKey(
       values.setting_apitoken,
       values.config_saveKey
     );
-    ChatManagement.save();
     onSaved();
   }
   return (
@@ -214,6 +222,9 @@ export const Setting = ({
             </Form.Item>
             <Form.Item name="GptConfig_top_p" label="top_p">
               <InputNumber step="0.1" min={0} max={1} />
+            </Form.Item>
+            <Form.Item name="GptConfig_n" label="n">
+              <InputNumber step="1" min={1} />
             </Form.Item>
             <Form.Item name="GptConfig_temperature" label="temperature">
               <InputNumber step="0.1" min={0} max={1} />

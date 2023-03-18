@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { MarkdownView } from "./MarkdownView";
-// import style from "../styles/index.module.css";
 import {
   CopyOutlined,
   DeleteOutlined,
@@ -31,7 +30,7 @@ export const ChatMessage = ({
 }) => {
   const { token } = theme.useToken();
   const [activityKey, setActivityKey] = useState(
-    chat ? [...chat.topic.map((v) => v.id)] : []
+    chat ? [...chat.topics.map((v) => v.id)] : []
   );
   const [closeAll, setCloasAll] = useState(true);
   handerCloseAll(() => {
@@ -43,101 +42,96 @@ export const ChatMessage = ({
       scrollToBotton(newMsgRef.current);
   }, [newMsgRef]);
   if (!chat) return <></>;
-  function rendTopic(topic: Topic, idx: number) {
-    let messages = chat?.getMessages().filter((f) => f.topicId === topic.id);
-    if (messages?.length) {
-      return (
-        <Panel
-          header={
-            <div style={{ display: "flex" }}>
-              <Typography.Title
-                editable={{
-                  onChange: (e) => (topic.name = e),
-                  onCancel: () => {
-                    setActivityKey([...activityKey]);
-                  },
-                }}
-                level={5}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  let v = [...activityKey];
-                  if (closeAll) {
-                    v = [];
-                    setCloasAll(false);
-                  }
-                  if (v.includes(topic.id)) {
-                    v = v.filter((f) => f !== topic.id);
-                    chat!.activityTopicId = chat?.topic.slice(-1)[0].id || "";
-                  } else {
-                    chat!.activityTopicId = topic.id;
-                    v.push(topic.id);
-                  }
-                  setActivityKey(v);
-                }}
-                style={{
-                  color:
-                    chat!.activityTopicId == topic.id
-                      ? token.colorPrimary
-                      : undefined,
-                }}
-              >
-                {topic.name}
-              </Typography.Title>
-              <span style={{ marginLeft: "30px" }}></span>
-              <Typography.Title level={5}>
-                <Popconfirm
-                  title="确定删除？"
-                  onConfirm={() => {
-                    chat?.removeTopic(topic);
-                    setActivityKey([...activityKey]);
-                  }}
-                  okText="确定"
-                  cancelText="取消"
-                >
-                  <DeleteOutlined></DeleteOutlined>
-                </Popconfirm>
-              </Typography.Title>
-            </div>
-          }
-          key={topic.id}
-          style={{
-            border: "none",
-          }}
-        >
-          {chat
-            ?.getMessages()
-            .filter((f) => f.topicId === topic.id)
-            .map((v, i) => (
-              <MessagesBox
-                msg={v}
-                chat={chat}
-                newMsgRef={
-                  topic.id == chat.activityTopicId && i == messages!.length - 1
-                    ? newMsgRef
-                    : undefined
+  function rendTopic(topic: Topic & { messages: Message[] }, idx: number) {
+    return (
+      <Panel
+        header={
+          <div style={{ display: "flex" }}>
+            <Typography.Title
+              editable={{
+                onChange: (e) => (topic.name = e),
+                onCancel: () => {
+                  setActivityKey([...activityKey]);
+                },
+              }}
+              level={5}
+              onClick={(e) => {
+                e.stopPropagation();
+                let v = [...activityKey];
+                if (closeAll) {
+                  v = [];
+                  setCloasAll(false);
                 }
-                onDel={onDel}
-                rBak={rBak}
-                key={i}
-              ></MessagesBox>
-            ))}
-        </Panel>
-      );
-    }
-    return <div key={idx}></div>;
+                if (v.includes(topic.id)) {
+                  v = v.filter((f) => f !== topic.id);
+                  chat!.config.activityTopicId =
+                    chat?.topics.slice(-1)[0].id || "";
+                } else {
+                  chat!.config.activityTopicId = topic.id;
+                  v.push(topic.id);
+                }
+                setActivityKey(v);
+              }}
+              style={{
+                color:
+                  chat!.config.activityTopicId == topic.id
+                    ? token.colorPrimary
+                    : undefined,
+              }}
+            >
+              {topic.name}
+            </Typography.Title>
+            <span style={{ marginLeft: "30px" }}></span>
+            <Typography.Title level={5}>
+              <Popconfirm
+                title="确定删除？"
+                onConfirm={() => {
+                  chat?.removeTopic(topic);
+                  setActivityKey([...activityKey]);
+                }}
+                okText="确定"
+                cancelText="取消"
+              >
+                <DeleteOutlined></DeleteOutlined>
+              </Popconfirm>
+            </Typography.Title>
+          </div>
+        }
+        key={topic.id}
+        style={{
+          border: "none",
+        }}
+      >
+        {topic.messages.map((v, i) => (
+          <MessagesBox
+            msg={v}
+            chat={chat}
+            newMsgRef={
+              topic.id == chat?.config.activityTopicId &&
+              i == topic.messages!.length - 1
+                ? newMsgRef
+                : undefined
+            }
+            onDel={onDel}
+            rBak={rBak}
+            key={i}
+          ></MessagesBox>
+        ))}
+      </Panel>
+    );
   }
 
   return (
     <Collapse
       ghost
       bordered={false}
-      activeKey={closeAll ? [] : [...activityKey, chat.activityTopicId]}
-      defaultActiveKey={chat.activityTopicId}
+      activeKey={closeAll ? [] : [...activityKey, chat.config.activityTopicId]}
+      defaultActiveKey={chat.config.activityTopicId}
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />
       )}
     >
-      {chat.topic.map(rendTopic)}
+      {chat.topics.map(rendTopic)}
     </Collapse>
   );
 };
@@ -247,7 +241,7 @@ function MessagesBox({
                 <SaveOutlined
                   onClick={() => {
                     msg.text = message;
-                    chat?.setMessage(msg);
+                    chat?.pushMessage(msg);
                     setEdit(false);
                   }}
                   style={{ marginLeft: "16px" }}

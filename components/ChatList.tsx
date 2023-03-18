@@ -1,4 +1,4 @@
-import { ChatManagement } from "@/core/ChatManagement";
+import { ChatManagement, IChat } from "@/core/ChatManagement";
 import {
   CheckOutlined,
   DeleteOutlined,
@@ -21,14 +21,14 @@ export const ChatList = ({
   onCacle,
 }: {
   onCacle: () => void;
-  onSelected: (chatMgt: ChatManagement) => void;
+  onSelected: (chatMgt: IChat) => void;
 }) => {
   const { token } = theme.useToken();
   const [groups, setGroups] = useState<ChatManagement[]>(
-    ChatManagement.getList()
+    ChatManagement.getGroups().map((v) => new ChatManagement(v))
   );
   async function create() {
-    await ChatManagement.provide().then(onSelected);
+    await ChatManagement.createChat().then(onSelected);
   }
 
   return (
@@ -45,8 +45,7 @@ export const ChatList = ({
           style={{
             flex: 1,
             overflow: "auto",
-            marginBottom: "20px",
-            paddingRight: "10px",
+            marginBottom: "20px"
           }}
         >
           {groups.map((v, idx) => (
@@ -57,7 +56,7 @@ export const ChatList = ({
                   key="download"
                   onClick={() => {
                     downloadJson(
-                      v.toJson(),
+                      JSON.stringify(v.toJson()),
                       v.group.name + "_" + v.virtualRole.name
                     );
                   }}
@@ -69,8 +68,8 @@ export const ChatList = ({
                       const fr = new FileReader();
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
-                          v.fromJson(e.target.result.toString());
-                          setGroups([...ChatManagement.getList()]);
+                          v.fromJson(JSON.parse(e.target.result.toString()));
+                          setGroups([...groups]);
                           onSelected(v);
                         }
                       };
@@ -92,9 +91,12 @@ export const ChatList = ({
                 <Popconfirm
                   title="确定删除？"
                   onConfirm={() => {
-                    v.remove().then(() => {
-                      setGroups([...ChatManagement.getList()]);
-                    });
+                    ChatManagement.remove(v);
+                    setGroups([
+                      ...ChatManagement.getGroups().map(
+                        (v) => new ChatManagement(v)
+                      ),
+                    ]);
                   }}
                   okText="确定"
                   cancelText="取消"
@@ -102,7 +104,7 @@ export const ChatList = ({
                   <DeleteOutlined />
                 </Popconfirm>,
               ]}
-              style={{ marginBottom: "20px" }}
+              style={{ marginBottom: "20px"}}
             >
               <Card.Meta
                 avatar={<Avatar src={v.virtualRole.avatar} />}
@@ -114,7 +116,11 @@ export const ChatList = ({
                         v.group.name = val;
                       },
                       onCancel: () => {
-                        setGroups([...ChatManagement.getList()]);
+                        setGroups([
+                          ...ChatManagement.getGroups().map(
+                            (v) => new ChatManagement(v)
+                          ),
+                        ]);
                       },
                     }}
                   >
@@ -132,7 +138,9 @@ export const ChatList = ({
           onClick={(e) => {
             e.stopPropagation();
             create().then(() => {
-              setGroups([...ChatManagement.getList()]);
+              setGroups([
+                ...ChatManagement.getGroups().map((v) => new ChatManagement(v)),
+              ]);
             });
           }}
         >

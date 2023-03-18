@@ -5,6 +5,7 @@ export async function sendMessageToChatGpt({
   top_p = 0.5,
   user = "user",
   token,
+  n,
   temperature = 0.7,
   baseUrl = "https://chat.22733.site",
 }: {
@@ -19,6 +20,7 @@ export async function sendMessageToChatGpt({
   temperature?: number;
   user?: string;
   token: string;
+  n?: number;
   baseUrl?: string;
 }): Promise<string> {
   const response = await fetch(
@@ -36,7 +38,7 @@ export async function sendMessageToChatGpt({
         temperature,
         top_p,
         max_tokens,
-        n: 1,
+        n,
         user,
       }),
     }

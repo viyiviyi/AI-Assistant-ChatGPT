@@ -11,7 +11,7 @@ import { Chat } from "@/components/Chat";
 
 export default function Home() {
   const { token } = theme.useToken();
-  const [chatMgt, setChatMgt] = useState<ChatManagement[]>([]);
+  const [chatMgt, setChatMgt] = useState<ChatManagement>();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
@@ -23,15 +23,9 @@ export default function Home() {
     setWindowWidth(window.innerWidth || 0);
     window.addEventListener("resize", handleResize);
     new KeyValueData(localStorage);
-    ChatManagement.load();
-    let ls = await ChatManagement.list();
-    let chatMgt: ChatManagement;
-    if (ls.length == 0) {
-      chatMgt = await ChatManagement.provide("", "default");
-    } else {
-      chatMgt = await ChatManagement.provide(ls.slice(-1)[0].id);
-    }
-    setChatMgt([chatMgt]);
+    await ChatManagement.load();
+    if (ChatManagement.getGroups().length == 0) return;
+    setChatMgt(new ChatManagement(ChatManagement.getGroups()[0]));
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -57,9 +51,9 @@ export default function Home() {
       <Head>
         <title>助手 bot</title>
       </Head>
-      {chatMgt[0] ? (
+      {chatMgt ? (
         <Chat
-          chat={chatMgt[0]}
+          chat={chatMgt}
           setSettingShow={setSettingShow}
           setlistIsShow={setlistIsShow}
         />
@@ -81,7 +75,7 @@ export default function Home() {
             setlistIsShow(false);
           }}
           onSelected={(mgt) => {
-            setChatMgt([mgt]);
+            setChatMgt(new ChatManagement(mgt));
             setlistIsShow(false);
           }}
         ></ChatList>
@@ -100,10 +94,10 @@ export default function Home() {
             setSettingShow(false);
           }}
           onSaved={() => {
-            setChatMgt([...chatMgt]);
+            setChatMgt(new ChatManagement(chatMgt!));
             setSettingShow(false);
           }}
-          chatMgt={chatMgt[0]}
+          chatMgt={chatMgt}
         ></Setting>
       </Modal>
       <Modal
@@ -117,7 +111,7 @@ export default function Home() {
             setlistIsShow(false);
           }}
           onSelected={(mgt) => {
-            setChatMgt([mgt]);
+            setChatMgt(new ChatManagement(chatMgt!));
             setlistIsShow(false);
           }}
         ></ChatList>
