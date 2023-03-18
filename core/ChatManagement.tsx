@@ -40,68 +40,70 @@ export class ChatManagement implements IChat {
   static getGroups(): IChat[] {
     return this.chatList;
   }
-  static isInit = false;
+  static loadAwait: Promise<void>; // = false;
   static async load() {
-    if (this.isInit) return;
-    this.isInit = true;
-    await IndexedDB.init();
-    const groups = await getInstance().queryAll<Group>({
-      tableName: "Group",
-    });
-    if (!groups.length) {
-      await this.createGroup().then((v) => groups.push(v));
-    }
-    const users = await getInstance().queryAll<User>({
-      tableName: "User",
-    });
-    const groupConfigs = await getInstance().queryAll<GroupConfig>({
-      tableName: "GroupConfig",
-    });
-    const virtualRoles = await getInstance().queryAll<VirtualRole>({
-      tableName: "VirtualRole",
-    });
-    const gptConfigs = await getInstance().queryAll<GptConfig>({
-      tableName: "GptConfig",
-    });
-    for (let i = 0; i < groups.length; i++) {
-      let g = groups[i];
-      let user = users.find((f) => f.groupId == g.id);
-      if (!user) {
-        user = await this.createUser(g.id);
-      }
-      let gptConfig = gptConfigs.find((f) => f.groupId == g.id);
-      if (!gptConfig) gptConfig = await this.createGptConfig(g.id);
-      let config = groupConfigs.find((f) => f.groupId == g.id);
-      if (!config) config = await this.createConfig(g.id);
-      let virtualRole = virtualRoles.find((f) => f.groupId == g.id);
-      if (!virtualRole) virtualRole = await this.createVirtualRoleBio(g.id);
-      let topics: (Topic & { messages: Message[] })[] = [];
-      if (i == 0) {
-        let msgs = await getInstance().query<Message>({
-          tableName: "Message",
-          condition: (v) => v.groupId == g.id,
-        });
-        topics = await getInstance()
-          .query<Topic>({
-            tableName: "Topic",
-            condition: (v) => v.groupId == g.id,
-          })
-          .then((v) => {
-            return v.map((t) => ({
-              ...t,
-              messages: msgs.filter((f) => f.topicId == t.id),
-            }));
-          });
-      }
-      this.chatList.push({
-        group: g,
-        user,
-        gptConfig,
-        config,
-        virtualRole,
-        topics,
+    if (this.loadAwait) return this.loadAwait;
+    this.loadAwait = new Promise(async (res) => {
+      await IndexedDB.init();
+      const groups = await getInstance().queryAll<Group>({
+        tableName: "Group",
       });
-    }
+      if (!groups.length) {
+        await this.createGroup().then((v) => groups.push(v));
+      }
+      const users = await getInstance().queryAll<User>({
+        tableName: "User",
+      });
+      const groupConfigs = await getInstance().queryAll<GroupConfig>({
+        tableName: "GroupConfig",
+      });
+      const virtualRoles = await getInstance().queryAll<VirtualRole>({
+        tableName: "VirtualRole",
+      });
+      const gptConfigs = await getInstance().queryAll<GptConfig>({
+        tableName: "GptConfig",
+      });
+      for (let i = 0; i < groups.length; i++) {
+        let g = groups[i];
+        let user = users.find((f) => f.groupId == g.id);
+        if (!user) {
+          user = await this.createUser(g.id);
+        }
+        let gptConfig = gptConfigs.find((f) => f.groupId == g.id);
+        if (!gptConfig) gptConfig = await this.createGptConfig(g.id);
+        let config = groupConfigs.find((f) => f.groupId == g.id);
+        if (!config) config = await this.createConfig(g.id);
+        let virtualRole = virtualRoles.find((f) => f.groupId == g.id);
+        if (!virtualRole) virtualRole = await this.createVirtualRoleBio(g.id);
+        let topics: (Topic & { messages: Message[] })[] = [];
+        if (i == 0) {
+          let msgs = await getInstance().query<Message>({
+            tableName: "Message",
+            condition: (v) => v.groupId == g.id,
+          });
+          topics = await getInstance()
+            .query<Topic>({
+              tableName: "Topic",
+              condition: (v) => v.groupId == g.id,
+            })
+            .then((v) => {
+              return v.map((t) => ({
+                ...t,
+                messages: msgs.filter((f) => f.topicId == t.id),
+              }));
+            });
+        }
+        this.chatList.push({
+          group: g,
+          user,
+          gptConfig,
+          config,
+          virtualRole,
+          topics,
+        });
+      }
+      res();
+    });
   }
 
   getActivityTopic(): Topic | undefined {

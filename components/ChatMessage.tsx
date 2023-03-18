@@ -102,21 +102,23 @@ export const ChatMessage = ({
           border: "none",
         }}
       >
-        {topic.messages.map((v, i) => (
-          <MessagesBox
-            msg={v}
-            chat={chat}
-            newMsgRef={
-              topic.id == chat?.config.activityTopicId &&
-              i == topic.messages!.length - 1
-                ? newMsgRef
-                : undefined
-            }
-            onDel={onDel}
-            rBak={rBak}
-            key={i}
-          ></MessagesBox>
-        ))}
+        {(activityKey.includes(topic.id) ||
+          topic.id == chat?.config.activityTopicId) &&
+          topic.messages.map((v, i) => (
+            <MessagesBox
+              msg={v}
+              chat={chat}
+              newMsgRef={
+                topic.id == chat?.config.activityTopicId &&
+                i == topic.messages!.length - 1
+                  ? newMsgRef
+                  : undefined
+              }
+              onDel={onDel}
+              rBak={rBak}
+              key={i}
+            ></MessagesBox>
+          ))}
       </Panel>
     );
   }

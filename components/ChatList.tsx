@@ -14,7 +14,7 @@ import {
   Typography,
   Upload,
 } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const ChatList = ({
   onSelected,
@@ -30,6 +30,13 @@ export const ChatList = ({
   async function create() {
     await ChatManagement.createChat().then(onSelected);
   }
+  useEffect(() => {
+    ChatManagement.load().then(() => {
+      setGroups([
+        ...ChatManagement.getGroups().map((v) => new ChatManagement(v)),
+      ]);
+    });
+  }, []);
 
   return (
     <>
@@ -91,12 +98,13 @@ export const ChatList = ({
                 <Popconfirm
                   title="确定删除？"
                   onConfirm={() => {
-                    ChatManagement.remove(v);
-                    setGroups([
-                      ...ChatManagement.getGroups().map(
-                        (v) => new ChatManagement(v)
-                      ),
-                    ]);
+                    ChatManagement.remove(v).then(() => {
+                      setGroups([
+                        ...ChatManagement.getGroups().map(
+                          (v) => new ChatManagement(v)
+                        ),
+                      ]);
+                    });
                   }}
                   okText="确定"
                   cancelText="取消"
