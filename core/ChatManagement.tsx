@@ -315,7 +315,6 @@ export class ChatManagement implements IChat {
     return chat;
   }
   async pushMessage(message: Message) {
-    console.log(message);
     if (!message.text.trim()) return;
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) return;

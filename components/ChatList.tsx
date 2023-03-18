@@ -45,7 +45,7 @@ export const ChatList = ({
           style={{
             flex: 1,
             overflow: "auto",
-            marginBottom: "20px"
+            marginBottom: "20px",
           }}
         >
           {groups.map((v, idx) => (
@@ -104,7 +104,7 @@ export const ChatList = ({
                   <DeleteOutlined />
                 </Popconfirm>,
               ]}
-              style={{ marginBottom: "20px"}}
+              style={{ marginBottom: "20px" }}
             >
               <Card.Meta
                 avatar={<Avatar src={v.virtualRole.avatar} />}
@@ -114,13 +114,7 @@ export const ChatList = ({
                     editable={{
                       onChange: (val) => {
                         v.group.name = val;
-                      },
-                      onCancel: () => {
-                        setGroups([
-                          ...ChatManagement.getGroups().map(
-                            (v) => new ChatManagement(v)
-                          ),
-                        ]);
+                        setGroups([...groups]);
                       },
                     }}
                   >

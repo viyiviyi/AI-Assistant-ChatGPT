@@ -49,8 +49,8 @@ export const ChatMessage = ({
           <div style={{ display: "flex" }}>
             <Typography.Title
               editable={{
-                onChange: (e) => (topic.name = e),
-                onCancel: () => {
+                onChange: (e) => {
+                  topic.name = e;
                   setActivityKey([...activityKey]);
                 },
               }}
