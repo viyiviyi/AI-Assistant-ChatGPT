@@ -87,10 +87,14 @@ export class ChatManagement implements IChat {
               condition: (v) => v.groupId == g.id,
             })
             .then((v) => {
-              return v.map((t) => ({
-                ...t,
-                messages: msgs.filter((f) => f.topicId == t.id),
-              }));
+              return v
+                .sort((s, n) => s.createdAt - n.createdAt)
+                .map((t) => ({
+                  ...t,
+                  messages: msgs
+                    .filter((f) => f.topicId == t.id)
+                    .sort((s, n) => s.timestamp - n.timestamp),
+                }));
             });
         }
         this.chatList.push({
@@ -153,27 +157,24 @@ export class ChatManagement implements IChat {
     this.config.activityTopicId = topic.id;
     return topic;
   }
-  async setTopic(topic: Topic) {
-    const t = this.topics.find((f) => f.id == topic.id);
+  async saveTopic(topicId: string, name: string) {
+    const t = this.topics.find((f) => f.id == topicId);
     if (t) {
-      Object.assign(t, topic);
+      t.name = name;
       await getInstance().update_by_primaryKey<Topic>({
         tableName: "Topic",
-        value: topic.id,
+        value: t.id,
         handle: (r) => {
-          Object.assign(r, this.topics);
+          r.name = name;
           return r;
         },
       });
     }
   }
-  async saveConfig(config: GroupConfig) {
-    config.id = this.config.id;
-    config.groupId = this.group.id;
-    Object.assign(this.config, config);
+  async saveConfig() {
     await getInstance().update_by_primaryKey<GroupConfig>({
       tableName: "GroupConfig",
-      value: config.id,
+      value: this.config.id,
       handle: (r) => {
         Object.assign(r, this.config);
         return r;
@@ -314,6 +315,15 @@ export class ChatManagement implements IChat {
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);
       if (!msg) return;
+      msg.text = message.text;
+      await getInstance().update_by_primaryKey<Message>({
+        tableName: "Message",
+        value: msg.id,
+        handle: (r) => {
+          r.text = message.text;
+          return r;
+        },
+      });
     } else {
       message.id = getUuid();
       topic.messages.push(message);

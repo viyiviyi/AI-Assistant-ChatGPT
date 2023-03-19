@@ -53,7 +53,7 @@ export const Chat = ({
    */
   async function onSubmit(isPush: boolean) {
     if (!chat.config.activityTopicId) return;
-    if (!isPush) await chat.newTopic(messageInput.substring(0, 16));
+    if (!isPush) await chat.newTopic(messageInput.substring(0, 16)||new Date().toLocaleString());
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,

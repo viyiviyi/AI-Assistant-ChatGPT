@@ -50,7 +50,7 @@ export const ChatMessage = ({
             <Typography.Title
               editable={{
                 onChange: (e) => {
-                  topic.name = e;
+                  chat?.saveTopic(topic.id, e);
                   setActivityKey([...activityKey]);
                 },
               }}
