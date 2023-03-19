@@ -68,11 +68,11 @@ export const Setting = ({
     chatMgt.user.bio = values.user_bio;
     chatMgt.user.avatar = user_Avatar || "";
     chatMgt.saveUser();
-    
+
     chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
     chatMgt.saveConfig(chatMgt.config);
-    
+
     KeyValueData.instance().setApiKey(
       values.setting_apitoken,
       values.config_saveKey
@@ -86,17 +86,18 @@ export const Setting = ({
         layout="vertical"
         autoComplete="off"
         initialValues={{
+          setting_apitoken: KeyValueData.instance().getApiKey(),
           virtualRole_name: chatMgt?.virtualRole.name,
           virtualRole_bio: chatMgt?.virtualRole.bio,
           virtualRole_settings: chatMgt?.virtualRole.settings,
           user_name: chatMgt?.user.name,
           user_bio: chatMgt?.user.bio,
-          setting_apitoken: KeyValueData.instance().getApiKey(),
           GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
           GptConfig_role: chatMgt?.gptConfig.role,
           GptConfig_max_tokens: chatMgt?.gptConfig.max_tokens,
           GptConfig_top_p: chatMgt?.gptConfig.top_p,
           GptConfig_temperature: chatMgt?.gptConfig.temperature,
+          GptConfig_n: chatMgt?.gptConfig.n,
           config_saveKey: chatMgt?.config.saveKey,
           setting_baseurl: chatMgt?.config.baseUrl,
         }}
