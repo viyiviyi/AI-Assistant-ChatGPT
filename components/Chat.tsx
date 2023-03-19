@@ -7,6 +7,7 @@ import {
   MessageOutlined,
   CommentOutlined,
   VerticalAlignMiddleOutlined,
+  GithubOutlined,
 } from "@ant-design/icons";
 import style from "../styles/index.module.css";
 import {
@@ -51,7 +52,7 @@ export const Chat = ({
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    if (!messageInput.trim() && !chat.config.enableVirtualRole) return;
+    if (!chat.config.activityTopicId) return;
     if (!isPush) await chat.newTopic(messageInput.substring(0, 16));
     await chat.pushMessage({
       id: "",
@@ -110,6 +111,13 @@ export const Chat = ({
           options={models.map((v) => ({ value: v, label: v }))}
         />
         <span style={{ flex: 1 }}></span>
+        <a
+          href="https://github.com/viyiviyi/ChatGpt-lite-chat-web"
+          rel="noopener noreferrer"
+          target={"_blank"}
+        >
+          <GithubOutlined />
+        </a>
         <Checkbox
           checked={chat?.config.enableVirtualRole}
           onChange={(e) => {
