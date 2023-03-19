@@ -71,7 +71,7 @@ export const Setting = ({
 
     chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
-    chatMgt.saveConfig(chatMgt.config);
+    chatMgt.saveConfig();
 
     KeyValueData.instance().setApiKey(
       values.setting_apitoken,
