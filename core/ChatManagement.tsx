@@ -76,41 +76,46 @@ export class ChatManagement implements IChat {
         let virtualRole = virtualRoles.find((f) => f.groupId == g.id);
         if (!virtualRole) virtualRole = await this.createVirtualRoleBio(g.id);
         let topics: (Topic & { messages: Message[] })[] = [];
-        if (i == 0) {
-          let msgs = await getInstance().query<Message>({
-            tableName: "Message",
-            condition: (v) => v.groupId == g.id,
-          });
-          topics = await getInstance()
-            .query<Topic>({
-              tableName: "Topic",
-              condition: (v) => v.groupId == g.id,
-            })
-            .then((v) => {
-              return v
-                .sort((s, n) => s.createdAt - n.createdAt)
-                .map((t) => ({
-                  ...t,
-                  messages: msgs
-                    .filter((f) => f.topicId == t.id)
-                    .sort((s, n) => s.timestamp - n.timestamp),
-                }));
-            });
-        }
-        this.chatList.push({
+        const chat = {
           group: g,
           user,
           gptConfig,
           config,
           virtualRole,
           topics,
-        });
+        }
+        if (i == 0) {
+          await this.loadMessage(chat);
+        }
+        this.chatList.push(chat);
       }
       res();
     });
     return this.loadAwait;
   }
-
+  static async loadMessage(chat: IChat) {
+    let topics: (Topic & { messages: Message[] })[] = [];
+    let msgs = await getInstance().query<Message>({
+      tableName: "Message",
+      condition: (v) => v.groupId == chat.group.id,
+    });
+    topics = await getInstance()
+      .query<Topic>({
+        tableName: "Topic",
+        condition: (v) => v.groupId == chat.group.id,
+      })
+      .then((v) => {
+        return v
+          .sort((s, n) => s.createdAt - n.createdAt)
+          .map((t) => ({
+            ...t,
+            messages: msgs
+              .filter((f) => f.topicId == t.id)
+              .sort((s, n) => s.timestamp - n.timestamp),
+          }));
+      });
+    chat.topics = topics;
+  }
   getActivityTopic(): Topic | undefined {
     return this.topics.find((f) => f.id == this.config.activityTopicId);
   }

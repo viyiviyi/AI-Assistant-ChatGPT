@@ -92,7 +92,7 @@ export const ChatList = ({
                 <CheckOutlined
                   key="selected"
                   onClick={() => {
-                    onSelected(v);
+                    ChatManagement.loadMessage(v).then(() => onSelected(v));
                   }}
                 />,
                 <Popconfirm
