@@ -23,9 +23,11 @@ export default function Home() {
     setWindowWidth(window.innerWidth || 0);
     window.addEventListener("resize", handleResize);
     new KeyValueData(localStorage);
-    await ChatManagement.load();
-    if (ChatManagement.getGroups().length == 0) return;
-    setChatMgt(new ChatManagement(ChatManagement.getGroups()[0]));
+    await ChatManagement.load().then(() => {
+      let chats = ChatManagement.getGroups();
+      if (chats.length == 0) return;
+      setChatMgt(new ChatManagement(chats[0]));
+    });
     return () => {
       window.removeEventListener("resize", handleResize);
     };

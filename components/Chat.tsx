@@ -50,7 +50,7 @@ export const Chat = ({
    */
   async function onSubmit(isPush: boolean) {
     if (!messageInput.trim() && !chat.config.enableVirtualRole) return;
-    if (!isPush) await chat.newTopic(messageInput); 
+    if (!isPush) await chat.newTopic(messageInput.substring(0, 16));
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,

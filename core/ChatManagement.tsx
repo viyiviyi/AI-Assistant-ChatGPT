@@ -104,6 +104,7 @@ export class ChatManagement implements IChat {
       }
       res();
     });
+    return this.loadAwait
   }
 
   getActivityTopic(): Topic | undefined {

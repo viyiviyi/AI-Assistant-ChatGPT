@@ -19,12 +19,24 @@ import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import dart from "highlight.js/lib/languages/dart";
 import remarkParse from "remark-parse";
-import { createElement, Fragment, useEffect, useState } from "react";
+import { createElement, Fragment} from "react";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeReact from "rehype-react";
 import React from "react";
-import CopyToClipboard from "react-copy-to-clipboard";
+import copy from "copy-to-clipboard";
 import { CopyOutlined } from "@ant-design/icons";
+
+function toTxt(node: React.ReactNode): string {
+  let str = "";
+  if (Array.isArray(node)) {
+    str += (node as Array<React.ReactNode>).map(toTxt).join("");
+  } else if (typeof node == "object" && "props" in (node as any)) {
+    str += (node as any)["props"] && toTxt((node as any)["props"].children);
+  } else {
+    str += node
+  }
+  return str;
+}
 
 // 创建解析方法
 export function MarkdownView({ markdown }: { markdown: string }) {
@@ -122,14 +134,13 @@ export function MarkdownView({ markdown }: { markdown: string }) {
         ) => {
           const { className, children } = props;
           return (
-            <code
-              className={className}
-            >
-              <CopyToClipboard text={children?.toString()||''}>
-                <CopyOutlined
-                  className="code-copy"
-                />
-              </CopyToClipboard>
+            <code className={className}>
+              <CopyOutlined
+                onClick={() => {
+                  copy(toTxt(children));
+                }}
+                className="code-copy"
+              />
               {children}
             </code>
           );
