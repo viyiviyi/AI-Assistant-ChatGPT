@@ -1,4 +1,4 @@
-import { IndexedDB } from "@/db/IndexDb";
+import { IndexedDB } from "@/core/IndexDb";
 import {
   GptConfig,
   Group,
@@ -104,7 +104,7 @@ export class ChatManagement implements IChat {
       }
       res();
     });
-    return this.loadAwait
+    return this.loadAwait;
   }
 
   getActivityTopic(): Topic | undefined {
@@ -167,7 +167,7 @@ export class ChatManagement implements IChat {
       });
     }
   }
-  async setConfig(config: GroupConfig) {
+  async saveConfig(config: GroupConfig) {
     config.id = this.config.id;
     config.groupId = this.group.id;
     Object.assign(this.config, config);
@@ -180,51 +180,40 @@ export class ChatManagement implements IChat {
       },
     });
   }
-  async setUser(user: User) {
-    user.id = this.user.id;
-    user.groupId = this.group.id;
-    Object.assign(this.user, this.config);
+  async saveUser() {
     await getInstance().update_by_primaryKey<User>({
       tableName: "User",
-      value: user.id,
+      value: this.user.id,
       handle: (r) => {
         Object.assign(r, this.user);
         return r;
       },
     });
   }
-  async setGroup(group: Group) {
-    group.id = this.group.id;
-    Object.assign(this.user, this.config);
+  async saveGroup() {
     await getInstance().update_by_primaryKey<Group>({
       tableName: "Group",
-      value: group.id,
+      value: this.group.id,
       handle: (r) => {
         Object.assign(r, this.group);
         return r;
       },
     });
   }
-  async setVirtualRoleBio(virtualRole: VirtualRole) {
-    virtualRole.id = this.virtualRole.id;
-    virtualRole.groupId = this.group.id;
-    Object.assign(this.user, this.config);
+  async saveVirtualRoleBio() {
     await getInstance().update_by_primaryKey<VirtualRole>({
       tableName: "VirtualRole",
-      value: virtualRole.id,
+      value: this.virtualRole.id,
       handle: (r) => {
         Object.assign(r, this.virtualRole);
         return r;
       },
     });
   }
-  async setGptConfig(config: GptConfig) {
-    config.id = this.virtualRole.id;
-    config.groupId = this.group.id;
-    Object.assign(this.user, this.config);
+  async saveGptConfig() {
     await getInstance().update_by_primaryKey<GptConfig>({
       tableName: "GptConfig",
-      value: config.id,
+      value: this.gptConfig.id,
       handle: (r) => {
         Object.assign(r, this.gptConfig);
         return r;

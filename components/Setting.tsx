@@ -50,33 +50,29 @@ export const Setting = ({
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    chatMgt.setVirtualRoleBio({
-      id: chatMgt.virtualRole.id,
-      groupId: chatMgt.virtualRole.groupId,
-      name: values.virtualRole_name,
-      bio: values.virtualRole_bio,
-      settings: values.virtualRole_settings,
-      avatar: virtualRole_Avatar || "",
-    });
-    chatMgt.setGptConfig({
-      id: chatMgt.gptConfig.id,
-      groupId: chatMgt.gptConfig.groupId,
-      model: chatMgt.gptConfig.model,
-      n: values.GptConfig_n,
-      max_tokens: values.GptConfig_max_tokens,
-      role: values.GptConfig_role,
-      msgCount: values.GptConfig_msgCount,
-      temperature: values.GptConfig_temperature,
-      top_p: values.GptConfig_top_p,
-    });
-    chatMgt.setGptConfig;
+    chatMgt.virtualRole.name = values.virtualRole_name;
+    chatMgt.virtualRole.bio = values.virtualRole_bio;
+    chatMgt.virtualRole.settings = values.virtualRole_settings;
+    chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
+    chatMgt.saveVirtualRoleBio();
+
+    chatMgt.gptConfig.n = values.GptConfig_n;
+    chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
+    chatMgt.gptConfig.role = values.GptConfig_role;
+    chatMgt.gptConfig.msgCount = values.GptConfig_msgCount;
+    chatMgt.gptConfig.temperature = values.GptConfig_temperature;
+    chatMgt.gptConfig.top_p = values.GptConfig_top_p;
+    chatMgt.saveGptConfig();
+
     chatMgt.user.name = values.user_name;
     chatMgt.user.bio = values.user_bio;
     chatMgt.user.avatar = user_Avatar || "";
-    chatMgt.setUser(chatMgt.user);
+    chatMgt.saveUser();
+    
     chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
-    chatMgt.setConfig(chatMgt.config);
+    chatMgt.saveConfig(chatMgt.config);
+    
     KeyValueData.instance().setApiKey(
       values.setting_apitoken,
       values.config_saveKey

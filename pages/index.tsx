@@ -2,7 +2,6 @@ import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import { Modal } from "@/components/Modal";
-import { KeyValueData } from "@/core/KeyValueData";
 import { ChatManagement } from "@/core/ChatManagement";
 import { ChatList } from "@/components/ChatList";
 import { Layout, theme } from "antd";
@@ -22,7 +21,6 @@ export default function Home() {
     }
     setWindowWidth(window.innerWidth || 0);
     window.addEventListener("resize", handleResize);
-    new KeyValueData(localStorage);
     await ChatManagement.load().then(() => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;

@@ -22,6 +22,7 @@ export interface GroupConfig {
   saveKey: boolean;
   baseUrl: string;
   activityTopicId: string;
+  filterUserName?:boolean
 }
 
 // 聊天消息表

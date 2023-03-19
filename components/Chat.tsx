@@ -17,11 +17,12 @@ import {
   Select,
   theme,
   Typography,
+  message,
 } from "antd";
 import React from "react";
 import { KeyValueData } from "@/core/KeyValueData";
 import { Message } from "@/Models/DataBase";
-import { sendMessageToChatGpt } from "@/core/apiClient";
+import { ApiClient } from "@/core/apiClient";
 const { Content } = Layout;
 
 export const Chat = ({
@@ -247,10 +248,9 @@ let models = [
 async function sendMessage(chat: ChatManagement) {
   const messages = chat.getAskContext();
   if (messages.length == 0) return;
-  const topicId = chat.config.activityTopicId;
   try {
     if (KeyValueData.instance().getApiKey()) {
-      const res = await sendMessageToChatGpt({
+      const res = await ApiClient.chatGptV3({
         messages,
         model: chat.gptConfig.model,
         max_tokens: chat.gptConfig.max_tokens,
@@ -258,7 +258,7 @@ async function sendMessage(chat: ChatManagement) {
         temperature: chat.gptConfig.temperature,
         n: chat.gptConfig.n,
         user: "user",
-        token: KeyValueData.instance().getApiKey(),
+        api_key: KeyValueData.instance().getApiKey(),
         baseUrl: chat.config.baseUrl || undefined,
       });
       return chat.pushMessage({
@@ -270,35 +270,7 @@ async function sendMessage(chat: ChatManagement) {
         topicId: chat.config.activityTopicId,
       });
     }
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: messages,
-        model: chat.gptConfig.model,
-        max_tokens: chat.gptConfig.max_tokens,
-        top_p: chat.gptConfig.top_p,
-        temperature: chat.gptConfig.temperature,
-        user: "user",
-        token: KeyValueData.instance().getAutoToken(),
-      }),
-    });
-    const data = await response.json();
-    if (response.status !== 200) {
-      throw (
-        data.error || new Error(`Request failed with status ${response.status}`)
-      );
-    }
-    chat.pushMessage({
-      id: "",
-      groupId: chat.group.id,
-      virtualRoleId: chat.virtualRole.id,
-      text: data.result,
-      timestamp: Date.now(),
-      topicId: chat.config.activityTopicId,
-    });
+    message.error("缺少apikey，请在设置中配置后使用");
   } catch (error: any) {
     chat.pushMessage({
       id: "",
