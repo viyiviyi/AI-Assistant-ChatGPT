@@ -179,7 +179,7 @@ function MessagesBox({
           style={{
             display: "flex",
             flex: edit ? 1 : undefined,
-            maxWidth: "calc(100vw - 100px)",
+            maxWidth: "min(900px, calc(100vw - 100px))",
             wordWrap: "break-word",
             flexDirection: "column",
           }}

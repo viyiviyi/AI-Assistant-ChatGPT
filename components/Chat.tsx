@@ -22,7 +22,8 @@ import {
 import React from "react";
 import { KeyValueData } from "@/core/KeyValueData";
 import { Message } from "@/Models/DataBase";
-import { ApiClient } from "@/core/apiClient";
+import { ApiClient } from "@/core/ApiClient";
+
 const { Content } = Layout;
 
 export const Chat = ({
