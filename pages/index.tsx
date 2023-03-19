@@ -111,7 +111,7 @@ export default function Home() {
             setlistIsShow(false);
           }}
           onSelected={(mgt) => {
-            setChatMgt(new ChatManagement(chatMgt!));
+            setChatMgt(new ChatManagement(mgt));
             setlistIsShow(false);
           }}
         ></ChatList>
