@@ -52,15 +52,14 @@ export const Chat = ({
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    if (!chat.config.activityTopicId) return;
-    if (!isPush) await chat.newTopic(messageInput.substring(0, 16)||new Date().toLocaleString());
+    if (!isPush) chat.config.activityTopicId = "";
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,
       senderId: chat.user.id,
       text: messageInput,
       timestamp: Date.now(),
-      topicId: chat.config.activityTopicId,
+      topicId: '',
     });
     setmessageInput("");
     setLoading(true);
