@@ -163,9 +163,10 @@ export class ChatManagement implements IChat {
       this.group.id,
       name.substring(0, 16) || new Date().toLocaleString()
     );
-    this.topics.push({ ...topic, messages: [] });
+    let _topic = { ...topic, messages: [] };
+    this.topics.push(_topic);
     this.config.activityTopicId = topic.id;
-    return topic;
+    return _topic;
   }
   async saveTopic(topicId: string, name: string) {
     const t = this.topics.find((f) => f.id == topicId);
@@ -321,7 +322,7 @@ export class ChatManagement implements IChat {
     if (!message.text || !message.text.trim()) return;
     message.text = message.text.trim();
     let topic = this.topics.find((f) => f.id == message.topicId);
-    if (!topic) return;
+    if (!topic) topic = await await this.newTopic(message.text);
     message.groupId = this.group.id;
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);
@@ -368,6 +369,9 @@ export class ChatManagement implements IChat {
         value: topic.id,
       });
     }
+    if (this.topics.length)
+      this.config.activityTopicId = this.topics.slice(-1)[0].id;
+    else this.config.activityTopicId = "";
   }
   static async remove(chat: IChat) {
     await getInstance().delete_by_primaryKey({
