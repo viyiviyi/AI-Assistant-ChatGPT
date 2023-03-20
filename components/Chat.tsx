@@ -52,8 +52,8 @@ export const Chat = ({
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    if (!isPush || !chat.config.activityTopicId)
-      await chat.newTopic(messageInput);
+    if (!isPush) await chat.newTopic(messageInput);
+    if (!chat.config.activityTopicId) await chat.newTopic(messageInput);
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,
