@@ -59,7 +59,7 @@ export const Chat = ({
       senderId: chat.user.id,
       text: messageInput,
       timestamp: Date.now(),
-      topicId: '',
+      topicId: "",
     });
     setmessageInput("");
     setLoading(true);
@@ -256,6 +256,7 @@ let models = [
 async function sendMessage(chat: ChatManagement) {
   const messages = chat.getAskContext();
   if (messages.length == 0) return;
+  let topicId = chat.config.activityTopicId;
   try {
     if (KeyValueData.instance().getApiKey()) {
       const res = await ApiClient.chatGptV3({
@@ -275,7 +276,7 @@ async function sendMessage(chat: ChatManagement) {
         virtualRoleId: chat.virtualRole.id,
         text: res,
         timestamp: Date.now(),
-        topicId: chat.config.activityTopicId,
+        topicId: topicId,
       });
     }
     message.error("缺少apikey，请在设置中配置后使用");
@@ -286,7 +287,7 @@ async function sendMessage(chat: ChatManagement) {
       virtualRoleId: chat.virtualRole.id,
       text: error.message,
       timestamp: Date.now(),
-      topicId: chat.config.activityTopicId,
+      topicId: topicId,
     });
   }
 }
