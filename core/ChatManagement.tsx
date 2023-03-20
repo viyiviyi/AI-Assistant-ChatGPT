@@ -115,6 +115,8 @@ export class ChatManagement implements IChat {
           }));
       });
     chat.topics = topics;
+    if (chat.topics.length)
+      chat.config.activityTopicId = chat.topics.slice(-1)[0].id;
   }
   getActivityTopic(): Topic | undefined {
     return this.topics.find((f) => f.id == this.config.activityTopicId);
