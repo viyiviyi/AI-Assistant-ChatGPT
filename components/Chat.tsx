@@ -52,7 +52,8 @@ export const Chat = ({
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    if (!isPush) await chat.newTopic(messageInput);
+    if (!isPush || !chat.config.activityTopicId)
+      await chat.newTopic(messageInput);
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,
@@ -270,6 +271,16 @@ async function sendMessage(chat: ChatManagement) {
         api_key: KeyValueData.instance().getApiKey(),
         baseUrl: chat.config.baseUrl || undefined,
       });
+      return chat.pushMessage({
+        id: "",
+        groupId: chat.group.id,
+        virtualRoleId: chat.virtualRole.id,
+        text: res,
+        timestamp: Date.now(),
+        topicId: topicId,
+      });
+    } else if ("https://chat.openai.com" == chat.config.baseUrl) {
+      const res = await ApiClient.sendChatMessage({ messages });
       return chat.pushMessage({
         id: "",
         groupId: chat.group.id,

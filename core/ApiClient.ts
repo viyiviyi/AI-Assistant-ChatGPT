@@ -1,4 +1,4 @@
-export class ApiClient{
+export class ApiClient {
   static async chatGptV3({
     messages,
     model,
@@ -44,7 +44,7 @@ export class ApiClient{
         }),
       }
     );
-  
+
     const data = await response.json();
     if (response.status !== 200) {
       throw (
@@ -52,5 +52,51 @@ export class ApiClient{
       );
     }
     return data.choices[0].message?.content;
-  }  
+  }
+
+  static callbackList: {
+    [key: string]: ((result?: string, error?: any) => void) | undefined;
+  } = {};
+
+  static orginUrl = "https://chat.openai.com";
+  static isInit = false;
+  static init() {
+    if (this.isInit) return;
+    window.addEventListener("message", (event) => {
+      if (event.origin !== this.orginUrl) {
+        return;
+      }
+      let { cbName } = event.data;
+      if (typeof this.callbackList[cbName] == "function") {
+        this.callbackList[cbName]!(event.data.result, event.data.error);
+      }
+    });
+  }
+  /**
+   * 这个是用来嵌入chat.openai.com/chat时直接调用官方接口的
+   */
+  static async sendChatMessage({
+    messages,
+  }: {
+    messages: Array<{
+      role: "assistant" | "user" | "system";
+      content: string;
+      name: string;
+    }>;
+  }): Promise<string> {
+    this.init();
+    let cbName = "_cb_" + Date.now();
+    return new Promise((res, rej) => {
+      this.callbackList[cbName] = (result?: string, error?: any) => {
+        this.callbackList[cbName] = undefined;
+        if (error) return rej(error);
+        if (result) res(result);
+      };
+      setTimeout(() => {
+        this.callbackList[cbName] = undefined;
+        rej("timeout");
+      }, 1000 * 60);
+      window.parent.postMessage({ messages, cbName }, this.orginUrl);
+    });
+  }
 }

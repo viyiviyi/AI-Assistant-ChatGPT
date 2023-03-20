@@ -181,7 +181,19 @@ export const Setting = ({
           <Form.Item
             name="setting_apitoken"
             label="openapi key"
-            extra="请填写自己的可以，没有key将不能使用"
+            extra={
+              <span>
+                请填写自己的可以，没有key将不能使用，如果你的账号没有余额了，也可以尝试
+                <a
+                  style={{ color: token.colorLink }}
+                  href="https://github.com/viyiviyi/ChatGpt-lite-chat-web"
+                  rel="noopener noreferrer"
+                  target={"_blank"}
+                >
+                  嵌入式使用方式
+                </a>
+              </span>
+            }
           >
             <Input type="password" />
           </Form.Item>
@@ -195,7 +207,7 @@ export const Setting = ({
           <Form.Item
             name="setting_baseurl"
             label="接口访问地址"
-            extra="一般情况下填一个api代理地址"
+            extra="一般情况下填一个api代理地址，如果在使用嵌入官网的访问使用，请填写 https://chat.openai.com 来开启此功能"
           >
             <Input type="text" />
           </Form.Item>
@@ -207,23 +219,35 @@ export const Setting = ({
             <Input.TextArea autoSize />
           </Form.Item>
           <Form.Item label="接口参数">
-            <Form.Item name="GptConfig_role" label="role  指定对话角色，用于区分对话的用户 不建议使用user">
+            <Form.Item
+              name="GptConfig_role"
+              label="role  指定对话角色，用于区分对话的用户 不建议使用user"
+            >
               <Radio.Group>
                 <Radio.Button value="assistant">assistant</Radio.Button>
                 <Radio.Button value="system">system</Radio.Button>
                 <Radio.Button value="user">user</Radio.Button>
               </Radio.Group>
             </Form.Item>
-            <Form.Item name="GptConfig_max_tokens" label="max_tokens 指定生成文本的最大长度，不是字数">
+            <Form.Item
+              name="GptConfig_max_tokens"
+              label="max_tokens 指定生成文本的最大长度，不是字数"
+            >
               <InputNumber step="50" min={50} max={2048} />
             </Form.Item>
-            <Form.Item name="GptConfig_top_p" label="top_p 指定从概率分布中选择的标记的概率阈值（不懂）">
+            <Form.Item
+              name="GptConfig_top_p"
+              label="top_p 指定从概率分布中选择的标记的概率阈值（不懂）"
+            >
               <InputNumber step="0.05" min={0} max={1} />
             </Form.Item>
             <Form.Item name="GptConfig_n" label="n 指定生成文本的数量">
               <InputNumber step="1" min={1} max={10} />
             </Form.Item>
-            <Form.Item name="GptConfig_temperature" label="temperature 较高的值会产生更多样化的文本">
+            <Form.Item
+              name="GptConfig_temperature"
+              label="temperature 较高的值会产生更多样化的文本"
+            >
               <InputNumber step="0.05" min={0} max={1} />
             </Form.Item>
           </Form.Item>
