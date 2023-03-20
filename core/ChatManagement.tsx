@@ -83,7 +83,7 @@ export class ChatManagement implements IChat {
           config,
           virtualRole,
           topics,
-        }
+        };
         if (i == 0) {
           await this.loadMessage(chat);
         }
@@ -157,7 +157,10 @@ export class ChatManagement implements IChat {
     return ctx;
   }
   async newTopic(name: string) {
-    let topic = await ChatManagement.createTopic(this.group.id, name);
+    let topic = await ChatManagement.createTopic(
+      this.group.id,
+      name.substring(0, 1) || new Date().toLocaleString()
+    );
     this.topics.push({ ...topic, messages: [] });
     this.config.activityTopicId = topic.id;
     return topic;
@@ -315,11 +318,6 @@ export class ChatManagement implements IChat {
   async pushMessage(message: Message) {
     message.text = message.text.trim();
     if (!message.text) return;
-    if (!this.config.activityTopicId)
-      await this.newTopic(
-        message.text.substring(0, 16) || new Date().toLocaleString()
-      );
-    message.topicId = this.config.activityTopicId;
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) return;
     message.groupId = this.group.id;
