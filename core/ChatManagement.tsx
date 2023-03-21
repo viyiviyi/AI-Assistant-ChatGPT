@@ -149,7 +149,7 @@ export class ChatManagement implements IChat {
         },
         ...this.virtualRole.settings.map((v) => ({
           role: v.startsWith("/") ? this.gptConfig.role : "user",
-          content: v.replace(/^\//, ""),
+          content: v.replace(/^\/+/, ""),
           name: v.startsWith("/") ? 'assistant' : 'master',
         })),
         ...ctx,

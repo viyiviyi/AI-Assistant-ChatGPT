@@ -52,7 +52,9 @@ export const Setting = ({
     if (!chatMgt) return;
     chatMgt.virtualRole.name = values.virtualRole_name;
     chatMgt.virtualRole.bio = values.virtualRole_bio;
-    chatMgt.virtualRole.settings = values.virtualRole_settings;
+    chatMgt.virtualRole.settings = values.virtualRole_settings
+      .map((v) => v.trim())
+      .filter((f) => f);
     chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
     chatMgt.saveVirtualRoleBio();
 
@@ -138,12 +140,10 @@ export const Setting = ({
                     >
                       <Input
                         placeholder="追加内容"
-                        value={chatMgt?.virtualRole.settings[index]}
                         suffix={
                           <MinusCircleOutlined
                             className="dynamic-delete-button"
                             onClick={() => {
-                              chatMgt?.virtualRole.settings.splice(index, 1);
                               remove(field.name);
                             }}
                           />
@@ -156,7 +156,6 @@ export const Setting = ({
                   <Button
                     type="dashed"
                     onClick={() => {
-                      chatMgt?.virtualRole.settings.push("");
                       add();
                     }}
                     block
