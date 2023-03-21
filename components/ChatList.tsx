@@ -122,6 +122,7 @@ export const ChatList = ({
                     editable={{
                       onChange: (val) => {
                         v.group.name = val;
+                        v.saveGroup();
                         setGroups([...groups]);
                       },
                     }}
