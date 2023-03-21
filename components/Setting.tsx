@@ -152,7 +152,7 @@ export const Setting = ({
                     </Form.Item>
                   </Form.Item>
                 ))}
-                <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
+                <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面，以/开头表示内容是机器人发出的">
                   <Button
                     type="dashed"
                     onClick={() => {

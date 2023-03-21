@@ -135,23 +135,22 @@ export class ChatManagement implements IChat {
     }> = [];
     if (topic) {
       ctx = topic.messages.slice(-this.gptConfig.msgCount).map((v) => ({
-        role: this.gptConfig.role,
+        role: v.virtualRoleId ? this.gptConfig.role : "user",
         content: v.text,
-        name: v.virtualRoleId ? "assistant" : "user",
+        name: v.virtualRoleId ? 'assistant' : 'master',
       }));
     }
-
     if (this.config.enableVirtualRole) {
       ctx = [
         {
-          role: this.gptConfig.role,
+          role: "user",
           content: this.virtualRole.bio,
-          name: "user",
+          name: 'master',
         },
         ...this.virtualRole.settings.map((v) => ({
-          role: this.gptConfig.role,
-          content: v,
-          name: "user",
+          role: v.startsWith("/") ? this.gptConfig.role : "user",
+          content: v.replace(/^\//, ""),
+          name: v.startsWith("/") ? 'assistant' : 'master',
         })),
         ...ctx,
       ];
