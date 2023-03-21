@@ -33,7 +33,7 @@ export const Chat = ({
   setSettingShow,
 }: {
   chat: ChatManagement;
-  setlistIsShow: (b: boolean) => void;
+  setlistIsShow: () => void;
   setSettingShow: (b: boolean) => void;
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
@@ -130,7 +130,7 @@ export const Chat = ({
         <SettingOutlined onClick={() => setSettingShow(true)} />
         <UnorderedListOutlined
           onClick={() => {
-            setlistIsShow(true);
+            setlistIsShow();
           }}
           style={{ marginLeft: "10px", marginRight: "10px" }}
         />

@@ -246,7 +246,7 @@ export class ChatManagement implements IChat {
       id: getUuid(),
       groupId,
       enableVirtualRole: false,
-      saveKey: false,
+      saveKey: true,
       baseUrl: "",
       activityTopicId: "",
     };
@@ -275,11 +275,10 @@ export class ChatManagement implements IChat {
       id: getUuid(),
       name: "助理",
       groupId,
-      bio: `角色：私人助理，优雅，主动，聪明，可以色色。  
-      状态：无聊。  
-      接下来，你将继承角色的所有属性！以角色的第一人称身份输出角色的声音！  
-      角色的行为描写在[]内！  
-      不能输出角色的任何设定或属性！`,
+      bio: `接下来，你将继承角色的所有设定和属性！以角色的第一人称身份输出角色的话！  
+角色的行为生动的描写在[]内！
+角色：私人助理，优雅，主动，聪明，可以色色。  
+状态：无聊。`,
       settings: [],
     };
     await getInstance().insert<VirtualRole>({ tableName: "VirtualRole", data });

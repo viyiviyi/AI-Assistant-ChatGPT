@@ -9,6 +9,7 @@ import {
   Input,
   InputNumber,
   Modal,
+  Popconfirm,
   Radio,
   Space,
   Switch,
@@ -53,7 +54,7 @@ export const Setting = ({
     chatMgt.virtualRole.name = values.virtualRole_name;
     chatMgt.virtualRole.bio = values.virtualRole_bio;
     chatMgt.virtualRole.settings = values.virtualRole_settings
-      .map((v) => v.trim())
+      .map((v) => v?.trim())
       .filter((f) => f);
     chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
     chatMgt.saveVirtualRoleBio();
@@ -132,24 +133,40 @@ export const Setting = ({
             {(fields, { add, remove }, { errors }) => (
               <div style={{ overflow: "auto" }}>
                 {fields.map((field, index) => (
-                  <Form.Item required={false} key={field.key}>
+                  <Form.Item
+                    required={false}
+                    key={field.key}
+                    style={{ position: "relative" }}
+                  >
                     <Form.Item
                       {...field}
                       validateTrigger={["onChange", "onBlur"]}
                       noStyle
                     >
-                      <Input
+                      <Input.TextArea
                         placeholder="追加内容"
-                        suffix={
-                          <MinusCircleOutlined
-                            className="dynamic-delete-button"
-                            onClick={() => {
-                              remove(field.name);
-                            }}
-                          />
-                        }
+                        autoSize
+                        style={{ paddingRight: "2em" }}
                       />
                     </Form.Item>
+                    <Popconfirm
+                      title="确定删除？"
+                      onConfirm={() => {
+                        remove(field.name);
+                      }}
+                      okText="确定"
+                      cancelText="取消"
+                    >
+                      <MinusCircleOutlined
+                        className="dynamic-delete-button"
+                        style={{
+                          padding: ".5em",
+                          position: "absolute",
+                          right: "0",
+                          top: "2px",
+                        }}
+                      />
+                    </Popconfirm>
                   </Form.Item>
                 ))}
                 <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面，以/开头表示内容是机器人发出的">
@@ -180,19 +197,7 @@ export const Setting = ({
           <Form.Item
             name="setting_apitoken"
             label="openapi key"
-            extra={
-              <span>
-                请填写自己的可以，没有key将不能使用，如果你的账号没有余额了，也可以尝试
-                <a
-                  style={{ color: token.colorLink }}
-                  href="https://github.com/viyiviyi/ChatGpt-lite-chat-web"
-                  rel="noopener noreferrer"
-                  target={"_blank"}
-                >
-                  嵌入式使用方式
-                </a>
-              </span>
-            }
+            extra={<span>请填写自己的可以，没有key将不能使用</span>}
           >
             <Input type="password" />
           </Form.Item>
@@ -206,7 +211,7 @@ export const Setting = ({
           <Form.Item
             name="setting_baseurl"
             label="接口访问地址"
-            extra="一般情况下填一个api代理地址，如果在使用嵌入官网的访问使用，请填写 https://chat.openai.com 来开启此功能"
+            extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
           >
             <Input type="text" />
           </Form.Item>

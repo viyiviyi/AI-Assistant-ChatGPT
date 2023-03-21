@@ -61,41 +61,34 @@
       name: string;
     }>
     */
-  async function sendMessage(message) {
+  async function sendMessage(conversations) {
     // 请求官方接口
     await new Promise((res, rej) => {
       const xhr = new XMLHttpRequest();
       const url = "https://chat.openai.com/backend-api/conversation";
-      const data = JSON.stringify({
-		action: "next",
-		messages: [
-			{
-				id: getUuid(),
-				role: "user",
-				content: {
-					content_type: "text",
-					parts: [prompt],
-				},
-			},
-		],
-		conversation_id: conversationId,
-		parent_message_id: parentMessageId,
-		model: model,
-	});
+      const data = JSON.stringify(conversations);
       xhr.open("POST", url, true);
       xhr.withCredentials = true;
       xhr.setRequestHeader("Content-type", "application/json");
-      xhr.setRequestHeader("Authorization", "Bearer " + authToken);
+      xhr.setRequestHeader("Authorization", "Bearer " + window.authToken);
       xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
           console.log(xhr.responseText);
+          let res = JSON.parse(xhr.responseText.replace(/^data:/,''));
+          if (res.message) {
+            if (res.message.content) {
+              if (res.message.content.parts) {
+                console.log(res.message.content.parts);
+              }
+            }
+          }
           res(xhr.responseText);
         } else {
           rej("error");
         }
       };
       xhr.send(data);
-    });
+    }).catch((error) => console.error(error));
   }
   var iframeWindow = iframe.contentWindow;
   window.addEventListener("message", function (event) {

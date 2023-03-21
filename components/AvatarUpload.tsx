@@ -48,7 +48,7 @@ const AvatarUpload = ({
           showUploadList: false,
         }}
       >
-        <Avatar size={"large"} src={avatar}></Avatar>
+        <Avatar size={"large"} src={avatar || undefined}></Avatar>
       </Upload>
 
       {showModal && image && (

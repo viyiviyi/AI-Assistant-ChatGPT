@@ -55,7 +55,9 @@ export default function Home() {
         <Chat
           chat={chatMgt}
           setSettingShow={setSettingShow}
-          setlistIsShow={setlistIsShow}
+          setlistIsShow={() => {
+            setlistIsShow((v) => !v);
+          }}
         />
       ) : (
         <div
@@ -69,7 +71,7 @@ export default function Home() {
         ></div>
       )}
 
-      {windowWidth > 1420 ? (
+      {windowWidth > 1420 && listIsShow ? (
         <ChatList
           onCacle={() => {
             setlistIsShow(false);
@@ -101,7 +103,7 @@ export default function Home() {
         ></Setting>
       </Modal>
       <Modal
-        isShow={listIsShow}
+        isShow={listIsShow && windowWidth <= 1420}
         onCancel={() => {
           setlistIsShow(false);
         }}
