@@ -91,6 +91,8 @@ export const Chat = ({
         flexDirection: "column",
         height: "100%",
         maxHeight: "100%",
+        maxWidth: "1200px",
+        margin: "0 auto",
       }}
     >
       <div

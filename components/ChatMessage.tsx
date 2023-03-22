@@ -245,7 +245,7 @@ function MessagesBox({
                 onChange={(e) => {
                   msg.checked = e.target.checked;
                   chat?.pushMessage(msg);
-                  setNone([])
+                  setNone([]);
                 }}
               >
                 <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
