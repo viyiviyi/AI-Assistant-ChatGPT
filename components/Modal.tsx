@@ -36,6 +36,8 @@ export const Modal = ({
               padding: token.paddingSM,
               backgroundColor: token.colorBgElevated,
               borderRadius: token.borderRadiusLG,
+              maxHeight: "calc(100vh - 40px)",
+              overflow: "auto",
             }}
           >
             {children}
