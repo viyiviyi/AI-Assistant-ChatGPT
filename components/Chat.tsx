@@ -54,15 +54,18 @@ export const Chat = ({
   async function onSubmit(isPush: boolean) {
     if (!isPush) await chat.newTopic(messageInput);
     if (!chat.config.activityTopicId) await chat.newTopic(messageInput);
+    const isBot = messageInput.startsWith("/");
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,
-      senderId: chat.user.id,
-      text: messageInput,
+      senderId: isBot ? undefined : chat.user.id,
+      virtualRoleId: isBot ? chat.virtualRole.id : undefined,
+      text: messageInput.replace(/^\/+/, ""),
       timestamp: Date.now(),
       topicId: chat.config.activityTopicId,
     });
     setmessageInput("");
+    if (isBot) return;
     setLoading(true);
     await sendMessage(chat);
     setChatMgt([...chatMgt]);
@@ -207,7 +210,7 @@ export const Chat = ({
         </div>
         <div style={{ width: "100%" }}>
           <Input.TextArea
-            placeholder="Alt s 继续  Ctrl Enter新话题"
+            placeholder="Alt s 继续  Ctrl Enter新话题，/开头代替AI发言"
             autoSize
             allowClear
             ref={inputRef}
