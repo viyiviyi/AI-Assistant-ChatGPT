@@ -218,7 +218,7 @@ export const Setting = ({
           <Form.Item
             name="GptConfig_msgCount"
             label="上下文数量"
-            extra="对话模式下发送的最大前文数量，0表示全部"
+            extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
           >
             <Input.TextArea autoSize />
           </Form.Item>

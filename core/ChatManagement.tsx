@@ -45,9 +45,11 @@ export class ChatManagement implements IChat {
     if (this.loadAwait) return this.loadAwait;
     this.loadAwait = new Promise(async (res) => {
       await IndexedDB.init();
-      const groups = await getInstance().queryAll<Group>({
-        tableName: "Group",
-      });
+      const groups = await getInstance()
+        .queryAll<Group>({
+          tableName: "Group",
+        })
+        .then((gs) => gs.sort((l, n) => l.index || 0 - n.index || 0));
       if (!groups.length) {
         await this.createGroup().then((v) => groups.push(v));
       }
@@ -134,23 +136,41 @@ export class ChatManagement implements IChat {
       name: string;
     }> = [];
     if (topic) {
-      ctx = topic.messages.slice(-this.gptConfig.msgCount).map((v) => ({
-        role: v.virtualRoleId ? this.gptConfig.role : "user",
-        content: v.text,
-        name: v.virtualRoleId ? 'assistant' : 'master',
-      }));
+      if (
+        this.gptConfig.msgCount > 0 &&
+        topic.messages.length > this.gptConfig.msgCount
+      ) {
+        topic.messages
+          .slice(0, topic.messages.length - this.gptConfig.msgCount)
+          .filter((v) => v.checked)
+          .forEach((v) => {
+            ctx.push({
+              role: v.virtualRoleId ? this.gptConfig.role : "user",
+              content: v.text,
+              name: v.virtualRoleId ? "assistant" : "master",
+            });
+          });
+      }
+      topic.messages.slice(-this.gptConfig.msgCount).forEach((v) => {
+        ctx.push({
+          role: v.virtualRoleId ? this.gptConfig.role : "user",
+          content: v.text,
+          name: v.virtualRoleId ? "assistant" : "master",
+        });
+      });
     }
+    // 增加助理全局配置
     if (this.config.enableVirtualRole) {
       ctx = [
         {
           role: "user",
           content: this.virtualRole.bio,
-          name: 'master',
+          name: "master",
         },
         ...this.virtualRole.settings.map((v) => ({
           role: v.startsWith("/") ? this.gptConfig.role : "user",
           content: v.replace(/^\/+/, ""),
-          name: v.startsWith("/") ? 'assistant' : 'master',
+          name: v.startsWith("/") ? "assistant" : "master",
         })),
         ...ctx,
       ];
@@ -266,6 +286,7 @@ export class ChatManagement implements IChat {
     const data: Group = {
       id: getUuid(),
       name: "新建会话",
+      index: this.chatList.length,
     };
     await getInstance().insert<Group>({ tableName: "Group", data });
     return data;
@@ -331,6 +352,7 @@ export class ChatManagement implements IChat {
         value: msg.id,
         handle: (r) => {
           r.text = message.text;
+          r.checked = message.checked;
           return r;
         },
       });
@@ -401,7 +423,19 @@ export class ChatManagement implements IChat {
       condition: (v) => v.groupId == chat.group.id,
     });
     let delIdx = this.chatList.findIndex((f) => f.group.id == chat.group.id);
-    if (delIdx > -1) this.chatList.splice(delIdx, 1);
+    if (delIdx > -1) {
+      this.chatList.splice(delIdx, 1);
+      this.chatList.forEach((chat, idx) => {
+        getInstance().update_by_primaryKey<Group>({
+          tableName: "Group",
+          value: chat.group.id,
+          handle: (r) => {
+            r.index = idx;
+            return r;
+          },
+        });
+      });
+    }
   }
   toJson(): IChat {
     return {

@@ -12,6 +12,7 @@ export interface Group {
   id: string; // 分组ID
   name: string; // 分组名
   creatorId?: string; // 创建者ID
+  index: number; // 排序
 }
 
 // 分组表
@@ -22,7 +23,7 @@ export interface GroupConfig {
   saveKey: boolean;
   baseUrl: string;
   activityTopicId: string;
-  filterUserName?:boolean
+  filterUserName?: boolean;
 }
 
 // 聊天消息表
@@ -34,6 +35,7 @@ export interface Message {
   virtualRoleId?: string; // 虚拟角色id
   text: string; // 消息内容
   timestamp: number; // 时间戳
+  checked?: boolean;
 }
 
 export interface Topic {

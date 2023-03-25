@@ -10,7 +10,15 @@ import {
 } from "@ant-design/icons";
 import { Message, Topic } from "@/Models/DataBase";
 import { ChatManagement } from "@/core/ChatManagement";
-import { Avatar, Collapse, Input, Popconfirm, theme, Typography } from "antd";
+import {
+  Avatar,
+  Checkbox,
+  Collapse,
+  Input,
+  Popconfirm,
+  theme,
+  Typography,
+} from "antd";
 import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 import React from "react";
 function scrollToBotton(dom: HTMLElement) {
@@ -154,6 +162,7 @@ function MessagesBox({
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [message, setMessage] = useState(msg.text);
+  const [none, setNone] = useState([]);
   return (
     <div
       ref={newMsgRef}
@@ -231,13 +240,16 @@ function MessagesBox({
                 justifyContent: "flex-end",
               }}
             >
-              <span
-                onClick={() => {
-                  setEdit(false);
+              <Checkbox
+                checked={msg.checked || false}
+                onChange={(e) => {
+                  msg.checked = e.target.checked;
+                  chat?.pushMessage(msg);
+                  setNone([]);
                 }}
               >
-                {new Date(msg.timestamp).toLocaleTimeString()}
-              </span>
+                <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
+              </Checkbox>
               <span style={{ flex: 1 }}></span>
               {edit ? (
                 <SaveOutlined
