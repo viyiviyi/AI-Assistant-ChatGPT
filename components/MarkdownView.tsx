@@ -19,7 +19,7 @@ import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import dart from "highlight.js/lib/languages/dart";
 import remarkParse from "remark-parse";
-import { createElement, Fragment} from "react";
+import { createElement, Fragment } from "react";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeReact from "rehype-react";
 import React from "react";
@@ -33,7 +33,7 @@ function toTxt(node: React.ReactNode): string {
   } else if (typeof node == "object" && "props" in (node as any)) {
     str += (node as any)["props"] && toTxt((node as any)["props"].children);
   } else {
-    str += node
+    str += node;
   }
   return str;
 }
@@ -43,6 +43,7 @@ export function MarkdownView({ markdown }: { markdown: string }) {
   if (/^</.test(markdown) && isXML(markdown)) {
     markdown = "```xml\n" + markdown + "\n```";
   }
+  markdown = markdown.replace(/\n/g, '  \n');
   let processor = unified()
     .use(remarkParse)
     .use(remarkRehype)
