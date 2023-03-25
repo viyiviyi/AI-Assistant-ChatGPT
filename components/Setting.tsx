@@ -6,7 +6,6 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
-import type { DragEndEvent } from "@dnd-kit/core";
 import {
   Avatar,
   Button,
@@ -99,11 +98,6 @@ export const Setting = ({
     );
     onSaved();
   }
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
-    if (active.id !== over?.id) {
-      console.log(active, over);
-    }
-  };
   return (
     <>
       <Form
