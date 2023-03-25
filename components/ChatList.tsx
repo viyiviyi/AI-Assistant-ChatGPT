@@ -46,6 +46,8 @@ export const ChatList = ({
           width: "min(90vw, 460px)",
           display: "flex",
           flexDirection: "column",
+          height: "100%",
+          maxHeight: "100%",
         }}
       >
         <div

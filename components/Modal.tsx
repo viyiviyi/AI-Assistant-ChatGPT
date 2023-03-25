@@ -21,7 +21,9 @@ export const Modal = ({
           style={{
             position: "fixed",
             width: "100vw",
-            height: "100vh",
+            minHeight: "100%",
+            maxHeight: "100%",
+            height: "100%",
             left: 0,
             top: 0,
             display: "flex",
@@ -36,6 +38,8 @@ export const Modal = ({
               padding: token.paddingSM,
               backgroundColor: token.colorBgElevated,
               borderRadius: token.borderRadiusLG,
+              maxHeight: "calc(100% - 20px)",
+              height: "100%",
             }}
           >
             {children}
