@@ -49,7 +49,7 @@ export class ChatManagement implements IChat {
         .queryAll<Group>({
           tableName: "Group",
         })
-        .then((gs) => gs.sort((l, n) => l.index || 0 - n.index || 0));
+        .then((gs) => gs.sort((l, n) => (l.index || 0) - (n.index || 0)));
       if (!groups.length) {
         await this.createGroup().then((v) => groups.push(v));
       }

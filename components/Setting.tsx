@@ -43,9 +43,6 @@ export const Setting = ({
     chatMgt?.virtualRole.avatar
   );
   const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
-  const [fieldsIndex, setFieldsIndex] = useState<number[]>(
-    getLengthArray(chatMgt?.virtualRole.settings.length)
-  );
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
     virtualRole_name: string;
