@@ -5,10 +5,12 @@ export const Modal = ({
   isShow = false,
   onCancel = () => {},
   children,
+  maxHight,
 }: {
   isShow: boolean;
   children: ReactElement<any, any>;
   onCancel?: () => void;
+  maxHight?: string;
 }) => {
   const { token } = theme.useToken();
   return (
@@ -38,7 +40,7 @@ export const Modal = ({
               padding: token.paddingSM,
               backgroundColor: token.colorBgElevated,
               borderRadius: token.borderRadiusLG,
-              maxHeight: "calc(100% - 40px)",
+              maxHeight: maxHight ? maxHight : "calc(100% - 40px)",
               height: "100%",
             }}
           >

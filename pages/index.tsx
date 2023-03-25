@@ -87,6 +87,7 @@ export default function Home() {
 
       <Modal
         isShow={settingIsShow}
+        maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
           setSettingShow(false);
         }}

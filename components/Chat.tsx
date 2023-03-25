@@ -147,7 +147,10 @@ export const Chat = ({
             deleteChatMsg(m);
           }}
           rBak={(v) => {
-            setmessageInput((m) => (m ? m + "\n\n" : m) + v.text);
+            setmessageInput(
+              (m) =>
+                (m ? m + "\n" : m) + (v.virtualRoleId ? "/" + v.text : v.text)
+            );
             inputRef.current?.focus();
           }}
           handerCloseAll={(cb) => (closeAllTopic = cb)}

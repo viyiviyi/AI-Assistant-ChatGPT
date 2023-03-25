@@ -137,29 +137,31 @@ export const ChatList = ({
             </Card>
           ))}
         </div>
-
-        <Button
-          block
-          onClick={(e) => {
-            e.stopPropagation();
-            create().then(() => {
-              setGroups([
-                ...ChatManagement.getGroups().map((v) => new ChatManagement(v)),
-              ]);
-            });
-          }}
-        >
-          <div>
-            <span>新建</span>
-          </div>
-        </Button>
-        <Button
-          block
-          style={{ marginTop: "10px", justifyContent: "center" }}
-          onClick={() => onCacle()}
-        >
-          <span>关闭</span>
-        </Button>
+        <Button.Group>
+          <Button
+            block
+            onClick={(e) => {
+              e.stopPropagation();
+              create().then(() => {
+                setGroups([
+                  ...ChatManagement.getGroups().map(
+                    (v) => new ChatManagement(v)
+                  ),
+                ]);
+              });
+            }}
+          >
+            <div>
+              <span>新建</span>
+            </div>
+          </Button>
+          <Button
+            block
+            onClick={() => onCacle()}
+          >
+            <span>关闭</span>
+          </Button>
+        </Button.Group>
       </div>
     </>
   );

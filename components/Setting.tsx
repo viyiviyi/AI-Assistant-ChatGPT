@@ -1,11 +1,17 @@
 import { ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  MenuOutlined,
+  MinusCircleOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { useState } from "react";
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
   Avatar,
   Button,
   Form,
+  FormListFieldData,
   Input,
   InputNumber,
   Modal,
@@ -16,6 +22,14 @@ import {
   theme,
 } from "antd";
 import AvatarUpload from "./AvatarUpload";
+
+function getLengthArray(len: number = 0): number[] {
+  let arr = [];
+  for (let i = 0; i < len; i++) {
+    arr.push(i);
+  }
+  return arr;
+}
 
 export const Setting = ({
   chatMgt,
@@ -30,6 +44,9 @@ export const Setting = ({
     chatMgt?.virtualRole.avatar
   );
   const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
+  const [fieldsIndex, setFieldsIndex] = useState<number[]>(
+    getLengthArray(chatMgt?.virtualRole.settings.length)
+  );
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
     virtualRole_name: string;
@@ -82,6 +99,11 @@ export const Setting = ({
     );
     onSaved();
   }
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (active.id !== over?.id) {
+      console.log(active, over);
+    }
+  };
   return (
     <>
       <Form
@@ -130,60 +152,97 @@ export const Setting = ({
             <Input.TextArea autoSize />
           </Form.Item>
           <Form.List name="virtualRole_settings">
-            {(fields, { add, remove }, { errors }) => (
-              <div style={{ overflow: "auto" }}>
-                {fields.map((field, index) => (
-                  <Form.Item
-                    required={false}
-                    key={field.key}
-                    style={{ position: "relative" }}
-                  >
-                    <Form.Item
-                      {...field}
-                      validateTrigger={["onChange", "onBlur"]}
-                      noStyle
-                    >
-                      <Input.TextArea
-                        placeholder="追加内容"
-                        autoSize
-                        style={{ paddingRight: "2em" }}
-                      />
-                    </Form.Item>
-                    <Popconfirm
-                      title="确定删除？"
-                      onConfirm={() => {
-                        remove(field.name);
+            {(fields, { add, remove }, { errors }) => {
+              return (
+                <div style={{ overflow: "auto" }}>
+                  {fields.map((field, index) => {
+                    return (
+                      <Form.Item
+                        required={false}
+                        key={field.key}
+                        style={{ position: "relative" }}
+                      >
+                        <Popconfirm
+                          icon={<></>}
+                          placement="topLeft"
+                          title="移动顺序"
+                          onConfirm={() => {
+                            let val =
+                              form.getFieldsValue().virtualRole_settings &&
+                              form.getFieldsValue().virtualRole_settings[index];
+                            remove(index);
+                            add(val, Math.max(index - 1, 0));
+                          }}
+                          onCancel={() => {
+                            let val =
+                              form.getFieldsValue().virtualRole_settings &&
+                              form.getFieldsValue().virtualRole_settings[index];
+                            remove(index);
+                            add(val, Math.min(index + 1, fields.length - 1));
+                          }}
+                          okText="上移"
+                          cancelText="下移"
+                        >
+                          <MenuOutlined
+                            className="dynamic-delete-button"
+                            style={{
+                              padding: ".5em",
+                              position: "absolute",
+                              left: "0",
+                              top: "2px",
+                              zIndex: 1,
+                            }}
+                          />
+                        </Popconfirm>
+                        <Form.Item
+                          {...field}
+                          validateTrigger={["onChange", "onBlur"]}
+                          noStyle
+                        >
+                          <Input.TextArea
+                            placeholder="追加内容"
+                            autoSize
+                            style={{ paddingRight: "2em", paddingLeft: "2em" }}
+                          />
+                        </Form.Item>
+                        <Popconfirm
+                          title="确定删除？"
+                          placement="topRight"
+                          onConfirm={() => {
+                            remove(index);
+                          }}
+                          okText="确定"
+                          cancelText="取消"
+                        >
+                          <MinusCircleOutlined
+                            className="dynamic-delete-button"
+                            style={{
+                              padding: ".5em",
+                              position: "absolute",
+                              right: "0",
+                              top: "2px",
+                            }}
+                          />
+                        </Popconfirm>
+                      </Form.Item>
+                    );
+                  })}
+                  <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面，以/开头表示内容是机器人发出的">
+                    <Button
+                      type="dashed"
+                      onClick={() => {
+                        add();
                       }}
-                      okText="确定"
-                      cancelText="取消"
+                      block
+                      icon={<PlusOutlined />}
                     >
-                      <MinusCircleOutlined
-                        className="dynamic-delete-button"
-                        style={{
-                          padding: ".5em",
-                          position: "absolute",
-                          right: "0",
-                          top: "2px",
-                        }}
-                      />
-                    </Popconfirm>
+                      增加设定
+                    </Button>
+                    <Form.ErrorList errors={errors} />
                   </Form.Item>
-                ))}
-                <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面，以/开头表示内容是机器人发出的">
-                  <Button
-                    type="dashed"
-                    onClick={() => {
-                      add();
-                    }}
-                    block
-                    icon={<PlusOutlined />}
-                  >
-                    增加设定
-                  </Button>
-                  <Form.ErrorList errors={errors} />
-                </Form.Item>
-              </div>
-            )}
+                </div>
+              );
+            }}
           </Form.List>
           <Form.Item>
             <AvatarUpload avatar={user_Avatar} onSave={setUser_Avatar} />
