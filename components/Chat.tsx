@@ -39,7 +39,7 @@ export const Chat = ({
   const inputRef = React.createRef<HTMLInputElement>();
   const { token } = theme.useToken();
   const [chatMgt, setChatMgt] = useState<ChatManagement[]>([chat]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(0);
   const [messageInput, setmessageInput] = useState("");
   function deleteChatMsg(msg: Message): void {
     chat.removeMessage(msg).then(() => {
@@ -66,11 +66,11 @@ export const Chat = ({
     });
     setmessageInput("");
     if (isBot) return;
-    setLoading(true);
+    setLoading(v=>++v);
     await sendMessage(chat);
     setChatMgt([...chatMgt]);
     setTimeout(() => {
-      setLoading(false);
+      setLoading(v=>--v);
     }, 500);
   }
   let closeAllTopic: () => void = () => {};
