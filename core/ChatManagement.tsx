@@ -492,7 +492,6 @@ export class ChatManagement implements IChat {
     return chat;
   }
   async fromJson(json: IChat) {
-    console.log(json);
     await ChatManagement.remove(this);
     Object.assign(this.group, json.group, { id: getUuid() });
     await ChatManagement.createGroup(this.group);
