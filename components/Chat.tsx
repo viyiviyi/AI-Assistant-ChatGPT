@@ -95,6 +95,7 @@ export const Chat = ({
         flex: 1,
         flexDirection: "column",
         height: "100%",
+        width:'100%',
         maxHeight: "100%",
         maxWidth: "1200px",
         margin: "0 auto",
@@ -186,7 +187,6 @@ export const Chat = ({
           }}
         >
           <Typography.Text
-            style={{ marginRight: "20px", maxWidth: "40vw" }}
             ellipsis={true}
           >
             {chat.getActivityTopic()?.name}

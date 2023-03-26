@@ -152,7 +152,7 @@ export const Setting = ({
             <Form.Item
               style={{ flex: 1 }}
               name="virtualRole_en_name"
-              label="英文名称; 用于让区分是谁"
+              label="英文名称;用于区分角色"
               rules={[
                 {
                   type: "string",
@@ -274,7 +274,7 @@ export const Setting = ({
             <Form.Item
               style={{ flex: 1 }}
               name="user_en_name"
-              label="英文名称; 用于让区分是谁"
+              label="英文名称;用于区分角色"
               rules={[
                 {
                   type: "string",
