@@ -52,25 +52,27 @@ export const Chat = ({
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    if (!isPush) await chat.newTopic(messageInput);
-    if (!chat.config.activityTopicId) await chat.newTopic(messageInput);
     const isBot = messageInput.startsWith("/");
+    const skipRequest = messageInput.startsWith("\\");
+    const text = messageInput.replace(/^\/+/, "").replace(/^\\+/, "")
+    if (!isPush) await chat.newTopic(text);
+    if (!chat.config.activityTopicId) await chat.newTopic(text);
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,
       senderId: isBot ? undefined : chat.user.id,
       virtualRoleId: isBot ? chat.virtualRole.id : undefined,
-      text: messageInput.replace(/^\/+/, ""),
+      text: text,
       timestamp: Date.now(),
       topicId: chat.config.activityTopicId,
     });
     setmessageInput("");
-    if (isBot) return;
-    setLoading(v=>++v);
+    if (isBot || skipRequest) return;
+    setLoading((v) => ++v);
     await sendMessage(chat);
     setChatMgt([...chatMgt]);
     setTimeout(() => {
-      setLoading(v=>--v);
+      setLoading((v) => --v);
     }, 500);
   }
   let closeAllTopic: () => void = () => {};
@@ -101,7 +103,7 @@ export const Chat = ({
       <div
         style={{
           flexWrap: "nowrap",
-          gap: "10px",
+          gap: "16px",
           width: "100%",
           justifyContent: "flex-end",
           display: "flex",
@@ -175,7 +177,7 @@ export const Chat = ({
         <div
           style={{
             flexWrap: "nowrap",
-            gap: "10px",
+            gap: "16px",
             width: "100%",
             justifyContent: "flex-end",
             display: "flex",
@@ -192,7 +194,6 @@ export const Chat = ({
           <span style={{ flex: 1 }}></span>
           <Button
             shape="round"
-            size="small"
             onClick={() => {
               closeAllTopic();
             }}
@@ -202,11 +203,13 @@ export const Chat = ({
           </Button>
           <Button
             shape="circle"
+            size="large"
             icon={<CommentOutlined />}
             onClick={() => onSubmit(false)}
           ></Button>
           <Button
             shape="circle"
+            size="large"
             icon={<MessageOutlined />}
             onClick={() => onSubmit(true)}
           ></Button>

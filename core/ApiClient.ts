@@ -38,7 +38,7 @@ export class ApiClient {
           stream: false,
           temperature,
           top_p,
-          max_tokens,
+          max_tokens: max_tokens <= 0 ? undefined : max_tokens,
           n,
           user,
         }),

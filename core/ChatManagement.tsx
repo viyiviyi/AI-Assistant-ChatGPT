@@ -14,6 +14,7 @@ import { getUuid } from "./utils";
 export interface IChat {
   user: User;
   virtualRole: VirtualRole;
+  virtualRoles: { [key: string]: VirtualRole | undefined };
   topics: (Topic & { messages: Message[] })[];
   group: Group;
   config: GroupConfig;
@@ -36,6 +37,7 @@ export class ChatManagement implements IChat {
   readonly group: Group;
   readonly gptConfig: GptConfig;
 
+  readonly virtualRoles: { [key: string]: VirtualRole | undefined } = {};
   private static readonly chatList: IChat[] = [];
   static getGroups(): IChat[] {
     return this.chatList;
@@ -76,6 +78,14 @@ export class ChatManagement implements IChat {
         let config = groupConfigs.find((f) => f.groupId == g.id);
         if (!config) config = await this.createConfig(g.id);
         let virtualRole = virtualRoles.find((f) => f.groupId == g.id);
+        let thisVirtualRoles: { [key: string]: VirtualRole | undefined } = {};
+        virtualRoles
+          .filter((f) => f.groupId == g.id)
+          .forEach((v, idx) => {
+            if (idx == 0) virtualRole = v;
+            if (v.id == config?.defaultVirtualRole) virtualRole = v;
+            thisVirtualRoles[v.id] = v;
+          });
         if (!virtualRole) virtualRole = await this.createVirtualRoleBio(g.id);
         let topics: (Topic & { messages: Message[] })[] = [];
         const chat = {
@@ -84,6 +94,7 @@ export class ChatManagement implements IChat {
           gptConfig,
           config,
           virtualRole,
+          virtualRoles: thisVirtualRoles,
           topics,
         };
         if (i == 0) {
@@ -144,33 +155,46 @@ export class ChatManagement implements IChat {
           .slice(0, topic.messages.length - this.gptConfig.msgCount)
           .filter((v) => v.checked)
           .forEach((v) => {
+            let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
             ctx.push({
               role: v.virtualRoleId ? this.gptConfig.role : "user",
               content: v.text,
-              name: v.virtualRoleId ? "assistant" : "master",
+              name: v.virtualRoleId
+                ? virtualRole
+                  ? virtualRole.enName || "assistant"
+                  : this.virtualRole.enName || "assistant"
+                : this.user.enName || "user",
             });
           });
       }
       topic.messages.slice(-this.gptConfig.msgCount).forEach((v) => {
+        let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
         ctx.push({
           role: v.virtualRoleId ? this.gptConfig.role : "user",
           content: v.text,
-          name: v.virtualRoleId ? "assistant" : "master",
+          name: v.virtualRoleId
+            ? virtualRole
+              ? virtualRole.enName || "assistant"
+              : this.virtualRole.enName || "assistant"
+            : this.user.enName || "user",
         });
       });
     }
     // 增加助理全局配置
     if (this.config.enableVirtualRole) {
+      let virtualRole =
+        this.virtualRoles[this.config.defaultVirtualRole || ""] ||
+        this.virtualRole;
       ctx = [
         {
-          role: "user",
-          content: this.virtualRole.bio,
-          name: "master",
+          role: virtualRole.bio.startsWith("/") ? this.gptConfig.role : "user",
+          content: virtualRole.bio.replace(/^\/+/, ""),
+          name: this.user.enName || "user",
         },
-        ...this.virtualRole.settings.map((v) => ({
+        ...virtualRole.settings.map((v) => ({
           role: v.startsWith("/") ? this.gptConfig.role : "user",
           content: v.replace(/^\/+/, ""),
-          name: v.startsWith("/") ? "assistant" : "master",
+          name: v.startsWith("/") ? "assistant" : this.user.enName || "user",
         })),
         ...ctx,
       ];
@@ -251,8 +275,12 @@ export class ChatManagement implements IChat {
       },
     });
   }
-  static async createTopic(groupId: string, name?: string): Promise<Topic> {
-    const data: Topic = {
+  static async createTopic(
+    groupId: string,
+    name?: string,
+    topic?: Topic
+  ): Promise<Topic> {
+    const data: Topic = topic || {
       id: getUuid(),
       groupId,
       name: name || "",
@@ -261,8 +289,11 @@ export class ChatManagement implements IChat {
     await getInstance().insert<Topic>({ tableName: "Topic", data });
     return data;
   }
-  static async createConfig(groupId: string): Promise<GroupConfig> {
-    const data: GroupConfig = {
+  static async createConfig(
+    groupId: string,
+    groupConfig?: GroupConfig
+  ): Promise<GroupConfig> {
+    const data: GroupConfig = groupConfig || {
       id: getUuid(),
       groupId,
       enableVirtualRole: false,
@@ -273,8 +304,8 @@ export class ChatManagement implements IChat {
     await getInstance().insert<GroupConfig>({ tableName: "GroupConfig", data });
     return data;
   }
-  static async createUser(groupId: string): Promise<User> {
-    const data: User = {
+  static async createUser(groupId: string, user?: User): Promise<User> {
+    const data: User = user || {
       id: getUuid(),
       groupId,
       name: "user",
@@ -282,8 +313,8 @@ export class ChatManagement implements IChat {
     await getInstance().insert<User>({ tableName: "User", data });
     return data;
   }
-  static async createGroup(): Promise<Group> {
-    const data: Group = {
+  static async createGroup(group?: Group): Promise<Group> {
+    const data: Group = group || {
       id: getUuid(),
       name: "新建会话",
       index: this.chatList.length,
@@ -291,8 +322,11 @@ export class ChatManagement implements IChat {
     await getInstance().insert<Group>({ tableName: "Group", data });
     return data;
   }
-  static async createVirtualRoleBio(groupId: string): Promise<VirtualRole> {
-    const data: VirtualRole = {
+  static async createVirtualRoleBio(
+    groupId: string,
+    virtualRole?: VirtualRole
+  ): Promise<VirtualRole> {
+    const data: VirtualRole = virtualRole || {
       id: getUuid(),
       name: "助理",
       groupId,
@@ -305,8 +339,11 @@ export class ChatManagement implements IChat {
     await getInstance().insert<VirtualRole>({ tableName: "VirtualRole", data });
     return data;
   }
-  static async createGptConfig(groupId: string): Promise<GptConfig> {
-    const data: GptConfig = {
+  static async createGptConfig(
+    groupId: string,
+    gptConfig?: GptConfig
+  ): Promise<GptConfig> {
+    const data: GptConfig = gptConfig || {
       id: getUuid(),
       groupId,
       role: "assistant",
@@ -320,6 +357,12 @@ export class ChatManagement implements IChat {
     await getInstance().insert<GptConfig>({ tableName: "GptConfig", data });
     return data;
   }
+  static async createMessage(message: Message) {
+    await getInstance().insert<Message>({
+      tableName: "Message",
+      data: message,
+    });
+  }
   static async createChat(): Promise<IChat> {
     let group = await this.createGroup();
     let user = await this.createUser(group.id);
@@ -332,6 +375,7 @@ export class ChatManagement implements IChat {
       gptConfig,
       config,
       virtualRole,
+      virtualRoles: { [virtualRole.id]: virtualRole },
       topics: [],
     };
     this.chatList.push(chat);
@@ -359,10 +403,7 @@ export class ChatManagement implements IChat {
     } else {
       message.id = getUuid();
       topic.messages.push(message);
-      await getInstance().insert<Message>({
-        tableName: "Message",
-        data: message,
-      });
+      ChatManagement.createMessage(message);
     }
   }
   async removeMessage(message: Message) {
@@ -438,21 +479,75 @@ export class ChatManagement implements IChat {
     }
   }
   toJson(): IChat {
-    return {
+    let chat = {
       user: this.user,
       group: this.group,
       config: this.config,
       virtualRole: this.virtualRole,
+      virtualRoles: this.virtualRoles,
       gptConfig: this.gptConfig,
       topics: this.topics,
     };
+    chat.virtualRole.avatar = undefined;
+    return chat;
   }
-  fromJson(json: IChat) {
-    Object.assign(this.group, json.group);
-    Object.assign(this.config, json.config);
+  async fromJson(json: IChat) {
+    console.log(json);
+    await ChatManagement.remove(this);
+    Object.assign(this.group, json.group, { id: getUuid() });
+    await ChatManagement.createGroup(this.group);
+    Object.assign(this.config, json.config, {
+      id: getUuid(),
+      groupId: this.group.id,
+    });
+    await ChatManagement.createConfig(this.group.id, this.config);
+    Object.assign(this.virtualRole, json.virtualRole, {
+      id: getUuid(),
+      groupId: this.group.id,
+    });
+    if (Object.keys(this.virtualRoles).length == 0) {
+      await ChatManagement.createVirtualRoleBio(
+        this.group.id,
+        this.virtualRole
+      );
+      this.virtualRoles[this.virtualRole.id] = this.virtualRole;
+    } else {
+      let prs: Promise<VirtualRole>[] = [];
+      Object.keys(this.virtualRoles).forEach((key) => {
+        if (!this.virtualRoles[key]) return;
+        let e = this.config.defaultVirtualRole == this.virtualRoles[key]!.id;
+        this.virtualRoles[key]!.groupId = this.group.id;
+        this.virtualRoles[key]!.id = getUuid();
+        if (e) {
+          Object.assign(this.virtualRole, this.virtualRoles[key]);
+          this.config.activityTopicId = this.virtualRoles[key]!.id;
+        }
+        prs.push(
+          ChatManagement.createVirtualRoleBio(
+            this.group.id,
+            this.virtualRoles[key]
+          )
+        );
+      });
+      await Promise.all(prs);
+    }
+    Object.assign(this.gptConfig, json.gptConfig, {
+      id: getUuid(),
+      groupId: this.group.id,
+    });
+    await ChatManagement.createGptConfig(this.group.id, this.gptConfig);
+    await ChatManagement.createConfig(this.group.id, this.config);
+    Object.assign(this.user, json.user, {
+      id: getUuid(),
+      groupId: this.group.id,
+    });
+    await ChatManagement.createUser(this.group.id, this.user);
     this.topics.splice(0, this.topics.length);
-    if (Array((json as any).topic) && Array((json as any).messages)) {
-      (json as any)["topics"] = (json as any).topic.map((t: Topic) => ({
+    if (
+      Array.isArray((json as any).topic) &&
+      Array.isArray((json as any).messages)
+    ) {
+      (json as any)["topic"] = (json as any).topic.map((t: Topic) => ({
         ...t,
         messages: (json as any).messages.filter(
           (f: Message) => f.topicId == t.id
@@ -460,8 +555,27 @@ export class ChatManagement implements IChat {
       }));
     }
     this.topics.push(...json.topics);
-    Object.assign(this.gptConfig, json.gptConfig);
-    Object.assign(this.virtualRole, json.virtualRole);
-    Object.assign(this.user, json.user);
+    let proT: Promise<Topic>[] = [];
+    let proM: Promise<void>[] = [];
+    this.topics.forEach((v) => {
+      v.groupId = this.group.id;
+      v.id = getUuid();
+      proT.push(
+        ChatManagement.createTopic(
+          this.group.id,
+          v.name,
+          Object.assign({}, v, { messages: undefined })
+        )
+      );
+      v.messages.forEach((m) => {
+        m.groupId = this.group.id;
+        m.topicId = v.id;
+        m.virtualRoleId;
+        m.id = getUuid();
+        proM.push(ChatManagement.createMessage(m));
+      });
+    });
+    await Promise.all(proT);
+    await Promise.all(proM);
   }
 }

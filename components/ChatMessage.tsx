@@ -49,6 +49,21 @@ export const ChatMessage = ({
     if (newMsgRef != null && newMsgRef.current != null)
       scrollToBotton(newMsgRef.current);
   }, [newMsgRef]);
+  function onClickTopicTitle(topic: Topic) {
+    let v = [...activityKey];
+    if (closeAll) {
+      v = [];
+      setCloasAll(false);
+    }
+    if (v.includes(topic.id)) {
+      v = v.filter((f) => f !== topic.id);
+      chat!.config.activityTopicId = chat?.topics.slice(-1)[0].id || "";
+    } else {
+      chat!.config.activityTopicId = topic.id;
+      v.push(topic.id);
+    }
+    setActivityKey(v);
+  }
   if (!chat) return <></>;
   function rendTopic(topic: Topic & { messages: Message[] }, idx: number) {
     return (
@@ -65,20 +80,7 @@ export const ChatMessage = ({
               level={5}
               onClick={(e) => {
                 e.stopPropagation();
-                let v = [...activityKey];
-                if (closeAll) {
-                  v = [];
-                  setCloasAll(false);
-                }
-                if (v.includes(topic.id)) {
-                  v = v.filter((f) => f !== topic.id);
-                  chat!.config.activityTopicId =
-                    chat?.topics.slice(-1)[0].id || "";
-                } else {
-                  chat!.config.activityTopicId = topic.id;
-                  v.push(topic.id);
-                }
-                setActivityKey(v);
+                onClickTopicTitle(topic);
               }}
               style={{
                 color:
@@ -246,6 +248,7 @@ function MessagesBox({
                   msg.checked = e.target.checked;
                   chat?.pushMessage(msg);
                   setNone([]);
+                  setEdit(false);
                 }}
               >
                 <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>

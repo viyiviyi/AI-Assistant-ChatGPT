@@ -77,9 +77,12 @@ export const ChatList = ({
                       const fr = new FileReader();
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
-                          v.fromJson(JSON.parse(e.target.result.toString()));
-                          setGroups([...groups]);
-                          onSelected(v);
+                          v.fromJson(
+                            JSON.parse(e.target.result.toString())
+                          ).then(() => {
+                            setGroups([...groups]);
+                            onSelected(v);
+                          });
                         }
                       };
                       fr.readAsText(file);
@@ -155,10 +158,7 @@ export const ChatList = ({
               <span>新建</span>
             </div>
           </Button>
-          <Button
-            block
-            onClick={() => onCacle()}
-          >
+          <Button block onClick={() => onCacle()}>
             <span>关闭</span>
           </Button>
         </Button.Group>

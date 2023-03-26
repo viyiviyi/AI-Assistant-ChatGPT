@@ -69,7 +69,7 @@ export const Setting = ({
     chatMgt.virtualRole.settings = values.virtualRole_settings
       .map((v) => v?.trim())
       .filter((f) => f);
-    chatMgt.virtualRole.avatar = virtualRole_Avatar;
+    chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
     chatMgt.saveVirtualRoleBio();
 
     chatMgt.gptConfig.n = values.GptConfig_n;
@@ -82,7 +82,7 @@ export const Setting = ({
 
     chatMgt.user.name = values.user_name;
     chatMgt.user.bio = values.user_bio;
-    chatMgt.user.avatar = user_Avatar;
+    chatMgt.user.avatar = user_Avatar || "";
     chatMgt.saveUser();
 
     chatMgt.config.saveKey = values.config_saveKey;

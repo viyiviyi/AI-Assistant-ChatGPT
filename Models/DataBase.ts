@@ -3,6 +3,7 @@ export interface User {
   id: string; // 用户ID
   groupId: string; // 分组ID
   name: string; // 用户名
+  enName?:string;
   avatar?: string; // 用户头像
   bio?: string; // 用户简介
 }
@@ -22,8 +23,8 @@ export interface GroupConfig {
   enableVirtualRole: boolean;
   saveKey: boolean;
   baseUrl: string;
-  activityTopicId: string;
-  filterUserName?: boolean;
+  activityTopicId: string; // 激活的话题
+  defaultVirtualRole?: string; // 默认助理
 }
 
 // 聊天消息表
@@ -50,9 +51,11 @@ export interface VirtualRole {
   id: string; // 角色ID
   groupId: string; // 分组ID
   name: string; // 角色名
+  enName?:string,
   avatar?: string; // 角色头像
   bio: string; // 角色简介
   settings: string[]; // 角色设定（字符串数组）
+  index?:number
 }
 
 export interface GptConfig {
