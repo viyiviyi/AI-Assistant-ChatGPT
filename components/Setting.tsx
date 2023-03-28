@@ -1,6 +1,7 @@
 import { ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import {
+  EyeOutlined,
   MenuOutlined,
   MinusCircleOutlined,
   PlusOutlined,
@@ -21,6 +22,7 @@ import {
   theme,
 } from "antd";
 import AvatarUpload from "./AvatarUpload";
+import { ApiClient } from "@/core/ApiClient";
 
 function getLengthArray(len: number = 0): number[] {
   let arr = [];
@@ -43,6 +45,7 @@ export const Setting = ({
     chatMgt?.virtualRole.avatar
   );
   const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
+  const [balance, steBalance] = useState("");
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
     virtualRole_name: string;
@@ -99,9 +102,9 @@ export const Setting = ({
     );
     onSaved();
   }
-  let roleNames = Object.keys(chatMgt?.virtualRoles || {}).map(key => {
-    return chatMgt?.virtualRoles[key]
-  })
+  let roleNames = Object.keys(chatMgt?.virtualRoles || {}).map((key) => {
+    return chatMgt?.virtualRoles[key];
+  });
   return (
     <>
       <Form
@@ -292,7 +295,29 @@ export const Setting = ({
           <Form.Item
             name="setting_apitoken"
             label="openapi key"
-            extra={<span>请填写自己的key，没有key将不能使用</span>}
+            extra={
+              <span>
+                请填写自己的key，没有key将不能使用。
+                <span>
+                  余额：{balance || ""}
+                  <span style={{ marginLeft: "1em" }}>
+                    <Button
+                      type={"ghost"}
+                      onClick={() => {
+                        ApiClient.getOpanAIBalance(
+                          KeyValueData.instance().getApiKey(),
+                          chatMgt?.config.baseUrl
+                        ).then((res) => {
+                          steBalance(res);
+                        });
+                      }}
+                    >
+                      <EyeOutlined />
+                    </Button>
+                  </span>
+                </span>
+              </span>
+            }
           >
             <Input type="password" />
           </Form.Item>

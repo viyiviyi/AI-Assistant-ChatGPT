@@ -1,3 +1,7 @@
+import {
+  ChatCompletionRequestMessage,
+  OpenAIApi,
+} from "openai";
 export class ApiClient {
   static async chatGptV3({
     messages,
@@ -5,16 +9,12 @@ export class ApiClient {
     max_tokens = 1024,
     top_p = 0.5,
     user = "user",
-    api_key: token,
+    api_key,
     n,
     temperature = 0.7,
     baseUrl = "https://chat.22733.site",
   }: {
-    messages: Array<{
-      role: "assistant" | "user" | "system";
-      content: string;
-      name: string;
-    }>;
+    messages: Array<ChatCompletionRequestMessage>;
     model: string;
     max_tokens?: number;
     top_p?: number;
@@ -24,34 +24,55 @@ export class ApiClient {
     n?: number;
     baseUrl?: string;
   }): Promise<string> {
-    const response = await fetch(
-      baseUrl.replace(/\/$/, "") + "/v1/chat/completions",
-      {
-        method: "POST",
+    const client = new OpenAIApi({
+      basePath: baseUrl + "/v1",
+      apiKey: api_key,
+      isJsonMime: (mime: string) => {
+        return true;
+      },
+      baseOptions: {
         headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
+          Authorization: "Bearer " + api_key,
         },
-        body: JSON.stringify({
-          model,
-          messages,
-          stream: false,
-          temperature,
-          top_p,
-          max_tokens: max_tokens <= 0 ? undefined : max_tokens,
-          n,
-          user,
-        }),
-      }
-    );
-
-    const data = await response.json();
-    if (response.status !== 200) {
-      throw (
-        data.error || new Error(`Request failed with status ${response.status}`)
-      );
+      },
+    });
+    if (model.startsWith("gpt-3")) {
+      let result = await client.createChatCompletion({
+        model,
+        messages,
+        stream: false,
+        temperature,
+        top_p,
+        max_tokens: max_tokens <= 0 ? undefined : max_tokens,
+        n,
+        user,
+      });
+      return result.data.choices[0].message?.content || "";
+    } else if (model.startsWith("gpt-4")) {
+      let result = await client.createChatCompletion({
+        model,
+        messages,
+        stream: false,
+        temperature,
+        top_p,
+        max_tokens: max_tokens <= 0 ? undefined : max_tokens,
+        n,
+        user,
+      });
+      return result.data.choices[0].message?.content || "";
+    } else {
+      let result = await client.createCompletion({
+        model,
+        prompt: messages.map((v) => v.content).join("\n"),
+        stream: false,
+        temperature,
+        top_p,
+        max_tokens: max_tokens <= 0 ? undefined : max_tokens,
+        n,
+        user,
+      });
+      return result.data.choices[0].text || "";
     }
-    return data.choices[0].message?.content;
   }
 
   static callbackList: {
@@ -100,13 +121,21 @@ export class ApiClient {
     });
   }
 
-  static async getOpanAIBalance(): Promise<number> {
-    const response = await fetch("https://api.opanai.io/account");
+  static async getOpanAIBalance(
+    apiKey: string,
+    baseUrl = "https://chat.22733.site"
+  ): Promise<string> {
+    const response = await fetch(`${baseUrl}/dashboard/billing/credit_grants`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + apiKey,
+      },
+    });
     const account: OpanAIAccount = await response.json();
-    return account.balance;
+    return account.total_available;
   }
 }
 
 interface OpanAIAccount {
-  balance: number;
+  total_available: string;
 }
