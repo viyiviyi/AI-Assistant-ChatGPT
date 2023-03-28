@@ -40,12 +40,21 @@ export const Chat = ({
   const { token } = theme.useToken();
   const [chatMgt, setChatMgt] = useState<ChatManagement[]>([chat]);
   const [loading, setLoading] = useState(0);
+  const [models, setModels] = useState<string[]>([]);
   const [messageInput, setmessageInput] = useState("");
   function deleteChatMsg(msg: Message): void {
     chat.removeMessage(msg).then(() => {
       setChatMgt([...chatMgt]);
     });
   }
+  useEffect(() => {
+    ApiClient.getModelList(
+      KeyValueData.instance().getApiKey(),
+      chat.config.baseUrl || undefined
+    ).then((res) => {
+      setModels(res);
+    });
+  }, []);
   /**
    * 提交内容
    * @param isPush 是否对话模式
@@ -248,23 +257,23 @@ export const Chat = ({
   );
 };
 
-let models = [
-  "gpt-3.5-turbo",
-  "gpt-3.5-turbo-0301",
-  "gpt-4",
-  "gpt-4-0314",
-  "gpt-4-32k",
-  "gpt-4-32k-0314",
-  // "text-davinci-003",
-  // "text-davinci-002	",
-  // "text-curie-001",
-  // "text-babbage-001",
-  // "text-ada-001",
-  // "davinci",
-  // "curie",
-  // "babbage",
-  // "ada",
-];
+// let models = [
+//   "gpt-3.5-turbo",
+//   "gpt-3.5-turbo-0301",
+//   "gpt-4",
+//   "gpt-4-0314",
+//   "gpt-4-32k",
+//   "gpt-4-32k-0314",
+//   "text-davinci-003",
+//   "text-davinci-002	",
+//   "text-curie-001",
+//   "text-babbage-001",
+//   "text-ada-001",
+//   "davinci",
+//   "curie",
+//   "babbage",
+//   "ada",
+// ];
 /**
  * 提交内容
  * @param isPush 是否对话模式
@@ -276,7 +285,7 @@ async function sendMessage(chat: ChatManagement) {
   let topicId = chat.config.activityTopicId;
   try {
     if (KeyValueData.instance().getApiKey()) {
-      const res = await ApiClient.chatGptV3({
+      const res = await ApiClient.chatGpt({
         messages,
         model: chat.gptConfig.model,
         max_tokens: chat.gptConfig.max_tokens,
@@ -284,7 +293,7 @@ async function sendMessage(chat: ChatManagement) {
         temperature: chat.gptConfig.temperature,
         n: chat.gptConfig.n,
         user: "user",
-        api_key: KeyValueData.instance().getApiKey(),
+        apiKey: KeyValueData.instance().getApiKey(),
         baseUrl: chat.config.baseUrl || undefined,
       });
       return chat.pushMessage({

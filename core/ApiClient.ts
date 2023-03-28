@@ -1,15 +1,12 @@
-import {
-  ChatCompletionRequestMessage,
-  OpenAIApi,
-} from "openai";
+import { ChatCompletionRequestMessage, OpenAIApi } from "openai";
 export class ApiClient {
-  static async chatGptV3({
+  static async chatGpt({
     messages,
     model,
     max_tokens = 1024,
     top_p = 0.5,
     user = "user",
-    api_key,
+    apiKey,
     n,
     temperature = 0.7,
     baseUrl = "https://chat.22733.site",
@@ -20,61 +17,142 @@ export class ApiClient {
     top_p?: number;
     temperature?: number;
     user?: string;
-    api_key: string;
+    apiKey: string;
     n?: number;
     baseUrl?: string;
   }): Promise<string> {
     const client = new OpenAIApi({
       basePath: baseUrl + "/v1",
-      apiKey: api_key,
+      apiKey: apiKey,
       isJsonMime: (mime: string) => {
         return true;
       },
       baseOptions: {
         headers: {
-          Authorization: "Bearer " + api_key,
+          Authorization: "Bearer " + apiKey,
         },
       },
     });
     if (model.startsWith("gpt-3")) {
-      let result = await client.createChatCompletion({
-        model,
-        messages,
-        stream: false,
-        temperature,
-        top_p,
-        max_tokens: max_tokens <= 0 ? undefined : max_tokens,
-        n,
-        user,
-      });
-      return result.data.choices[0].message?.content || "";
+      return await client
+        .createChatCompletion({
+          model,
+          messages,
+          stream: false,
+          temperature,
+          top_p,
+          max_tokens: max_tokens <= 0 ? undefined : max_tokens,
+          n,
+          user,
+        })
+        .then((res) => {
+          return res.data.choices[0].message?.content || "";
+        })
+        .catch((error) => {
+          return error.response.data
+            ? "```json\n" +
+                JSON.stringify(error.response.data, null, 4) +
+                "\n```"
+            : error.message || error.message;
+        });
     } else if (model.startsWith("gpt-4")) {
-      let result = await client.createChatCompletion({
-        model,
-        messages,
-        stream: false,
-        temperature,
-        top_p,
-        max_tokens: max_tokens <= 0 ? undefined : max_tokens,
-        n,
-        user,
-      });
-      return result.data.choices[0].message?.content || "";
+      return await client
+        .createChatCompletion({
+          model,
+          messages,
+          stream: false,
+          temperature,
+          top_p,
+          max_tokens: max_tokens <= 0 ? undefined : max_tokens,
+          n,
+          user,
+        })
+        .then((res) => {
+          return res.data.choices[0].message?.content || "";
+        })
+        .catch((error) => {
+          return error.response.data
+            ? "```json\n" +
+                JSON.stringify(error.response.data, null, 4) +
+                "\n```"
+            : error.message || error.message;
+        });
     } else {
-      let result = await client.createCompletion({
-        model,
-        prompt: messages.map((v) => v.content).join("\n"),
-        stream: false,
-        temperature,
-        top_p,
-        max_tokens: max_tokens <= 0 ? undefined : max_tokens,
-        n,
-        user,
-      });
-      return result.data.choices[0].text || "";
+      return await client
+        .createCompletion({
+          model,
+          prompt: messages.map((v) => v.content).join("\n"),
+          stream: false,
+          temperature,
+          top_p,
+          max_tokens: max_tokens <= 0 ? undefined : max_tokens,
+          n,
+          user,
+        })
+        .then((res) => {
+          return res.data.choices[0].text || "";
+        })
+        .catch((error) => {
+          return error.response.data
+            ? "```json\n" +
+                JSON.stringify(error.response.data, null, 4) +
+                "\n```"
+            : error.message || error.message;
+        });
     }
   }
-
+  private static textModels = [
+    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-0301",
+    "gpt-4",
+    "gpt-4-0314",
+    "gpt-4-32k",
+    "gpt-4-32k-0314",
+    "text-davinci-003",
+    "text-davinci-002	",
+    "text-curie-001",
+    "text-babbage-001",
+    "text-ada-001",
+    "davinci",
+    "curie",
+    "babbage",
+    "ada",
+  ];
+  static async getModelList(
+    apiKey: string,
+    baseUrl = "https://chat.22733.site",
+    modelType: "text" = "text"
+  ): Promise<string[]> {
+    const client = new OpenAIApi({
+      basePath: baseUrl + "/v1",
+      apiKey: apiKey,
+      isJsonMime: (mime: string) => {
+        return true;
+      },
+      baseOptions: {
+        headers: {
+          Authorization: "Bearer " + apiKey,
+        },
+      },
+    });
+    return await client
+      .listModels()
+      .then((res) => {
+        const cm = res.data.data.map((m) => m.id);
+        if (modelType == "text") {
+          return this.textModels.filter((f) => {
+            return cm.includes(f);
+          });
+        }
+        return [];
+      })
+      .catch((err) => {
+        if (modelType == "text") {
+          return this.textModels;
+        }
+        return [];
+      });
+  }
   static callbackList: {
     [key: string]: ((result?: string, error?: any) => void) | undefined;
   } = {};
