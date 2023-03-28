@@ -54,7 +54,7 @@ export const Chat = ({
   async function onSubmit(isPush: boolean) {
     const isBot = messageInput.startsWith("/");
     const skipRequest = messageInput.startsWith("\\");
-    const text = messageInput.replace(/^\/+/, "").replace(/^\\+/, "")
+    const text = messageInput.replace(/^\/+/, "").replace(/^\\+/, "");
     if (!isPush) await chat.newTopic(text);
     if (!chat.config.activityTopicId) await chat.newTopic(text);
     await chat.pushMessage({
@@ -95,7 +95,7 @@ export const Chat = ({
         flex: 1,
         flexDirection: "column",
         height: "100%",
-        width:'100%',
+        width: "100%",
         maxHeight: "100%",
         maxWidth: "1200px",
         margin: "0 auto",
@@ -116,6 +116,12 @@ export const Chat = ({
         <Select
           style={{ width: "160px" }}
           defaultValue={chat?.gptConfig.model || models[0]}
+          value={chat?.gptConfig.model || models[0]}
+          onSelect={(val) => {
+            chat!.gptConfig.model = val;
+            chat.saveGptConfig();
+            setChatMgt([...chatMgt]);
+          }}
           options={models.map((v) => ({ value: v, label: v }))}
         />
         <span style={{ flex: 1 }}></span>
@@ -130,6 +136,7 @@ export const Chat = ({
           checked={chat?.config.enableVirtualRole}
           onChange={(e) => {
             chat!.config.enableVirtualRole = e.target.checked;
+            chat.saveConfig();
             setChatMgt([...chatMgt]);
           }}
         >
@@ -186,9 +193,7 @@ export const Chat = ({
             marginBottom: "3px",
           }}
         >
-          <Typography.Text
-            ellipsis={true}
-          >
+          <Typography.Text ellipsis={true}>
             {chat.getActivityTopic()?.name}
           </Typography.Text>
           <span style={{ flex: 1 }}></span>

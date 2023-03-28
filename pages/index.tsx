@@ -49,7 +49,7 @@ export default function Home() {
       }}
     >
       <Head>
-        <title>助手 bot</title>
+        <title>ChatGPT聊天工具</title>
       </Head>
       {chatMgt ? (
         <Chat

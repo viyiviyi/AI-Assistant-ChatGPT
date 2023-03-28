@@ -99,4 +99,14 @@ export class ApiClient {
       window.parent.postMessage({ messages, cbName }, this.orginUrl);
     });
   }
+
+  static async getOpanAIBalance(): Promise<number> {
+    const response = await fetch("https://api.opanai.io/account");
+    const account: OpanAIAccount = await response.json();
+    return account.balance;
+  }
+}
+
+interface OpanAIAccount {
+  balance: number;
 }
