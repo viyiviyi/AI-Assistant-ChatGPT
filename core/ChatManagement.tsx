@@ -381,15 +381,19 @@ export class ChatManagement implements IChat {
     this.chatList.push(chat);
     return chat;
   }
-  async pushMessage(message: Message) {
-    if (!message.text || !message.text.trim()) return;
+  async pushMessage(message: Message): Promise<Message> {
+    if (!message.text || !message.text.trim()) return message;
     message.text = message.text.trim();
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) topic = await await this.newTopic(message.text);
     message.groupId = this.group.id;
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);
-      if (!msg) return;
+      if (!msg) {
+        topic.messages.push(message);
+        ChatManagement.createMessage(message);
+        return message;
+      }
       msg.text = message.text;
       await getInstance().update_by_primaryKey<Message>({
         tableName: "Message",
@@ -400,10 +404,12 @@ export class ChatManagement implements IChat {
           return r;
         },
       });
+      return msg;
     } else {
       message.id = getUuid();
       topic.messages.push(message);
       ChatManagement.createMessage(message);
+      return message;
     }
   }
   async removeMessage(message: Message) {

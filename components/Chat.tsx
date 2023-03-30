@@ -283,6 +283,14 @@ async function sendMessage(chat: ChatManagement) {
   const messages = chat.getAskContext();
   if (messages.length == 0) return;
   let topicId = chat.config.activityTopicId;
+  let msg = await chat.pushMessage({
+    id: "",
+    groupId: chat.group.id,
+    virtualRoleId: chat.virtualRole.id,
+    text: "loading...",
+    timestamp: Date.now(),
+    topicId: topicId,
+  });
   try {
     if (KeyValueData.instance().getApiKey()) {
       const res = await ApiClient.chatGpt({
@@ -296,14 +304,8 @@ async function sendMessage(chat: ChatManagement) {
         apiKey: KeyValueData.instance().getApiKey(),
         baseUrl: chat.config.baseUrl || undefined,
       });
-      return chat.pushMessage({
-        id: "",
-        groupId: chat.group.id,
-        virtualRoleId: chat.virtualRole.id,
-        text: res,
-        timestamp: Date.now(),
-        topicId: topicId,
-      });
+      msg.text = res;
+      return chat.pushMessage(msg);
     } else if ("https://chat.openai.com" == chat.config.baseUrl) {
       const res = await ApiClient.sendChatMessage({ messages });
       return chat.pushMessage({
@@ -317,13 +319,7 @@ async function sendMessage(chat: ChatManagement) {
     }
     message.error("缺少apikey，请在设置中配置后使用");
   } catch (error: any) {
-    chat.pushMessage({
-      id: "",
-      groupId: chat.group.id,
-      virtualRoleId: chat.virtualRole.id,
-      text: error.message,
-      timestamp: Date.now(),
-      topicId: topicId,
-    });
+    msg.text = error.message;
+    chat.pushMessage(msg);
   }
 }
