@@ -31,6 +31,7 @@ export class ApiClient {
         headers: {
           Authorization: "Bearer " + apiKey,
         },
+        timeout: 1000*60,
       },
     });
     if (model.startsWith("gpt-3")) {
@@ -49,11 +50,7 @@ export class ApiClient {
           return res.data.choices[0].message?.content || "";
         })
         .catch((error) => {
-          return error.response.data
-            ? "```json\n" +
-                JSON.stringify(error.response.data, null, 4) +
-                "\n```"
-            : error.message || error.message;
+          return this.handleError(error);
         });
     } else if (model.startsWith("gpt-4")) {
       return await client
@@ -71,11 +68,7 @@ export class ApiClient {
           return res.data.choices[0].message?.content || "";
         })
         .catch((error) => {
-          return error.response.data
-            ? "```json\n" +
-                JSON.stringify(error.response.data, null, 4) +
-                "\n```"
-            : error.message || error.message;
+          return this.handleError(error);
         });
     } else {
       return await client
@@ -93,13 +86,14 @@ export class ApiClient {
           return res.data.choices[0].text || "";
         })
         .catch((error) => {
-          return error.response.data
-            ? "```json\n" +
-                JSON.stringify(error.response.data, null, 4) +
-                "\n```"
-            : error.message || error.message;
+          return this.handleError(error);
         });
     }
+  }
+  private static handleError(error: any) {
+    return error.response && error.response.data
+      ? "```json\n" + JSON.stringify(error.response.data, null, 4) + "\n```"
+      : error.message || error;
   }
   private static textModels = [
     "gpt-3.5-turbo",
