@@ -21,6 +21,7 @@ export class ApiClient {
     n?: number;
     baseUrl?: string;
   }): Promise<string> {
+    baseUrl = baseUrl || "https://chat.22733.site";
     const client = new OpenAIApi({
       basePath: baseUrl + "/v1",
       apiKey: apiKey,
@@ -31,7 +32,7 @@ export class ApiClient {
         headers: {
           Authorization: "Bearer " + apiKey,
         },
-        timeout: 1000*60,
+        timeout: 1000 * 60,
       },
     });
     if (model.startsWith("gpt-3")) {
@@ -117,6 +118,7 @@ export class ApiClient {
     baseUrl = "https://chat.22733.site",
     modelType: "text" = "text"
   ): Promise<string[]> {
+    baseUrl = baseUrl || "https://chat.22733.site";
     const client = new OpenAIApi({
       basePath: baseUrl + "/v1",
       apiKey: apiKey,
@@ -197,6 +199,7 @@ export class ApiClient {
     apiKey: string,
     baseUrl = "https://chat.22733.site"
   ): Promise<string> {
+    baseUrl = baseUrl || "https://chat.22733.site";
     const response = await fetch(`${baseUrl}/dashboard/billing/credit_grants`, {
       headers: {
         "Content-Type": "application/json",
