@@ -27,11 +27,13 @@ function scrollToBotton(dom: HTMLElement) {
 const { Panel } = Collapse;
 export const ChatMessage = ({
   chat,
+  onlyOne,
   rBak,
   onDel,
   handerCloseAll,
 }: {
   chat?: ChatManagement;
+  onlyOne?: boolean;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   handerCloseAll: (closeAll: () => void) => void;
@@ -42,7 +44,12 @@ export const ChatMessage = ({
   );
   const [closeAll, setCloasAll] = useState(true);
   handerCloseAll(() => {
-    setCloasAll(true);
+    if (closeAll) {
+      setActivityKey([])
+      setCloasAll(false)
+    } else {
+      setCloasAll(true);
+    }
   });
   const newMsgRef = React.createRef<HTMLInputElement>();
   useEffect(() => {
@@ -130,6 +137,33 @@ export const ChatMessage = ({
             ></MessagesBox>
           ))}
       </Panel>
+    );
+  }
+  if (onlyOne) {
+    return (
+      <>
+        {chat.topics
+          .filter((f) => f.id == chat.config.activityTopicId)
+          .map((topic) => (
+            <>
+              {topic.messages.map((v, i) => (
+                <MessagesBox
+                  msg={v}
+                  chat={chat}
+                  newMsgRef={
+                    topic.id == chat?.config.activityTopicId &&
+                    i == topic.messages!.length - 1
+                      ? newMsgRef
+                      : undefined
+                  }
+                  onDel={onDel}
+                  rBak={rBak}
+                  key={i}
+                ></MessagesBox>
+              ))}
+            </>
+          ))}
+      </>
     );
   }
 
