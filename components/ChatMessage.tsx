@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 import { MarkdownView } from "./MarkdownView";
 import {
   CopyOutlined,
@@ -21,6 +20,7 @@ import {
 } from "antd";
 import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
 import React from "react";
+import copy from "copy-to-clipboard";
 function scrollToBotton(dom: HTMLElement) {
   dom.scrollIntoView({ behavior: "smooth" });
 }
@@ -45,8 +45,8 @@ export const ChatMessage = ({
   const [closeAll, setCloasAll] = useState(true);
   handerCloseAll(() => {
     if (closeAll) {
-      setActivityKey([])
-      setCloasAll(false)
+      setActivityKey([]);
+      setCloasAll(false);
     } else {
       setCloasAll(true);
     }
@@ -140,31 +140,28 @@ export const ChatMessage = ({
     );
   }
   if (onlyOne) {
-    return (
-      <>
-        {chat.topics
-          .filter((f) => f.id == chat.config.activityTopicId)
-          .map((topic) => (
-            <>
-              {topic.messages.map((v, i) => (
-                <MessagesBox
-                  msg={v}
-                  chat={chat}
-                  newMsgRef={
-                    topic.id == chat?.config.activityTopicId &&
-                    i == topic.messages!.length - 1
-                      ? newMsgRef
-                      : undefined
-                  }
-                  onDel={onDel}
-                  rBak={rBak}
-                  key={i}
-                ></MessagesBox>
-              ))}
-            </>
+    let topic = chat.topics.find((f) => f.id == chat.config.activityTopicId);
+    if (topic) {
+      return (
+        <div style={{ padding: token.paddingContentVerticalSM }}>
+          {topic.messages.map((v, i) => (
+            <MessagesBox
+              msg={v}
+              chat={chat}
+              newMsgRef={
+                topic!.id == chat?.config.activityTopicId &&
+                i == topic!.messages!.length - 1
+                  ? newMsgRef
+                  : undefined
+              }
+              onDel={onDel}
+              rBak={rBak}
+              key={i}
+            ></MessagesBox>
           ))}
-      </>
-    );
+        </div>
+      );
+    }
   }
 
   return (
@@ -266,7 +263,13 @@ function MessagesBox({
                   }}
                 />
               ) : (
-                <MarkdownView markdown={msg.text} />
+                <MarkdownView
+                  markdown={
+                    chat?.config.disableStrikethrough
+                      ? msg.text.replaceAll("~", "～")
+                      : msg.text
+                  }
+                />
               )}
             </div>
             <div
@@ -308,9 +311,11 @@ function MessagesBox({
                 }}
               />
               <span style={{ marginLeft: "16px" }}></span>
-              <CopyToClipboard text={msg.text}>
-                <CopyOutlined />
-              </CopyToClipboard>
+              <CopyOutlined
+                onClick={() => {
+                  copy(msg.text.toString().replace(/\s\s\n/g, "\n"));
+                }}
+              />
               <span style={{ marginLeft: "16px" }}></span>
               <RollbackOutlined
                 style={{ cursor: "pointer" }}

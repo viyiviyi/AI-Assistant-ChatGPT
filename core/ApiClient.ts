@@ -200,14 +200,21 @@ export class ApiClient {
     baseUrl = "https://chat.22733.site"
   ): Promise<string> {
     baseUrl = baseUrl || "https://chat.22733.site";
-    const response = await fetch(`${baseUrl}/dashboard/billing/credit_grants`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + apiKey,
-      },
-    });
-    const account: OpanAIAccount = await response.json();
-    return account.total_available;
+    try {
+      const response = await fetch(
+        `${baseUrl}/dashboard/billing/credit_grants`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + apiKey,
+          },
+        }
+      );
+      const account: OpanAIAccount = await response.json();
+      return account.total_available;
+    } catch (err) {
+      return "error";
+    }
   }
 }
 

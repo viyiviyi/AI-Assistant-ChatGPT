@@ -33,17 +33,13 @@ function toTxt(node: React.ReactNode): string {
   } else if (typeof node == "object" && "props" in (node as any)) {
     str += (node as any)["props"] && toTxt((node as any)["props"].children);
   } else {
-    str += node;
+    str += node?.toString().replace(/\s\s\n/, "\n");
   }
   return str;
 }
 
 // 创建解析方法
 export function MarkdownView({ markdown }: { markdown: string }) {
-  if (/^</.test(markdown) && isXML(markdown)) {
-    markdown = "```xml\n" + markdown + "\n```";
-  }
-  markdown = markdown.replace(/\n/g, '  \n');
   let processor = unified()
     .use(remarkParse)
     .use(remarkRehype)
@@ -151,7 +147,8 @@ export function MarkdownView({ markdown }: { markdown: string }) {
   const renderedMarkdown = processor.processSync(markdown).result;
   return <div>{renderedMarkdown}</div>;
 }
-function isXML(str: string) {
+
+export function isXML(str: string) {
   try {
     var parser = new DOMParser();
     var xmlDoc = parser.parseFromString(str, "text/xml");

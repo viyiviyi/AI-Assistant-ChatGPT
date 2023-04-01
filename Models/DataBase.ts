@@ -25,6 +25,7 @@ export interface GroupConfig {
   baseUrl: string;
   activityTopicId: string; // 激活的话题
   defaultVirtualRole?: string; // 默认助理
+  disableStrikethrough?:boolean // 禁用删除线
 }
 
 // 聊天消息表
