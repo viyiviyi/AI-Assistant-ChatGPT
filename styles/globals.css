@@ -9,6 +9,7 @@ body,
   margin: 0;
   height: 100%;
   overscroll-behavior-y: contain;
+  line-height: 1.5;
 }
 
 a {
