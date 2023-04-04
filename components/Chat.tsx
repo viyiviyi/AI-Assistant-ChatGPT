@@ -122,8 +122,14 @@ export const Chat = ({
           alignItems: "center",
           marginBottom: "3px",
           padding: "10px",
-          borderRadius: token.borderRadius,
-          backgroundColor: token.colorFill,
+          borderRadius:
+            "0" +
+            " 0 " +
+            token.borderRadius +
+            "px " +
+            token.borderRadius +
+            "px",
+          backgroundColor: token.colorFillContent,
         }}
       >
         <Select
@@ -168,7 +174,7 @@ export const Chat = ({
         style={{
           overflow: "auto",
           borderRadius: token.borderRadius,
-          backgroundColor: token.colorFill,
+          backgroundColor: token.colorFillContent,
         }}
       >
         <ChatMessage
@@ -208,7 +214,7 @@ export const Chat = ({
           padding: "0px 10px 10px",
           marginBottom: "15px",
           borderRadius: token.borderRadius,
-          backgroundColor: token.colorFill,
+          backgroundColor: token.colorFillContent,
         }}
       >
         <div
