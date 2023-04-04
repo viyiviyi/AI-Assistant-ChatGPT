@@ -100,6 +100,7 @@ export const Chat = ({
   return (
     <div
       style={{
+        position: "relative",
         display: "flex",
         flex: 1,
         flexDirection: "column",
@@ -119,7 +120,9 @@ export const Chat = ({
           display: "flex",
           alignItems: "center",
           marginBottom: "3px",
-          padding: "10px 10px 10px",
+          padding: "10px",
+          borderRadius: token.borderRadius,
+          backgroundColor: token.colorFill,
         }}
       >
         <Select
@@ -159,7 +162,14 @@ export const Chat = ({
           style={{ marginLeft: "10px", marginRight: "10px" }}
         />
       </div>
-      <Content id="content" style={{ overflow: "auto" }}>
+      <Content
+        id="content"
+        style={{
+          overflow: "auto",
+          borderRadius: token.borderRadius,
+          backgroundColor: token.colorFill,
+        }}
+      >
         <ChatMessage
           chat={chat}
           onDel={(m) => {
@@ -190,7 +200,15 @@ export const Chat = ({
           <div className={style.loading}></div>
         )}
       </div>
-      <div style={{ width: "100%", padding: "0px 10px 25px" }}>
+      <div
+        style={{
+          width: "100%",
+          padding: "0px 10px 10px",
+          marginBottom: "15px",
+          borderRadius: token.borderRadius,
+          backgroundColor: token.colorFill,
+        }}
+      >
         <div
           style={{
             flexWrap: "nowrap",

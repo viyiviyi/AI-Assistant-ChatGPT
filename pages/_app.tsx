@@ -18,6 +18,8 @@ export default function App({ Component, pageProps }: AppProps) {
       theme={{
         token: {
           colorPrimary: "#00b96b",
+          colorInfoBg: isDark ? "#444a" : "#ddda",
+          colorTextBase: isDark ? "#ddd" : "#333",
         },
         algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,
       }}

@@ -20,17 +20,11 @@ import {
   Space,
   Switch,
   theme,
+  Upload,
 } from "antd";
 import AvatarUpload from "./AvatarUpload";
 import { ApiClient } from "@/core/ApiClient";
-
-function getLengthArray(len: number = 0): number[] {
-  let arr = [];
-  for (let i = 0; i < len; i++) {
-    arr.push(i);
-  }
-  return arr;
-}
+import { BgImage } from "@/core/BgImage";
 
 export const Setting = ({
   chatMgt,
@@ -138,6 +132,29 @@ export const Setting = ({
             padding: token.paddingContentHorizontalSM + "px",
           }}
         >
+          <Form.Item>
+            <Upload
+              accept=".png,.jpg,.gif"
+              {...{
+                beforeUpload(file, FileList) {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onloadend = (event) => {
+                    if (event.target?.result) {
+                      BgImage.getInstance().setBgImage(
+                        event.target?.result.toString()
+                      );
+                    }
+                  };
+                  return false;
+                },
+                defaultFileList: [],
+                showUploadList: false,
+              }}
+            >
+              <Button type="text">设置背景图片</Button>
+            </Upload>
+          </Form.Item>
           <Form.Item>
             <AvatarUpload
               avatar={virtualRole_Avatar}

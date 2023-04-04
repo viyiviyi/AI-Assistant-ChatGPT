@@ -7,6 +7,7 @@ import { ChatList } from "@/components/ChatList";
 import { Layout, theme } from "antd";
 import { Setting } from "@/components/Setting";
 import { Chat } from "@/components/Chat";
+import { BgConfig, BgImage } from "@/core/BgImage";
 
 export default function Home() {
   const { token } = theme.useToken();
@@ -14,7 +15,7 @@ export default function Home() {
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
-
+  const [ngImg, setBgImg] = useState<BgConfig>();
   let init = useCallback(async () => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -25,6 +26,14 @@ export default function Home() {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;
       setChatMgt(new ChatManagement(chats[0]));
+      BgImage.getInstance().theamBackgroundImageChange.subscribe((res) => {
+        setBgImg(res);
+      });
+      BgImage.getInstance()
+        .getBgImage()
+        .then((res) => {
+          setBgImg(res);
+        });
     });
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -44,10 +53,21 @@ export default function Home() {
         flexDirection: "row",
         maxHeight: "100%",
         flexWrap: "nowrap",
+        position: "relative",
         color: token.colorTextBase,
         backgroundColor: token.colorBgContainer,
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: "100%",
+          height: "100%",
+          ...ngImg,
+        }}
+      ></div>
       <Head>
         <title>ChatGPT聊天工具</title>
       </Head>

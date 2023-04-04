@@ -19,7 +19,7 @@ export class IndexedDB {
   static async init() {
     await init({
       dbName: TABLE_NAME, // 数据库名称
-      version: 1, // 版本号
+      version: 2, // 版本号
       tables: [
         this.getTableConfig("User"),
         this.getTableConfig("Group"),
@@ -28,6 +28,7 @@ export class IndexedDB {
         this.getTableConfig("Topic"),
         this.getTableConfig("VirtualRole"),
         this.getTableConfig("GptConfig"),
+        this.getTableConfig("Background"),
       ],
     });
   }

@@ -214,9 +214,10 @@ function MessagesBox({
               padding: "5px 10px",
               flexDirection: "column",
               boxSizing: "border-box",
+              wordBreak: "keep-all",
               borderRadius: token.borderRadiusLG,
               border: "1px solid " + token.colorFillAlter,
-              backgroundColor: token.colorFillContent,
+              backgroundColor: token.colorInfoBg,
               marginBottom: "12px",
               boxShadow: token.boxShadowTertiary,
             }}
