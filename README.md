@@ -13,7 +13,7 @@
 
 可以访问 [https://litechat.22733.site](https://litechat.22733.site) 用自己的key体验
 - 一个免费的key```   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   ```余额有限，请用于体验，不要频繁使用。
-
+[一个有很多助理设定的网站(为什么我没有早点发现Orz)](https://ai.usesless.com/scene)
 
 ## 功能说明
 ---
