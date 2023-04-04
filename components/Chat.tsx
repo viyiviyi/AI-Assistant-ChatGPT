@@ -42,6 +42,7 @@ export const Chat = ({
   const [loading, setLoading] = useState(0);
   const [models, setModels] = useState<string[]>([]);
   const [messageInput, setmessageInput] = useState("");
+  const [onlyOne, setOnlyOne] = useState(false);
   function deleteChatMsg(msg: Message): void {
     chat.removeMessage(msg).then(() => {
       setChatMgt([...chatMgt]);
@@ -172,6 +173,7 @@ export const Chat = ({
       >
         <ChatMessage
           chat={chat}
+          onlyOne={onlyOne}
           onDel={(m) => {
             deleteChatMsg(m);
           }}
@@ -220,13 +222,23 @@ export const Chat = ({
             marginBottom: "3px",
           }}
         >
-          <Typography.Text ellipsis={true}>
+          <Typography.Text
+            style={{
+              cursor: "pointer",
+              color: onlyOne ? token.colorPrimary : undefined,
+            }}
+            ellipsis={true}
+            onClick={() => {
+              setOnlyOne((v) => !v);
+            }}
+          >
             {chat.getActivityTopic()?.name}
           </Typography.Text>
           <span style={{ flex: 1 }}></span>
           <Button
             shape="round"
             onClick={() => {
+              setOnlyOne(false);
               closeAllTopic();
             }}
           >

@@ -1,3 +1,4 @@
+import { isXML } from "@/components/MarkdownView";
 import { IndexedDB } from "@/core/IndexDb";
 import {
   GptConfig,
@@ -384,6 +385,13 @@ export class ChatManagement implements IChat {
   async pushMessage(message: Message): Promise<Message> {
     if (!message.text || !message.text.trim()) return message;
     message.text = message.text.trim();
+    // 让纯xml内容显示正常
+    if (/^</.test(message.text) && isXML(message.text)) {
+      message.text = "```xml\n" + message.text + "\n```";
+    }
+    // 让换行符正常换行
+    message.text = message.text.replace(/([^\s]{2,})\n/g, "$1  \n");
+
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) topic = await await this.newTopic(message.text);
     message.groupId = this.group.id;

@@ -56,6 +56,7 @@ export const Setting = ({
     GptConfig_top_p: number;
     GptConfig_temperature: number;
     config_saveKey: boolean;
+    config_disable_strikethrough: boolean;
     setting_baseurl: string;
     GptConfig_n: number;
   }>();
@@ -88,6 +89,7 @@ export const Setting = ({
 
     chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
+    chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
     chatMgt.saveConfig();
 
     KeyValueData.instance().setApiKey(
@@ -121,6 +123,7 @@ export const Setting = ({
           GptConfig_temperature: chatMgt?.gptConfig.temperature,
           GptConfig_n: chatMgt?.gptConfig.n,
           config_saveKey: chatMgt?.config.saveKey,
+          config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
         }}
       >
@@ -342,6 +345,13 @@ export const Setting = ({
             name="config_saveKey"
             valuePropName="checked"
             label="保存key到浏览器（不加密，请在私人设备时才勾选）"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            name="config_disable_strikethrough"
+            valuePropName="checked"
+            label="禁用删除线 (使用中文～替换了~)"
           >
             <Switch />
           </Form.Item>
