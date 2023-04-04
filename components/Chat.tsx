@@ -267,7 +267,7 @@ export const Chat = ({
         <div style={{ width: "100%" }}>
           <Input.TextArea
             placeholder="Alt s 继续  Ctrl Enter新话题，/开头代替AI发言"
-            autoSize
+            autoSize={{maxRows:10}}
             allowClear
             ref={inputRef}
             autoFocus={true}
