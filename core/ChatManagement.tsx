@@ -188,7 +188,7 @@ export class ChatManagement implements IChat {
         this.virtualRole;
       ctx = [
         {
-          role: virtualRole.bio.startsWith("/") ? this.gptConfig.role : "user",
+          role: virtualRole.bio.startsWith("/") ? this.gptConfig.role : "system",
           content: virtualRole.bio.replace(/^\/+/, ""),
           name: this.user.enName || "user",
         },
