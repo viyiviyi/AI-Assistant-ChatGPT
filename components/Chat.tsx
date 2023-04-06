@@ -122,8 +122,14 @@ export const Chat = ({
           alignItems: "center",
           marginBottom: "3px",
           padding: "10px",
-          borderRadius: token.borderRadius,
-          backgroundColor: token.colorFill,
+          borderRadius:
+            "0" +
+            " 0 " +
+            token.borderRadius +
+            "px " +
+            token.borderRadius +
+            "px",
+          backgroundColor: token.colorFillContent,
         }}
       >
         <Select
@@ -168,7 +174,7 @@ export const Chat = ({
         style={{
           overflow: "auto",
           borderRadius: token.borderRadius,
-          backgroundColor: token.colorFill,
+          backgroundColor: token.colorFillContent,
         }}
       >
         <ChatMessage
@@ -208,7 +214,7 @@ export const Chat = ({
           padding: "0px 10px 10px",
           marginBottom: "15px",
           borderRadius: token.borderRadius,
-          backgroundColor: token.colorFill,
+          backgroundColor: token.colorFillContent,
         }}
       >
         <div
@@ -261,7 +267,7 @@ export const Chat = ({
         <div style={{ width: "100%" }}>
           <Input.TextArea
             placeholder="Alt s 继续  Ctrl Enter新话题，/开头代替AI发言"
-            autoSize
+            autoSize={{maxRows:10}}
             allowClear
             ref={inputRef}
             autoFocus={true}
@@ -287,23 +293,6 @@ export const Chat = ({
   );
 };
 
-// let models = [
-//   "gpt-3.5-turbo",
-//   "gpt-3.5-turbo-0301",
-//   "gpt-4",
-//   "gpt-4-0314",
-//   "gpt-4-32k",
-//   "gpt-4-32k-0314",
-//   "text-davinci-003",
-//   "text-davinci-002	",
-//   "text-curie-001",
-//   "text-babbage-001",
-//   "text-ada-001",
-//   "davinci",
-//   "curie",
-//   "babbage",
-//   "ada",
-// ];
 /**
  * 提交内容
  * @param isPush 是否对话模式

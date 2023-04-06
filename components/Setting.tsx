@@ -157,6 +157,9 @@ export const Setting = ({
             >
               <Button type="text">设置背景图片</Button>
             </Upload>
+            <Button type="text" onClick={() => {
+              BgImage.getInstance().setBgImage('')
+            }}>清除</Button>
           </Form.Item>
           <Form.Item>
             <AvatarUpload
