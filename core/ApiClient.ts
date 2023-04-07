@@ -32,7 +32,7 @@ export class ApiClient {
         headers: {
           Authorization: "Bearer " + apiKey,
         },
-        timeout: 1000 * 60,
+        timeout: 1000 * 60 * 5,
       },
     });
     if (model.startsWith("gpt-3")) {
