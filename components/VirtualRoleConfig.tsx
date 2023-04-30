@@ -1,24 +1,16 @@
 import { ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
+import { VirtualRole } from "@/Models/DataBase";
 import {
-    MenuOutlined,
-    MinusCircleOutlined,
-    PlusOutlined
+  MenuOutlined,
+  MinusCircleOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
-import {
-    Button, Form, Input, Popconfirm, Switch,
-    theme
-} from "antd";
+import { Button, Form, Input, Popconfirm, Space, Switch, theme } from "antd";
 import { useState } from "react";
 import AvatarUpload from "./AvatarUpload";
 
-function getLengthArray(len: number = 0): number[] {
-  let arr = [];
-  for (let i = 0; i < len; i++) {
-    arr.push(i);
-  }
-  return arr;
-}
+let copyRoleVal: VirtualRole | undefined = undefined;
 
 export const VirtualRoleConfig = ({
   chatMgt,
@@ -87,9 +79,41 @@ export const VirtualRoleConfig = ({
             padding: token.paddingContentHorizontalSM + "px",
           }}
         >
-          <Form.Item name="virtualRole_enable" label="启用助理" valuePropName="checked">
-            <Switch></Switch>
-          </Form.Item>
+          <Space size={32}>
+            <Form.Item
+              name="virtualRole_enable"
+              label="启用助理"
+              valuePropName="checked"
+            >
+              <Switch></Switch>
+            </Form.Item>
+            <Form.Item name="virtualRole_copy" label="复制配置">
+              <Button.Group>
+                <Button
+                  onClick={() => {
+                    copyRoleVal = JSON.parse(
+                      JSON.stringify(chatMgt?.virtualRole)
+                    );
+                  }}
+                >
+                  复制
+                </Button>
+                <Button
+                  disabled={!copyRoleVal}
+                  onClick={() => {
+                    form.setFieldValue("virtualRole_name", copyRoleVal?.name);
+                    form.setFieldValue("virtualRole_bio", copyRoleVal?.bio);
+                    form.setFieldValue(
+                      "virtualRole_settings",
+                      copyRoleVal?.settings
+                    );
+                  }}
+                >
+                  粘贴
+                </Button>
+              </Button.Group>
+            </Form.Item>
+          </Space>
           <Form.Item>
             <AvatarUpload
               avatar={virtualRole_Avatar}
