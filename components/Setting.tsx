@@ -12,7 +12,7 @@ import {
     Select, Switch,
     theme
 } from "antd";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export const Setting = ({
   chatMgt,
@@ -23,7 +23,7 @@ export const Setting = ({
   onSaved: () => void;
   onCancel: () => void;
 }) => {
-  const [models, setModels] = useState<string[]>([]);
+  const [models, setModels] = useState<string[]>(ApiClient.textModels);
   const [balance, steBalance] = useState("");
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
@@ -39,14 +39,7 @@ export const Setting = ({
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
   }>();
-  useEffect(() => {
-    ApiClient.getModelList(
-      KeyValueData.instance().getApiKey(),
-      chatMgt?.config.baseUrl || undefined
-    ).then((res) => {
-      setModels(res);
-    });
-  }, []);
+
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
