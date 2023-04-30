@@ -1,13 +1,13 @@
 import { isXML } from "@/components/MarkdownView";
 import { IndexedDB } from "@/core/IndexDb";
 import {
-  GptConfig,
-  Group,
-  GroupConfig,
-  Message,
-  Topic,
-  User,
-  VirtualRole,
+    GptConfig,
+    Group,
+    GroupConfig,
+    Message,
+    Topic,
+    User,
+    VirtualRole
 } from "@/Models/DataBase";
 import { getInstance } from "ts-indexdb";
 import { getUuid } from "./utils";
@@ -331,10 +331,7 @@ export class ChatManagement implements IChat {
       id: getUuid(),
       name: "助理",
       groupId,
-      bio: `接下来，你将继承角色的所有设定和属性！以角色的第一人称身份输出角色的话！  
-角色的行为生动的描写在[]内！
-角色：私人助理，优雅，主动，聪明，可以色色。  
-状态：无聊。`,
+      bio: `接下来，你需要以私人助理的语气和行为为我提供服务，输出的内容尽可能的详细和严谨。`,
       settings: [],
     };
     await getInstance().insert<VirtualRole>({ tableName: "VirtualRole", data });
@@ -390,7 +387,7 @@ export class ChatManagement implements IChat {
       message.text = "```xml\n" + message.text + "\n```";
     }
     // 让换行符正常换行
-    message.text = message.text.replace(/([^\s]{2,})\n/g, "$1  \n");
+    message.text = message.text.replace(/([\.!\?~\]\)。！？】）～：；”……])\n([^\n])/g, "$1\n\n$2");
 
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) topic = await await this.newTopic(message.text);

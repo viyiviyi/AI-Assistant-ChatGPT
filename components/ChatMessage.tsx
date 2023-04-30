@@ -1,26 +1,24 @@
-import { useEffect, useState } from "react";
-import { MarkdownView } from "./MarkdownView";
-import {
-  CopyOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  RollbackOutlined,
-  SaveOutlined,
-} from "@ant-design/icons";
-import { Message, Topic } from "@/Models/DataBase";
 import { ChatManagement } from "@/core/ChatManagement";
+import { Message, Topic } from "@/Models/DataBase";
 import {
-  Avatar,
-  Checkbox,
-  Collapse,
-  Input,
-  Popconfirm,
-  theme,
-  Typography,
+    CaretRightOutlined, CopyOutlined,
+    DeleteOutlined,
+    EditOutlined,
+    RollbackOutlined,
+    SaveOutlined, UserOutlined
+} from "@ant-design/icons";
+import {
+    Avatar,
+    Checkbox,
+    Collapse,
+    Input,
+    Popconfirm,
+    theme,
+    Typography
 } from "antd";
-import { CaretRightOutlined, UserOutlined } from "@ant-design/icons";
-import React from "react";
 import copy from "copy-to-clipboard";
+import React, { useEffect, useState } from "react";
+import { MarkdownView } from "./MarkdownView";
 function scrollToBotton(dom: HTMLElement) {
   dom.scrollIntoView({ behavior: "smooth" });
 }
@@ -245,7 +243,6 @@ function MessagesBox({
               padding: "5px 10px",
               flexDirection: "column",
               boxSizing: "border-box",
-              wordBreak: "keep-all",
               borderRadius: token.borderRadiusLG,
               border: "1px solid " + token.colorFillAlter,
               backgroundColor: token.colorInfoBg,
@@ -314,7 +311,7 @@ function MessagesBox({
               <span style={{ marginLeft: "16px" }}></span>
               <CopyOutlined
                 onClick={() => {
-                  copy(msg.text.toString().replace(/\s\s\n/g, "\n"));
+                  copy(msg.text.toString());
                 }}
               />
               <span style={{ marginLeft: "16px" }}></span>

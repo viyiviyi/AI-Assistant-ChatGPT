@@ -1,15 +1,11 @@
-import { unified } from "unified";
-import remarkRehype from "remark-rehype";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import rehypeStringify from "rehype-stringify";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import { CopyOutlined } from "@ant-design/icons";
+import copy from "copy-to-clipboard";
 import bash from "highlight.js/lib/languages/bash";
+import dart from "highlight.js/lib/languages/dart";
 import dockerfile from "highlight.js/lib/languages/dockerfile";
-import javascript from "highlight.js/lib/languages/javascript";
 import handlebars from "highlight.js/lib/languages/handlebars";
 import java from "highlight.js/lib/languages/java";
+import javascript from "highlight.js/lib/languages/javascript";
 import json from "highlight.js/lib/languages/json";
 import nginx from "highlight.js/lib/languages/nginx";
 import shell from "highlight.js/lib/languages/shell";
@@ -17,14 +13,17 @@ import sql from "highlight.js/lib/languages/sql";
 import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
-import dart from "highlight.js/lib/languages/dart";
-import remarkParse from "remark-parse";
-import { createElement, Fragment } from "react";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import React, { createElement, Fragment } from "react";
+import rehypeHighlight from "rehype-highlight";
+import rehypeKatex from "rehype-katex";
 import rehypeReact from "rehype-react";
-import React from "react";
-import copy from "copy-to-clipboard";
-import { CopyOutlined } from "@ant-design/icons";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeStringify from "rehype-stringify";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
 
 function toTxt(node: React.ReactNode): string {
   let str = "";
@@ -33,7 +32,7 @@ function toTxt(node: React.ReactNode): string {
   } else if (typeof node == "object" && "props" in (node as any)) {
     str += (node as any)["props"] && toTxt((node as any)["props"].children);
   } else {
-    str += node?.toString().replace(/\s\s\n/, "\n");
+    str += node?.toString();
   }
   return str;
 }

@@ -1,46 +1,45 @@
-import { ChatManagement } from "@/core/ChatManagement";
 import { ChatMessage } from "@/components/ChatMessage";
-import { useEffect, useState } from "react";
-import {
-  SettingOutlined,
-  UnorderedListOutlined,
-  MessageOutlined,
-  CommentOutlined,
-  VerticalAlignMiddleOutlined,
-  GithubOutlined,
-} from "@ant-design/icons";
-import style from "../styles/index.module.css";
-import {
-  Layout,
-  Button,
-  Input,
-  Checkbox,
-  Select,
-  theme,
-  Typography,
-  message,
-} from "antd";
-import React from "react";
+import { ApiClient } from "@/core/ApiClient";
+import { ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { Message } from "@/Models/DataBase";
-import { ApiClient } from "@/core/ApiClient";
+import {
+    CommentOutlined,
+    MessageOutlined,
+    SettingOutlined,
+    UnorderedListOutlined,
+    UserAddOutlined,
+    VerticalAlignMiddleOutlined
+} from "@ant-design/icons";
+import {
+    Avatar,
+    Button,
+    Input,
+    Layout,
+    message,
+    theme,
+    Typography
+} from "antd";
+import React, { useState } from "react";
+import style from "../styles/index.module.css";
 
 const { Content } = Layout;
 
 export const Chat = ({
   chat,
-  setlistIsShow,
-  setSettingShow,
+  togglelistIsShow,
+  toggleSettingShow,
+  toggleRoleConfig,
 }: {
   chat: ChatManagement;
-  setlistIsShow: () => void;
-  setSettingShow: (b: boolean) => void;
+  togglelistIsShow: () => void;
+  toggleSettingShow: () => void;
+  toggleRoleConfig: () => void;
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
   const { token } = theme.useToken();
   const [chatMgt, setChatMgt] = useState<ChatManagement[]>([chat]);
   const [loading, setLoading] = useState(0);
-  const [models, setModels] = useState<string[]>([]);
   const [messageInput, setmessageInput] = useState("");
   const [onlyOne, setOnlyOne] = useState(false);
   function deleteChatMsg(msg: Message): void {
@@ -48,14 +47,6 @@ export const Chat = ({
       setChatMgt([...chatMgt]);
     });
   }
-  useEffect(() => {
-    ApiClient.getModelList(
-      KeyValueData.instance().getApiKey(),
-      chat.config.baseUrl || undefined
-    ).then((res) => {
-      setModels(res);
-    });
-  }, []);
   /**
    * 提交内容
    * @param isPush 是否对话模式
@@ -132,39 +123,24 @@ export const Chat = ({
           backgroundColor: token.colorFillContent,
         }}
       >
-        <Select
-          style={{ width: "160px" }}
-          defaultValue={chat?.gptConfig.model || models[0]}
-          value={chat?.gptConfig.model || models[0]}
-          onSelect={(val) => {
-            chat!.gptConfig.model = val;
-            chat.saveGptConfig();
-            setChatMgt([...chatMgt]);
-          }}
-          options={models.map((v) => ({ value: v, label: v }))}
-        />
+        <Avatar
+          onClick={toggleRoleConfig}
+          size={32}
+          style={{ minWidth: "32px", minHeight: "32px" }}
+          src={chat?.virtualRole.avatar}
+        ></Avatar>
+        <Typography.Text ellipsis onClick={toggleSettingShow}>
+          {chat?.group.name}
+        </Typography.Text>
         <span style={{ flex: 1 }}></span>
-        <a
-          href="https://github.com/viyiviyi/ChatGpt-lite-chat-web"
-          rel="noopener noreferrer"
-          target={"_blank"}
-        >
-          <GithubOutlined />
-        </a>
-        <Checkbox
-          checked={chat?.config.enableVirtualRole}
-          onChange={(e) => {
-            chat!.config.enableVirtualRole = e.target.checked;
-            chat.saveConfig();
-            setChatMgt([...chatMgt]);
-          }}
-        >
-          {"助理"}
-        </Checkbox>
-        <SettingOutlined onClick={() => setSettingShow(true)} />
+        <UserAddOutlined onClick={() => toggleRoleConfig()} />
+        <SettingOutlined
+          onClick={() => toggleSettingShow()}
+          style={{ marginLeft: "10px" }}
+        />
         <UnorderedListOutlined
           onClick={() => {
-            setlistIsShow();
+            togglelistIsShow();
           }}
           style={{ marginLeft: "10px", marginRight: "10px" }}
         />
@@ -267,7 +243,7 @@ export const Chat = ({
         <div style={{ width: "100%" }}>
           <Input.TextArea
             placeholder="Alt s 继续  Ctrl Enter新话题，/开头代替AI发言"
-            autoSize={{maxRows:10}}
+            autoSize={{ maxRows: 10 }}
             allowClear
             ref={inputRef}
             autoFocus={true}

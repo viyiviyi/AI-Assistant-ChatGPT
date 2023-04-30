@@ -1,19 +1,20 @@
+import { Chat } from "@/components/Chat";
+import { ChatList } from "@/components/ChatList";
+import { Modal } from "@/components/Modal";
+import { Setting } from "@/components/Setting";
+import { VirtualRoleConfig } from "@/components/VirtualRoleConfig";
+import { BgConfig, BgImage } from "@/core/BgImage";
+import { ChatManagement } from "@/core/ChatManagement";
+import { Layout, theme } from "antd";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
-import React from "react";
-import { Modal } from "@/components/Modal";
-import { ChatManagement } from "@/core/ChatManagement";
-import { ChatList } from "@/components/ChatList";
-import { Layout, theme } from "antd";
-import { Setting } from "@/components/Setting";
-import { Chat } from "@/components/Chat";
-import { BgConfig, BgImage } from "@/core/BgImage";
 
 export default function Home() {
   const { token } = theme.useToken();
   const [chatMgt, setChatMgt] = useState<ChatManagement>();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
+  const [roleConfigShow, setRoleConfigShow] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
   const [ngImg, setBgImg] = useState<BgConfig>();
   let init = useCallback(async () => {
@@ -74,8 +75,13 @@ export default function Home() {
       {chatMgt ? (
         <Chat
           chat={chatMgt}
-          setSettingShow={setSettingShow}
-          setlistIsShow={() => {
+          toggleSettingShow={() => {
+            setSettingShow((v) => !v);
+          }}
+          toggleRoleConfig={() => {
+            setRoleConfigShow((v) => !v);
+          }}
+          togglelistIsShow={() => {
             setlistIsShow((v) => !v);
           }}
         />
@@ -104,7 +110,24 @@ export default function Home() {
       ) : (
         <></>
       )}
-
+      <Modal
+        isShow={roleConfigShow}
+        maxHight={"calc(70vh + 84px)"}
+        onCancel={() => {
+          setRoleConfigShow(false);
+        }}
+      >
+        <VirtualRoleConfig
+          onCancel={() => {
+            setRoleConfigShow(false);
+          }}
+          onSaved={() => {
+            setChatMgt(new ChatManagement(chatMgt!));
+            setRoleConfigShow(false);
+          }}
+          chatMgt={chatMgt}
+        ></VirtualRoleConfig>
+      </Modal>
       <Modal
         isShow={settingIsShow}
         maxHight={"calc(70vh + 84px)"}

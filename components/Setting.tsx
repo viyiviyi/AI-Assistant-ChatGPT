@@ -1,30 +1,18 @@
+import { ApiClient } from "@/core/ApiClient";
 import { ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import {
-  EyeOutlined,
-  MenuOutlined,
-  MinusCircleOutlined,
-  PlusOutlined,
+    EyeOutlined,
+    GithubOutlined
 } from "@ant-design/icons";
-import { useState } from "react";
 import {
-  Avatar,
-  Button,
-  Form,
-  FormListFieldData,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Radio,
-  Space,
-  Switch,
-  theme,
-  Upload,
+    Button,
+    Form, Input,
+    InputNumber, Radio,
+    Select, Switch,
+    theme
 } from "antd";
-import AvatarUpload from "./AvatarUpload";
-import { ApiClient } from "@/core/ApiClient";
-import { BgImage } from "@/core/BgImage";
+import { useEffect, useState } from "react";
 
 export const Setting = ({
   chatMgt,
@@ -35,44 +23,34 @@ export const Setting = ({
   onSaved: () => void;
   onCancel: () => void;
 }) => {
-  const [virtualRole_Avatar, setVirtualRole_Avatar] = useState(
-    chatMgt?.virtualRole.avatar
-  );
-  const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
+  const [models, setModels] = useState<string[]>([]);
   const [balance, steBalance] = useState("");
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
-    virtualRole_name: string;
-    virtualRole_bio: string;
-    virtualRole_settings: string[];
-    virtualRole_en_name: string;
-    user_name: string;
-    user_bio: string;
-    user_en_name: string;
     setting_apitoken: string;
     GptConfig_msgCount: number;
     GptConfig_role: "assistant" | "system" | "user";
     GptConfig_max_tokens: number;
     GptConfig_top_p: number;
     GptConfig_temperature: number;
+    GptConfig_n: number;
+    GptConfig_model: string;
     config_saveKey: boolean;
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
-    GptConfig_n: number;
   }>();
-
+  useEffect(() => {
+    ApiClient.getModelList(
+      KeyValueData.instance().getApiKey(),
+      chatMgt?.config.baseUrl || undefined
+    ).then((res) => {
+      setModels(res);
+    });
+  }, []);
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    chatMgt.virtualRole.name = values.virtualRole_name;
-    chatMgt.virtualRole.bio = values.virtualRole_bio;
-    chatMgt.virtualRole.settings = values.virtualRole_settings
-      .map((v) => v?.trim())
-      .filter((f) => f);
-    chatMgt.virtualRole.avatar = virtualRole_Avatar;
-    chatMgt.virtualRole.enName = values.virtualRole_en_name;
-    chatMgt.saveVirtualRoleBio();
-
+    chatMgt.gptConfig.model = values.GptConfig_model;
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
     chatMgt.gptConfig.role = values.GptConfig_role;
@@ -80,12 +58,6 @@ export const Setting = ({
     chatMgt.gptConfig.temperature = values.GptConfig_temperature;
     chatMgt.gptConfig.top_p = values.GptConfig_top_p;
     chatMgt.saveGptConfig();
-
-    chatMgt.user.name = values.user_name;
-    chatMgt.user.bio = values.user_bio;
-    chatMgt.user.avatar = user_Avatar;
-    chatMgt.user.enName = values.user_en_name;
-    chatMgt.saveUser();
 
     chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
@@ -98,9 +70,6 @@ export const Setting = ({
     );
     onSaved();
   }
-  let roleNames = Object.keys(chatMgt?.virtualRoles || {}).map((key) => {
-    return chatMgt?.virtualRoles[key];
-  });
   return (
     <>
       <Form
@@ -109,19 +78,13 @@ export const Setting = ({
         autoComplete="off"
         initialValues={{
           setting_apitoken: KeyValueData.instance().getApiKey(),
-          virtualRole_name: chatMgt?.virtualRole.name,
-          virtualRole_bio: chatMgt?.virtualRole.bio,
-          virtualRole_settings: chatMgt?.virtualRole.settings,
-          virtualRole_en_name: chatMgt?.virtualRole.enName,
-          user_name: chatMgt?.user.name,
-          user_bio: chatMgt?.user.bio,
-          user_en_name: chatMgt?.user.enName,
           GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
           GptConfig_role: chatMgt?.gptConfig.role,
           GptConfig_max_tokens: chatMgt?.gptConfig.max_tokens,
           GptConfig_top_p: chatMgt?.gptConfig.top_p,
           GptConfig_temperature: chatMgt?.gptConfig.temperature,
           GptConfig_n: chatMgt?.gptConfig.n,
+          GptConfig_model: chatMgt?.gptConfig.model,
           config_saveKey: chatMgt?.config.saveKey,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
@@ -135,186 +98,28 @@ export const Setting = ({
             padding: token.paddingContentHorizontalSM + "px",
           }}
         >
-          <Form.Item>
-            <Upload
-              accept=".png,.jpg,.gif"
-              {...{
-                beforeUpload(file, FileList) {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onloadend = (event) => {
-                    if (event.target?.result) {
-                      BgImage.getInstance().setBgImage(
-                        event.target?.result.toString()
-                      );
-                    }
-                  };
-                  return false;
-                },
-                defaultFileList: [],
-                showUploadList: false,
-              }}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              fontSize: "32px",
+            }}
+          >
+            <a
+              href="https://github.com/viyiviyi/ChatGpt-lite-chat-web"
+              rel="noopener noreferrer"
+              target={"_blank"}
             >
-              <Button type="text">设置背景图片</Button>
-            </Upload>
-            <Button type="text" onClick={() => {
-              BgImage.getInstance().setBgImage('')
-            }}>清除</Button>
-          </Form.Item>
-          <Form.Item>
-            <AvatarUpload
-              avatar={virtualRole_Avatar}
-              onSave={setVirtualRole_Avatar}
+              <GithubOutlined size={64} />
+            </a>
+          </div>
+          <Form.Item label="模型名称" name={"GptConfig_model"}>
+            <Select
+              style={{ width: "160px" }}
+              options={models.map((v) => ({ value: v, label: v }))}
             />
           </Form.Item>
-          <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-            <Form.Item
-              style={{ flex: 1 }}
-              name="virtualRole_name"
-              label="助理名称"
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              style={{ flex: 1 }}
-              name="virtualRole_en_name"
-              label="英文名称;用于区分角色"
-              rules={[
-                {
-                  type: "string",
-                  pattern: /^[a-zA-Z0-9]+$/,
-                  message: "只能使用大小写字母和数字",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-          </div>
-          <Form.Item
-            name="virtualRole_bio"
-            label="助理设定"
-            extra="当助理模式开启时，所有发送的内容都将以此内容开头"
-          >
-            <Input.TextArea autoSize />
-          </Form.Item>
-          <Form.List name="virtualRole_settings">
-            {(fields, { add, remove }, { errors }) => {
-              return (
-                <div style={{ overflow: "auto" }}>
-                  {fields.map((field, index) => {
-                    return (
-                      <Form.Item
-                        required={false}
-                        key={field.key}
-                        style={{ position: "relative" }}
-                      >
-                        <Popconfirm
-                          icon={<></>}
-                          placement="topLeft"
-                          title="移动顺序"
-                          onConfirm={() => {
-                            let val =
-                              form.getFieldsValue().virtualRole_settings &&
-                              form.getFieldsValue().virtualRole_settings[index];
-                            remove(index);
-                            add(val, Math.max(index - 1, 0));
-                          }}
-                          onCancel={() => {
-                            let val =
-                              form.getFieldsValue().virtualRole_settings &&
-                              form.getFieldsValue().virtualRole_settings[index];
-                            remove(index);
-                            add(val, Math.min(index + 1, fields.length - 1));
-                          }}
-                          okText="上移"
-                          cancelText="下移"
-                        >
-                          <MenuOutlined
-                            className="dynamic-delete-button"
-                            style={{
-                              padding: ".5em",
-                              position: "absolute",
-                              left: "0",
-                              top: "2px",
-                              zIndex: 1,
-                            }}
-                          />
-                        </Popconfirm>
-                        <Form.Item
-                          {...field}
-                          validateTrigger={["onChange", "onBlur"]}
-                          noStyle
-                        >
-                          <Input.TextArea
-                            placeholder="追加内容"
-                            autoSize
-                            style={{ paddingRight: "2em", paddingLeft: "2em" }}
-                          />
-                        </Form.Item>
-                        <Popconfirm
-                          title="确定删除？"
-                          placement="topRight"
-                          onConfirm={() => {
-                            remove(index);
-                          }}
-                          okText="确定"
-                          cancelText="取消"
-                        >
-                          <MinusCircleOutlined
-                            className="dynamic-delete-button"
-                            style={{
-                              padding: ".5em",
-                              position: "absolute",
-                              right: "0",
-                              top: "2px",
-                            }}
-                          />
-                        </Popconfirm>
-                      </Form.Item>
-                    );
-                  })}
-                  <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面，以/开头表示内容是机器人发出的">
-                    <Button
-                      type="dashed"
-                      onClick={() => {
-                        add();
-                      }}
-                      block
-                      icon={<PlusOutlined />}
-                    >
-                      增加设定
-                    </Button>
-                    <Form.ErrorList errors={errors} />
-                  </Form.Item>
-                </div>
-              );
-            }}
-          </Form.List>
-          <Form.Item>
-            <AvatarUpload avatar={user_Avatar} onSave={setUser_Avatar} />
-          </Form.Item>
-          <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-            <Form.Item style={{ flex: 1 }} name="user_name" label="用户名称">
-              <Input />
-            </Form.Item>
-            <Form.Item
-              style={{ flex: 1 }}
-              name="user_en_name"
-              label="英文名称;用于区分角色"
-              rules={[
-                {
-                  type: "string",
-                  pattern: /^[a-zA-Z0-9]+$/,
-                  message: "只能使用大小写字母和数字",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-          </div>
-          <Form.Item name="user_bio" label="用户简介">
-            <Input.TextArea autoSize />
-          </Form.Item>
+
           <Form.Item
             name="setting_apitoken"
             label="openapi key"
