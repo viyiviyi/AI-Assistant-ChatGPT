@@ -18,6 +18,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
 import rehypeReact from "rehype-react";
 import rehypeStringify from "rehype-stringify";
+import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
@@ -63,6 +64,7 @@ export const MarkdownView=({ markdown }: { markdown: string }) =>{
       },
     })
     .use(rehypeMathjax)
+    .use(remarkFrontmatter, ['yaml', 'toml'])
     .use(rehypeStringify)
     .use(rehypeReact, {
       createElement,

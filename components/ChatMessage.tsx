@@ -1,20 +1,22 @@
 import { ChatManagement } from "@/core/ChatManagement";
 import { Message, Topic } from "@/Models/DataBase";
 import {
-    CaretRightOutlined, CopyOutlined,
-    DeleteOutlined,
-    EditOutlined,
-    RollbackOutlined,
-    SaveOutlined, UserOutlined
+  CaretRightOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  RollbackOutlined,
+  SaveOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import {
-    Avatar,
-    Checkbox,
-    Collapse,
-    Input,
-    Popconfirm,
-    theme,
-    Typography
+  Avatar,
+  Checkbox,
+  Collapse,
+  Input,
+  Popconfirm,
+  theme,
+  Typography
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useEffect, useState } from "react";
@@ -177,7 +179,7 @@ export const ChatMessage = ({
   );
 };
 
-function MessagesBox({
+const MessagesBox = ({
   msg,
   chat,
   newMsgRef,
@@ -189,7 +191,7 @@ function MessagesBox({
   newMsgRef?: React.RefObject<HTMLInputElement>;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
-}) {
+}) => {
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [message, setMessage] = useState(msg.text);
@@ -283,12 +285,16 @@ function MessagesBox({
                   msg.checked = e.target.checked;
                   chat?.pushMessage(msg);
                   setNone([]);
-                  setEdit(false);
                 }}
               >
                 <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
               </Checkbox>
-              <span style={{ flex: 1 }}></span>
+              <span
+                onClick={() => {
+                  setEdit(false);
+                }}
+                style={{ flex: 1 }}
+              ></span>
               {edit ? (
                 <SaveOutlined
                   onClick={() => {
@@ -334,4 +340,4 @@ function MessagesBox({
       </div>
     </div>
   );
-}
+};
