@@ -15,9 +15,8 @@ import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import React, { createElement, Fragment } from "react";
 import rehypeHighlight from "rehype-highlight";
-import rehypeKatex from "rehype-katex";
+import rehypeMathjax from "rehype-mathjax";
 import rehypeReact from "rehype-react";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -38,13 +37,12 @@ function toTxt(node: React.ReactNode): string {
 }
 
 // 创建解析方法
-export function MarkdownView({ markdown }: { markdown: string }) {
+export const MarkdownView=({ markdown }: { markdown: string }) =>{
   let processor = unified()
     .use(remarkParse)
-    .use(remarkRehype)
     .use(remarkGfm)
     .use(remarkMath)
-    .use(rehypeKatex)
+    .use(remarkRehype)
     .use(rehypeHighlight, {
       ignoreMissing: true,
       plainText: ["txt", "text"],
@@ -64,59 +62,7 @@ export function MarkdownView({ markdown }: { markdown: string }) {
         dart,
       },
     })
-    .use(rehypeSanitize, {
-      ...defaultSchema,
-      attributes: {
-        ...defaultSchema.attributes,
-        span: [
-          ...(defaultSchema.attributes?.span || []),
-          // List of all allowed tokens:
-          [
-            "className",
-            "hljs-addition",
-            "hljs-attr",
-            "hljs-attribute",
-            "hljs-built_in",
-            "hljs-bullet",
-            "hljs-char",
-            "hljs-code",
-            "hljs-comment",
-            "hljs-deletion",
-            "hljs-doctag",
-            "hljs-emphasis",
-            "hljs-formula",
-            "hljs-keyword",
-            "hljs-link",
-            "hljs-literal",
-            "hljs-meta",
-            "hljs-name",
-            "hljs-number",
-            "hljs-operator",
-            "hljs-params",
-            "hljs-property",
-            "hljs-punctuation",
-            "hljs-quote",
-            "hljs-regexp",
-            "hljs-section",
-            "hljs-selector-attr",
-            "hljs-selector-class",
-            "hljs-selector-id",
-            "hljs-selector-pseudo",
-            "hljs-selector-tag",
-            "hljs-string",
-            "hljs-strong",
-            "hljs-subst",
-            "hljs-symbol",
-            "hljs-tag",
-            "hljs-template-tag",
-            "hljs-template-variable",
-            "hljs-title",
-            "hljs-type",
-            "hljs-variable",
-          ],
-        ],
-      },
-    })
+    .use(rehypeMathjax)
     .use(rehypeStringify)
     .use(rehypeReact, {
       createElement,
