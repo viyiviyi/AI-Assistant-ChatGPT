@@ -31,8 +31,10 @@ export const VirtualRoleConfig = ({
     virtualRole_bio: string;
     virtualRole_settings: string[];
     virtualRole_enable: boolean;
+    virtualRole_en_name: string;
     user_name: string;
     user_bio: string;
+    user_en_name: string;
   }>();
 
   function onSave() {
@@ -44,6 +46,7 @@ export const VirtualRoleConfig = ({
       .map((v) => v?.trim())
       .filter((f) => f);
     chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
+    chatMgt.virtualRole.enName = values.virtualRole_en_name;
     chatMgt.saveVirtualRoleBio();
 
     chatMgt.config.enableVirtualRole = values.virtualRole_enable;
@@ -51,6 +54,7 @@ export const VirtualRoleConfig = ({
 
     chatMgt.user.name = values.user_name;
     chatMgt.user.bio = values.user_bio;
+    chatMgt.user.enName = values.user_en_name;
     chatMgt.user.avatar = user_Avatar || "";
     chatMgt.saveUser();
     onSaved();
@@ -67,8 +71,10 @@ export const VirtualRoleConfig = ({
           virtualRole_bio: chatMgt?.virtualRole.bio,
           virtualRole_settings: chatMgt?.virtualRole.settings,
           virtualRole_enable: chatMgt?.config.enableVirtualRole,
+          virtualRole_en_name: chatMgt?.virtualRole.enName,
           user_name: chatMgt?.user.name,
           user_bio: chatMgt?.user.bio,
+          user_en_name: chatMgt?.user.enName,
         }}
       >
         <div
@@ -120,9 +126,29 @@ export const VirtualRoleConfig = ({
               onSave={setVirtualRole_Avatar}
             />
           </Form.Item>
-          <Form.Item name="virtualRole_name" label="助理名称">
-            <Input />
-          </Form.Item>
+          <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+            <Form.Item
+              style={{ flex: 1 }}
+              name="virtualRole_name"
+              label="助理名称"
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              style={{ flex: 1 }}
+              name="virtualRole_en_name"
+              label="英文名称;用于区分角色"
+              rules={[
+                {
+                  type: "string",
+                  pattern: /^[a-zA-Z0-9]+$/,
+                  message: "只能使用大小写字母和数字",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </div>
           <Form.Item
             name="virtualRole_bio"
             label="助理设定"
@@ -226,9 +252,25 @@ export const VirtualRoleConfig = ({
           <Form.Item>
             <AvatarUpload avatar={user_Avatar} onSave={setUser_Avatar} />
           </Form.Item>
-          <Form.Item name="user_name" label="用户名称">
-            <Input />
-          </Form.Item>
+          <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+            <Form.Item style={{ flex: 1 }} name="user_name" label="用户名称">
+              <Input />
+            </Form.Item>
+            <Form.Item
+              style={{ flex: 1 }}
+              name="user_en_name"
+              label="英文名称;用于区分角色"
+              rules={[
+                {
+                  type: "string",
+                  pattern: /^[a-zA-Z0-9]+$/,
+                  message: "只能使用大小写字母和数字",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+          </div>
           <Form.Item name="user_bio" label="用户简介">
             <Input.TextArea autoSize />
           </Form.Item>

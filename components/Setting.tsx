@@ -1,16 +1,18 @@
 import { ApiClient } from "@/core/ApiClient";
+import { BgImage } from "@/core/BgImage";
 import { ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import {
-    EyeOutlined,
-    GithubOutlined
+  EyeOutlined,
+  GithubOutlined
 } from "@ant-design/icons";
 import {
-    Button,
-    Form, Input,
-    InputNumber, Radio,
-    Select, Switch,
-    theme
+  Button,
+  Form, Input,
+  InputNumber, Radio,
+  Select, Switch,
+  theme,
+  Upload
 } from "antd";
 import { useState } from "react";
 
@@ -106,6 +108,32 @@ export const Setting = ({
               <GithubOutlined size={64} />
             </a>
           </div>
+          <Form.Item>
+            <Upload
+              accept=".png,.jpg,.gif"
+              {...{
+                beforeUpload(file, FileList) {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onloadend = (event) => {
+                    if (event.target?.result) {
+                      BgImage.getInstance().setBgImage(
+                        event.target?.result.toString()
+                      );
+                    }
+                  };
+                  return false;
+                },
+                defaultFileList: [],
+                showUploadList: false,
+              }}
+            >
+              <Button type="text">设置背景图片</Button>
+            </Upload>
+            <Button type="text" onClick={() => {
+              BgImage.getInstance().setBgImage('')
+            }}>清除</Button>
+          </Form.Item>
           <Form.Item label="模型名称" name={"GptConfig_model"}>
             <Select
               style={{ width: "160px" }}
