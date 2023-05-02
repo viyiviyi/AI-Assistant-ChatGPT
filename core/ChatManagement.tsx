@@ -124,6 +124,10 @@ export class ChatManagement implements IChat {
           virtualRoles: thisVirtualRoles,
           topics,
         };
+        if (!chat.group.createTime) {
+          chat.group.createTime = Date.now();
+          chat.gptConfig.role = "user";
+        }
         if (i == 0) {
           await this.loadTopics(chat);
         }
@@ -374,10 +378,12 @@ export class ChatManagement implements IChat {
     return data;
   }
   static async createGroup(group?: Group): Promise<Group> {
+    if (group && !group.createTime) group.createTime = Date.now();
     const data: Group = group || {
       id: getUuid(),
       name: "新建会话",
       index: this.chatList.length,
+      createTime: Date.now(),
     };
     await getInstance().insert<Group>({ tableName: "Group", data });
     return data;
@@ -565,6 +571,7 @@ export class ChatManagement implements IChat {
     return chat;
   }
   async fromJson(json: IChat) {
+    if (!json.group.createTime) json.gptConfig.role = "user";
     await ChatManagement.remove(this);
     Object.assign(this.group, json.group, { id: getUuid() });
     await ChatManagement.createGroup(this.group);
@@ -619,7 +626,7 @@ export class ChatManagement implements IChat {
       Array.isArray((json as any).topic) &&
       Array.isArray((json as any).messages)
     ) {
-      (json as any)["topic"] = (json as any).topic.map((t: Topic) => ({
+      (json as any)["topics"] = (json as any).topic.map((t: Topic) => ({
         ...t,
         messages: (json as any).messages.filter(
           (f: Message) => f.topicId == t.id

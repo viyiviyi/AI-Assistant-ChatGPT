@@ -14,6 +14,7 @@ export interface Group {
   name: string; // 分组名
   creatorId?: string; // 创建者ID
   index: number; // 排序
+  createTime?:number
 }
 
 // 分组表
