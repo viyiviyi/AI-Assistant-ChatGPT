@@ -34,6 +34,7 @@ export interface Message {
   groupId: string; // 分组ID
   senderId?: string; // 发送者ID
   topicId: string; // 话题ID
+  ctxRole: "assistant" | "system" | "user";
   virtualRoleId?: string; // 虚拟角色id
   text: string; // 消息内容
   timestamp: number; // 时间戳

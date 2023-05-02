@@ -3,7 +3,7 @@ import {
   CheckOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 
 import {
@@ -13,7 +13,7 @@ import {
   Popconfirm,
   theme,
   Typography,
-  Upload,
+  Upload
 } from "antd";
 
 import { useEffect, useState } from "react";
@@ -99,7 +99,7 @@ export const ChatList = ({
                 <CheckOutlined
                   key="selected"
                   onClick={() => {
-                    ChatManagement.loadMessage(v).then(() => onSelected(v));
+                    ChatManagement.loadTopics(v).then(() => onSelected(v));
                   }}
                 />,
                 <Popconfirm

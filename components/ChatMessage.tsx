@@ -1,4 +1,4 @@
-import { ChatManagement } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { Message, Topic } from "@/Models/DataBase";
 import {
   CaretRightOutlined,
@@ -19,26 +19,26 @@ import {
   Typography
 } from "antd";
 import copy from "copy-to-clipboard";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { MarkdownView } from "./MarkdownView";
-function scrollToBotton(dom: HTMLElement) {
-  dom.scrollIntoView({ behavior: "smooth" });
-}
+
 const { Panel } = Collapse;
+
+export const lastMsgRef: { ref?: React.RefObject<HTMLDivElement> } = {};
+
 export const ChatMessage = ({
-  chat,
   onlyOne,
   rBak,
   onDel,
   handerCloseAll,
 }: {
-  chat?: ChatManagement;
   onlyOne?: boolean;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   handerCloseAll: (closeAll: () => void) => void;
 }) => {
   const { token } = theme.useToken();
+  const { chat } = useContext(ChatContext);
   const [activityKey, setActivityKey] = useState(
     chat ? [...chat.topics.map((v) => v.id)] : []
   );
@@ -51,12 +51,12 @@ export const ChatMessage = ({
       setCloasAll(true);
     }
   });
-  const newMsgRef = React.createRef<HTMLInputElement>();
-  useEffect(() => {
-    if (newMsgRef != null && newMsgRef.current != null)
-      scrollToBotton(newMsgRef.current);
-  }, [newMsgRef]);
-  function onClickTopicTitle(topic: Topic) {
+
+  function onClickTopicTitle(
+    topic: Topic & {
+      messages: Message[];
+    }
+  ) {
     let v = [...activityKey];
     if (closeAll) {
       v = [];
@@ -65,11 +65,16 @@ export const ChatMessage = ({
     if (v.includes(topic.id)) {
       v = v.filter((f) => f !== topic.id);
       chat!.config.activityTopicId = chat?.topics.slice(-1)[0].id || "";
+      ChatManagement.loadMessage(chat!.topics.slice(-1)[0]).then(() => {
+        setActivityKey(v);
+      });
     } else {
       chat!.config.activityTopicId = topic.id;
       v.push(topic.id);
+      ChatManagement.loadMessage(topic).then(() => {
+        setActivityKey(v);
+      });
     }
-    setActivityKey(v);
   }
   if (!chat) return <></>;
   function rendTopic(topic: Topic & { messages: Message[] }, idx: number) {
@@ -121,21 +126,20 @@ export const ChatMessage = ({
       >
         {(activityKey.includes(topic.id) ||
           topic.id == chat?.config.activityTopicId) &&
-          topic.messages.map((v, i) => (
-            <MessagesBox
-              msg={v}
-              chat={chat}
-              newMsgRef={
-                topic.id == chat?.config.activityTopicId &&
-                i == topic.messages!.length - 1
-                  ? newMsgRef
-                  : undefined
-              }
-              onDel={onDel}
-              rBak={rBak}
-              key={i}
-            ></MessagesBox>
-          ))}
+          topic.messages.map((v, i) => {
+            return (
+              <MessagesBox
+                msg={v}
+                onDel={onDel}
+                isLast={
+                  i === topic.messages.length - 1 &&
+                  topic.id == chat?.config.activityTopicId
+                }
+                rBak={rBak}
+                key={i}
+              ></MessagesBox>
+            );
+          })}
       </Panel>
     );
   }
@@ -147,14 +151,8 @@ export const ChatMessage = ({
           {topic.messages.map((v, i) => (
             <MessagesBox
               msg={v}
-              chat={chat}
-              newMsgRef={
-                topic!.id == chat?.config.activityTopicId &&
-                i == topic!.messages!.length - 1
-                  ? newMsgRef
-                  : undefined
-              }
               onDel={onDel}
+              isLast={i === topic!.messages.length - 1}
               rBak={rBak}
               key={i}
             ></MessagesBox>
@@ -181,21 +179,116 @@ export const ChatMessage = ({
 
 const MessagesBox = ({
   msg,
-  chat,
-  newMsgRef,
+  isLast,
   rBak,
   onDel,
 }: {
   msg: Message;
-  chat?: ChatManagement;
-  newMsgRef?: React.RefObject<HTMLInputElement>;
+  isLast?: boolean;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
 }) => {
+  const { chat } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [message, setMessage] = useState(msg.text);
+  const newMsgRef = React.createRef<HTMLDivElement>();
   const [none, setNone] = useState([]);
+  useEffect(() => {
+    if (isLast) lastMsgRef.ref = newMsgRef;
+  }, [newMsgRef, isLast]);
+  const utilsEle = (
+    <>
+      {" "}
+      <Checkbox
+        checked={msg.checked || false}
+        onChange={(e) => {
+          msg.checked = e.target.checked;
+          chat?.pushMessage(msg);
+          setNone([]);
+        }}
+      >
+        <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
+      </Checkbox>
+      <span
+        onClick={() => {
+          setEdit(false);
+        }}
+        style={{ flex: 1 }}
+      ></span>
+      {edit ? (
+        <SaveOutlined
+          onClick={() => {
+            msg.text = message;
+            chat?.pushMessage(msg);
+            setEdit(false);
+          }}
+          style={{ marginLeft: "16px" }}
+        />
+      ) : (
+        <></>
+      )}
+      <span style={{ marginLeft: "16px" }}></span>
+      <EditOutlined
+        onClick={() => {
+          if (!edit) setMessage(msg.text);
+          setEdit(!edit);
+        }}
+      />
+      <span style={{ marginLeft: "16px" }}></span>
+      <CopyOutlined
+        onClick={() => {
+          copy(msg.text.toString());
+        }}
+      />
+      <span style={{ marginLeft: "16px" }}></span>
+      <RollbackOutlined
+        style={{ cursor: "pointer" }}
+        onClick={() => {
+          rBak(msg);
+        }}
+      />
+      <span style={{ marginLeft: "30px" }}></span>
+      <DeleteOutlined
+        style={{ cursor: "pointer" }}
+        onClick={(e) => {
+          onDel(msg);
+        }}
+      />
+    </>
+  );
+  if (msg.ctxRole === "system") {
+    return (
+      <div ref={newMsgRef} style={{ padding: "1em 64px", textAlign: "center" }}>
+        <div>
+          {edit ? (
+            <Input.TextArea
+              value={message}
+              autoSize
+              style={{ marginBottom: "4px" }}
+              onChange={(e) => {
+                setMessage(e.target.value);
+              }}
+            />
+          ) : (
+            <Typography.Text type="secondary">
+              {"系统：" + msg.text}
+            </Typography.Text>
+          )}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            borderTop: "1px solid #ccc3",
+            justifyContent: "flex-end",
+            padding: "5px 5px",
+          }}
+        >
+          {utilsEle}
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       ref={newMsgRef}
@@ -279,61 +372,7 @@ const MessagesBox = ({
                 justifyContent: "flex-end",
               }}
             >
-              <Checkbox
-                checked={msg.checked || false}
-                onChange={(e) => {
-                  msg.checked = e.target.checked;
-                  chat?.pushMessage(msg);
-                  setNone([]);
-                }}
-              >
-                <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
-              </Checkbox>
-              <span
-                onClick={() => {
-                  setEdit(false);
-                }}
-                style={{ flex: 1 }}
-              ></span>
-              {edit ? (
-                <SaveOutlined
-                  onClick={() => {
-                    msg.text = message;
-                    chat?.pushMessage(msg);
-                    setEdit(false);
-                  }}
-                  style={{ marginLeft: "16px" }}
-                />
-              ) : (
-                <></>
-              )}
-              <span style={{ marginLeft: "16px" }}></span>
-              <EditOutlined
-                onClick={() => {
-                  if (!edit) setMessage(msg.text);
-                  setEdit(!edit);
-                }}
-              />
-              <span style={{ marginLeft: "16px" }}></span>
-              <CopyOutlined
-                onClick={() => {
-                  copy(msg.text.toString());
-                }}
-              />
-              <span style={{ marginLeft: "16px" }}></span>
-              <RollbackOutlined
-                style={{ cursor: "pointer" }}
-                onClick={() => {
-                  rBak(msg);
-                }}
-              />
-              <span style={{ marginLeft: "30px" }}></span>
-              <DeleteOutlined
-                style={{ cursor: "pointer" }}
-                onClick={(e) => {
-                  onDel(msg);
-                }}
-              />
+              {utilsEle}
             </div>
           </div>
         </div>

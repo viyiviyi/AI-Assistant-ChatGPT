@@ -1,7 +1,8 @@
-import { init, getInstance } from "ts-indexdb";
+import { init } from "ts-indexdb";
 import { DbTable } from "ts-indexdb/dist/TsIndexDb";
 const TABLE_NAME = "litechat";
 export class IndexedDB {
+  static version = 3;
   private static getTableConfig(tableName: string): DbTable {
     return {
       tableName: tableName, // 表名
@@ -19,7 +20,7 @@ export class IndexedDB {
   static async init() {
     await init({
       dbName: TABLE_NAME, // 数据库名称
-      version: 2, // 版本号
+      version: IndexedDB.version, // 版本号
       tables: [
         this.getTableConfig("User"),
         this.getTableConfig("Group"),

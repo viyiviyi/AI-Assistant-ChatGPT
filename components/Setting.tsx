@@ -201,7 +201,7 @@ export const Setting = ({
           <Form.Item label="接口参数">
             <Form.Item
               name="GptConfig_role"
-              label="role  指定对话角色，用于区分对话的用户 不建议使用user"
+              label="role  用户使用的角色 建议使用user"
             >
               <Radio.Group>
                 <Radio.Button value="assistant">assistant</Radio.Button>

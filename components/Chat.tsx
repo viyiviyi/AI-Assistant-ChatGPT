@@ -1,52 +1,55 @@
-import { ChatMessage } from "@/components/ChatMessage";
+import { ChatMessage, lastMsgRef } from "@/components/ChatMessage";
 import { ApiClient } from "@/core/ApiClient";
-import { ChatManagement } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { Message } from "@/Models/DataBase";
 import {
-    CommentOutlined,
-    MessageOutlined,
-    SettingOutlined,
-    UnorderedListOutlined,
-    UserAddOutlined,
-    VerticalAlignMiddleOutlined
+  CommentOutlined,
+  MessageOutlined,
+  SettingOutlined,
+  UnorderedListOutlined,
+  UserAddOutlined,
+  VerticalAlignMiddleOutlined
 } from "@ant-design/icons";
 import {
-    Avatar,
-    Button,
-    Input,
-    Layout,
-    message,
-    theme,
-    Typography
+  Avatar,
+  Button,
+  Input,
+  Layout,
+  message,
+  theme,
+  Typography
 } from "antd";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import style from "../styles/index.module.css";
 
 const { Content } = Layout;
 
+function scrollToBotton() {
+  if (!lastMsgRef.ref) return;
+  if (!lastMsgRef.ref.current) return;
+  lastMsgRef.ref.current.scrollIntoView({ behavior: "smooth", block: "end" });
+}
+
 export const Chat = ({
-  chat,
   togglelistIsShow,
   toggleSettingShow,
   toggleRoleConfig,
 }: {
-  chat: ChatManagement;
   togglelistIsShow: () => void;
   toggleSettingShow: () => void;
   toggleRoleConfig: () => void;
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
   const { token } = theme.useToken();
-  const [chatMgt, setChatMgt] = useState<ChatManagement[]>([chat]);
+  const { chat } = useContext(ChatContext);
   const [loading, setLoading] = useState(0);
   const [messageInput, setmessageInput] = useState("");
   const [onlyOne, setOnlyOne] = useState(false);
   function deleteChatMsg(msg: Message): void {
-    chat.removeMessage(msg).then(() => {
-      setChatMgt([...chatMgt]);
-    });
+    chat.removeMessage(msg).then(() => {});
   }
+
   /**
    * 提交内容
    * @param isPush 是否对话模式
@@ -54,8 +57,13 @@ export const Chat = ({
    */
   async function onSubmit(isPush: boolean) {
     const isBot = messageInput.startsWith("/");
+    const isSys =
+      messageInput.startsWith("/::") || messageInput.startsWith("::");
     const skipRequest = messageInput.startsWith("\\");
-    const text = messageInput.replace(/^\/+/, "").replace(/^\\+/, "");
+    const text = messageInput
+      .replace(/^\//, "")
+      .replace(/^\\/, "")
+      .replace(/^::/, "");
     if (!isPush) await chat.newTopic(text);
     if (!chat.config.activityTopicId) await chat.newTopic(text);
     await chat.pushMessage({
@@ -63,15 +71,17 @@ export const Chat = ({
       groupId: chat.group.id,
       senderId: isBot ? undefined : chat.user.id,
       virtualRoleId: isBot ? chat.virtualRole.id : undefined,
+      ctxRole: isSys ? "system" : isBot ? "assistant" : chat.gptConfig.role,
       text: text,
       timestamp: Date.now(),
       topicId: chat.config.activityTopicId,
     });
     setmessageInput("");
+    scrollToBotton();
     if (isBot || skipRequest) return;
     setLoading((v) => ++v);
     await sendMessage(chat);
-    setChatMgt([...chatMgt]);
+    scrollToBotton();
     setTimeout(() => {
       setLoading((v) => --v);
     }, 500);
@@ -154,7 +164,6 @@ export const Chat = ({
         }}
       >
         <ChatMessage
-          chat={chat}
           onlyOne={onlyOne}
           onDel={(m) => {
             deleteChatMsg(m);
@@ -162,7 +171,9 @@ export const Chat = ({
           rBak={(v) => {
             setmessageInput(
               (m) =>
-                (m ? m + "\n" : m) + (v.virtualRoleId ? "/" + v.text : v.text)
+                (m ? m + "\n" : m) +
+                (v.ctxRole == "system" ? (v.virtualRoleId ? "/" : "") : "") +
+                v.text
             );
             inputRef.current?.focus();
           }}
@@ -233,6 +244,7 @@ export const Chat = ({
             icon={<CommentOutlined />}
             onClick={() => onSubmit(false)}
           ></Button>
+
           <Button
             shape="circle"
             size="large"
@@ -242,7 +254,7 @@ export const Chat = ({
         </div>
         <div style={{ width: "100%" }}>
           <Input.TextArea
-            placeholder="Alt s 继续  Ctrl Enter新话题，/开头代替AI发言"
+            placeholder="/开头代替AI发言 ::开头发出系统内容"
             autoSize={{ maxRows: 10 }}
             allowClear
             ref={inputRef}
@@ -282,6 +294,7 @@ async function sendMessage(chat: ChatManagement) {
     id: "",
     groupId: chat.group.id,
     virtualRoleId: chat.virtualRole.id,
+    ctxRole: "assistant",
     text: "loading...",
     timestamp: Date.now(),
     topicId: topicId,
@@ -295,7 +308,7 @@ async function sendMessage(chat: ChatManagement) {
         top_p: chat.gptConfig.top_p,
         temperature: chat.gptConfig.temperature,
         n: chat.gptConfig.n,
-        user: "user",
+        user: chat.gptConfig.role,
         apiKey: KeyValueData.instance().getApiKey(),
         baseUrl: chat.config.baseUrl || undefined,
       });
@@ -307,6 +320,7 @@ async function sendMessage(chat: ChatManagement) {
         id: "",
         groupId: chat.group.id,
         virtualRoleId: chat.virtualRole.id,
+        ctxRole: "assistant",
         text: res,
         timestamp: Date.now(),
         topicId: topicId,

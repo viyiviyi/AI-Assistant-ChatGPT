@@ -9,8 +9,34 @@ import {
   User,
   VirtualRole
 } from "@/Models/DataBase";
+import React from "react";
 import { getInstance } from "ts-indexdb";
 import { getUuid } from "./utils";
+
+export const defaultChat: IChat = {
+  user: { id: "", name: "", groupId: "" },
+  group: { id: "", name: "", index: 0 },
+  virtualRole: { id: "", name: "", groupId: "", bio: "", settings: [] },
+  virtualRoles: {},
+  topics: [],
+  config: {
+    id: "",
+    groupId: "",
+    defaultVirtualRole: "",
+    enableVirtualRole: false,
+    saveKey: true,
+    activityTopicId: "",
+    baseUrl: "",
+  },
+  gptConfig: {
+    id: "",
+    groupId: "",
+    model: "",
+    role: "user",
+    n: 1,
+    msgCount: 1,
+  },
+};
 
 export interface IChat {
   user: User;
@@ -99,7 +125,7 @@ export class ChatManagement implements IChat {
           topics,
         };
         if (i == 0) {
-          await this.loadMessage(chat);
+          await this.loadTopics(chat);
         }
         this.chatList.push(chat);
       }
@@ -107,12 +133,8 @@ export class ChatManagement implements IChat {
     });
     return this.loadAwait;
   }
-  static async loadMessage(chat: IChat) {
+  static async loadTopics(chat: IChat) {
     let topics: (Topic & { messages: Message[] })[] = [];
-    let msgs = await getInstance().query<Message>({
-      tableName: "Message",
-      condition: (v) => v.groupId == chat.group.id,
-    });
     topics = await getInstance()
       .query<Topic>({
         tableName: "Topic",
@@ -123,14 +145,28 @@ export class ChatManagement implements IChat {
           .sort((s, n) => s.createdAt - n.createdAt)
           .map((t) => ({
             ...t,
-            messages: msgs
-              .filter((f) => f.topicId == t.id)
-              .sort((s, n) => s.timestamp - n.timestamp),
+            messages: [],
           }));
       });
     chat.topics = topics;
-    if (chat.topics.length)
+    if (chat.topics.length) {
       chat.config.activityTopicId = chat.topics.slice(-1)[0].id;
+      await this.loadMessage(chat.topics.slice(-1)[0]);
+    }
+  }
+  static async loadMessage(topic: Topic & { messages: Message[] }) {
+    if (topic.messages.length) return;
+    let msgs = await getInstance().query<Message>({
+      tableName: "Message",
+      condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id,
+    });
+    // 兼容旧数据
+    msgs
+      .sort((s, n) => s.timestamp - n.timestamp)
+      .map((v) => {
+        if (!v.ctxRole) v.ctxRole = v.virtualRoleId ? "assistant" : "user";
+      });
+    topic.messages = msgs;
   }
   getActivityTopic(): Topic | undefined {
     return this.topics.find((f) => f.id == this.config.activityTopicId);
@@ -147,6 +183,13 @@ export class ChatManagement implements IChat {
       content: string;
       name: string;
     }> = [];
+    let getName = (v: Message, virtualRole?: VirtualRole): string => {
+      if (v.ctxRole === "system") return "system";
+      if (virtualRole) return virtualRole.enName || v.ctxRole;
+      return v.virtualRoleId
+        ? this.virtualRole.enName || "assistant"
+        : this.user.enName || "user";
+    };
     if (topic) {
       if (
         this.gptConfig.msgCount > 0 &&
@@ -158,13 +201,9 @@ export class ChatManagement implements IChat {
           .forEach((v) => {
             let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
             ctx.push({
-              role: v.virtualRoleId ? this.gptConfig.role : "user",
+              role: v.ctxRole,
               content: v.text,
-              name: v.virtualRoleId
-                ? virtualRole
-                  ? virtualRole.enName || "assistant"
-                  : this.virtualRole.enName || "assistant"
-                : this.user.enName || "user",
+              name: getName(v, virtualRole),
             });
           });
 
@@ -174,7 +213,7 @@ export class ChatManagement implements IChat {
         if (!lastMsg.checked) {
           ctx.push({
             role: "system",
-            content: '...',
+            content: "...",
             name: "system",
           });
         }
@@ -182,13 +221,9 @@ export class ChatManagement implements IChat {
       topic.messages.slice(-this.gptConfig.msgCount).forEach((v) => {
         let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
         ctx.push({
-          role: v.virtualRoleId ? this.gptConfig.role : "user",
+          role: v.ctxRole,
           content: v.text,
-          name: v.virtualRoleId
-            ? virtualRole
-              ? virtualRole.enName || "assistant"
-              : this.virtualRole.enName || "assistant"
-            : this.user.enName || "user",
+          name: getName(v, virtualRole),
         });
       });
     }
@@ -211,14 +246,20 @@ export class ChatManagement implements IChat {
           name: "system",
         },
         ...virtualRole.settings.map((v) => ({
-          role: v.startsWith("/") ? this.gptConfig.role : "user",
+          role: ChatManagement.textParse(v),
           content: v.replace(/^\/+/, ""),
           name: v.startsWith("/") ? "assistant" : this.user.enName || "user",
         })),
         ...ctx,
       ];
     }
+    JSON.parse;
     return ctx;
+  }
+  static textParse(text: string): "assistant" | "system" | "user" {
+    if (text.startsWith("::") || text.startsWith("/::")) return "system";
+    if (text.startsWith("/")) return "assistant";
+    return "user";
   }
   async newTopic(name: string) {
     let topic = await ChatManagement.createTopic(
@@ -362,7 +403,7 @@ export class ChatManagement implements IChat {
     const data: GptConfig = gptConfig || {
       id: getUuid(),
       groupId,
-      role: "assistant",
+      role: "user",
       model: "gpt-3.5-turbo",
       max_tokens: 1000,
       top_p: 0.7,
@@ -601,6 +642,7 @@ export class ChatManagement implements IChat {
       v.messages.forEach((m) => {
         m.groupId = this.group.id;
         m.topicId = v.id;
+        m.ctxRole = m.ctxRole || (m.virtualRoleId ? "assistant" : "user");
         m.virtualRoleId;
         m.id = getUuid();
         proM.push(ChatManagement.createMessage(m));
@@ -610,3 +652,7 @@ export class ChatManagement implements IChat {
     await Promise.all(proM);
   }
 }
+
+export const ChatContext = React.createContext({
+  chat: new ChatManagement(defaultChat),
+});
