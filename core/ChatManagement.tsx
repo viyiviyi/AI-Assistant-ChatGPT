@@ -513,48 +513,53 @@ export class ChatManagement implements IChat {
       this.config.activityTopicId = this.topics.slice(-1)[0].id;
     else this.config.activityTopicId = "";
   }
-  static async remove(chat: IChat) {
-    await getInstance().delete_by_primaryKey({
+  static async remove(groupId: string, replace?: IChat) {
+    await getInstance().delete<User>({
       tableName: "User",
-      value: chat.user.id,
+      condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete_by_primaryKey({
+    await getInstance().delete<Group>({
       tableName: "Group",
-      value: chat.group.id,
+      condition: (v) => v.id == groupId,
     });
-    await getInstance().delete_by_primaryKey({
+    await getInstance().delete<GroupConfig>({
       tableName: "GroupConfig",
-      value: chat.config.id,
+      condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete_by_primaryKey({
+    await getInstance().delete<VirtualRole>({
       tableName: "VirtualRole",
-      value: chat.virtualRole.id,
+      condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete_by_primaryKey({
+    await getInstance().delete<GptConfig>({
       tableName: "GptConfig",
-      value: chat.gptConfig.id,
+      condition: (v) => v.groupId == groupId,
     });
     await getInstance().delete<Topic>({
       tableName: "Topic",
-      condition: (v) => v.groupId == chat.group.id,
+      condition: (v) => v.groupId == groupId,
     });
     await getInstance().delete<Message>({
       tableName: "Message",
-      condition: (v) => v.groupId == chat.group.id,
+      condition: (v) => v.groupId == groupId,
     });
-    let delIdx = this.chatList.findIndex((f) => f.group.id == chat.group.id);
+    let delIdx = this.chatList.findIndex((f) => f.group.id == groupId);
     if (delIdx > -1) {
-      this.chatList.splice(delIdx, 1);
-      this.chatList.forEach((chat, idx) => {
-        getInstance().update_by_primaryKey<Group>({
-          tableName: "Group",
-          value: chat.group.id,
-          handle: (r) => {
-            r.index = idx;
-            return r;
-          },
+      if (!replace) {
+        this.chatList.splice(delIdx, 1);
+        this.chatList.forEach((chat, idx) => {
+          getInstance().update_by_primaryKey<Group>({
+            tableName: "Group",
+            value: chat.group.id,
+            handle: (r) => {
+              r.index = idx;
+              return r;
+            },
+          });
         });
-      });
+      } else {
+        replace.group.index = this.chatList[delIdx].group.index;
+        this.chatList.splice(delIdx, 1, replace);
+      }
     }
   }
   toJson(): IChat {
@@ -572,9 +577,9 @@ export class ChatManagement implements IChat {
   }
   async fromJson(json: IChat) {
     if (!json.group.createTime) json.gptConfig.role = "user";
-    await ChatManagement.remove(this);
+    await ChatManagement.remove(this.group.id, json);
     Object.assign(this.group, json.group, { id: getUuid() });
-    await ChatManagement.createGroup(this.group);
+    await ChatManagement.createGroup(this.group).then();
     Object.assign(this.config, json.config, {
       id: getUuid(),
       groupId: this.group.id,
@@ -657,6 +662,7 @@ export class ChatManagement implements IChat {
     });
     await Promise.all(proT);
     await Promise.all(proM);
+    ChatManagement.chatList.splice(this.group.index, 1, this.toJson());
   }
 }
 

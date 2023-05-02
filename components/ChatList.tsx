@@ -105,7 +105,7 @@ export const ChatList = ({
                 <Popconfirm
                   title="确定删除？"
                   onConfirm={() => {
-                    ChatManagement.remove(v).then(() => {
+                    ChatManagement.remove(v.group.id).then(() => {
                       setGroups([
                         ...ChatManagement.getGroups().map(
                           (v) => new ChatManagement(v)
