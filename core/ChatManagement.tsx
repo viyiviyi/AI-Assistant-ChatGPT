@@ -1,13 +1,13 @@
 import { isXML } from "@/components/MarkdownView";
 import { IndexedDB } from "@/core/IndexDb";
 import {
-    GptConfig,
-    Group,
-    GroupConfig,
-    Message,
-    Topic,
-    User,
-    VirtualRole
+  GptConfig,
+  Group,
+  GroupConfig,
+  Message,
+  Topic,
+  User,
+  VirtualRole
 } from "@/Models/DataBase";
 import { getInstance } from "ts-indexdb";
 import { getUuid } from "./utils";
@@ -167,6 +167,17 @@ export class ChatManagement implements IChat {
                 : this.user.enName || "user",
             });
           });
+
+        let lastMsg = topic.messages
+          .slice(0, topic.messages.length - this.gptConfig.msgCount)
+          .slice(-1)[0];
+        if (!lastMsg.checked) {
+          ctx.push({
+            role: "system",
+            content: '...',
+            name: "system",
+          });
+        }
       }
       topic.messages.slice(-this.gptConfig.msgCount).forEach((v) => {
         let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
@@ -188,9 +199,16 @@ export class ChatManagement implements IChat {
         this.virtualRole;
       ctx = [
         {
-          role: virtualRole.bio.startsWith("/") ? this.gptConfig.role : "system",
+          role: virtualRole.bio.startsWith("/")
+            ? this.gptConfig.role
+            : "system",
           content: virtualRole.bio.replace(/^\/+/, ""),
-          name: this.user.enName || "user",
+          name: "system",
+        },
+        {
+          role: "system",
+          content: `system time: ${new Date().toLocaleString()}`,
+          name: "system",
         },
         ...virtualRole.settings.map((v) => ({
           role: v.startsWith("/") ? this.gptConfig.role : "user",
@@ -331,7 +349,7 @@ export class ChatManagement implements IChat {
       id: getUuid(),
       name: "助理",
       groupId,
-      bio: `接下来，你需要以私人助理的语气和行为为我提供服务，输出的内容尽可能的详细和严谨。`,
+      bio: `接下来，你需要以私人助理的语气和行为输出内容，尽可能的详细与严谨。`,
       settings: [],
     };
     await getInstance().insert<VirtualRole>({ tableName: "VirtualRole", data });
@@ -387,7 +405,10 @@ export class ChatManagement implements IChat {
       message.text = "```xml\n" + message.text + "\n```";
     }
     // 让换行符正常换行
-    message.text = message.text.replace(/([\.!\?~\]\)。！？】）～：；”……])\n([^\n])/g, "$1\n\n$2");
+    message.text = message.text.replace(
+      /([\.!\?~\]\)。！？】）～：；”……])\n([^\n])/g,
+      "$1\n\n$2"
+    );
 
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) topic = await await this.newTopic(message.text);
