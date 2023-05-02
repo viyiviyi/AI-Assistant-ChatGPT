@@ -1,4 +1,4 @@
-import { ChatMessage, lastMsgRef } from "@/components/ChatMessage";
+import { ChatMessage, scrollToBotton } from "@/components/ChatMessage";
 import { ApiClient } from "@/core/ApiClient";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
@@ -25,12 +25,6 @@ import style from "../styles/index.module.css";
 
 const { Content } = Layout;
 
-function scrollToBotton() {
-  if (!lastMsgRef.ref) return;
-  if (!lastMsgRef.ref.current) return;
-  lastMsgRef.ref.current.scrollIntoView({ behavior: "smooth", block: "end" });
-}
-
 export const Chat = ({
   togglelistIsShow,
   toggleSettingShow,
@@ -46,8 +40,11 @@ export const Chat = ({
   const [loading, setLoading] = useState(0);
   const [messageInput, setmessageInput] = useState("");
   const [onlyOne, setOnlyOne] = useState(false);
+  const [none, setNone] = useState([]);
   function deleteChatMsg(msg: Message): void {
-    chat.removeMessage(msg).then(() => {});
+    chat.removeMessage(msg)?.then(() => {
+      setNone([]);
+    });
   }
 
   /**
@@ -81,9 +78,9 @@ export const Chat = ({
     if (isBot || skipRequest) return;
     setLoading((v) => ++v);
     await sendMessage(chat);
-    scrollToBotton();
     setTimeout(() => {
       setLoading((v) => --v);
+      scrollToBotton();
     }, 500);
   }
   let closeAllTopic: () => void = () => {};

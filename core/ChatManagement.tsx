@@ -479,7 +479,7 @@ export class ChatManagement implements IChat {
       return message;
     }
   }
-  async removeMessage(message: Message) {
+  removeMessage(message: Message) {
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (topic) {
       let delIdx = topic.messages.findIndex((f) => f.id == message.id);
@@ -488,7 +488,7 @@ export class ChatManagement implements IChat {
       }
     }
     if (message.id) {
-      await getInstance().delete_by_primaryKey({
+      return getInstance().delete_by_primaryKey({
         tableName: "Message",
         value: message.id,
       });

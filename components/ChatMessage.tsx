@@ -25,8 +25,14 @@ import { MarkdownView } from "./MarkdownView";
 
 const { Panel } = Collapse;
 
-export const lastMsgRef: { ref?: React.RefObject<HTMLDivElement> } = {};
-
+const lastMsgRef: { ref?: React.RefObject<HTMLDivElement> } = {};
+export function scrollToBotton() {
+  setTimeout(() => {
+    if (!lastMsgRef.ref) return;
+    if (!lastMsgRef.ref.current) return;
+    lastMsgRef.ref.current.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, 600);
+}
 export const ChatMessage = ({
   onlyOne,
   rBak,
@@ -68,12 +74,14 @@ export const ChatMessage = ({
       chat!.config.activityTopicId = chat?.topics.slice(-1)[0].id || "";
       ChatManagement.loadMessage(chat!.topics.slice(-1)[0]).then(() => {
         setActivityKey(v);
+        scrollToBotton();
       });
     } else {
       chat!.config.activityTopicId = topic.id;
       v.push(topic.id);
       ChatManagement.loadMessage(topic).then(() => {
         setActivityKey(v);
+        scrollToBotton();
       });
     }
   }
@@ -266,12 +274,17 @@ const MessagesBox = ({
         }}
       />
       <span style={{ marginLeft: "30px" }}></span>
-      <DeleteOutlined
-        style={{ cursor: "pointer" }}
-        onClick={(e) => {
+      <Popconfirm
+        title="确定删除？"
+        onConfirm={() => {
           onDel(msg);
+          setNone([]);
         }}
-      />
+        okText="确定"
+        cancelText="取消"
+      >
+        <DeleteOutlined></DeleteOutlined>
+      </Popconfirm>
     </>
   );
   if (msg.ctxRole === "system") {
@@ -402,7 +415,7 @@ function downloadTopic(
   useRole: boolean,
   chat: IChat
 ) {
-  let str = topic.name.replace(/^\\/,'').replace(/^\/:?:?/,'');
+  let str = topic.name.replace(/^\\/, "").replace(/^\/:?:?/, "");
   str += "\n\n";
   topic.messages.forEach((v) => {
     let virtualRole = chat.virtualRole;
@@ -412,7 +425,7 @@ function downloadTopic(
     if (useRole && v.ctxRole === "system") str += "系统：\n";
     else if (useRole && v.virtualRoleId) str += virtualRole.name + ":\n";
     else if (useRole && v.senderId) str += chat.user.name + ":\n";
-    str += v.text+ "\n\n";
+    str += v.text + "\n\n";
   });
   downloadText(str, topic.name + ".md");
 }
