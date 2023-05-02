@@ -36,7 +36,7 @@ export const Chat = ({
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
   const { token } = theme.useToken();
-  const { chat } = useContext(ChatContext);
+  const { chat, activityTopic } = useContext(ChatContext);
   const [loading, setLoading] = useState(0);
   const [messageInput, setmessageInput] = useState("");
   const [onlyOne, setOnlyOne] = useState(false);
@@ -222,7 +222,7 @@ export const Chat = ({
               setOnlyOne((v) => !v);
             }}
           >
-            {chat.getActivityTopic()?.name}
+            {activityTopic?.name}
           </Typography.Text>
           <span style={{ flex: 1 }}></span>
           <Button

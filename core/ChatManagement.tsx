@@ -65,6 +65,7 @@ export class ChatManagement implements IChat {
   readonly gptConfig: GptConfig;
 
   readonly virtualRoles: { [key: string]: VirtualRole | undefined } = {};
+
   private static readonly chatList: IChat[] = [];
   static getGroups(): IChat[] {
     return this.chatList;
@@ -171,9 +172,6 @@ export class ChatManagement implements IChat {
         if (!v.ctxRole) v.ctxRole = v.virtualRoleId ? "assistant" : "user";
       });
     topic.messages = msgs;
-  }
-  getActivityTopic(): Topic | undefined {
-    return this.topics.find((f) => f.id == this.config.activityTopicId);
   }
 
   getAskContext(): Array<{
@@ -666,6 +664,12 @@ export class ChatManagement implements IChat {
   }
 }
 
-export const ChatContext = React.createContext({
+export const ChatContext = React.createContext<{
+  chat: ChatManagement;
+  activityTopic: Topic;
+  setActivityTopic: (topic: Topic) => void;
+}>({
   chat: new ChatManagement(defaultChat),
+  activityTopic: { id: "", name: "", groupId: "", createdAt: 0 },
+  setActivityTopic: (topic: Topic) => {},
 });

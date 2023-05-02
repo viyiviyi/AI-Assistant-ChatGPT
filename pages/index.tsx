@@ -23,6 +23,14 @@ export default function Home() {
   const [roleConfigShow, setRoleConfigShow] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
   const [ngImg, setBgImg] = useState<BgConfig>();
+  const [activityTopic, setActivityTopic] = useState(
+    chatMgt.topics.find((f) => f.id == chatMgt.config.activityTopicId) || {
+      id: "",
+      name: "",
+      groupId: "",
+      createdAt: 0,
+    }
+  );
   let init = useCallback(async () => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -30,9 +38,6 @@ export default function Home() {
     setWindowWidth(window.innerWidth || 0);
     window.addEventListener("resize", handleResize);
     await ChatManagement.load().then(() => {
-      let chats = ChatManagement.getGroups();
-      if (chats.length == 0) return;
-      setChatMgt(new ChatManagement(chats[0]));
       BgImage.getInstance().theamBackgroundImageChange.subscribe((res) => {
         setBgImg(res);
       });
@@ -41,6 +46,21 @@ export default function Home() {
         .then((res) => {
           setBgImg(res);
         });
+
+      let chats = ChatManagement.getGroups();
+      if (chats.length == 0) return;
+      setChatMgt(new ChatManagement(chats[0]));
+
+      setActivityTopic(
+        chats[0].topics.find(
+          (f) => f.id == chats[0].config.activityTopicId
+        ) || {
+          id: "",
+          name: "",
+          groupId: "",
+          createdAt: 0,
+        }
+      );
     });
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -53,7 +73,13 @@ export default function Home() {
   }, [init]);
 
   return (
-    <ChatContext.Provider value={{ chat: chatMgt }}>
+    <ChatContext.Provider
+      value={{
+        chat: chatMgt,
+        activityTopic,
+        setActivityTopic,
+      }}
+    >
       <Layout
         style={{
           display: "flex",

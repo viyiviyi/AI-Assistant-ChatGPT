@@ -45,7 +45,7 @@ export const ChatMessage = ({
   handerCloseAll: (closeAll: () => void) => void;
 }) => {
   const { token } = theme.useToken();
-  const { chat } = useContext(ChatContext);
+  const { chat, setActivityTopic } = useContext(ChatContext);
   const [activityKey, setActivityKey] = useState(
     chat ? [...chat.topics.map((v) => v.id)] : []
   );
@@ -76,6 +76,7 @@ export const ChatMessage = ({
         setActivityKey(v);
         scrollToBotton();
       });
+      setActivityTopic(chat?.topics.slice(-1)[0]);
     } else {
       chat!.config.activityTopicId = topic.id;
       v.push(topic.id);
@@ -83,6 +84,7 @@ export const ChatMessage = ({
         setActivityKey(v);
         scrollToBotton();
       });
+      setActivityTopic(topic);
     }
   }
   if (!chat) return <></>;
