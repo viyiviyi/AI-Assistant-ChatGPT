@@ -1,9 +1,10 @@
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
 import { Message, Topic } from "@/Models/DataBase";
 import {
   CaretRightOutlined,
   CopyOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   RollbackOutlined,
   SaveOutlined,
@@ -115,6 +116,22 @@ export const ChatMessage = ({
                 cancelText="取消"
               >
                 <DeleteOutlined></DeleteOutlined>
+              </Popconfirm>
+            </Typography.Title>
+            <span style={{ marginLeft: "30px" }}></span>
+            <Typography.Title level={5}>
+              <Popconfirm
+                title="选择内容保存格式"
+                onConfirm={() => {
+                  downloadTopic(topic, false, chat);
+                }}
+                onCancel={() => {
+                  downloadTopic(topic, true, chat);
+                }}
+                okText="仅内容"
+                cancelText="包括角色"
+              >
+                <DownloadOutlined></DownloadOutlined>
               </Popconfirm>
             </Typography.Title>
           </div>
@@ -380,3 +397,33 @@ const MessagesBox = ({
     </div>
   );
 };
+function downloadTopic(
+  topic: Topic & { messages: Message[] },
+  useRole: boolean,
+  chat: IChat
+) {
+  let str = topic.name.replace(/^\\/,'').replace(/^\/:?:?/,'');
+  str += "\n\n";
+  topic.messages.forEach((v) => {
+    let virtualRole = chat.virtualRole;
+    if (v.virtualRoleId != chat.virtualRole.id) {
+      virtualRole = chat.virtualRoles[v.virtualRoleId || ""] || virtualRole;
+    }
+    if (useRole && v.ctxRole === "system") str += "系统：\n";
+    else if (useRole && v.virtualRoleId) str += virtualRole.name + ":\n";
+    else if (useRole && v.senderId) str += chat.user.name + ":\n";
+    str += v.text+ "\n\n";
+  });
+  downloadText(str, topic.name + ".md");
+}
+function downloadText(jsonData: string, filename: string) {
+  const blob = new Blob([jsonData], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
