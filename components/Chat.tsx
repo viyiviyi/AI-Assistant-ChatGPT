@@ -24,6 +24,9 @@ import React, { useContext, useState } from "react";
 import style from "../styles/index.module.css";
 
 const { Content } = Layout;
+const inputRef = React.createRef<HTMLInputElement>();
+let closeAllTopic: () => void = () => {};
+let setInputContent: (cb: (content: string) => string) => void = () => {};
 
 export const Chat = ({
   togglelistIsShow,
@@ -34,11 +37,8 @@ export const Chat = ({
   toggleSettingShow: () => void;
   toggleRoleConfig: () => void;
 }) => {
-  const inputRef = React.createRef<HTMLInputElement>();
   const { token } = theme.useToken();
-  const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
-  const [loading, setLoading] = useState(0);
-  const [messageInput, setmessageInput] = useState("");
+  const { chat } = useContext(ChatContext);
   const [onlyOne, setOnlyOne] = useState(false);
   const [none, setNone] = useState([]);
   function deleteChatMsg(msg: Message): void {
@@ -46,57 +46,6 @@ export const Chat = ({
       setNone([]);
     });
   }
-
-  /**
-   * 提交内容
-   * @param isNewTopic 是否开启新话题
-   * @returns
-   */
-  async function onSubmit(isNewTopic: boolean) {
-    let text = messageInput.trim();
-    const isBot = text.startsWith("/");
-    const isSys = text.startsWith("/::") || text.startsWith("::");
-    const skipRequest = text.startsWith("\\");
-    text = ChatManagement.parseText(text);
-    if (!chat.config.activityTopicId) isNewTopic = true;
-    if (isNewTopic) {
-      await chat.newTopic(text).then((topic) => {
-        setActivityTopic(topic);
-      });
-    }
-
-    await chat.pushMessage({
-      id: "",
-      groupId: chat.group.id,
-      senderId: isBot ? undefined : chat.user.id,
-      virtualRoleId: isBot ? chat.virtualRole.id : undefined,
-      ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
-      text: text,
-      timestamp: Date.now(),
-      topicId: chat.config.activityTopicId,
-    });
-    setmessageInput("");
-    scrollToBotton();
-    if (isBot || skipRequest) return;
-    setLoading((v) => ++v);
-    await sendMessage(chat);
-    setTimeout(() => {
-      setLoading((v) => --v);
-      scrollToBotton();
-    }, 500);
-  }
-  let closeAllTopic: () => void = () => {};
-  const onTextareaTab = (
-    start: number,
-    end: number,
-    textarea: EventTarget & HTMLTextAreaElement
-  ) => {
-    setmessageInput((v) => v.substring(0, start) + "    " + v.substring(start));
-    setTimeout(() => {
-      textarea.selectionStart = start + 4;
-      textarea.selectionEnd = end + 4;
-    }, 0);
-  };
 
   return (
     <div
@@ -168,7 +117,7 @@ export const Chat = ({
             deleteChatMsg(m);
           }}
           rBak={(v) => {
-            setmessageInput(
+            setInputContent(
               (m) =>
                 (m ? m + "\n" : m) +
                 (!m
@@ -185,103 +134,13 @@ export const Chat = ({
           handerCloseAll={(cb) => (closeAllTopic = cb)}
         />
       </Content>
-      <div className={style.loading}>
-        {loading ? (
-          <div className={style.loading}>
-            {[0, 1, 2, 3, 4].map((v) => (
-              <div
-                key={v}
-                style={{ backgroundColor: token.colorPrimary }}
-                className={style.loadingBar}
-              ></div>
-            ))}
-          </div>
-        ) : (
-          <div className={style.loading}></div>
-        )}
-      </div>
-      <div
-        style={{
-          width: "100%",
-          padding: "0px 10px 10px",
-          marginBottom: "15px",
-          borderRadius: token.borderRadius,
-          backgroundColor: token.colorFillContent,
+      <InputUtil
+        onlyOne={onlyOne}
+        setOnlyOne={setOnlyOne}
+        reload={() => {
+          setNone([]);
         }}
-      >
-        <div
-          style={{
-            flexWrap: "nowrap",
-            gap: "16px",
-            width: "100%",
-            justifyContent: "flex-end",
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "3px",
-          }}
-        >
-          <Typography.Text
-            style={{
-              cursor: "pointer",
-              color: onlyOne ? token.colorPrimary : undefined,
-            }}
-            ellipsis={true}
-            onClick={() => {
-              setOnlyOne((v) => !v);
-            }}
-          >
-            {activityTopic?.name}
-          </Typography.Text>
-          <span style={{ flex: 1 }}></span>
-          <Button
-            shape="round"
-            onClick={() => {
-              setOnlyOne(false);
-              closeAllTopic();
-            }}
-          >
-            <CommentOutlined />
-            <VerticalAlignMiddleOutlined />
-          </Button>
-          <Button
-            shape="circle"
-            size="large"
-            icon={<CommentOutlined />}
-            onClick={() => onSubmit(true)}
-          ></Button>
-
-          <Button
-            shape="circle"
-            size="large"
-            icon={<MessageOutlined />}
-            onClick={() => onSubmit(false)}
-          ></Button>
-        </div>
-        <div style={{ width: "100%" }}>
-          <Input.TextArea
-            placeholder="/开头代替AI发言 ::开头发出系统内容"
-            autoSize={{ maxRows: 10 }}
-            allowClear
-            ref={inputRef}
-            autoFocus={true}
-            value={messageInput}
-            onChange={(e) => setmessageInput(e.target.value)}
-            onKeyUp={(e) =>
-              (e.key === "s" && e.altKey && onSubmit(false)) ||
-              (e.key === "Enter" && e.ctrlKey && onSubmit(true))
-            }
-            onKeyDown={(e) =>
-              e.key === "Tab" &&
-              (e.preventDefault(),
-              onTextareaTab(
-                e.currentTarget?.selectionStart,
-                e.currentTarget?.selectionEnd,
-                e.currentTarget
-              ))
-            }
-          />
-        </div>
-      </div>
+      ></InputUtil>
     </div>
   );
 };
@@ -336,4 +195,170 @@ async function sendMessage(chat: ChatManagement) {
     msg.text = String(error);
     chat.pushMessage(msg);
   }
+}
+
+function InputUtil({
+  onlyOne,
+  setOnlyOne,
+  reload,
+}: {
+  onlyOne: boolean;
+  setOnlyOne: (onlyOne: boolean) => void;
+  reload: () => void;
+}) {
+  const [messageInput, setmessageInput] = useState("");
+  const [loading, setLoading] = useState(0);
+  const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
+  const { token } = theme.useToken();
+  setInputContent = setmessageInput;
+  /**
+   * 提交内容
+   * @param isNewTopic 是否开启新话题
+   * @returns
+   */
+  async function onSubmit(isNewTopic: boolean) {
+    let text = messageInput.trim();
+    const isBot = text.startsWith("/");
+    const isSys = text.startsWith("/::") || text.startsWith("::");
+    const skipRequest = text.startsWith("\\");
+    text = ChatManagement.parseText(text);
+    if (!chat.config.activityTopicId) isNewTopic = true;
+    if (isNewTopic) {
+      await chat.newTopic(text).then((topic) => {
+        setActivityTopic(topic);
+      });
+    }
+    await chat.pushMessage({
+      id: "",
+      groupId: chat.group.id,
+      senderId: isBot ? undefined : chat.user.id,
+      virtualRoleId: isBot ? chat.virtualRole.id : undefined,
+      ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
+      text: text,
+      timestamp: Date.now(),
+      topicId: chat.config.activityTopicId,
+    });
+    setmessageInput("");
+    scrollToBotton();
+    reload();
+    if (isBot || skipRequest) return;
+    setLoading((v) => ++v);
+    await sendMessage(chat);
+    setTimeout(() => {
+      setLoading((v) => --v);
+      scrollToBotton();
+      reload();
+    }, 500);
+  }
+  const onTextareaTab = (
+    start: number,
+    end: number,
+    textarea: EventTarget & HTMLTextAreaElement
+  ) => {
+    setmessageInput((v) => v.substring(0, start) + "    " + v.substring(start));
+    setTimeout(() => {
+      textarea.selectionStart = start + 4;
+      textarea.selectionEnd = end + 4;
+    }, 0);
+  };
+  return (
+    <>
+      <div className={style.loading}>
+        {loading ? (
+          <div className={style.loading}>
+            {[0, 1, 2, 3, 4].map((v) => (
+              <div
+                key={v}
+                style={{ backgroundColor: token.colorPrimary }}
+                className={style.loadingBar}
+              ></div>
+            ))}
+          </div>
+        ) : (
+          <div className={style.loading}></div>
+        )}
+      </div>
+      <div
+        style={{
+          width: "100%",
+          padding: "0px 10px 10px",
+          marginBottom: "15px",
+          borderRadius: token.borderRadius,
+          backgroundColor: token.colorFillContent,
+        }}
+      >
+        <div
+          style={{
+            flexWrap: "nowrap",
+            gap: "16px",
+            width: "100%",
+            justifyContent: "flex-end",
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "3px",
+          }}
+        >
+          <Typography.Text
+            style={{
+              cursor: "pointer",
+              color: onlyOne ? token.colorPrimary : undefined,
+            }}
+            ellipsis={true}
+            onClick={() => {
+              setOnlyOne(!onlyOne);
+            }}
+          >
+            {activityTopic?.name}
+          </Typography.Text>
+          <span style={{ flex: 1 }}></span>
+          <Button
+            shape="round"
+            onClick={() => {
+              setOnlyOne(false);
+              closeAllTopic();
+            }}
+          >
+            <CommentOutlined />
+            <VerticalAlignMiddleOutlined />
+          </Button>
+          <Button
+            shape="circle"
+            size="large"
+            icon={<CommentOutlined />}
+            onClick={() => onSubmit(true)}
+          ></Button>
+          <Button
+            shape="circle"
+            size="large"
+            icon={<MessageOutlined />}
+            onClick={() => onSubmit(false)}
+          ></Button>
+        </div>
+        <div style={{ width: "100%" }}>
+          <Input.TextArea
+            placeholder="/开头代替AI发言 ::开头发出系统内容"
+            autoSize={{ maxRows: 10 }}
+            allowClear
+            ref={inputRef}
+            autoFocus={true}
+            value={messageInput}
+            onChange={(e) => setmessageInput(e.target.value)}
+            onKeyUp={(e) =>
+              (e.key === "s" && e.altKey && onSubmit(false)) ||
+              (e.key === "Enter" && e.ctrlKey && onSubmit(true))
+            }
+            onKeyDown={(e) =>
+              e.key === "Tab" &&
+              (e.preventDefault(),
+              onTextareaTab(
+                e.currentTarget?.selectionStart,
+                e.currentTarget?.selectionEnd,
+                e.currentTarget
+              ))
+            }
+          />
+        </div>
+      </div>
+    </>
+  );
 }
