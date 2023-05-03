@@ -36,7 +36,7 @@ export const Chat = ({
 }) => {
   const inputRef = React.createRef<HTMLInputElement>();
   const { token } = theme.useToken();
-  const { chat, activityTopic } = useContext(ChatContext);
+  const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
   const [loading, setLoading] = useState(0);
   const [messageInput, setmessageInput] = useState("");
   const [onlyOne, setOnlyOne] = useState(false);
@@ -49,17 +49,22 @@ export const Chat = ({
 
   /**
    * 提交内容
-   * @param isPush 是否对话模式
+   * @param isNewTopic 是否开启新话题
    * @returns
    */
-  async function onSubmit(isPush: boolean) {
+  async function onSubmit(isNewTopic: boolean) {
     let text = messageInput.trim();
     const isBot = text.startsWith("/");
     const isSys = text.startsWith("/::") || text.startsWith("::");
     const skipRequest = text.startsWith("\\");
     text = ChatManagement.parseText(text);
-    if (!isPush) await chat.newTopic(text);
-    if (!chat.config.activityTopicId) await chat.newTopic(text);
+    if (!chat.config.activityTopicId) isNewTopic = true;
+    if (isNewTopic) {
+      await chat.newTopic(text).then((topic) => {
+        setActivityTopic(topic);
+      });
+    }
+
     await chat.pushMessage({
       id: "",
       groupId: chat.group.id,
@@ -242,14 +247,14 @@ export const Chat = ({
             shape="circle"
             size="large"
             icon={<CommentOutlined />}
-            onClick={() => onSubmit(false)}
+            onClick={() => onSubmit(true)}
           ></Button>
 
           <Button
             shape="circle"
             size="large"
             icon={<MessageOutlined />}
-            onClick={() => onSubmit(true)}
+            onClick={() => onSubmit(false)}
           ></Button>
         </div>
         <div style={{ width: "100%" }}>
@@ -262,8 +267,8 @@ export const Chat = ({
             value={messageInput}
             onChange={(e) => setmessageInput(e.target.value)}
             onKeyUp={(e) =>
-              (e.key === "s" && e.altKey && onSubmit(true)) ||
-              (e.key === "Enter" && e.ctrlKey && onSubmit(false))
+              (e.key === "s" && e.altKey && onSubmit(false)) ||
+              (e.key === "Enter" && e.ctrlKey && onSubmit(true))
             }
             onKeyDown={(e) =>
               e.key === "Tab" &&
