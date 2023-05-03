@@ -53,14 +53,11 @@ export const Chat = ({
    * @returns
    */
   async function onSubmit(isPush: boolean) {
-    const isBot = messageInput.startsWith("/");
-    const isSys =
-      messageInput.startsWith("/::") || messageInput.startsWith("::");
-    const skipRequest = messageInput.startsWith("\\");
-    const text = messageInput
-      .replace(/^\//, "")
-      .replace(/^\\/, "")
-      .replace(/^::/, "");
+    let text = messageInput.trim();
+    const isBot = text.startsWith("/");
+    const isSys = text.startsWith("/::") || text.startsWith("::");
+    const skipRequest = text.startsWith("\\");
+    text = ChatManagement.parseText(text);
     if (!isPush) await chat.newTopic(text);
     if (!chat.config.activityTopicId) await chat.newTopic(text);
     await chat.pushMessage({
@@ -68,7 +65,7 @@ export const Chat = ({
       groupId: chat.group.id,
       senderId: isBot ? undefined : chat.user.id,
       virtualRoleId: isBot ? chat.virtualRole.id : undefined,
-      ctxRole: isSys ? "system" : isBot ? "assistant" : chat.gptConfig.role,
+      ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
       text: text,
       timestamp: Date.now(),
       topicId: chat.config.activityTopicId,
@@ -169,7 +166,13 @@ export const Chat = ({
             setmessageInput(
               (m) =>
                 (m ? m + "\n" : m) +
-                (v.ctxRole == "system" ? (v.virtualRoleId ? "/" : "") : "") +
+                (!m
+                  ? v.ctxRole == "system"
+                    ? "/::"
+                    : v.virtualRoleId
+                    ? "/"
+                    : ""
+                  : "") +
                 v.text
             );
             inputRef.current?.focus();
@@ -305,7 +308,7 @@ async function sendMessage(chat: ChatManagement) {
         top_p: chat.gptConfig.top_p,
         temperature: chat.gptConfig.temperature,
         n: chat.gptConfig.n,
-        user: chat.gptConfig.role,
+        user: chat.getNameByRole(msg.ctxRole),
         apiKey: KeyValueData.instance().getApiKey(),
         baseUrl: chat.config.baseUrl || undefined,
       });
@@ -325,7 +328,7 @@ async function sendMessage(chat: ChatManagement) {
     }
     message.error("缺少apikey，请在设置中配置后使用");
   } catch (error: any) {
-    msg.text = error.message;
+    msg.text = String(error);
     chat.pushMessage(msg);
   }
 }

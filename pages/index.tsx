@@ -136,6 +136,7 @@ export default function Home() {
             }}
             onSelected={(mgt) => {
               setChatMgt(new ChatManagement(mgt));
+              setActivityTopic(mgt.topics.slice(-1)[0]);
               setlistIsShow(false);
             }}
           ></ChatList>

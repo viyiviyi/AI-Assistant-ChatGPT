@@ -291,7 +291,7 @@ const MessagesBox = ({
   );
   if (msg.ctxRole === "system") {
     return (
-      <div ref={newMsgRef} style={{ padding: "1em 64px", textAlign: "center" }}>
+      <div ref={newMsgRef} style={{ padding: "1em 32px", textAlign: "center" }}>
         <div>
           {edit ? (
             <Input.TextArea
@@ -314,6 +314,7 @@ const MessagesBox = ({
             borderTop: "1px solid #ccc3",
             justifyContent: "flex-end",
             padding: "5px 5px",
+            opacity:.5
           }}
         >
           {utilsEle}

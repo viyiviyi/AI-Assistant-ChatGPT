@@ -185,30 +185,24 @@ export class ChatManagement implements IChat {
       content: string;
       name: string;
     }> = [];
-    let getName = (v: Message, virtualRole?: VirtualRole): string => {
-      if (v.ctxRole === "system") return "system";
-      if (virtualRole) return virtualRole.enName || v.ctxRole;
-      return v.virtualRoleId
-        ? this.virtualRole.enName || "assistant"
-        : this.user.enName || "user";
-    };
     if (topic) {
       if (
         this.gptConfig.msgCount > 0 &&
         topic.messages.length > this.gptConfig.msgCount
       ) {
+        // 不在记忆范围内 且勾选了的消息
         topic.messages
           .slice(0, topic.messages.length - this.gptConfig.msgCount)
           .filter((v) => v.checked)
           .forEach((v) => {
             let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
             ctx.push({
-              role: v.ctxRole,
+              role: ChatManagement.parseMsgToRole(v, this.gptConfig.role),
               content: v.text,
-              name: getName(v, virtualRole),
+              name: this.getNameByRole(v.ctxRole, virtualRole),
             });
           });
-
+        // 表示这中间省略了很多内容
         let lastMsg = topic.messages
           .slice(0, topic.messages.length - this.gptConfig.msgCount)
           .slice(-1)[0];
@@ -220,48 +214,82 @@ export class ChatManagement implements IChat {
           });
         }
       }
+      // 勾选的消息
       topic.messages.slice(-this.gptConfig.msgCount).forEach((v) => {
         let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
         ctx.push({
-          role: v.ctxRole,
+          role: ChatManagement.parseMsgToRole(v, this.gptConfig.role),
           content: v.text,
-          name: getName(v, virtualRole),
+          name: this.getNameByRole(v.ctxRole, virtualRole),
         });
       });
     }
-    // 增加助理全局配置
+    // 置顶助理全局配置
     if (this.config.enableVirtualRole) {
       let virtualRole =
         this.virtualRoles[this.config.defaultVirtualRole || ""] ||
         this.virtualRole;
       ctx = [
         {
-          role: virtualRole.bio.startsWith("/")
-            ? this.gptConfig.role
-            : "system",
-          content: virtualRole.bio.replace(/^\/+/, ""),
-          name: "system",
+          role: ChatManagement.parseTextToRole(virtualRole.bio, "system"),
+          content: ChatManagement.parseText(virtualRole.bio),
+          name: this.getNameByRole(
+            ChatManagement.parseTextToRole(virtualRole.bio, "system"),
+            virtualRole
+          ),
         },
         {
           role: "system",
-          content: `system time: ${new Date().toLocaleString()}`,
+          content: `current time is: ${new Date().toLocaleString()}`,
           name: "system",
         },
         ...virtualRole.settings.map((v) => ({
-          role: ChatManagement.textParse(v),
-          content: v.replace(/^\/+/, ""),
-          name: v.startsWith("/") ? "assistant" : this.user.enName || "user",
+          role: ChatManagement.parseTextToRole(v, this.gptConfig.role),
+          content: ChatManagement.parseText(v),
+          name: this.getNameByRole(
+            ChatManagement.parseTextToRole(v),
+            virtualRole
+          ),
         })),
         ...ctx,
       ];
     }
-    JSON.parse;
     return ctx;
   }
-  static textParse(text: string): "assistant" | "system" | "user" {
+
+  getNameByRole(
+    role: "assistant" | "system" | "user",
+    virtualRole?: VirtualRole
+  ) {
+    return role === "system"
+      ? "system"
+      : role === "assistant"
+      ? (virtualRole || this.virtualRole).enName || "assistant"
+      : this.user.enName || "user";
+  }
+  static parseText(text: string): string {
+    return text
+      .trim()
+      .replace(/^\//, "")
+      .replace(/^\\/, "")
+      .replace(/^\/:?:?/, "");
+  }
+  static parseTextToRole(
+    text: string,
+    defaultRole: "assistant" | "system" | "user" = "user"
+  ): "assistant" | "system" | "user" {
     if (text.startsWith("::") || text.startsWith("/::")) return "system";
     if (text.startsWith("/")) return "assistant";
-    return "user";
+    if (text.startsWith("\\")) return "user";
+    return defaultRole;
+  }
+  static parseMsgToRole(
+    msg: Message,
+    replaceUser: "assistant" | "system" | "user" = "user"
+  ): "assistant" | "system" | "user" {
+    if (msg.ctxRole) return msg.ctxRole == "user" ? replaceUser : msg.ctxRole;
+    if (msg.virtualRoleId) return "assistant";
+    return replaceUser;
   }
   async newTopic(name: string) {
     let topic = await ChatManagement.createTopic(
