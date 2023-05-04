@@ -272,7 +272,8 @@ export class ChatManagement implements IChat {
       .trim()
       .replace(/^\//, "")
       .replace(/^\\/, "")
-      .replace(/^\/:?:?/, "");
+      .replace(/^::?/, "")
+      .replace(/^\/::?/, "");
   }
   static parseTextToRole(
     text: string,
