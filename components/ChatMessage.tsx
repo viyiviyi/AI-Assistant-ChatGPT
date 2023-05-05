@@ -151,7 +151,7 @@ export const ChatMessage = ({
         key={topic.id}
         style={{
           border: "none",
-          padding: "0 12px",
+          padding: "0 8px",
         }}
       >
         {(activityKey.includes(topic.id) ||
