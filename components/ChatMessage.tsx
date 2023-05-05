@@ -8,7 +8,7 @@ import {
   EditOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined
+  UserOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -17,7 +17,7 @@ import {
   Input,
   Popconfirm,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useContext, useEffect, useState } from "react";
@@ -92,7 +92,7 @@ export const ChatMessage = ({
     return (
       <Panel
         header={
-          <div style={{ display: "flex" }}>
+          <div style={{ display: "flex", width: "100%" }}>
             <Typography.Title
               editable={{
                 onChange: (e) => {
@@ -100,6 +100,7 @@ export const ChatMessage = ({
                   setActivityKey([...activityKey]);
                 },
               }}
+              ellipsis
               level={5}
               onClick={(e) => {
                 e.stopPropagation();
@@ -110,12 +111,13 @@ export const ChatMessage = ({
                   chat!.config.activityTopicId == topic.id
                     ? token.colorPrimary
                     : undefined,
+                flex: 1,
               }}
             >
               {topic.name}
             </Typography.Title>
             <span style={{ marginLeft: "30px" }}></span>
-            <Typography.Title level={5}>
+            <Typography.Title level={5} style={{ opacity: 0.5 }}>
               <Popconfirm
                 title="确定删除？"
                 onConfirm={() => {
@@ -125,11 +127,11 @@ export const ChatMessage = ({
                 okText="确定"
                 cancelText="取消"
               >
-                <DeleteOutlined></DeleteOutlined>
+                <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
               </Popconfirm>
             </Typography.Title>
             <span style={{ marginLeft: "30px" }}></span>
-            <Typography.Title level={5}>
+            <Typography.Title level={5} style={{ opacity: 0.5 }}>
               <Popconfirm
                 title="选择内容保存格式"
                 onConfirm={() => {
@@ -149,6 +151,7 @@ export const ChatMessage = ({
         key={topic.id}
         style={{
           border: "none",
+          padding: "0 12px",
         }}
       >
         {(activityKey.includes(topic.id) ||
@@ -285,7 +288,7 @@ const MessagesBox = ({
         okText="确定"
         cancelText="取消"
       >
-        <DeleteOutlined></DeleteOutlined>
+        <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
       </Popconfirm>
     </>
   );
@@ -314,7 +317,7 @@ const MessagesBox = ({
             borderTop: "1px solid #ccc3",
             justifyContent: "flex-end",
             padding: "5px 5px",
-            opacity:.5
+            opacity: 0.5,
           }}
         >
           {utilsEle}
@@ -403,6 +406,7 @@ const MessagesBox = ({
                 display: "flex",
                 borderTop: "1px solid #ccc3",
                 justifyContent: "flex-end",
+                opacity: 0.6,
               }}
             >
               {utilsEle}
