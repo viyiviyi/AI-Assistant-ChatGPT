@@ -8,7 +8,7 @@ import {
   EditOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -17,7 +17,7 @@ import {
   Input,
   Popconfirm,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useContext, useEffect, useState } from "react";
@@ -92,7 +92,7 @@ export const ChatMessage = ({
     return (
       <Panel
         header={
-          <div style={{ display: "flex", width: "100%" }}>
+          <div style={{ display: "flex" }}>
             <Typography.Title
               editable={{
                 onChange: (e) => {
@@ -100,7 +100,7 @@ export const ChatMessage = ({
                   setActivityKey([...activityKey]);
                 },
               }}
-              ellipsis
+              ellipsis={{ rows: 1 ,}}
               level={5}
               onClick={(e) => {
                 e.stopPropagation();
@@ -112,6 +112,7 @@ export const ChatMessage = ({
                     ? token.colorPrimary
                     : undefined,
                 flex: 1,
+                maxWidth:'calc(100vw - 160px)'
               }}
             >
               {topic.name}

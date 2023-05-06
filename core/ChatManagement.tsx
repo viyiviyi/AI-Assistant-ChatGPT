@@ -562,7 +562,6 @@ export class ChatManagement implements IChat {
   }
   static async saveSort() {
     this.chatList.forEach((chat, idx) => {
-      console.log(chat.group.index + "-->" + idx);
       getInstance().update_by_primaryKey<Group>({
         tableName: "Group",
         value: chat.group.id,

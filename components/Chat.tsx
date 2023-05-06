@@ -57,7 +57,7 @@ export const Chat = ({
         height: "100%",
         width: "100%",
         maxHeight: "100%",
-        maxWidth: "1200px",
+        maxWidth: "min(1200px, 100%)",
         margin: "0 auto",
       }}
     >
@@ -109,6 +109,8 @@ export const Chat = ({
           overflow: "auto",
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
+          width: "100%",
+          maxWidth: "100%",
         }}
       >
         <ChatMessage
