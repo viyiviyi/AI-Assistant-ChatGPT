@@ -271,7 +271,7 @@ export const VirtualRoleConfig = ({
               <Input />
             </Form.Item>
           </div>
-          <Form.Item name="user_bio" label="用户简介">
+          <Form.Item name="user_bio" label="用户简介" extra="当简介不为空时，会在设定后面追加用户设定，可能导致助理设定异常">
             <Input.TextArea autoSize />
           </Form.Item>
         </div>

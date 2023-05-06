@@ -21,12 +21,10 @@ specifiers:
   react-dom: 18.2.0
   rehype-external-links: ^2.0.1
   rehype-highlight: ^6.0.0
-  rehype-katex: ^6.0.2
   rehype-mathjax: ^4.0.2
   rehype-parse: ^8.0.4
   rehype-prism: ^2.2.0
   rehype-react: ^7.1.2
-  rehype-sanitize: ^5.0.1
   rehype-stringify: ^9.0.3
   remark-frontmatter: ^4.0.1
   remark-gfm: ^3.0.1
@@ -34,7 +32,6 @@ specifiers:
   remark-parse: ^10.0.1
   remark-rehype: ^10.1.0
   rxdb: ^14.2.3
-  rxjs: ^7.8.0
   sha1: ^1.1.1
   ts-indexdb: ^0.0.8
   typescript: 4.9.5
@@ -59,20 +56,17 @@ dependencies:
   react-dom: 18.2.0_react@18.2.0
   rehype-external-links: 2.0.1
   rehype-highlight: 6.0.0
-  rehype-katex: 6.0.2
   rehype-mathjax: 4.0.2
   rehype-parse: 8.0.4
   rehype-prism: 2.2.0_unified@10.1.2
   rehype-react: 7.1.2_@types+react@18.0.28
-  rehype-sanitize: 5.0.1
   rehype-stringify: 9.0.3
   remark-frontmatter: 4.0.1
   remark-gfm: 3.0.1
   remark-math: 5.1.1
   remark-parse: 10.0.1
   remark-rehype: 10.1.0
-  rxdb: 14.2.3_rxjs@7.8.0
-  rxjs: 7.8.0
+  rxdb: 14.2.3
   sha1: 1.1.1
   ts-indexdb: 0.0.8
   typescript: 4.9.5
@@ -2837,12 +2831,6 @@ packages:
       zwitch: 2.0.4
     dev: false
 
-  /hast-util-sanitize/4.1.0:
-    resolution: {integrity: sha512-Hd9tU0ltknMGRDv+d6Ro/4XKzBqQnP/EZrpiTbpFYfXv/uOhWeKc+2uajcbEvAEH98VZd7eII2PiXm13RihnLw==}
-    dependencies:
-      '@types/hast': 2.3.4
-    dev: false
-
   /hast-util-to-html/8.0.4:
     resolution: {integrity: sha512-4tpQTUOr9BMjtYyNlt0P50mH7xj0Ks2xpo8M943Vykljf99HW6EzulIoJP1N3eKOSScEHzyzi9dm7/cn0RfGwA==}
     dependencies:
@@ -3311,13 +3299,6 @@ packages:
 
   /katex/0.13.24:
     resolution: {integrity: sha512-jZxYuKCma3VS5UuxOx/rFV1QyGSl3Uy/i0kTJF3HgQ5xMinCQVF8Zd4bMY/9aI9b9A2pjIBOsjSSm68ykTAr8w==}
-    hasBin: true
-    dependencies:
-      commander: 8.3.0
-    dev: false
-
-  /katex/0.15.6:
-    resolution: {integrity: sha512-UpzJy4yrnqnhXvRPhjEuLA4lcPn6eRngixW7Q3TJErjg3Aw2PuLFBzTkdUb89UtumxjhHTqL3a5GDGETMSwgJA==}
     hasBin: true
     dependencies:
       commander: 8.3.0
@@ -4978,19 +4959,6 @@ packages:
       unist-util-visit: 4.1.2
     dev: false
 
-  /rehype-katex/6.0.2:
-    resolution: {integrity: sha512-C4gDAlS1+l0hJqctyiU64f9CvT00S03qV1T6HiMzbSuLBgWUtcqydWHY9OpKrm0SpkK16FNd62CDKyWLwV2ppg==}
-    dependencies:
-      '@types/hast': 2.3.4
-      '@types/katex': 0.11.1
-      hast-util-to-text: 3.1.2
-      katex: 0.15.6
-      rehype-parse: 8.0.4
-      unified: 10.1.2
-      unist-util-remove-position: 4.0.2
-      unist-util-visit: 4.1.2
-    dev: false
-
   /rehype-mathjax/4.0.2:
     resolution: {integrity: sha512-9q4Q4icTIbM5RtvQ4XquvEApGV2oDMaSVa5G3DwXomWU4fAPWYcOOt+iQRNaIH3RBMbFF239QbE5K7hm7rxMPQ==}
     dependencies:
@@ -5048,14 +5016,6 @@ packages:
       '@types/react': 18.0.28
       hast-to-hyperscript: 10.0.3
       hast-util-whitespace: 2.0.1
-      unified: 10.1.2
-    dev: false
-
-  /rehype-sanitize/5.0.1:
-    resolution: {integrity: sha512-da/jIOjq8eYt/1r9GN6GwxIR3gde7OZ+WV8pheu1tL8K0D9KxM2AyMh+UEfke+FfdM3PvGHeYJU0Td5OWa7L5A==}
-    dependencies:
-      '@types/hast': 2.3.4
-      hast-util-sanitize: 4.1.0
       unified: 10.1.2
     dev: false
 
@@ -5174,7 +5134,7 @@ packages:
       queue-microtask: 1.2.3
     dev: false
 
-  /rxdb/14.2.3_rxjs@7.8.0:
+  /rxdb/14.2.3:
     resolution: {integrity: sha512-ZZ3KX/GzSb+5qwY58oyi0QrJuFvBpegKx0Jkdv7+e1bvZz0mDePkwBEXf1KqDlR6yzNSuleHtG39d4CxQgzXWw==}
     requiresBuild: true
     peerDependencies:
@@ -5210,7 +5170,6 @@ packages:
       ohash: 1.0.0
       pouchdb-selector-core: 8.0.1
       reconnecting-websocket: 4.4.0
-      rxjs: 7.8.0
       simple-peer: 9.11.1
       socket.io-client: 4.6.1
       unload: 2.4.1
@@ -5222,12 +5181,6 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
-    dev: false
-
-  /rxjs/7.8.0:
-    resolution: {integrity: sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==}
-    dependencies:
-      tslib: 2.5.0
     dev: false
 
   /sade/1.8.1:
@@ -5670,13 +5623,6 @@ packages:
     resolution: {integrity: sha512-kUBE91efOWfIVBo8xzh/uZQ7p9ffYRtUbMRZBNFYwf0RK8koUMx6dGUfwylLOKmaT2cs4wSW96QoYUSXAyEtpg==}
     dependencies:
       '@types/unist': 2.0.6
-    dev: false
-
-  /unist-util-remove-position/4.0.2:
-    resolution: {integrity: sha512-TkBb0HABNmxzAcfLf4qsIbFbaPDvMO6wa3b3j4VcEzFVaw1LBKwnW4/sRJ/atSLSzoIg41JWEdnE7N6DIhGDGQ==}
-    dependencies:
-      '@types/unist': 2.0.6
-      unist-util-visit: 4.1.2
     dev: false
 
   /unist-util-select/4.0.3:

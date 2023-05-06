@@ -3,7 +3,7 @@ export interface User {
   id: string; // 用户ID
   groupId: string; // 分组ID
   name: string; // 用户名
-  enName?:string;
+  enName?: string;
   avatar?: string; // 用户头像
   bio?: string; // 用户简介
 }
@@ -14,8 +14,9 @@ export interface Group {
   name: string; // 分组名
   creatorId?: string; // 创建者ID
   index: number; // 排序
-  avatar?: string; // 角色头像
-  createTime?:number
+  avatar?: string; // 分组头像
+  background?: string;
+  createTime?: number;
 }
 
 // 分组表
@@ -27,7 +28,7 @@ export interface GroupConfig {
   baseUrl: string;
   activityTopicId: string; // 激活的话题
   defaultVirtualRole?: string; // 默认助理
-  disableStrikethrough?:boolean // 禁用删除线
+  disableStrikethrough?: boolean; // 禁用删除线
 }
 
 // 聊天消息表
@@ -55,11 +56,11 @@ export interface VirtualRole {
   id: string; // 角色ID
   groupId: string; // 分组ID
   name: string; // 角色名
-  enName?:string,
+  enName?: string;
   avatar?: string; // 角色头像
   bio: string; // 角色简介
   settings: string[]; // 角色设定（字符串数组）
-  index?:number
+  index?: number;
 }
 
 export interface GptConfig {

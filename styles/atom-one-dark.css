@@ -1,7 +1,9 @@
-pre > code {
+pre > code,
+pre > code.hljs {
   display: block;
   position: relative;
-  padding-top: 1em;
+  padding: 1em 2em 1em 0.5em;
+  margin: 0;
 }
 .code-copy {
   display: none;
@@ -13,8 +15,9 @@ pre > code {
 code,
 .hljs {
   overflow-x: auto;
-  padding: .5em 2em 1em .5em;
   color: #abb2bf;
+  padding: 0.2em 0.5em;
+  margin: 0 0.2em;
   background: #282c34aa;
   font-family: Consolas, "Courier New", monospace;
   border-radius: 4px;

@@ -1,42 +1,16 @@
 import { ChatManagement, IChat } from "@/core/ChatManagement";
-import {
-  CheckOutlined,
-  DeleteOutlined,
-  DownloadOutlined,
-  UploadOutlined
-} from "@ant-design/icons";
 
-import {
-  Avatar,
-  Button,
-  Card,
-  Popconfirm,
-  theme,
-  Typography,
-  Upload
-} from "antd";
+import { Button, theme } from "antd";
 
 import { useEffect, useState } from "react";
+import { Groups } from "./Groups";
 
-export const ChatList = ({
-  onSelected,
-  onCacle,
-}: {
-  onCacle: () => void;
-  onSelected: (chatMgt: IChat) => void;
-}) => {
+export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
   const { token } = theme.useToken();
-  const [groups, setGroups] = useState<ChatManagement[]>(
-    ChatManagement.getGroups().map((v) => new ChatManagement(v))
-  );
-  async function create() {
-    await ChatManagement.createChat().then(onSelected);
-  }
+  const [groups, setGroups] = useState<IChat[]>(ChatManagement.getGroups());
   useEffect(() => {
     ChatManagement.load().then(() => {
-      setGroups([
-        ...ChatManagement.getGroups().map((v) => new ChatManagement(v)),
-      ]);
+      setGroups([...ChatManagement.getGroups()]);
     });
   }, []);
 
@@ -59,95 +33,14 @@ export const ChatList = ({
             marginBottom: "20px",
           }}
         >
-          {groups.map((v, idx) => (
-            <Card
-              key={idx}
-              actions={[
-                <DownloadOutlined
-                  key="download"
-                  onClick={() => {
-                    downloadJson(
-                      JSON.stringify(v.toJson()),
-                      v.group.name + "_" + v.virtualRole.name
-                    );
-                  }}
-                />,
-                <Upload
-                  accept=".json"
-                  {...{
-                    beforeUpload(file, FileList) {
-                      const fr = new FileReader();
-                      fr.onloadend = (e) => {
-                        if (e.target?.result) {
-                          v.fromJson(
-                            JSON.parse(e.target.result.toString())
-                          ).then(() => {
-                            setGroups([...groups]);
-                            onSelected(v);
-                          });
-                        }
-                      };
-                      fr.readAsText(file);
-                      return false;
-                    },
-                    defaultFileList: [],
-                    showUploadList: false,
-                  }}
-                >
-                  <UploadOutlined key="upload" />
-                </Upload>,
-                <CheckOutlined
-                  key="selected"
-                  onClick={() => {
-                    ChatManagement.loadTopics(v).then(() => onSelected(v));
-                  }}
-                />,
-                <Popconfirm
-                  title="确定删除？"
-                  onConfirm={() => {
-                    ChatManagement.remove(v.group.id).then(() => {
-                      setGroups([
-                        ...ChatManagement.getGroups().map(
-                          (v) => new ChatManagement(v)
-                        ),
-                      ]);
-                    });
-                  }}
-                  okText="确定"
-                  cancelText="取消"
-                >
-                  <DeleteOutlined />
-                </Popconfirm>,
-              ]}
-              style={{ marginBottom: "20px" }}
-            >
-              <Card.Meta
-                avatar={<Avatar src={v.virtualRole.avatar} />}
-                title={
-                  <Typography.Title
-                    level={5}
-                    editable={{
-                      onChange: (val) => {
-                        v.group.name = val;
-                        v.saveGroup();
-                        setGroups([...groups]);
-                      },
-                    }}
-                  >
-                    {v.group.name}
-                  </Typography.Title>
-                }
-                description={v.virtualRole.name}
-              />
-            </Card>
-          ))}
+          <Groups groups={groups}></Groups>
         </div>
         <Button.Group>
           <Button
             block
             onClick={(e) => {
               e.stopPropagation();
-              create().then(() => {
+              ChatManagement.createChat().then(() => {
                 setGroups([
                   ...ChatManagement.getGroups().map(
                     (v) => new ChatManagement(v)
@@ -168,15 +61,3 @@ export const ChatList = ({
     </>
   );
 };
-
-function downloadJson(jsonData: string, filename: string) {
-  const blob = new Blob([jsonData], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}

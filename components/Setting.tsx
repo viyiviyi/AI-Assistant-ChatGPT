@@ -1,20 +1,33 @@
 import { ApiClient } from "@/core/ApiClient";
 import { BgImage } from "@/core/BgImage";
-import { ChatManagement } from "@/core/ChatManagement";
-import { KeyValueData } from "@/core/KeyValueData";
 import {
+  ChatContext,
+  ChatManagement,
+  defaultChat
+} from "@/core/ChatManagement";
+import { KeyValueData } from "@/core/KeyValueData";
+import { downloadJson } from "@/core/utils";
+import {
+  DownloadOutlined,
   EyeOutlined,
-  GithubOutlined
+  GithubOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
-  Form, Input,
-  InputNumber, Radio,
-  Select, Switch,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Radio,
+  Select,
+  Switch,
   theme,
   Upload
 } from "antd";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useContext, useEffect, useState } from "react";
+import AvatarUpload from "./AvatarUpload";
 
 export const Setting = ({
   chatMgt,
@@ -25,8 +38,14 @@ export const Setting = ({
   onSaved: () => void;
   onCancel: () => void;
 }) => {
+  const [modal, contextHolder] = Modal.useModal();
+  const router = useRouter();
+  const { setBgConfig } = useContext(ChatContext);
   const [models, setModels] = useState<string[]>(ApiClient.textModels);
   const [balance, steBalance] = useState("");
+  const [nextChat, setNextChat] = useState<ChatManagement>();
+  const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
+  const [background, setBackground] = useState<string>();
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
     setting_apitoken: string;
@@ -40,11 +59,16 @@ export const Setting = ({
     config_saveKey: boolean;
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
+    group_name: string;
+    group_background?: string;
   }>();
-
-  function onSave() {
+  useEffect(() => {
+    BgImage.getInstance().getBgImage().then(setBackground);
+  }, []);
+  async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
+    if (nextChat) await chatMgt.fromJson(nextChat);
     chatMgt.gptConfig.model = values.GptConfig_model;
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
@@ -58,6 +82,13 @@ export const Setting = ({
     chatMgt.config.baseUrl = values.setting_baseurl;
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
     chatMgt.saveConfig();
+
+    chatMgt.group.name = values.group_name;
+    chatMgt.group.avatar = group_Avatar;
+    chatMgt.group.background = values.group_background;
+    chatMgt.saveGroup();
+    BgImage.getInstance().setBgImage(background || "");
+    setBgConfig(chatMgt.group.background || background);
 
     KeyValueData.instance().setApiKey(
       values.setting_apitoken,
@@ -83,6 +114,8 @@ export const Setting = ({
           config_saveKey: chatMgt?.config.saveKey,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
+          group_name: chatMgt?.group.name,
+          group_background: chatMgt?.group.background,
         }}
       >
         <div
@@ -117,7 +150,37 @@ export const Setting = ({
                   reader.readAsDataURL(file);
                   reader.onloadend = (event) => {
                     if (event.target?.result) {
-                      BgImage.getInstance().setBgImage(
+                      setBackground(event.target?.result.toString());
+                    }
+                  };
+                  return false;
+                },
+                defaultFileList: [],
+                showUploadList: false,
+              }}
+            >
+              <Button type="text">设置全局背景图片</Button>
+            </Upload>
+            <Button
+              type="text"
+              onClick={() => {
+                setBackground("");
+              }}
+            >
+              清除
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Upload
+              accept=".png,.jpg,.gif"
+              {...{
+                beforeUpload(file, FileList) {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onloadend = (event) => {
+                    if (event.target?.result) {
+                      form.setFieldValue(
+                        "group_background",
                         event.target?.result.toString()
                       );
                     }
@@ -128,11 +191,66 @@ export const Setting = ({
                 showUploadList: false,
               }}
             >
-              <Button type="text">设置背景图片</Button>
+              <Button type="text">设置会话背景图片</Button>
             </Upload>
-            <Button type="text" onClick={() => {
-              BgImage.getInstance().setBgImage('')
-            }}>清除</Button>
+            <Button
+              type="text"
+              onClick={() => {
+                form.setFieldValue("group_background", undefined);
+              }}
+            >
+              清除
+            </Button>
+          </Form.Item>
+
+          <Form.Item>
+            <AvatarUpload avatar={group_Avatar} onSave={setGroup_Avatar} />
+          </Form.Item>
+          <Form.Item style={{ flex: 1 }} name="group_name" label="会话名称">
+            <Input />
+          </Form.Item>
+          <Form.Item>
+            <Button.Group>
+              <Button
+                block
+                onClick={() => {
+                  downloadJson(
+                    JSON.stringify(chatMgt!.toJson()),
+                    chatMgt!.group.name + "_" + chatMgt!.virtualRole.name
+                  );
+                }}
+              >
+                <DownloadOutlined key="download" />
+                备份会话
+              </Button>
+              <Button block>
+                <Upload
+                  accept=".json"
+                  {...{
+                    beforeUpload(file, FileList) {
+                      const fr = new FileReader();
+                      fr.onloadend = (e) => {
+                        if (e.target?.result) {
+                          const chat =
+                            nextChat || new ChatManagement(defaultChat);
+                          chat
+                            .fromJson(JSON.parse(e.target.result.toString()))
+                            .then();
+                          setNextChat(chat);
+                        }
+                      };
+                      fr.readAsText(file);
+                      return false;
+                    },
+                    defaultFileList: [],
+                    showUploadList: false,
+                  }}
+                >
+                  <UploadOutlined key="upload" />
+                  还原会话
+                </Upload>
+              </Button>
+            </Button.Group>
           </Form.Item>
           <Form.Item label="模型名称" name={"GptConfig_model"}>
             <Select
@@ -231,6 +349,26 @@ export const Setting = ({
               <InputNumber step="0.05" min={0} max={1} />
             </Form.Item>
           </Form.Item>
+          <Form.Item>
+            <Button
+              block
+              style={{ marginTop: "20px" }}
+              danger={true}
+              onClick={(e) => {
+                modal.confirm({
+                  title: "确定删除？",
+                  content: "删除操作不可逆，请谨慎操作。",
+                  onOk: () => {
+                    ChatManagement.remove(chatMgt!.group.id).then(() => {
+                      router.push("/chat");
+                    });
+                  },
+                });
+              }}
+            >
+              删除
+            </Button>
+          </Form.Item>
         </div>
         <Button.Group style={{ width: "100%" }}>
           <Button
@@ -253,6 +391,7 @@ export const Setting = ({
             保存
           </Button>
         </Button.Group>
+        {contextHolder}
       </Form>
     </>
   );

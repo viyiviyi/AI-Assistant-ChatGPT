@@ -11,6 +11,7 @@ import {
 } from "@/Models/DataBase";
 import React from "react";
 import { getInstance } from "ts-indexdb";
+import { BgConfig } from "./BgImage";
 import { getUuid } from "./utils";
 
 export const defaultChat: IChat = {
@@ -129,9 +130,9 @@ export class ChatManagement implements IChat {
           chat.group.createTime = Date.now();
           chat.gptConfig.role = "user";
         }
-        if (i == 0) {
-          await this.loadTopics(chat);
-        }
+        // if (i == 0) {
+        //   await this.loadTopics(chat);
+        // }
         this.chatList.push(chat);
       }
       res();
@@ -174,6 +175,16 @@ export class ChatManagement implements IChat {
     topic.messages = msgs;
   }
 
+  static async toFirst(group: Group): Promise<void> {
+    let chat = ChatManagement.chatList.find((f) => f.group.id === group.id);
+    if (!chat) return;
+    let list = ChatManagement.chatList.filter((f) => f.group.id !== group.id);
+    ChatManagement.chatList.splice(0, ChatManagement.chatList.length);
+    ChatManagement.chatList.push(chat!);
+    ChatManagement.chatList.push(...list);
+    ChatManagement.chatList;
+    await ChatManagement.saveSort();
+  }
   getAskContext(): Array<{
     role: "assistant" | "user" | "system";
     content: string;
@@ -238,6 +249,15 @@ export class ChatManagement implements IChat {
             virtualRole
           ),
         },
+        ...(this.user.bio
+          ? [
+              {
+                role: "system" as any,
+                content: `user: ${this.user.name}：${this.user.bio}`,
+                name: this.user.enName || "user",
+              },
+            ]
+          : []),
         {
           role: "system",
           content: `current time is: ${new Date().toLocaleString()}`,
@@ -480,7 +500,7 @@ export class ChatManagement implements IChat {
     }
     // 让换行符正常换行
     message.text = message.text.replace(
-      /([\.!\?~\]\)。！？】）～：；”……])\n([^\n])/g,
+      /([!\?~。！？】）～：；”……])\n([^\n])/g,
       "$1\n\n$2"
     );
 
@@ -540,6 +560,19 @@ export class ChatManagement implements IChat {
       this.config.activityTopicId = this.topics.slice(-1)[0].id;
     else this.config.activityTopicId = "";
   }
+  static async saveSort() {
+    this.chatList.forEach((chat, idx) => {
+      console.log(chat.group.index + "-->" + idx);
+      getInstance().update_by_primaryKey<Group>({
+        tableName: "Group",
+        value: chat.group.id,
+        handle: (r) => {
+          r.index = idx;
+          return r;
+        },
+      });
+    });
+  }
   static async remove(groupId: string, replace?: IChat) {
     await getInstance().delete<User>({
       tableName: "User",
@@ -573,16 +606,7 @@ export class ChatManagement implements IChat {
     if (delIdx > -1) {
       if (!replace) {
         this.chatList.splice(delIdx, 1);
-        this.chatList.forEach((chat, idx) => {
-          getInstance().update_by_primaryKey<Group>({
-            tableName: "Group",
-            value: chat.group.id,
-            handle: (r) => {
-              r.index = idx;
-              return r;
-            },
-          });
-        });
+        this.saveSort();
       } else {
         replace.group.index = this.chatList[delIdx].group.index;
         this.chatList.splice(delIdx, 1, replace);
@@ -697,8 +721,17 @@ export const ChatContext = React.createContext<{
   chat: ChatManagement;
   activityTopic: Topic;
   setActivityTopic: (topic: Topic) => void;
+  bgConfig: BgConfig;
+  setBgConfig: (image?: string) => void;
 }>({
   chat: new ChatManagement(defaultChat),
   activityTopic: { id: "", name: "", groupId: "", createdAt: 0 },
   setActivityTopic: (topic: Topic) => {},
+  bgConfig: {
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+    opacity: 0.5,
+  },
+  setBgConfig: (img?: string) => {},
 });
