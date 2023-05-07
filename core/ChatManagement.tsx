@@ -253,7 +253,7 @@ export class ChatManagement implements IChat {
           ? [
               {
                 role: "system" as any,
-                content: `user: ${this.user.name}：${this.user.bio}`,
+                content: `对方是: ${this.user.name}\n简介：${this.user.bio}`,
                 name: this.user.enName || "user",
               },
             ]

@@ -4,5 +4,6 @@ const nextConfig = {
   env: {
     //SALT
   },
+  // experimental: { runtime: 'experimental-edge'}
 };
 module.exports = nextConfig;

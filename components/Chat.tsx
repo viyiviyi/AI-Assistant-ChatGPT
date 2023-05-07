@@ -180,17 +180,6 @@ async function sendMessage(chat: ChatManagement) {
       });
       msg.text = res;
       return chat.pushMessage(msg);
-    } else if ("https://chat.openai.com" == chat.config.baseUrl) {
-      const res = await ApiClient.sendChatMessage({ messages });
-      return chat.pushMessage({
-        id: "",
-        groupId: chat.group.id,
-        virtualRoleId: chat.virtualRole.id,
-        ctxRole: "assistant",
-        text: res,
-        timestamp: Date.now(),
-        topicId: topicId,
-      });
     }
     message.error("缺少apikey，请在设置中配置后使用");
   } catch (error: any) {

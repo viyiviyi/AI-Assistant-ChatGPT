@@ -1,3 +1,4 @@
+import { useDark } from "@/core/hooks";
 import "@/styles/globals.css";
 import { ConfigProvider, theme } from "antd";
 import "antd/dist/reset.css";
@@ -7,13 +8,9 @@ import { useEffect, useState } from "react";
 import "../styles/atom-one-dark.css";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [isDark, setIsDark] = useState(false);
+  const isDark = useDark();
   const [orgin, setOrgin] = useState("");
   useEffect(() => {
-    const isDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setIsDark(isDark);
     setOrgin(location.origin);
   }, []);
   return (

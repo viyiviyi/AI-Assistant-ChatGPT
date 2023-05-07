@@ -9,6 +9,7 @@ import {
   ChatManagement,
   defaultChat
 } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 import { Layout, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -16,18 +17,18 @@ import { useContext, useEffect, useState } from "react";
 
 export default function Page(props: any) {
   const router = useRouter();
+  const screenSize = useScreenSize();
   const { id: groupId } = router.query;
 
   const { token } = theme.useToken();
 
-  const { bgConfig, setBgConfig } = useContext(ChatContext);
+  const { bgConfig } = useContext(ChatContext);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(
     new ChatManagement(defaultChat)
   );
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
   const [roleConfigShow, setRoleConfigShow] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(0);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
   const [activityTopic, setActivityTopic] = useState(
     chatMgt.topics.find((f) => f.id == chatMgt.config.activityTopicId) || {
@@ -39,11 +40,6 @@ export default function Page(props: any) {
   );
 
   useEffect(() => {
-    function handleResize() {
-      setWindowWidth(window.innerWidth);
-    }
-    setWindowWidth(window.innerWidth || 0);
-    window.addEventListener("resize", handleResize);
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;
@@ -58,7 +54,7 @@ export default function Page(props: any) {
         .then((res) => {
           setBgImg((v) => {
             v.backgroundImage = `url(${defaultChat.group.background || res})`;
-            return v
+            return v;
           });
         });
       setActivityTopic(
@@ -72,10 +68,7 @@ export default function Page(props: any) {
         }
       );
     });
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [groupId, setBgConfig]);
+  }, [groupId]);
 
   return (
     <ChatContext.Provider
@@ -143,7 +136,7 @@ export default function Page(props: any) {
           ></div>
         )}
 
-        {windowWidth > 1420 && listIsShow ? (
+        {screenSize.width > 1420 && listIsShow ? (
           <ChatList
             onCacle={() => {
               setlistIsShow(false);
@@ -189,7 +182,7 @@ export default function Page(props: any) {
           ></Setting>
         </Modal>
         <Modal
-          isShow={listIsShow && windowWidth <= 1420}
+          isShow={listIsShow && screenSize.width <= 1420}
           maxHight={"calc(70vh + 84px)"}
           onCancel={() => {
             setlistIsShow(false);
@@ -204,7 +197,4 @@ export default function Page(props: any) {
       </Layout>
     </ChatContext.Provider>
   );
-}
-export async function getServerSideProps(parmes: { [key: string]: string }) {
-  return { props: {} };
 }
