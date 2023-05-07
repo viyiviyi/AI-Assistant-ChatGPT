@@ -16,7 +16,7 @@ export default function Home() {
       if (screenSize.width * 1.5 <= screenSize.height) {
         setShowGroup(true);
       } else {
-        router.replace("/chat/" + (groups.length ? groups[0].group.id : ""));
+        router.replace("/chat?id=" + (groups.length ? groups[0].group.id : ""));
       }
     });
   }, [router, screenSize]);

@@ -8,7 +8,7 @@ export default function Page() {
     ChatManagement.load().then(() => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;
-      router.push("/chat/" + chats[0].group.id);
+      router.push("/chat?id=" + chats[0].group.id);
     });
   }, [router]);
   return <></>;

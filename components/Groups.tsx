@@ -13,7 +13,7 @@ export const Groups = ({ groups }: { groups: IChat[] }) => {
           bodyStyle={{ padding: "16px" }}
           onClick={() => {
             ChatManagement.toFirst(v.group).then(() => {
-              router.push("/chat/" + v.group.id);
+              router.push("/chat?id=" + v.group.id);
             });
           }}
         >
