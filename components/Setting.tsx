@@ -204,7 +204,10 @@ export const Setting = ({
           </Form.Item>
 
           <Form.Item>
-            <AvatarUpload avatar={group_Avatar} onSave={setGroup_Avatar} />
+            <AvatarUpload
+              avatar={group_Avatar}
+              onSave={setGroup_Avatar || undefined}
+            />
           </Form.Item>
           <Form.Item style={{ flex: 1 }} name="group_name" label="会话名称">
             <Input />
@@ -216,10 +219,7 @@ export const Setting = ({
                 onClick={() => {
                   let _chat = chatMgt!.toJson();
                   _chat.group.background = undefined;
-                  downloadJson(
-                    JSON.stringify(_chat),
-                    chatMgt!.group.name
-                  );
+                  downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
                 }}
               >
                 <DownloadOutlined key="download" />

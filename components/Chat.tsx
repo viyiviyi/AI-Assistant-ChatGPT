@@ -85,7 +85,7 @@ export const Chat = ({
           onClick={toggleRoleConfig}
           size={32}
           style={{ minWidth: "32px", minHeight: "32px" }}
-          src={chat.group.avatar || chat?.virtualRole.avatar}
+          src={chat.group.avatar || chat?.virtualRole.avatar || undefined}
         ></Avatar>
         <Typography.Text ellipsis onClick={toggleSettingShow}>
           {chat?.group.name}

@@ -22,7 +22,7 @@ export const Groups = ({ groups }: { groups: IChat[] }) => {
               <Avatar
                 shape="square"
                 size={60}
-                src={v.group.avatar || v.virtualRole.avatar}
+                src={v.group.avatar || v.virtualRole.avatar || undefined}
               />
             }
             title={v.group.name}

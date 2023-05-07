@@ -122,7 +122,7 @@ export const VirtualRoleConfig = ({
           </Space>
           <Form.Item>
             <AvatarUpload
-              avatar={virtualRole_Avatar}
+              avatar={virtualRole_Avatar || undefined}
               onSave={setVirtualRole_Avatar}
             />
           </Form.Item>
@@ -250,7 +250,10 @@ export const VirtualRoleConfig = ({
             }}
           </Form.List>
           <Form.Item>
-            <AvatarUpload avatar={user_Avatar} onSave={setUser_Avatar} />
+            <AvatarUpload
+              avatar={user_Avatar || undefined}
+              onSave={setUser_Avatar}
+            />
           </Form.Item>
           <div style={{ width: "100%", display: "flex", gap: "10px" }}>
             <Form.Item style={{ flex: 1 }} name="user_name" label="用户名称">
@@ -271,7 +274,11 @@ export const VirtualRoleConfig = ({
               <Input />
             </Form.Item>
           </div>
-          <Form.Item name="user_bio" label="用户简介" extra="当简介不为空时，会在设定后面追加用户设定，可能导致助理设定异常">
+          <Form.Item
+            name="user_bio"
+            label="用户简介"
+            extra="当简介不为空时，会在设定后面追加用户设定，可能导致助理设定异常"
+          >
             <Input.TextArea autoSize />
           </Form.Item>
         </div>
