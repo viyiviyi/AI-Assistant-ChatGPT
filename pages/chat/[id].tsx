@@ -14,7 +14,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 
-export default function Page() {
+export default function Page(props: any) {
   const router = useRouter();
   const { id: groupId } = router.query;
 
@@ -201,4 +201,7 @@ export default function Page() {
       </Layout>
     </ChatContext.Provider>
   );
+}
+export async function getServerSideProps(parmes: { [key: string]: string }) {
+  return { props: {  } };
 }
