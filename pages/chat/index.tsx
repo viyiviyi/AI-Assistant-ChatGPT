@@ -78,12 +78,10 @@ export default function Page(props: any) {
         setActivityTopic,
         bgConfig: bgImg,
         setBgConfig(image) {
-          if (image) {
-            setBgImg((v) => {
-              v.backgroundImage = `url(${image})`;
-              return v;
-            });
-          }
+          setBgImg((v) => {
+            v.backgroundImage = `url(${image})`;
+            return v;
+          });
         },
       }}
     >

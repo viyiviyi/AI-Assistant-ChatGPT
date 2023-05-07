@@ -45,6 +45,9 @@ export const Setting = ({
   const [balance, steBalance] = useState("");
   const [nextChat, setNextChat] = useState<ChatManagement>();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
+  const [group_background, setGroup_background] = useState(
+    chatMgt?.group.background
+  );
   const [background, setBackground] = useState<string>();
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
@@ -60,7 +63,6 @@ export const Setting = ({
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
     group_name: string;
-    group_background?: string;
   }>();
   useEffect(() => {
     BgImage.getInstance().getBgImage().then(setBackground);
@@ -85,10 +87,10 @@ export const Setting = ({
 
     chatMgt.group.name = values.group_name;
     chatMgt.group.avatar = group_Avatar;
-    chatMgt.group.background = values.group_background;
+    chatMgt.group.background = group_background;
     chatMgt.saveGroup();
     BgImage.getInstance().setBgImage(background || "");
-    setBgConfig(chatMgt.group.background || background);
+    setBgConfig(group_background || background);
 
     KeyValueData.instance().setApiKey(
       values.setting_apitoken,
@@ -115,7 +117,6 @@ export const Setting = ({
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
           group_name: chatMgt?.group.name,
-          group_background: chatMgt?.group.background,
         }}
       >
         <div
@@ -179,10 +180,7 @@ export const Setting = ({
                   reader.readAsDataURL(file);
                   reader.onloadend = (event) => {
                     if (event.target?.result) {
-                      form.setFieldValue(
-                        "group_background",
-                        event.target?.result.toString()
-                      );
+                      setGroup_background(event.target?.result.toString());
                     }
                   };
                   return false;
@@ -196,7 +194,7 @@ export const Setting = ({
             <Button
               type="text"
               onClick={() => {
-                form.setFieldValue("group_background", undefined);
+                setGroup_background(undefined);
               }}
             >
               清除
