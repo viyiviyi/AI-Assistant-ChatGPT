@@ -214,9 +214,11 @@ export const Setting = ({
               <Button
                 block
                 onClick={() => {
+                  let _chat = chatMgt!.toJson();
+                  _chat.group.background = undefined;
                   downloadJson(
-                    JSON.stringify(chatMgt!.toJson()),
-                    chatMgt!.group.name + "_" + chatMgt!.virtualRole.name
+                    JSON.stringify(_chat),
+                    chatMgt!.group.name
                   );
                 }}
               >

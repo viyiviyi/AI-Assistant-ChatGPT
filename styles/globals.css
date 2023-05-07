@@ -63,7 +63,10 @@ a {
     background-color: rgba(192, 192, 192, 0.1);
   }
 }
-
-.ant-collapse-content-box{
+.ant-collapse-content-box {
   padding: 8px 0 !important;
+}
+.ant-collapse-header {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }

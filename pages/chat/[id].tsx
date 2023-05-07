@@ -56,7 +56,10 @@ export default function Page(props: any) {
       BgImage.getInstance()
         .getBgImage()
         .then((res) => {
-          setBgConfig(res || defaultChat.group.background);
+          setBgImg((v) => {
+            v.backgroundImage = `url(${defaultChat.group.background || res})`;
+            return v
+          });
         });
       setActivityTopic(
         defaultChat.topics.find(
@@ -203,5 +206,5 @@ export default function Page(props: any) {
   );
 }
 export async function getServerSideProps(parmes: { [key: string]: string }) {
-  return { props: {  } };
+  return { props: {} };
 }

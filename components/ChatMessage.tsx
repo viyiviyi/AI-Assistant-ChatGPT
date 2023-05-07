@@ -202,6 +202,7 @@ export const ChatMessage = ({
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />
       )}
+      
     >
       {chat.topics.map(rendTopic)}
     </Collapse>
