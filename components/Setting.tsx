@@ -3,7 +3,7 @@ import { BgImage } from "@/core/BgImage";
 import {
   ChatContext,
   ChatManagement,
-  defaultChat
+  noneChat
 } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
@@ -232,7 +232,7 @@ export const Setting = ({
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
                           const chat =
-                            nextChat || new ChatManagement(defaultChat);
+                            nextChat || noneChat;
                           chat
                             .fromJson(JSON.parse(e.target.result.toString()))
                             .then();

@@ -9,12 +9,17 @@ export const Groups = ({
   groups: IChat[];
   onClick: (chat: IChat) => void;
 }) => {
+  const { token } = theme.useToken();
   return (
     <>
       {groups.map((v, idx) => (
         <Card
           key={idx}
-          style={{ marginBottom: "20px", backgroundColor: "#0003" }}
+          style={{
+            marginBottom: "20px",
+            backgroundColor: token.colorFillContent,
+          }}
+          bordered={false}
           bodyStyle={{ padding: "16px" }}
           onClick={() => {
             onClick(v);
@@ -24,7 +29,7 @@ export const Groups = ({
             avatar={
               <Avatar
                 shape="square"
-                size={60}
+                size={52}
                 src={v.group.avatar || v.virtualRole.avatar || undefined}
               />
             }

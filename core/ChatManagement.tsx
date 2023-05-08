@@ -14,7 +14,7 @@ import { getInstance } from "ts-indexdb";
 import { BgConfig } from "./BgImage";
 import { getUuid } from "./utils";
 
-export const defaultChat: IChat = {
+const defaultChat: IChat = {
   user: { id: "", name: "", groupId: "" },
   group: { id: "", name: "", index: 0 },
   virtualRole: { id: "", name: "", groupId: "", bio: "", settings: [] },
@@ -715,7 +715,7 @@ export class ChatManagement implements IChat {
     ChatManagement.chatList.splice(this.group.index, 1, this.toJson());
   }
 }
-
+export const noneChat = new ChatManagement(defaultChat);
 export const ChatContext = React.createContext<{
   chat: ChatManagement;
   activityTopic: Topic;
@@ -723,7 +723,7 @@ export const ChatContext = React.createContext<{
   bgConfig: BgConfig;
   setBgConfig: (image?: string) => void;
 }>({
-  chat: new ChatManagement(defaultChat),
+  chat: noneChat,
   activityTopic: { id: "", name: "", groupId: "", createdAt: 0 },
   setActivityTopic: (topic: Topic) => {},
   bgConfig: {
