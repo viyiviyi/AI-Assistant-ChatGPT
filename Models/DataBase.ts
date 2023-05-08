@@ -24,7 +24,6 @@ export interface GroupConfig {
   id: string; // 分组ID
   groupId: string;
   enableVirtualRole: boolean;
-  saveKey: boolean;
   baseUrl: string;
   activityTopicId: string; // 激活的话题
   defaultVirtualRole?: string; // 默认助理

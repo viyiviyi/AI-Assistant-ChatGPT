@@ -2,7 +2,7 @@ import { init } from "ts-indexdb";
 import { DbTable } from "ts-indexdb/dist/TsIndexDb";
 const TABLE_NAME = "litechat";
 export class IndexedDB {
-  static version = 4;
+  static version = 5;
   private static getTableConfig(tableName: string): DbTable {
     return {
       tableName: tableName, // 表名

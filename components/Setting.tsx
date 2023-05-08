@@ -15,6 +15,7 @@ import {
 } from "@ant-design/icons";
 import {
   Button,
+  Divider,
   Form,
   Input,
   InputNumber,
@@ -80,7 +81,6 @@ export const Setting = ({
     chatMgt.gptConfig.top_p = values.GptConfig_top_p;
     chatMgt.saveGptConfig();
 
-    chatMgt.config.saveKey = values.config_saveKey;
     chatMgt.config.baseUrl = values.setting_baseurl;
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
     chatMgt.saveConfig();
@@ -113,7 +113,7 @@ export const Setting = ({
           GptConfig_temperature: chatMgt?.gptConfig.temperature,
           GptConfig_n: chatMgt?.gptConfig.n,
           GptConfig_model: chatMgt?.gptConfig.model,
-          config_saveKey: chatMgt?.config.saveKey,
+          config_saveKey: true,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
           group_name: chatMgt?.group.name,
@@ -142,76 +142,59 @@ export const Setting = ({
               <GithubOutlined size={64} />
             </a>
           </div>
-          <Form.Item>
-            <Upload
-              accept=".png,.jpg,.gif"
-              {...{
-                beforeUpload(file, FileList) {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onloadend = (event) => {
-                    if (event.target?.result) {
-                      setBackground(event.target?.result.toString());
-                    }
-                  };
-                  return false;
-                },
-                defaultFileList: [],
-                showUploadList: false,
-              }}
-            >
-              <Button type="text">设置全局背景图片</Button>
-            </Upload>
-            <Button
-              type="text"
-              onClick={() => {
-                setBackground("");
-              }}
-            >
-              清除
-            </Button>
-          </Form.Item>
-          <Form.Item>
-            <Upload
-              accept=".png,.jpg,.gif"
-              {...{
-                beforeUpload(file, FileList) {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onloadend = (event) => {
-                    if (event.target?.result) {
-                      setGroup_background(event.target?.result.toString());
-                    }
-                  };
-                  return false;
-                },
-                defaultFileList: [],
-                showUploadList: false,
-              }}
-            >
-              <Button type="text">设置会话背景图片</Button>
-            </Upload>
-            <Button
-              type="text"
-              onClick={() => {
-                setGroup_background(undefined);
-              }}
-            >
-              清除
-            </Button>
-          </Form.Item>
-
-          <Form.Item>
+          <Form.Item label={"会话头像"}>
             <AvatarUpload
-              avatar={group_Avatar}
-              onSave={setGroup_Avatar || undefined}
+              avatar={group_Avatar || undefined}
+              onSave={setGroup_Avatar}
             />
+            <Button
+              type="text"
+              style={{ marginLeft: "1em" }}
+              onClick={() => {
+                setGroup_Avatar(undefined);
+              }}
+            >
+              清除
+            </Button>
           </Form.Item>
           <Form.Item style={{ flex: 1 }} name="group_name" label="会话名称">
             <Input />
           </Form.Item>
+          <Form.Item label={"会话背景图片"}>
+            <Button.Group style={{ width: "100%" }}>
+              <Button block>
+                <Upload
+                  accept=".png,.jpg,.gif"
+                  {...{
+                    beforeUpload(file, FileList) {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onloadend = (event) => {
+                        if (event.target?.result) {
+                          setGroup_background(event.target?.result.toString());
+                        }
+                      };
+                      return false;
+                    },
+                    defaultFileList: [],
+                    showUploadList: false,
+                  }}
+                >
+                  设置
+                </Upload>
+              </Button>
+              <Button
+                block
+                onClick={() => {
+                  setGroup_background(undefined);
+                }}
+              >
+                清除
+              </Button>
+            </Button.Group>
+          </Form.Item>
           <Form.Item>
-            <Button.Group>
+            <Button.Group style={{ width: "100%" }}>
               <Button
                 block
                 onClick={() => {
@@ -253,12 +236,113 @@ export const Setting = ({
             </Button.Group>
           </Form.Item>
           <Form.Item label="模型名称" name={"GptConfig_model"}>
-            <Select
-              style={{ width: "160px" }}
-              options={models.map((v) => ({ value: v, label: v }))}
-            />
+            <Select options={models.map((v) => ({ value: v, label: v }))} />
           </Form.Item>
-
+          <Form.Item
+            name="GptConfig_msgCount"
+            label="上下文数量"
+            extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
+          >
+            <Input.TextArea autoSize />
+          </Form.Item>
+          <Form.Item
+            name="config_disable_strikethrough"
+            valuePropName="checked"
+            label="禁用删除线 (使用中文～替换了~)"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            name="GptConfig_role"
+            label="role  用户使用的角色 建议使用user"
+          >
+            <Radio.Group style={{ width: "100%" }}>
+              <Radio.Button value="assistant">assistant</Radio.Button>
+              <Radio.Button value="system">system</Radio.Button>
+              <Radio.Button value="user">user</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+          <Form.Item
+            name="GptConfig_max_tokens"
+            label="max_tokens 指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
+          >
+            <InputNumber step="50" min={0} />
+          </Form.Item>
+          <Form.Item
+            name="GptConfig_top_p"
+            label="top_p 指定从概率分布中选择的标记的概率阈值（不懂）"
+          >
+            <InputNumber step="0.05" min={0} max={1} />
+          </Form.Item>
+          <Form.Item name="GptConfig_n" label="n 指定生成文本的数量">
+            <InputNumber step="1" min={1} max={10} />
+          </Form.Item>
+          <Form.Item
+            name="GptConfig_temperature"
+            label="temperature 较高的值会产生更多样化的文本"
+          >
+            <InputNumber step="0.05" min={0} max={1} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              block
+              style={{ marginTop: "20px" }}
+              danger={true}
+              onClick={(e) => {
+                modal.confirm({
+                  title: "确定删除？",
+                  content: "删除操作不可逆，请谨慎操作。",
+                  onOk: () => {
+                    ChatManagement.remove(chatMgt!.group.id).then(() => {
+                      router.push("/chat");
+                    });
+                  },
+                });
+              }}
+            >
+              删除
+            </Button>
+          </Form.Item>
+          <Divider>以下配置全局生效</Divider>
+          <Form.Item label={"全局背景图片"}>
+            <Button.Group style={{ width: "100%" }}>
+              <Button block>
+                <Upload
+                  accept=".png,.jpg,.gif"
+                  {...{
+                    beforeUpload(file, FileList) {
+                      const reader = new FileReader();
+                      reader.readAsDataURL(file);
+                      reader.onloadend = (event) => {
+                        if (event.target?.result) {
+                          setBackground(event.target?.result.toString());
+                        }
+                      };
+                      return false;
+                    },
+                    defaultFileList: [],
+                    showUploadList: false,
+                  }}
+                ></Upload>
+                设置
+              </Button>
+              <Button
+                block
+                onClick={() => {
+                  setBackground("");
+                }}
+              >
+                清除
+              </Button>
+            </Button.Group>
+          </Form.Item>
+          <Form.Item
+            name="setting_baseurl"
+            label="接口访问地址"
+            extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
+          >
+            <Input type="text" />
+          </Form.Item>
           <Form.Item
             name="setting_apitoken"
             label="openapi key"
@@ -294,80 +378,6 @@ export const Setting = ({
             label="保存key到浏览器（不加密，请在私人设备时才勾选）"
           >
             <Switch />
-          </Form.Item>
-          <Form.Item
-            name="config_disable_strikethrough"
-            valuePropName="checked"
-            label="禁用删除线 (使用中文～替换了~)"
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            name="setting_baseurl"
-            label="接口访问地址"
-            extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
-          >
-            <Input type="text" />
-          </Form.Item>
-          <Form.Item
-            name="GptConfig_msgCount"
-            label="上下文数量"
-            extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
-          >
-            <Input.TextArea autoSize />
-          </Form.Item>
-          <Form.Item label="接口参数">
-            <Form.Item
-              name="GptConfig_role"
-              label="role  用户使用的角色 建议使用user"
-            >
-              <Radio.Group>
-                <Radio.Button value="assistant">assistant</Radio.Button>
-                <Radio.Button value="system">system</Radio.Button>
-                <Radio.Button value="user">user</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item
-              name="GptConfig_max_tokens"
-              label="max_tokens 指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
-            >
-              <InputNumber step="50" min={0} />
-            </Form.Item>
-            <Form.Item
-              name="GptConfig_top_p"
-              label="top_p 指定从概率分布中选择的标记的概率阈值（不懂）"
-            >
-              <InputNumber step="0.05" min={0} max={1} />
-            </Form.Item>
-            <Form.Item name="GptConfig_n" label="n 指定生成文本的数量">
-              <InputNumber step="1" min={1} max={10} />
-            </Form.Item>
-            <Form.Item
-              name="GptConfig_temperature"
-              label="temperature 较高的值会产生更多样化的文本"
-            >
-              <InputNumber step="0.05" min={0} max={1} />
-            </Form.Item>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              block
-              style={{ marginTop: "20px" }}
-              danger={true}
-              onClick={(e) => {
-                modal.confirm({
-                  title: "确定删除？",
-                  content: "删除操作不可逆，请谨慎操作。",
-                  onOk: () => {
-                    ChatManagement.remove(chatMgt!.group.id).then(() => {
-                      router.push("/chat");
-                    });
-                  },
-                });
-              }}
-            >
-              删除
-            </Button>
           </Form.Item>
         </div>
         <Button.Group style={{ width: "100%" }}>
