@@ -25,7 +25,6 @@ const defaultChat: IChat = {
     groupId: "",
     defaultVirtualRole: "",
     enableVirtualRole: false,
-    saveKey: true,
     activityTopicId: "",
     baseUrl: "",
   },
@@ -408,7 +407,6 @@ export class ChatManagement implements IChat {
       id: getUuid(),
       groupId,
       enableVirtualRole: false,
-      saveKey: true,
       baseUrl: "",
       activityTopicId: "",
     };
