@@ -1,11 +1,13 @@
 import { ChatManagement, IChat } from "@/core/ChatManagement";
 
 import { Button, theme } from "antd";
+import { useRouter } from "next/router";
 
 import { useEffect, useState } from "react";
 import { Groups } from "./Groups";
 
 export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
+  const router = useRouter();
   const { token } = theme.useToken();
   const [groups, setGroups] = useState<IChat[]>(ChatManagement.getGroups());
   useEffect(() => {
@@ -33,7 +35,14 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
             marginBottom: "20px",
           }}
         >
-          <Groups groups={groups}></Groups>
+          <Groups
+            groups={groups}
+            onClick={(chat: IChat) => {
+              ChatManagement.toFirst(chat.group).then(() => {
+                router.push("/chat?id=" + chat.group.id);
+              });
+            }}
+          ></Groups>
         </div>
         <Button.Group>
           <Button

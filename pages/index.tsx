@@ -25,7 +25,16 @@ export default function Home() {
 
   return screenSize.height > screenSize.width * 1.5 ? (
     <div style={{ padding: "1em 12px", overflow: "auto", maxHeight: "100%" }}>
-      {showGroups && <Groups groups={groups}></Groups>}
+      {showGroups && (
+        <Groups
+          groups={groups}
+          onClick={(chat: IChat) => {
+            ChatManagement.toFirst(chat.group).then(() => {
+              router.push("/chat?id=" + chat.group.id);
+            });
+          }}
+        ></Groups>
+      )}
     </div>
   ) : (
     <Layout

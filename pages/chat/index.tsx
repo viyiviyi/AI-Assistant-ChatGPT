@@ -4,11 +4,7 @@ import { Modal } from "@/components/Modal";
 import { Setting } from "@/components/Setting";
 import { VirtualRoleConfig } from "@/components/VirtualRoleConfig";
 import { BgConfig, BgImage } from "@/core/BgImage";
-import {
-  ChatContext,
-  ChatManagement,
-  defaultChat
-} from "@/core/ChatManagement";
+import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { Layout, theme } from "antd";
 import Head from "next/head";
@@ -23,42 +19,43 @@ export default function Page(props: any) {
   const { token } = theme.useToken();
 
   const { bgConfig } = useContext(ChatContext);
-  const [chatMgt, setChatMgt] = useState<ChatManagement>(
-    new ChatManagement(defaultChat)
-  );
+  const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
   const [roleConfigShow, setRoleConfigShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
-  const [activityTopic, setActivityTopic] = useState(
-    chatMgt.topics.find((f) => f.id == chatMgt.config.activityTopicId) || {
-      id: "",
-      name: "",
-      groupId: "",
-      createdAt: 0,
-    }
-  );
-
+  const [activityTopic, setActivityTopic] = useState({
+    id: "",
+    name: "",
+    groupId: "",
+    createdAt: 0,
+  });
   useEffect(() => {
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;
-      let defaultChat = chats[0];
+      let selectChat = chats[0];
       if (groupId)
-        defaultChat = chats.find((f) => f.group.id == groupId) || defaultChat;
-      ChatManagement.loadTopics(defaultChat).then(() => {
-        setChatMgt(new ChatManagement(defaultChat));
+        selectChat = chats.find((f) => f.group.id == groupId) || selectChat;
+      ChatManagement.loadTopics(selectChat).then(() => {
+        setChatMgt(new ChatManagement(selectChat));
+        if (chatMgt.group.id !== groupId) {
+          setSettingShow(false);
+          if (screenSize.width <= 1420) {
+            setlistIsShow(false);
+          }
+        }
       });
       BgImage.getInstance()
         .getBgImage()
         .then((res) => {
           setBgImg((v) => {
-            v.backgroundImage = `url(${defaultChat.group.background || res})`;
+            v.backgroundImage = `url(${selectChat.group.background || res})`;
             return v;
           });
         });
       setActivityTopic(
-        defaultChat.topics.find(
+        selectChat.topics.find(
           (f) => f.id == chats[0].config.activityTopicId
         ) || {
           id: "",
@@ -68,6 +65,7 @@ export default function Page(props: any) {
         }
       );
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
 
   return (
