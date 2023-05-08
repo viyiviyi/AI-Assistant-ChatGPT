@@ -7,7 +7,7 @@ import { BgConfig, BgImage } from "@/core/BgImage";
 import {
   ChatContext,
   ChatManagement,
-  defaultChat
+  defaultChat,
 } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { Layout, theme } from "antd";
@@ -48,6 +48,12 @@ export default function Page(props: any) {
         defaultChat = chats.find((f) => f.group.id == groupId) || defaultChat;
       ChatManagement.loadTopics(defaultChat).then(() => {
         setChatMgt(new ChatManagement(defaultChat));
+        if (chatMgt.group.id !== groupId) {
+          setSettingShow(false);
+          if (screenSize.width <= 1420) {
+            setlistIsShow(false);
+          }
+        }
       });
       BgImage.getInstance()
         .getBgImage()
@@ -68,6 +74,7 @@ export default function Page(props: any) {
         }
       );
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
 
   return (

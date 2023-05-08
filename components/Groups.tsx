@@ -2,20 +2,22 @@ import { ChatManagement, IChat } from "@/core/ChatManagement";
 import { Avatar, Card, theme } from "antd";
 import { useRouter } from "next/router";
 
-export const Groups = ({ groups }: { groups: IChat[] }) => {
-  const { token } = theme.useToken();
-  const router = useRouter();
+export const Groups = ({
+  groups,
+  onClick,
+}: {
+  groups: IChat[];
+  onClick: (chat: IChat) => void;
+}) => {
   return (
     <>
       {groups.map((v, idx) => (
         <Card
           key={idx}
-          style={{ marginBottom: "20px", backgroundColor: '#0003' }}
+          style={{ marginBottom: "20px", backgroundColor: "#0003" }}
           bodyStyle={{ padding: "16px" }}
           onClick={() => {
-            ChatManagement.toFirst(v.group).then(() => {
-              router.push("/chat?id=" + v.group.id);
-            });
+            onClick(v);
           }}
         >
           <Card.Meta
