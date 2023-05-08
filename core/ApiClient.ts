@@ -160,7 +160,7 @@ export class ApiClient {
     baseUrl = baseUrl || "https://chat.22733.site";
     try {
       const response = await fetch(
-        `${baseUrl}/dashboard/billing/credit_grants`,
+        `${baseUrl}/v1/balance`,
         {
           headers: {
             "Content-Type": "application/json",

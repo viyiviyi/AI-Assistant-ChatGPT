@@ -67,6 +67,12 @@ export const Setting = ({
   }>();
   useEffect(() => {
     BgImage.getInstance().getBgImage().then(setBackground);
+    // ApiClient.getModelList(
+    //   form.getFieldValue("setting_apitoken") ||
+    //     KeyValueData.instance().getApiKey(),
+    //   form.getFieldValue("setting_baseurl") || chatMgt?.config.baseUrl
+    // ).then((res) => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   async function onSave() {
     let values = form.getFieldsValue();
@@ -233,6 +239,24 @@ export const Setting = ({
                   还原会话
                 </Upload>
               </Button>
+              <Button
+                block
+                // danger={true}
+                style={{ borderColor: "#ff8d8e44" }}
+                onClick={(e) => {
+                  modal.confirm({
+                    title: "确定删除？",
+                    content: "删除操作不可逆，请谨慎操作。",
+                    onOk: () => {
+                      ChatManagement.remove(chatMgt!.group.id).then(() => {
+                        router.push("/chat");
+                      });
+                    },
+                  });
+                }}
+              >
+                删除会话
+              </Button>
             </Button.Group>
           </Form.Item>
           <Form.Item label="模型名称" name={"GptConfig_model"}>
@@ -283,25 +307,12 @@ export const Setting = ({
           >
             <InputNumber step="0.05" min={0} max={1} />
           </Form.Item>
-          <Form.Item>
-            <Button
-              block
-              style={{ marginTop: "20px" }}
-              danger={true}
-              onClick={(e) => {
-                modal.confirm({
-                  title: "确定删除？",
-                  content: "删除操作不可逆，请谨慎操作。",
-                  onOk: () => {
-                    ChatManagement.remove(chatMgt!.group.id).then(() => {
-                      router.push("/chat");
-                    });
-                  },
-                });
-              }}
-            >
-              删除
-            </Button>
+          <Form.Item
+            name="setting_baseurl"
+            label="接口访问地址"
+            extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
+          >
+            <Input type="text" />
           </Form.Item>
           <Divider>以下配置全局生效</Divider>
           <Form.Item label={"全局背景图片"}>
@@ -335,13 +346,6 @@ export const Setting = ({
                 清除
               </Button>
             </Button.Group>
-          </Form.Item>
-          <Form.Item
-            name="setting_baseurl"
-            label="接口访问地址"
-            extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
-          >
-            <Input type="text" />
           </Form.Item>
           <Form.Item
             name="setting_apitoken"
