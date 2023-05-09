@@ -39,6 +39,7 @@ export const Chat = ({
 }) => {
   const { token } = theme.useToken();
   const { chat } = useContext(ChatContext);
+  const [cite, setCite] = useState<Message>();
   const [onlyOne, setOnlyOne] = useState(false);
   const [none, setNone] = useState([]);
   function deleteChatMsg(msg: Message): void {
@@ -71,6 +72,7 @@ export const Chat = ({
           alignItems: "center",
           marginBottom: "3px",
           padding: "10px",
+          position: "relative",
           borderRadius:
             "0" +
             " 0 " +
@@ -111,12 +113,16 @@ export const Chat = ({
           backgroundColor: token.colorFillContent,
           width: "100%",
           maxWidth: "100%",
+          marginBottom: "115px",
         }}
       >
         <ChatMessage
           onlyOne={onlyOne}
           onDel={(m) => {
             deleteChatMsg(m);
+          }}
+          onCite={(msg) => {
+            setCite(msg);
           }}
           rBak={(v) => {
             setInputContent(
@@ -136,13 +142,15 @@ export const Chat = ({
           handerCloseAll={(cb) => (closeAllTopic = cb)}
         />
       </Content>
-      <InputUtil
-        onlyOne={onlyOne}
-        setOnlyOne={setOnlyOne}
-        reload={() => {
-          setNone([]);
-        }}
-      ></InputUtil>
+      <div style={{ position: "absolute", left: 0, bottom: 0, width: "100%" }}>
+        <InputUtil
+          onlyOne={onlyOne}
+          setOnlyOne={setOnlyOne}
+          reload={() => {
+            setNone([]);
+          }}
+        ></InputUtil>
+      </div>
     </div>
   );
 };
@@ -232,7 +240,7 @@ function InputUtil({
     setmessageInput("");
     scrollToBotton();
     reload();
-    if (isBot || skipRequest) return;
+    if (isBot || skipRequest || chat.config.disableChatGPT) return;
     setLoading((v) => ++v);
     await sendMessage(chat);
     setTimeout(() => {

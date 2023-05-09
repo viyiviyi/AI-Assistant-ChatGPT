@@ -28,6 +28,7 @@ export interface GroupConfig {
   activityTopicId: string; // 激活的话题
   defaultVirtualRole?: string; // 默认助理
   disableStrikethrough?: boolean; // 禁用删除线
+  disableChatGPT?: boolean;
 }
 
 // 聊天消息表
@@ -41,6 +42,7 @@ export interface Message {
   text: string; // 消息内容
   timestamp: number; // 时间戳
   checked?: boolean;
+  importMessage?: string;
 }
 
 export interface Topic {

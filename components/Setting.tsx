@@ -1,10 +1,6 @@
 import { ApiClient } from "@/core/ApiClient";
 import { BgImage } from "@/core/BgImage";
-import {
-  ChatContext,
-  ChatManagement,
-  noneChat
-} from "@/core/ChatManagement";
+import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
 import {
@@ -63,6 +59,7 @@ export const Setting = ({
     config_saveKey: boolean;
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
+    config_disable_chat: boolean;
     group_name: string;
   }>();
   useEffect(() => {
@@ -89,6 +86,7 @@ export const Setting = ({
 
     chatMgt.config.baseUrl = values.setting_baseurl;
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
+    chatMgt.config.disableChatGPT = values.config_disable_chat;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -122,6 +120,9 @@ export const Setting = ({
           config_saveKey: true,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
+          config_disable_chat:
+            chatMgt?.config.disableChatGPT ||
+            chatMgt?.config.disableChatGPT === undefined,
           group_name: chatMgt?.group.name,
         }}
       >
@@ -220,8 +221,7 @@ export const Setting = ({
                       const fr = new FileReader();
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
-                          const chat =
-                            nextChat || noneChat;
+                          const chat = nextChat || noneChat;
                           chat
                             .fromJson(JSON.parse(e.target.result.toString()))
                             .then();
@@ -273,6 +273,14 @@ export const Setting = ({
             name="config_disable_strikethrough"
             valuePropName="checked"
             label="禁用删除线 (使用中文～替换了~)"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item
+            name="config_disable_chat"
+            valuePropName="checked"
+            label="启用ChatGPT"
+            extra={"关闭后发出消息将不会调用ChatGPT"}
           >
             <Switch />
           </Form.Item>

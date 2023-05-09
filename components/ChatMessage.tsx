@@ -15,6 +15,7 @@ import {
   Checkbox,
   Collapse,
   Input,
+  message as antd_message,
   Popconfirm,
   theme,
   Typography
@@ -38,11 +39,13 @@ export const ChatMessage = ({
   rBak,
   onDel,
   handerCloseAll,
+  onCite,
 }: {
   onlyOne?: boolean;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   handerCloseAll: (closeAll: () => void) => void;
+  onCite: (message: Message) => void;
 }) => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic } = useContext(ChatContext);
@@ -100,7 +103,7 @@ export const ChatMessage = ({
                   setActivityKey([...activityKey]);
                 },
               }}
-              ellipsis={{ rows: 1 ,}}
+              ellipsis={{ rows: 1 }}
               level={5}
               onClick={(e) => {
                 e.stopPropagation();
@@ -112,7 +115,7 @@ export const ChatMessage = ({
                     ? token.colorPrimary
                     : undefined,
                 flex: 1,
-                maxWidth:'calc(100vw - 160px)'
+                maxWidth: "calc(100vw - 160px)",
               }}
             >
               {topic.name}
@@ -167,6 +170,7 @@ export const ChatMessage = ({
                   topic.id == chat?.config.activityTopicId
                 }
                 rBak={rBak}
+                onCite={onCite}
                 key={i}
               ></MessagesBox>
             );
@@ -185,6 +189,7 @@ export const ChatMessage = ({
               onDel={onDel}
               isLast={i === topic!.messages.length - 1}
               rBak={rBak}
+              onCite={onCite}
               key={i}
             ></MessagesBox>
           ))}
@@ -202,7 +207,6 @@ export const ChatMessage = ({
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />
       )}
-      
     >
       {chat.topics.map(rendTopic)}
     </Collapse>
@@ -214,11 +218,13 @@ const MessagesBox = ({
   isLast,
   rBak,
   onDel,
+  onCite,
 }: {
   msg: Message;
   isLast?: boolean;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
+  onCite: (message: Message) => void;
 }) => {
   const { chat } = useContext(ChatContext);
   const { token } = theme.useToken();
@@ -231,7 +237,6 @@ const MessagesBox = ({
   }, [newMsgRef, isLast]);
   const utilsEle = (
     <>
-      {" "}
       <Checkbox
         checked={msg.checked || false}
         onChange={(e) => {
@@ -270,7 +275,9 @@ const MessagesBox = ({
       <span style={{ marginLeft: "16px" }}></span>
       <CopyOutlined
         onClick={() => {
-          copy(msg.text.toString());
+          if (copy(msg.text.toString())) {
+            antd_message.success("已复制");
+          }
         }}
       />
       <span style={{ marginLeft: "16px" }}></span>
@@ -296,7 +303,11 @@ const MessagesBox = ({
   );
   if (msg.ctxRole === "system") {
     return (
-      <div ref={newMsgRef} style={{ padding: "1em 32px", textAlign: "center" }}>
+      <div
+        ref={newMsgRef}
+        style={{ padding: "1em 32px", textAlign: "center" }}
+        id={msg.id}
+      >
         <div>
           {edit ? (
             <Input.TextArea
@@ -334,6 +345,7 @@ const MessagesBox = ({
         display: "flex",
         justifyContent: msg.virtualRoleId ? "flex-start" : "flex-end",
       }}
+      id={msg.id}
     >
       <div
         style={{
@@ -395,6 +407,30 @@ const MessagesBox = ({
                 />
               ) : (
                 <MarkdownView
+                  menu={{
+                    onClick: (e) => {
+                      switch (e.key) {
+                        case "1":
+                          if (copy(message)) {
+                            antd_message.success("已复制");
+                          }
+                          break;
+                        case "2":
+                          onCite(msg);
+                          break;
+                      }
+                    },
+                    items: [
+                      {
+                        label: "复制",
+                        key: "1",
+                      },
+                      {
+                        label: "引用",
+                        key: "2",
+                      },
+                    ],
+                  }}
                   markdown={
                     chat?.config.disableStrikethrough
                       ? msg.text.replaceAll("~", "～")
