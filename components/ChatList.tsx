@@ -39,7 +39,7 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
             groups={groups}
             onClick={(chat: IChat) => {
               ChatManagement.toFirst(chat.group).then(() => {
-                router.push("/chat?id=" + chat.group.id);
+                router.replace("/chat?id=" + chat.group.id);
               });
             }}
           ></Groups>
@@ -49,12 +49,8 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
             block
             onClick={(e) => {
               e.stopPropagation();
-              ChatManagement.createChat().then(() => {
-                setGroups([
-                  ...ChatManagement.getGroups().map(
-                    (v) => new ChatManagement(v)
-                  ),
-                ]);
+              ChatManagement.createChat().then((v) => {
+                router.replace("/chat?id=" + v.group.id);
               });
             }}
           >

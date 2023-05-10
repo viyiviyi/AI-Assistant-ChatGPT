@@ -1,6 +1,5 @@
-import { ChatManagement, IChat } from "@/core/ChatManagement";
+import { IChat } from "@/core/ChatManagement";
 import { Avatar, Card, theme } from "antd";
-import { useRouter } from "next/router";
 
 export const Groups = ({
   groups,
@@ -14,7 +13,7 @@ export const Groups = ({
     <>
       {groups.map((v, idx) => (
         <Card
-          key={idx}
+          key={v.group.id}
           style={{
             marginBottom: "20px",
             backgroundColor: token.colorFillContent,

@@ -42,11 +42,7 @@ export const Chat = ({
   const [cite, setCite] = useState<Message>();
   const [onlyOne, setOnlyOne] = useState(false);
   const [none, setNone] = useState([]);
-  function deleteChatMsg(msg: Message): void {
-    chat.removeMessage(msg)?.then(() => {
-      setNone([]);
-    });
-  }
+
 
   return (
     <div
@@ -118,9 +114,6 @@ export const Chat = ({
       >
         <ChatMessage
           onlyOne={onlyOne}
-          onDel={(m) => {
-            deleteChatMsg(m);
-          }}
           onCite={(msg) => {
             setCite(msg);
           }}
@@ -194,6 +187,7 @@ async function sendMessage(chat: ChatManagement) {
     msg.text = String(error);
     chat.pushMessage(msg);
   }
+  scrollToBotton(msg.id)
 }
 
 function InputUtil({
@@ -227,7 +221,7 @@ function InputUtil({
         setActivityTopic(topic);
       });
     }
-    await chat.pushMessage({
+    const msg = await chat.pushMessage({
       id: "",
       groupId: chat.group.id,
       senderId: isBot ? undefined : chat.user.id,
@@ -238,14 +232,13 @@ function InputUtil({
       topicId: chat.config.activityTopicId,
     });
     setmessageInput("");
-    scrollToBotton();
+    scrollToBotton(msg.id);
     reload();
     if (isBot || skipRequest || chat.config.disableChatGPT) return;
     setLoading((v) => ++v);
     await sendMessage(chat);
     setTimeout(() => {
       setLoading((v) => --v);
-      scrollToBotton();
       reload();
     }, 500);
   }

@@ -21,38 +21,41 @@ import {
   Typography
 } from "antd";
 import copy from "copy-to-clipboard";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { MarkdownView } from "./MarkdownView";
 
 const { Panel } = Collapse;
 
-const lastMsgRef: { ref?: React.RefObject<HTMLDivElement> } = {};
-export function scrollToBotton() {
+export function scrollToBotton(id: string) {
   setTimeout(() => {
-    if (!lastMsgRef.ref) return;
-    if (!lastMsgRef.ref.current) return;
-    lastMsgRef.ref.current.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, 600);
+    if (window) {
+      document
+        .getElementById(id)
+        ?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, 1500);
 }
 export const ChatMessage = ({
   onlyOne,
   rBak,
-  onDel,
   handerCloseAll,
   onCite,
 }: {
   onlyOne?: boolean;
   rBak: (v: Message) => void;
-  onDel: (v: Message) => void;
   handerCloseAll: (closeAll: () => void) => void;
   onCite: (message: Message) => void;
 }) => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic } = useContext(ChatContext);
-  const [activityKey, setActivityKey] = useState(
-    chat ? [...chat.topics.map((v) => v.id)] : []
-  );
+  const [activityKey, setActivityKey] = useState(chat.topics.map((v) => v.id));
+  const [topics, setTopics] = useState(chat.topics);
   const [closeAll, setCloasAll] = useState(true);
+  function deleteChatMsg(msg: Message): void {
+    chat.removeMessage(msg)?.then(() => {
+      setTopics([...topics]);
+    });
+  }
   handerCloseAll(() => {
     if (closeAll) {
       setActivityKey([]);
@@ -62,11 +65,12 @@ export const ChatMessage = ({
     }
   });
 
-  function onClickTopicTitle(
+  async function onClickTopicTitle(
     topic: Topic & {
       messages: Message[];
     }
   ) {
+    console.time("test");
     let v = [...activityKey];
     if (closeAll) {
       v = [];
@@ -74,24 +78,20 @@ export const ChatMessage = ({
     }
     if (v.includes(topic.id)) {
       v = v.filter((f) => f !== topic.id);
-      chat!.config.activityTopicId = chat?.topics.slice(-1)[0].id || "";
-      ChatManagement.loadMessage(chat!.topics.slice(-1)[0]).then(() => {
-        setActivityKey(v);
-        scrollToBotton();
-      });
-      setActivityTopic(chat?.topics.slice(-1)[0]);
+      topic = chat.topics.slice(-1)[0];
     } else {
-      chat!.config.activityTopicId = topic.id;
       v.push(topic.id);
-      ChatManagement.loadMessage(topic).then(() => {
-        setActivityKey(v);
-        scrollToBotton();
-      });
-      setActivityTopic(topic);
     }
+    chat.config.activityTopicId = topic.id;
+    if (topic.messages.length == 0) await ChatManagement.loadMessage(topic);
+    setActivityKey(v);
+    setActivityTopic(topic);
+    scrollToBotton(topic.messages.slice(-1)[0]?.id);
+
+    console.timeEnd("test");
   }
-  if (!chat) return <></>;
-  function rendTopic(topic: Topic & { messages: Message[] }, idx: number) {
+
+  function rendTopic(topic: Topic & { messages: Message[] }) {
     return (
       <Panel
         header={
@@ -99,8 +99,8 @@ export const ChatMessage = ({
             <Typography.Title
               editable={{
                 onChange: (e) => {
-                  chat?.saveTopic(topic.id, e);
-                  setActivityKey([...activityKey]);
+                  chat.saveTopic(topic.id, e);
+                  setActivityTopic(Object.assign({}, topic));
                 },
               }}
               ellipsis={{ rows: 1 }}
@@ -111,7 +111,7 @@ export const ChatMessage = ({
               }}
               style={{
                 color:
-                  chat!.config.activityTopicId == topic.id
+                  chat.config.activityTopicId == topic.id
                     ? token.colorPrimary
                     : undefined,
                 flex: 1,
@@ -125,7 +125,7 @@ export const ChatMessage = ({
               <Popconfirm
                 title="确定删除？"
                 onConfirm={() => {
-                  chat?.removeTopic(topic);
+                  chat.removeTopic(topic);
                   setActivityKey([...activityKey]);
                 }}
                 okText="确定"
@@ -158,20 +158,27 @@ export const ChatMessage = ({
           padding: "0 8px",
         }}
       >
+        {/* {topic.messages.map((v, i) => {
+          return (
+            <MessagesBox
+              msg={v}
+              onDel={deleteChatMsg}
+              rBak={rBak}
+              onCite={onCite}
+              key={v.id}
+            ></MessagesBox>
+          );
+        })} */}
         {(activityKey.includes(topic.id) ||
-          topic.id == chat?.config.activityTopicId) &&
+          topic.id == chat.config.activityTopicId) &&
           topic.messages.map((v, i) => {
             return (
               <MessagesBox
                 msg={v}
-                onDel={onDel}
-                isLast={
-                  i === topic.messages.length - 1 &&
-                  topic.id == chat?.config.activityTopicId
-                }
+                onDel={deleteChatMsg}
                 rBak={rBak}
                 onCite={onCite}
-                key={i}
+                key={v.id}
               ></MessagesBox>
             );
           })}
@@ -186,11 +193,10 @@ export const ChatMessage = ({
           {topic.messages.map((v, i) => (
             <MessagesBox
               msg={v}
-              onDel={onDel}
-              isLast={i === topic!.messages.length - 1}
+              onDel={deleteChatMsg}
               rBak={rBak}
               onCite={onCite}
-              key={i}
+              key={v.id}
             ></MessagesBox>
           ))}
         </div>
@@ -215,13 +221,11 @@ export const ChatMessage = ({
 
 const MessagesBox = ({
   msg,
-  isLast,
   rBak,
   onDel,
   onCite,
 }: {
   msg: Message;
-  isLast?: boolean;
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   onCite: (message: Message) => void;
@@ -230,18 +234,15 @@ const MessagesBox = ({
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [message, setMessage] = useState(msg.text);
-  const newMsgRef = React.createRef<HTMLDivElement>();
   const [none, setNone] = useState([]);
-  useEffect(() => {
-    if (isLast) lastMsgRef.ref = newMsgRef;
-  }, [newMsgRef, isLast]);
+
   const utilsEle = (
     <>
       <Checkbox
         checked={msg.checked || false}
         onChange={(e) => {
           msg.checked = e.target.checked;
-          chat?.pushMessage(msg);
+          chat.pushMessage(msg);
           setNone([]);
         }}
       >
@@ -257,7 +258,7 @@ const MessagesBox = ({
         <SaveOutlined
           onClick={() => {
             msg.text = message;
-            chat?.pushMessage(msg);
+            chat.pushMessage(msg);
             setEdit(false);
           }}
           style={{ marginLeft: "16px" }}
@@ -303,11 +304,7 @@ const MessagesBox = ({
   );
   if (msg.ctxRole === "system") {
     return (
-      <div
-        ref={newMsgRef}
-        style={{ padding: "1em 32px", textAlign: "center" }}
-        id={msg.id}
-      >
+      <div style={{ padding: "1em 32px", textAlign: "center" }} id={msg.id}>
         <div>
           {edit ? (
             <Input.TextArea
@@ -340,7 +337,6 @@ const MessagesBox = ({
   }
   return (
     <div
-      ref={newMsgRef}
       style={{
         display: "flex",
         justifyContent: msg.virtualRoleId ? "flex-start" : "flex-end",
@@ -355,7 +351,7 @@ const MessagesBox = ({
         }}
       >
         <Avatar
-          src={msg.virtualRoleId ? chat?.virtualRole.avatar : chat?.user.avatar}
+          src={msg.virtualRoleId ? chat.virtualRole.avatar : chat.user.avatar}
           size={42}
           style={{ minWidth: "42px", minHeight: "42px" }}
           icon={<UserOutlined />}
@@ -378,7 +374,7 @@ const MessagesBox = ({
             }}
           >
             <span>
-              {msg.virtualRoleId ? chat?.virtualRole.name : chat?.user?.name}
+              {msg.virtualRoleId ? chat.virtualRole.name : chat.user?.name}
             </span>
           </div>
           <div
@@ -432,7 +428,7 @@ const MessagesBox = ({
                     ],
                   }}
                   markdown={
-                    chat?.config.disableStrikethrough
+                    chat.config.disableStrikethrough
                       ? msg.text.replaceAll("~", "～")
                       : msg.text
                   }

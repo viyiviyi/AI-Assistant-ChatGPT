@@ -164,7 +164,7 @@ export const VirtualRoleConfig = ({
                     return (
                       <Form.Item
                         required={false}
-                        key={field.key}
+                        key={"virtualRole_settings" + field.key}
                         style={{ position: "relative" }}
                       >
                         <Popconfirm
