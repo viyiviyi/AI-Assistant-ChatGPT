@@ -1,5 +1,5 @@
 import { CopyOutlined } from "@ant-design/icons";
-import { Dropdown, MenuProps, message } from "antd";
+import { MenuProps, message } from "antd";
 import copy from "copy-to-clipboard";
 import bash from "highlight.js/lib/languages/bash";
 import dart from "highlight.js/lib/languages/dart";
@@ -103,12 +103,13 @@ export const MarkdownView = ({
     });
   const renderedMarkdown = processor.processSync(markdown).result;
   return (
-    <Dropdown menu={menu} trigger={["contextMenu"]}>
-      <div>
-        {contextHolder}
-        {renderedMarkdown}
-      </div>
-    </Dropdown>
+    <div>
+      {contextHolder}
+      {renderedMarkdown}
+    </div>
+    // <Dropdown menu={menu}  trigger={["contextMenu"]}>
+
+    // </Dropdown>
   );
 };
 
