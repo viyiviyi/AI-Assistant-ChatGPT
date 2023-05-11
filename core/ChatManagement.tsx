@@ -504,12 +504,13 @@ export class ChatManagement implements IChat {
 
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) topic = await await this.newTopic(message.text);
+    message.topicId = topic.id;
     message.groupId = this.group.id;
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);
       if (!msg) {
         topic.messages.push(message);
-        ChatManagement.createMessage(message);
+        await ChatManagement.createMessage(message);
         return message;
       }
       msg.text = message.text;

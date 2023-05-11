@@ -54,17 +54,18 @@ export function InputUtil() {
       ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
       text: text,
       timestamp: Date.now(),
-      topicId: chat.config.activityTopicId,
+      topicId: topicId,
     });
+    topicId = msg.topicId;
     setInputText("");
-    if (msg.topicId == chat.config.activityTopicId) scrollToBotton(msg.id);
+    if (topicId == chat.config.activityTopicId) scrollToBotton(msg.id);
     reloadTopic(msg.topicId);
     if (isBot || skipRequest || chat.config.disableChatGPT) return;
     setLoading((v) => ++v);
     const messages = chat.getAskContext();
     if (messages.length == 0) {
       setLoading((v) => --v);
-      reloadTopic(chat.config.activityTopicId);
+      reloadTopic(topicId);
       return;
     }
     let result = await chat.pushMessage({
