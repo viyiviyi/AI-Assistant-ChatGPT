@@ -86,7 +86,7 @@ export const Setting = ({
 
     chatMgt.config.baseUrl = values.setting_baseurl;
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
-    chatMgt.config.disableChatGPT = values.config_disable_chat;
+    chatMgt.config.disableChatGPT = !values.config_disable_chat;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -121,8 +121,7 @@ export const Setting = ({
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
           config_disable_chat:
-            chatMgt?.config.disableChatGPT ||
-            chatMgt?.config.disableChatGPT === undefined,
+            !chatMgt?.config.disableChatGPT,
           group_name: chatMgt?.group.name,
         }}
       >

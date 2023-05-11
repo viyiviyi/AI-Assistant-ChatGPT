@@ -1,4 +1,4 @@
-import { Chat } from "@/components/Chat";
+import { Chat } from "@/components/Chat/Chat";
 import { ChatList } from "@/components/ChatList";
 import { Modal } from "@/components/Modal";
 import { Setting } from "@/components/Setting";

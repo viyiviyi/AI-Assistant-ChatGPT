@@ -1,4 +1,4 @@
-import { isXML } from "@/components/MarkdownView";
+import { isXML } from "@/components/Chat/MarkdownView";
 import { IndexedDB } from "@/core/IndexDb";
 import {
   GptConfig,
@@ -526,7 +526,7 @@ export class ChatManagement implements IChat {
     } else {
       message.id = getUuid();
       topic.messages.push(message);
-      ChatManagement.createMessage(message);
+      await ChatManagement.createMessage(message);
       return message;
     }
   }

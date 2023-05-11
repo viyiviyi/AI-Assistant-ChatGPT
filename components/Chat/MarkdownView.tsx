@@ -37,7 +37,60 @@ function toTxt(node: React.ReactNode): string {
   }
   return str;
 }
-
+let processor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkMath)
+  .use(remarkRehype)
+  .use(rehypeHighlight, {
+    ignoreMissing: true,
+    plainText: ["txt", "text"],
+    languages: {
+      bash,
+      dockerfile,
+      javascript,
+      handlebars,
+      java,
+      json,
+      nginx,
+      shell,
+      sql,
+      typescript,
+      xml,
+      yaml,
+      dart,
+    },
+  })
+  .use(rehypeMathjax)
+  .use(remarkFrontmatter, ["yaml", "toml"])
+  .use(rehypeStringify)
+  .use(rehypeReact, {
+    createElement,
+    Fragment,
+    components: {
+      code: (
+        props: React.DetailedHTMLProps<
+          React.HTMLAttributes<HTMLElement>,
+          HTMLElement
+        >
+      ) => {
+        const { className, children } = props;
+        return (
+          <code className={className}>
+            <CopyOutlined
+              onClick={() => {
+                if (copy(toTxt(children))) {
+                  message.success("已复制");
+                }
+              }}
+              className="code-copy"
+            />
+            {children}
+          </code>
+        );
+      },
+    },
+  });
 // 创建解析方法
 export const MarkdownView = ({
   markdown,
@@ -46,65 +99,9 @@ export const MarkdownView = ({
   markdown: string;
   menu: MenuProps;
 }) => {
-  const [messageApi, contextHolder] = message.useMessage();
-  let processor = unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkMath)
-    .use(remarkRehype)
-    .use(rehypeHighlight, {
-      ignoreMissing: true,
-      plainText: ["txt", "text"],
-      languages: {
-        bash,
-        dockerfile,
-        javascript,
-        handlebars,
-        java,
-        json,
-        nginx,
-        shell,
-        sql,
-        typescript,
-        xml,
-        yaml,
-        dart,
-      },
-    })
-    .use(rehypeMathjax)
-    .use(remarkFrontmatter, ["yaml", "toml"])
-    .use(rehypeStringify)
-    .use(rehypeReact, {
-      createElement,
-      Fragment,
-      components: {
-        code: (
-          props: React.DetailedHTMLProps<
-            React.HTMLAttributes<HTMLElement>,
-            HTMLElement
-          >
-        ) => {
-          const { className, children } = props;
-          return (
-            <code className={className}>
-              <CopyOutlined
-                onClick={() => {
-                  if (copy(toTxt(children))) {
-                    messageApi.success("已复制");
-                  }
-                }}
-                className="code-copy"
-              />
-              {children}
-            </code>
-          );
-        },
-      },
-    });
   const renderedMarkdown = processor.processSync(markdown).result;
   return (
     <div>
-      {contextHolder}
       {renderedMarkdown}
     </div>
     // <Dropdown menu={menu}  trigger={["contextMenu"]}>
