@@ -1,4 +1,5 @@
 import { Chat } from "@/components/Chat/Chat";
+import { reloadTopic } from "@/components/Chat/ChatMessage";
 import { ChatList } from "@/components/ChatList";
 import { Modal } from "@/components/Modal";
 import { Setting } from "@/components/Setting";
@@ -6,6 +7,7 @@ import { VirtualRoleConfig } from "@/components/VirtualRoleConfig";
 import { BgConfig, BgImage } from "@/core/BgImage";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
+import { Topic } from "@/Models/DataBase";
 import { Layout, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -37,15 +39,6 @@ export default function Page(props: any) {
       let selectChat = chats[0];
       if (groupId)
         selectChat = chats.find((f) => f.group.id == groupId) || selectChat;
-      ChatManagement.loadTopics(selectChat).then(() => {
-        setChatMgt(new ChatManagement(selectChat));
-        if (chatMgt.group.id !== groupId) {
-          setSettingShow(false);
-          if (screenSize.width <= 1420) {
-            setlistIsShow(false);
-          }
-        }
-      });
       BgImage.getInstance()
         .getBgImage()
         .then((res) => {
@@ -54,16 +47,24 @@ export default function Page(props: any) {
             return v;
           });
         });
-      setActivityTopic(
-        selectChat.topics.find(
-          (f) => f.id == chats[0].config.activityTopicId
-        ) || {
-          id: "",
-          name: "",
-          groupId: "",
-          createdAt: 0,
+      if (chatMgt.group.id == groupId) return;
+      await ChatManagement.loadTopics(selectChat).then(() => {
+        setChatMgt(new ChatManagement(selectChat));
+        setSettingShow(false);
+        if (screenSize.width <= 1420) {
+          setlistIsShow(false);
         }
-      );
+      });
+      let aTopic = selectChat.topics.find(
+        (f) => f.id == selectChat.config.activityTopicId
+      ) || {
+        id: "",
+        name: "",
+        groupId: "",
+        createdAt: 0,
+      };
+      setActivityTopic(aTopic);
+      reloadTopic(aTopic.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
@@ -73,7 +74,11 @@ export default function Page(props: any) {
       value={{
         chat: chatMgt,
         activityTopic,
-        setActivityTopic,
+        setActivityTopic: (topic: Topic) => {
+          setActivityTopic(topic);
+          chatMgt.config.activityTopicId = topic.id;
+          chatMgt.saveConfig();
+        },
         bgConfig: bgImg,
         setBgConfig(image) {
           setBgImg((v) => {

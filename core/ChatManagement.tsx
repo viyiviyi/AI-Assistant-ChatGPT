@@ -158,6 +158,11 @@ export class ChatManagement implements IChat {
       const topic = topics[i];
       if (topic.id === chat.config.activityTopicId) {
         await this.loadMessage(topic);
+        break;
+      }
+      if (i == topics.length - 1) {
+        chat.config.activityTopicId = topic.id;
+        await this.loadMessage(topic);
       }
     }
   }
@@ -557,7 +562,7 @@ export class ChatManagement implements IChat {
         value: topic.id,
       });
     }
-    if (this.topics.length)
+    if (this.topics.length && this.config.activityTopicId == topic.id)
       this.config.activityTopicId = this.topics.slice(-1)[0].id;
     else this.config.activityTopicId = "";
   }
@@ -655,7 +660,7 @@ export class ChatManagement implements IChat {
         this.virtualRoles[key]!.id = getUuid();
         if (e) {
           Object.assign(this.virtualRole, this.virtualRoles[key]);
-          this.config.activityTopicId = this.virtualRoles[key]!.id;
+          this.config.defaultVirtualRole = this.virtualRoles[key]!.id;
         }
         prs.push(
           ChatManagement.createVirtualRoleBio(
