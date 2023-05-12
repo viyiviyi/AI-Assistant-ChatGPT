@@ -1,5 +1,4 @@
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
 import { Message, Topic } from "@/Models/DataBase";
 import {
   CaretRightOutlined,
@@ -7,8 +6,7 @@ import {
   DownloadOutlined
 } from "@ant-design/icons";
 import { Collapse, Popconfirm, theme, Typography } from "antd";
-import VirtualList from "rc-virtual-list";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
 import { MessageItem } from "./MessageItem";
@@ -56,6 +54,8 @@ export const ChatMessage = () => {
   Object.keys(reloadTopic).forEach((v) => {
     delete renderTopic[v];
   });
+
+  const MemoMessageList = React.memo(MessageList);
   function rendTopic(topic: Topic & { messages: Message[] }) {
     return (
       <Panel
@@ -125,7 +125,7 @@ export const ChatMessage = () => {
       >
         {(activityKey.includes(topic.id) ||
           topic.id == chat.config.activityTopicId) && (
-          <MessageList chat={chat} topic={topic}></MessageList>
+          <MemoMessageList chat={chat} topic={topic}></MemoMessageList>
         )}
       </Panel>
     );
@@ -134,7 +134,11 @@ export const ChatMessage = () => {
   if (onlyOne) {
     let topic = chat.topics.find((f) => f.id == chat.config.activityTopicId);
     if (topic) {
-      return <MessageList chat={chat} topic={topic}></MessageList>;
+      return (
+        <div style={{ padding: token.paddingContentVerticalSM }}>
+          <MemoMessageList chat={chat} topic={topic}></MemoMessageList>
+        </div>
+      );
     }
   }
 
@@ -167,9 +171,7 @@ function MessageList({
 }) {
   const { inputRef, setInput } = useInput();
   const [messages, steMessages] = useState(topic.messages);
-  const { setCite, onlyOne } = useContext(MessageContext);
-  const { token } = theme.useToken();
-  const screenSize = useScreenSize();
+  const { setCite } = useContext(MessageContext);
   function rBak(v: Message) {
     setInput(
       (m) =>
@@ -186,34 +188,6 @@ function MessageList({
     inputRef.current?.focus();
   }
   renderTopic[topic.id] = () => steMessages([...topic.messages]);
-  if (onlyOne)
-    return (
-      <VirtualList
-        data={messages}
-        itemKey={(item) => item.id}
-        height={screenSize.height - 170}
-      >
-        {(v) => (
-          <div
-            style={{
-              padding: onlyOne ? token.paddingContentVerticalSM : undefined,
-            }}
-          >
-            <MessageItem
-              msg={v}
-              onDel={(msg) => {
-                chat.removeMessage(msg)?.then(() => {
-                  steMessages([...topic.messages]);
-                });
-              }}
-              rBak={rBak}
-              onCite={setCite}
-              key={v.id}
-            ></MessageItem>
-          </div>
-        )}
-      </VirtualList>
-    );
   return (
     <>
       {messages.map((v) => (

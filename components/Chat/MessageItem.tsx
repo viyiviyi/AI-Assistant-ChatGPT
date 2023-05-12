@@ -18,7 +18,7 @@ import {
   Typography
 } from "antd";
 import copy from "copy-to-clipboard";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { MarkdownView } from "./MarkdownView";
 
 export const MessageItem = ({
@@ -50,6 +50,7 @@ export const MessageItem = ({
         <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
       </Checkbox>
       <span
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           setEdit(false);
         }}
@@ -57,6 +58,7 @@ export const MessageItem = ({
       ></span>
       {edit ? (
         <SaveOutlined
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             msg.text = messageText;
             chat.pushMessage(msg);
@@ -69,6 +71,7 @@ export const MessageItem = ({
       )}
       <span style={{ marginLeft: "16px" }}></span>
       <EditOutlined
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           if (!edit) setMessage(msg.text);
           setEdit(!edit);
@@ -76,6 +79,7 @@ export const MessageItem = ({
       />
       <span style={{ marginLeft: "16px" }}></span>
       <CopyOutlined
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           if (copy(msg.text.toString())) {
             message.success("已复制");
@@ -84,6 +88,7 @@ export const MessageItem = ({
       />
       <span style={{ marginLeft: "16px" }}></span>
       <RollbackOutlined
+        onMouseDown={(e) => e.preventDefault()}
         style={{ cursor: "pointer" }}
         onClick={() => {
           rBak(msg);
@@ -136,6 +141,7 @@ export const MessageItem = ({
       </div>
     );
   }
+  const MemoMarkdownView = React.memo(MarkdownView);
   return (
     <div
       style={{
@@ -203,7 +209,7 @@ export const MessageItem = ({
                   }}
                 />
               ) : (
-                <MarkdownView
+                <MemoMarkdownView
                   menu={{
                     onClick: (e) => {
                       switch (e.key) {

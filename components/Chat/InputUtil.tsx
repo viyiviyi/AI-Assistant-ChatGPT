@@ -13,11 +13,13 @@ import { MessageContext } from "./Chat";
 import { reloadTopic, scrollToBotton } from "./ChatMessage";
 
 const inputRef = React.createRef<HTMLInputElement>();
-let setInput = (s: string | ((s: string) => string)) => {};
+const objs = { setInput: (s: string | ((s: string) => string)) => {} };
 export function useInput() {
   return {
     inputRef,
-    setInput,
+    setInput: (s: string | ((s: string) => string)) => {
+      return objs.setInput(s);
+    },
   };
 }
 export function InputUtil() {
@@ -27,7 +29,7 @@ export function InputUtil() {
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
   const { token } = theme.useToken();
-  setInput = setInputText;
+  objs.setInput = setInputText;
   /**
    * 提交内容
    * @param isNewTopic 是否开启新话题
@@ -163,6 +165,7 @@ export function InputUtil() {
               color: onlyOne ? token.colorPrimary : undefined,
             }}
             ellipsis={true}
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
               setOnlyOne(!onlyOne);
             }}
@@ -172,7 +175,8 @@ export function InputUtil() {
           <span style={{ flex: 1 }}></span>
           <Button
             shape="round"
-            onClick={() => {
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={(e) => {
               setOnlyOne(false);
               setCloasAll(!closeAll);
             }}
@@ -183,12 +187,14 @@ export function InputUtil() {
           <Button
             shape="circle"
             size="large"
+            onMouseDown={(e) => e.preventDefault()}
             icon={<CommentOutlined />}
             onClick={() => onSubmit(true)}
           ></Button>
           <Button
             shape="circle"
             size="large"
+            onMouseDown={(e) => e.preventDefault()}
             icon={<MessageOutlined />}
             onClick={() => onSubmit(false)}
           ></Button>

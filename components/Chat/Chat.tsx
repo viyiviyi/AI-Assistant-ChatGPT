@@ -112,16 +112,11 @@ export const Chat = ({
             backgroundColor: token.colorFillContent,
             width: "100%",
             maxWidth: "100%",
-            marginBottom: "115px",
           }}
         >
           <ChatMessage />
         </Content>
-        <div
-          style={{ position: "absolute", left: 0, bottom: 0, width: "100%" }}
-        >
-          <InputUtil></InputUtil>
-        </div>
+       <InputUtil></InputUtil>
       </div>
     </MessageContext.Provider>
   );
