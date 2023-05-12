@@ -154,9 +154,11 @@ export class ChatManagement implements IChat {
           }));
       });
     chat.topics = topics;
-    if (chat.topics.length) {
-      chat.config.activityTopicId = chat.topics.slice(-1)[0].id;
-      await this.loadMessage(chat.topics.slice(-1)[0]);
+    for (let i = 0; i < topics.length; i++) {
+      const topic = topics[i];
+      if (topic.id === chat.config.activityTopicId) {
+        await this.loadMessage(topic);
+      }
     }
   }
   static async loadMessage(topic: Topic & { messages: Message[] }) {
