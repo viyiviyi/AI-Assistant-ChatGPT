@@ -1,4 +1,5 @@
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 import { Message, Topic } from "@/Models/DataBase";
 import {
   CaretRightOutlined,
@@ -6,6 +7,7 @@ import {
   DownloadOutlined
 } from "@ant-design/icons";
 import { Collapse, Popconfirm, theme, Typography } from "antd";
+import VirtualList from "rc-virtual-list";
 import { useContext, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
@@ -118,7 +120,7 @@ export const ChatMessage = () => {
         key={topic.id}
         style={{
           border: "none",
-          padding: "0 8px",
+          padding: token.paddingContentVerticalSM,
         }}
       >
         {(activityKey.includes(topic.id) ||
@@ -132,11 +134,7 @@ export const ChatMessage = () => {
   if (onlyOne) {
     let topic = chat.topics.find((f) => f.id == chat.config.activityTopicId);
     if (topic) {
-      return (
-        <div style={{ padding: token.paddingContentVerticalSM }}>
-          <MessageList chat={chat} topic={topic}></MessageList>
-        </div>
-      );
+      return <MessageList chat={chat} topic={topic}></MessageList>;
     }
   }
 
@@ -169,7 +167,9 @@ function MessageList({
 }) {
   const { inputRef, setInput } = useInput();
   const [messages, steMessages] = useState(topic.messages);
-  const { setCite } = useContext(MessageContext);
+  const { setCite, onlyOne } = useContext(MessageContext);
+  const { token } = theme.useToken();
+  const screenSize = useScreenSize();
   function rBak(v: Message) {
     setInput(
       (m) =>
@@ -186,6 +186,34 @@ function MessageList({
     inputRef.current?.focus();
   }
   renderTopic[topic.id] = () => steMessages([...topic.messages]);
+  if (onlyOne)
+    return (
+      <VirtualList
+        data={messages}
+        itemKey={(item) => item.id}
+        height={screenSize.height - 170}
+      >
+        {(v) => (
+          <div
+            style={{
+              padding: onlyOne ? token.paddingContentVerticalSM : undefined,
+            }}
+          >
+            <MessageItem
+              msg={v}
+              onDel={(msg) => {
+                chat.removeMessage(msg)?.then(() => {
+                  steMessages([...topic.messages]);
+                });
+              }}
+              rBak={rBak}
+              onCite={setCite}
+              key={v.id}
+            ></MessageItem>
+          </div>
+        )}
+      </VirtualList>
+    );
   return (
     <>
       {messages.map((v) => (

@@ -1,7 +1,22 @@
 import { ChatContext } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
-import { CopyOutlined, DeleteOutlined, EditOutlined, RollbackOutlined, SaveOutlined, UserOutlined } from "@ant-design/icons";
-import { Avatar, Checkbox, Input, message, Popconfirm, theme, Typography } from "antd";
+import {
+  CopyOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  RollbackOutlined,
+  SaveOutlined,
+  UserOutlined
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Checkbox,
+  Input,
+  message,
+  Popconfirm,
+  theme,
+  Typography
+} from "antd";
 import copy from "copy-to-clipboard";
 import { useContext, useState } from "react";
 import { MarkdownView } from "./MarkdownView";
