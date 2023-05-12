@@ -120,8 +120,7 @@ export const Setting = ({
           config_saveKey: true,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
-          config_disable_chat:
-            !chatMgt?.config.disableChatGPT,
+          config_disable_chat: !chatMgt?.config.disableChatGPT,
           group_name: chatMgt?.group.name,
         }}
       >
@@ -167,37 +166,37 @@ export const Setting = ({
             <Input />
           </Form.Item>
           <Form.Item label={"会话背景图片"}>
-            <Button.Group style={{ width: "100%" }}>
-              <Button block>
-                <Upload
-                  accept=".png,.jpg,.gif"
-                  {...{
-                    beforeUpload(file, FileList) {
-                      const reader = new FileReader();
-                      reader.readAsDataURL(file);
-                      reader.onloadend = (event) => {
-                        if (event.target?.result) {
-                          setGroup_background(event.target?.result.toString());
-                        }
-                      };
-                      return false;
-                    },
-                    defaultFileList: [],
-                    showUploadList: false,
-                  }}
-                >
+            <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+              <Upload
+                accept=".png,.jpg,.gif"
+                {...{
+                  beforeUpload(file, FileList) {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onloadend = (event) => {
+                      if (event.target?.result) {
+                        setGroup_background(event.target?.result.toString());
+                      }
+                    };
+                    return false;
+                  },
+                  defaultFileList: [],
+                  showUploadList: false,
+                }}
+              >
+                <Button block style={{ width: "220px" }}>
                   设置
-                </Upload>
-              </Button>
+                </Button>
+              </Upload>
               <Button
-                block
+                style={{ flex: 1 }}
                 onClick={() => {
                   setGroup_background(undefined);
                 }}
               >
                 清除
               </Button>
-            </Button.Group>
+            </div>
           </Form.Item>
           <Form.Item>
             <Button.Group style={{ width: "100%" }}>
@@ -323,36 +322,37 @@ export const Setting = ({
           </Form.Item>
           <Divider>以下配置全局生效</Divider>
           <Form.Item label={"全局背景图片"}>
-            <Button.Group style={{ width: "100%" }}>
-              <Button block>
-                <Upload
-                  accept=".png,.jpg,.gif"
-                  {...{
-                    beforeUpload(file, FileList) {
-                      const reader = new FileReader();
-                      reader.readAsDataURL(file);
-                      reader.onloadend = (event) => {
-                        if (event.target?.result) {
-                          setBackground(event.target?.result.toString());
-                        }
-                      };
-                      return false;
-                    },
-                    defaultFileList: [],
-                    showUploadList: false,
-                  }}
-                ></Upload>
-                设置
-              </Button>
+            <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+              <Upload
+                accept=".png,.jpg,.gif"
+                {...{
+                  beforeUpload(file, FileList) {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onloadend = (event) => {
+                      if (event.target?.result) {
+                        setBackground(event.target?.result.toString());
+                      }
+                    };
+                    return false;
+                  },
+                  defaultFileList: [],
+                  showUploadList: false,
+                }}
+              >
+                <Button block style={{ width: "220px" }}>
+                  设置
+                </Button>
+              </Upload>
               <Button
-                block
+                style={{ flex: "1" }}
                 onClick={() => {
                   setBackground("");
                 }}
               >
                 清除
               </Button>
-            </Button.Group>
+            </div>
           </Form.Item>
           <Form.Item
             name="setting_apitoken"
