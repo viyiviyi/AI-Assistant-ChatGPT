@@ -1,4 +1,5 @@
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
+import { scrollToBotton } from "@/core/utils";
 import { Message, Topic } from "@/Models/DataBase";
 import {
   CaretRightOutlined,
@@ -13,22 +14,11 @@ import { MessageItem } from "./MessageItem";
 
 const { Panel } = Collapse;
 
-export function scrollToBotton(id: string) {
-  setTimeout(() => {
-    if (window) {
-      document
-        .getElementById(id)
-        ?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-  }, 500);
-}
-
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic } = useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([]);
   const { onlyOne, closeAll, setCloasAll } = useContext(MessageContext);
-
   async function onClickTopicTitle(
     topic: Topic & {
       messages: Message[];
@@ -39,14 +29,15 @@ export const ChatMessage = () => {
       v = [];
       setCloasAll(false);
     }
-    if (v.includes(topic.id) && chat.config.activityTopicId == topic.id) {
+    if (v.includes(topic.id)) {
       v = v.filter((f) => f !== topic.id);
       topic = chat.topics.slice(-1)[0];
-    } else if (!v.includes(topic.id)) {
+    } else {
       v.push(topic.id);
+      if (topic.messages.length == 0) await ChatManagement.loadMessage(topic);
+      reloadTopic(topic.id);
     }
     chat.config.activityTopicId = topic.id;
-    if (topic.messages.length == 0) await ChatManagement.loadMessage(topic);
     setActivityKey(v);
     setActivityTopic(topic);
     scrollToBotton(topic.messages.slice(-1)[0]?.id);
@@ -120,11 +111,10 @@ export const ChatMessage = () => {
         key={topic.id}
         style={{
           border: "none",
-          padding: token.paddingContentVerticalSM,
+          padding: "0 8px",
         }}
       >
-        {(activityKey.includes(topic.id) ||
-          topic.id == chat.config.activityTopicId) && (
+        {activityKey.includes(topic.id) && (
           <MemoMessageList chat={chat} topic={topic}></MemoMessageList>
         )}
       </Panel>
@@ -146,7 +136,7 @@ export const ChatMessage = () => {
     <Collapse
       ghost
       bordered={false}
-      activeKey={closeAll ? [] : [...activityKey, chat.config.activityTopicId]}
+      activeKey={closeAll ? [] : activityKey}
       defaultActiveKey={chat.config.activityTopicId}
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />

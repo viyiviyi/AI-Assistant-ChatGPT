@@ -1,5 +1,5 @@
 import { theme } from "antd";
-import { ReactElement, useEffect } from "react";
+import { ReactElement } from "react";
 
 export const Modal = ({
   isShow = false,
@@ -31,6 +31,7 @@ export const Modal = ({
         justifyContent: "center",
         backgroundColor: token.colorBgMask,
         alignItems: "center",
+        zIndex: 1,
       }}
     >
       <div

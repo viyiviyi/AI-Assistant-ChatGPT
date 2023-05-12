@@ -1,16 +1,11 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
-import { ChatContext } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
-import {
-  SettingOutlined,
-  UnorderedListOutlined,
-  UserAddOutlined
-} from "@ant-design/icons";
-import { Avatar, Layout, message, theme, Typography } from "antd";
-import React, { useContext, useState } from "react";
+import { Layout, message, theme } from "antd";
+import React, { useState } from "react";
+import { ChatHeader } from "./ChatHeader";
 import { InputUtil } from "./InputUtil";
 
-const { Content } = Layout;
+const { Content, Footer } = Layout;
 
 export const MessageContext = React.createContext({
   onlyOne: false,
@@ -21,17 +16,8 @@ export const MessageContext = React.createContext({
   setCite: (msg: Message) => {},
 });
 
-export const Chat = ({
-  togglelistIsShow,
-  toggleSettingShow,
-  toggleRoleConfig,
-}: {
-  togglelistIsShow: () => void;
-  toggleSettingShow: () => void;
-  toggleRoleConfig: () => void;
-}) => {
+export const Chat = () => {
   const { token } = theme.useToken();
-  const { chat } = useContext(ChatContext);
   const [cite, setCite] = useState<Message>();
   const [_, contextHolder] = message.useMessage();
   const [onlyOne, setOnlyOne] = useState(false);
@@ -61,49 +47,7 @@ export const Chat = ({
           margin: "0 auto",
         }}
       >
-        <div
-          style={{
-            flexWrap: "nowrap",
-            gap: "16px",
-            width: "100%",
-            justifyContent: "flex-end",
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "3px",
-            padding: "10px",
-            position: "relative",
-            borderRadius:
-              "0" +
-              " 0 " +
-              token.borderRadius +
-              "px " +
-              token.borderRadius +
-              "px",
-            backgroundColor: token.colorFillContent,
-          }}
-        >
-          <Avatar
-            onClick={toggleRoleConfig}
-            size={32}
-            style={{ minWidth: "32px", minHeight: "32px" }}
-            src={chat.group.avatar || chat?.virtualRole.avatar || undefined}
-          ></Avatar>
-          <Typography.Text ellipsis onClick={toggleSettingShow}>
-            {chat?.group.name}
-          </Typography.Text>
-          <span style={{ flex: 1 }}></span>
-          <UserAddOutlined onClick={() => toggleRoleConfig()} />
-          <SettingOutlined
-            onClick={() => toggleSettingShow()}
-            style={{ marginLeft: "10px" }}
-          />
-          <UnorderedListOutlined
-            onClick={() => {
-              togglelistIsShow();
-            }}
-            style={{ marginLeft: "10px", marginRight: "10px" }}
-          />
-        </div>
+        <ChatHeader></ChatHeader>
         <Content
           id="content"
           style={{
@@ -112,11 +56,24 @@ export const Chat = ({
             backgroundColor: token.colorFillContent,
             width: "100%",
             maxWidth: "100%",
+            // marginBottom: "47px",
           }}
         >
           <ChatMessage />
         </Content>
-       <InputUtil></InputUtil>
+        <Footer
+          id="footer"
+          style={{
+            padding: 0,
+            backgroundColor: "#0000",
+            // position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+          }}
+        >
+          <InputUtil></InputUtil>
+        </Footer>
       </div>
     </MessageContext.Provider>
   );

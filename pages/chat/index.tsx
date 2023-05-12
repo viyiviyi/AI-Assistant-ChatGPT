@@ -1,30 +1,23 @@
 import { Chat } from "@/components/Chat/Chat";
 import { reloadTopic } from "@/components/Chat/ChatMessage";
 import { ChatList } from "@/components/ChatList";
-import { Modal } from "@/components/Modal";
-import { Setting } from "@/components/Setting";
-import { VirtualRoleConfig } from "@/components/VirtualRoleConfig";
 import { BgConfig, BgImage } from "@/core/BgImage";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { Topic } from "@/Models/DataBase";
-import { Layout, theme } from "antd";
+import { Drawer, Layout, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
-export default function Page(props: any) {
+export default function Page() {
   const router = useRouter();
   const screenSize = useScreenSize();
   const { id: groupId } = router.query;
-
   const { token } = theme.useToken();
-
   const { bgConfig } = useContext(ChatContext);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
-  const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
-  const [roleConfigShow, setRoleConfigShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
   const [activityTopic, setActivityTopic] = useState({
     id: "",
@@ -50,7 +43,6 @@ export default function Page(props: any) {
       if (chatMgt.group.id == groupId) return;
       await ChatManagement.loadTopics(selectChat).then(() => {
         setChatMgt(new ChatManagement(selectChat));
-        setSettingShow(false);
         if (screenSize.width <= 1420) {
           setlistIsShow(false);
         }
@@ -68,6 +60,9 @@ export default function Page(props: any) {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
+
+  const MemoChat = React.memo(Chat);
+  const MemoChatList = React.memo(ChatList);
 
   return (
     <ChatContext.Provider
@@ -113,88 +108,32 @@ export default function Page(props: any) {
         <Head>
           <title>ChatGPT聊天工具</title>
         </Head>
-        {chatMgt ? (
-          <Chat
-            toggleSettingShow={() => {
-              setSettingShow((v) => !v);
-            }}
-            toggleRoleConfig={() => {
-              setRoleConfigShow((v) => !v);
-            }}
-            togglelistIsShow={() => {
-              setlistIsShow((v) => !v);
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flex: 1,
-              flexDirection: "column",
-              height: "100%",
-              maxHeight: "100%",
-            }}
-          ></div>
-        )}
-
-        {screenSize.width > 1420 && listIsShow ? (
-          <ChatList
+        <MemoChat />
+        <Drawer
+          title="Basic Drawer"
+          placement="right"
+          closable={false}
+          onClose={() => {
+            setlistIsShow(false);
+          }}
+          open={listIsShow}
+          getContainer={false}
+        >
+          <MemoChatList
             onCacle={() => {
               setlistIsShow(false);
             }}
-          ></ChatList>
+          ></MemoChatList>
+        </Drawer>
+        {screenSize.width > 1420 && listIsShow ? (
+          <MemoChatList
+            onCacle={() => {
+              setlistIsShow(false);
+            }}
+          ></MemoChatList>
         ) : (
           <></>
         )}
-        <Modal
-          isShow={roleConfigShow}
-          maxHight={"calc(70vh + 84px)"}
-          onCancel={() => {
-            setRoleConfigShow(false);
-          }}
-        >
-          <VirtualRoleConfig
-            onCancel={() => {
-              setRoleConfigShow(false);
-            }}
-            onSaved={() => {
-              // setChatMgt(new ChatManagement(chatMgt!));
-              setRoleConfigShow(false);
-            }}
-            chatMgt={chatMgt}
-          ></VirtualRoleConfig>
-        </Modal>
-        <Modal
-          isShow={settingIsShow}
-          maxHight={"calc(70vh + 84px)"}
-          onCancel={() => {
-            setSettingShow(false);
-          }}
-        >
-          <Setting
-            onCancel={() => {
-              setSettingShow(false);
-            }}
-            onSaved={() => {
-              // setChatMgt(new ChatManagement(chatMgt!));
-              setSettingShow(false);
-            }}
-            chatMgt={chatMgt}
-          ></Setting>
-        </Modal>
-        <Modal
-          isShow={listIsShow && screenSize.width <= 1420}
-          maxHight={"calc(70vh + 84px)"}
-          onCancel={() => {
-            setlistIsShow(false);
-          }}
-        >
-          <ChatList
-            onCacle={() => {
-              setlistIsShow(false);
-            }}
-          ></ChatList>
-        </Modal>
       </Layout>
     </ChatContext.Provider>
   );

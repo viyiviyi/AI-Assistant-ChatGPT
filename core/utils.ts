@@ -50,3 +50,13 @@ export function downloadJson(jsonData: string, filename: string) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+export function scrollToBotton(id: string) {
+  setTimeout(() => {
+    if (window) {
+      document
+        .getElementById(id)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, 500);
+}

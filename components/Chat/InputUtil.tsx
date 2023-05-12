@@ -1,6 +1,7 @@
 import { ApiClient } from "@/core/ApiClient";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
+import { scrollToBotton } from "@/core/utils";
 import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
@@ -10,7 +11,7 @@ import {
 import { Button, Input, message, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
 import { MessageContext } from "./Chat";
-import { reloadTopic, scrollToBotton } from "./ChatMessage";
+import { reloadTopic } from "./ChatMessage";
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };
@@ -187,16 +188,22 @@ export function InputUtil() {
           <Button
             shape="circle"
             size="large"
-            onMouseDown={(e) => e.preventDefault()}
+            // onMouseDown={(e) => e.preventDefault()}
             icon={<CommentOutlined />}
-            onClick={() => onSubmit(true)}
+            onClick={() => {
+              onSubmit(true);
+              inputRef.current?.focus();
+            }}
           ></Button>
           <Button
             shape="circle"
             size="large"
-            onMouseDown={(e) => e.preventDefault()}
+            // onMouseDown={(e) => e.preventDefault()}
             icon={<MessageOutlined />}
-            onClick={() => onSubmit(false)}
+            onClick={() => {
+              onSubmit(false);
+              inputRef.current?.focus();
+            }}
           ></Button>
         </div>
         <div style={{ width: "100%" }}>
@@ -205,7 +212,7 @@ export function InputUtil() {
             autoSize={{ maxRows: 10 }}
             allowClear
             ref={inputRef}
-            autoFocus={true}
+            autoFocus={false}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyUp={(e) =>
