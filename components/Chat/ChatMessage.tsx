@@ -263,7 +263,7 @@ function MessageList({
               scrollToBotton(messages.slice(-1)[0].id);
             }}
           >
-            顶部
+            底部
           </Button>
         </Button.Group>
       ) : (
