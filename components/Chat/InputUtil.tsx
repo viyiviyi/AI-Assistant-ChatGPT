@@ -80,6 +80,7 @@ export function InputUtil() {
       timestamp: Date.now(),
       topicId: topicId,
     });
+    if (result.timestamp == msg.timestamp) result.timestamp += 1;
     reloadTopic(result.topicId);
     if (msg.topicId == chat.config.activityTopicId) scrollToBotton(result.id);
     try {
