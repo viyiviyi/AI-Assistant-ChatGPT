@@ -56,7 +56,7 @@ export function scrollToBotton(id: string) {
     if (window) {
       document
         .getElementById(id)
-        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        ?.scrollIntoView({ block: "nearest" });
     }
   }, 500);
 }

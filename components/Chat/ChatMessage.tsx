@@ -6,7 +6,7 @@ import {
   DeleteOutlined,
   DownloadOutlined
 } from "@ant-design/icons";
-import { Collapse, Popconfirm, theme, Typography } from "antd";
+import { Button, Collapse, Popconfirm, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
@@ -14,6 +14,7 @@ import { MessageItem } from "./MessageItem";
 
 const { Panel } = Collapse;
 
+const MemoMessageList = React.memo(MessageList);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic } = useContext(ChatContext);
@@ -30,8 +31,13 @@ export const ChatMessage = () => {
       setCloasAll(false);
     }
     if (v.includes(topic.id)) {
-      v = v.filter((f) => f !== topic.id);
-      topic = chat.topics.slice(-1)[0];
+      if (topic.id !== chat.config.activityTopicId) {
+        v = v.filter((f) => f !== topic.id);
+        topic = chat.topics.slice(-1)[0];
+      } else {
+        scrollToBotton(topic.messages.slice(-1)[0]?.id);
+        return;
+      }
     } else {
       v.push(topic.id);
       if (topic.messages.length == 0) await ChatManagement.loadMessage(topic);
@@ -40,13 +46,11 @@ export const ChatMessage = () => {
     chat.config.activityTopicId = topic.id;
     setActivityKey(v);
     setActivityTopic(topic);
-    scrollToBotton(topic.messages.slice(-1)[0]?.id);
   }
   Object.keys(reloadTopic).forEach((v) => {
     delete renderTopic[v];
   });
 
-  const MemoMessageList = React.memo(MessageList);
   function rendTopic(topic: Topic & { messages: Message[] }) {
     return (
       <Panel
@@ -161,7 +165,12 @@ function MessageList({
 }) {
   const { inputRef, setInput } = useInput();
   const [messages, steMessages] = useState(topic.messages);
-  const { setCite } = useContext(MessageContext);
+  const [total, setTotal] = useState(topic.messages.length);
+  const [range, setRange] = useState([
+    Math.max(0, topic.messages.length - 20),
+    topic.messages.length,
+  ]);
+  const { setCite, onlyOne } = useContext(MessageContext);
   function rBak(v: Message) {
     setInput(
       (m) =>
@@ -177,10 +186,44 @@ function MessageList({
     );
     inputRef.current?.focus();
   }
-  renderTopic[topic.id] = () => steMessages([...topic.messages]);
+  renderTopic[topic.id] = () => {
+    steMessages([...topic.messages]);
+    setTotal(topic.messages.length);
+    setRange([Math.max(0, topic.messages.length - 20), topic.messages.length]);
+    scrollToBotton(messages.slice(-1)[0].id);
+  };
+
   return (
     <>
-      {messages.map((v) => (
+      {range[0] > 0 ? (
+        <Button.Group style={{ width: "100%" }}>
+          <Button
+            block
+            type="text"
+            onClick={() => {
+              setRange([
+                Math.max(0, range[0] - 10),
+                Math.min(total, Math.max(range[1] - 10, 20)),
+              ]);
+              scrollToBotton(messages.slice(range[0], range[1])[0].id);
+            }}
+          >
+            上一页
+          </Button>
+          <Button
+            block
+            type="text"
+            onClick={() => {
+              setRange([0, Math.min(total, 20)]);
+            }}
+          >
+            顶部
+          </Button>
+        </Button.Group>
+      ) : (
+        <></>
+      )}
+      {messages.slice(range[0], range[1]).map((v) => (
         <MessageItem
           msg={v}
           onDel={(msg) => {
@@ -193,6 +236,39 @@ function MessageList({
           key={v.id}
         ></MessageItem>
       ))}
+
+      {range[1] < total ? (
+        <Button.Group style={{ width: "100%" }}>
+          <Button
+            block
+            type="text"
+            onClick={() => {
+              setRange([
+                Math.min(Math.max(0, total - 20), range[0] + 10),
+                Math.min(total, range[1] + 10),
+              ]);
+              scrollToBotton(messages.slice(range[1], range[1] + 1)[0].id);
+            }}
+          >
+            下一页
+          </Button>
+          <Button
+            block
+            type="text"
+            onClick={() => {
+              setRange([
+                Math.max(0, topic.messages.length - 20),
+                topic.messages.length,
+              ]);
+              scrollToBotton(messages.slice(-1)[0].id);
+            }}
+          >
+            顶部
+          </Button>
+        </Button.Group>
+      ) : (
+        <></>
+      )}
     </>
   );
 }

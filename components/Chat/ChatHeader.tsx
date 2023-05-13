@@ -10,9 +10,10 @@ import { ChatList } from "../ChatList";
 import { Modal } from "../Modal";
 import { Setting } from "../Setting";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
+import { reloadTopic } from "./ChatMessage";
 
 export const ChatHeader = () => {
-  const { chat } = useContext(ChatContext);
+  const { chat, activityTopic } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
@@ -28,7 +29,7 @@ export const ChatHeader = () => {
         alignItems: "center",
         marginBottom: "3px",
         padding: "10px",
-        height:'52px',
+        height: "52px",
         position: "relative",
         borderRadius:
           "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",
@@ -71,6 +72,7 @@ export const ChatHeader = () => {
           }}
           onSaved={() => {
             setRoleConfigShow(false);
+            reloadTopic(activityTopic.id);
           }}
           chatMgt={chat}
         ></VirtualRoleConfig>

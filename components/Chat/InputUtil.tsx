@@ -188,21 +188,19 @@ export function InputUtil() {
           <Button
             shape="circle"
             size="large"
-            // onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e) => e.preventDefault()}
             icon={<CommentOutlined />}
             onClick={() => {
               onSubmit(true);
-              inputRef.current?.focus();
             }}
           ></Button>
           <Button
             shape="circle"
             size="large"
-            // onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e) => e.preventDefault()}
             icon={<MessageOutlined />}
             onClick={() => {
               onSubmit(false);
-              inputRef.current?.focus();
             }}
           ></Button>
         </div>

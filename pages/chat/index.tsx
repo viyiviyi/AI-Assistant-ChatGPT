@@ -1,7 +1,7 @@
 import { Chat } from "@/components/Chat/Chat";
 import { reloadTopic } from "@/components/Chat/ChatMessage";
 import { ChatList } from "@/components/ChatList";
-import { BgConfig, BgImage } from "@/core/BgImage";
+import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { Topic } from "@/Models/DataBase";
@@ -9,6 +9,9 @@ import { Drawer, Layout, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
+
+const MemoChat = React.memo(Chat);
+const MemoChatList = React.memo(ChatList);
 
 export default function Page() {
   const router = useRouter();
@@ -32,7 +35,7 @@ export default function Page() {
       let selectChat = chats[0];
       if (groupId)
         selectChat = chats.find((f) => f.group.id == groupId) || selectChat;
-      BgImage.getInstance()
+      BgImageStore.getInstance()
         .getBgImage()
         .then((res) => {
           setBgImg((v) => {
@@ -61,9 +64,6 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
 
-  const MemoChat = React.memo(Chat);
-  const MemoChatList = React.memo(ChatList);
-
   return (
     <ChatContext.Provider
       value={{
@@ -77,8 +77,9 @@ export default function Page() {
         bgConfig: bgImg,
         setBgConfig(image) {
           setBgImg((v) => {
+            if (v.backgroundImage == `url(${image})`) return v;
             v.backgroundImage = `url(${image})`;
-            return v;
+            return { ...v };
           });
         },
       }}

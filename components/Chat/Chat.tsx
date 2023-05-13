@@ -6,6 +6,7 @@ import { ChatHeader } from "./ChatHeader";
 import { InputUtil } from "./InputUtil";
 
 const { Content, Footer } = Layout;
+const MemoChatMessage = React.memo(ChatMessage);
 
 export const MessageContext = React.createContext({
   onlyOne: false,
@@ -56,10 +57,9 @@ export const Chat = () => {
             backgroundColor: token.colorFillContent,
             width: "100%",
             maxWidth: "100%",
-            // marginBottom: "47px",
           }}
         >
-          <ChatMessage />
+          <MemoChatMessage />
         </Content>
         <Footer
           id="footer"

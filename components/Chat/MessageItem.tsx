@@ -21,6 +21,7 @@ import copy from "copy-to-clipboard";
 import React, { useContext, useState } from "react";
 import { MarkdownView } from "./MarkdownView";
 
+const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
   msg,
   rBak,
@@ -141,7 +142,6 @@ export const MessageItem = ({
       </div>
     );
   }
-  const MemoMarkdownView = React.memo(MarkdownView);
   return (
     <div
       style={{

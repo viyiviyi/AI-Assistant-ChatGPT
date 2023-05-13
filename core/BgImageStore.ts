@@ -3,7 +3,7 @@ type KeyValue = {
   id: string;
   data: any;
 };
-export class BgImage {
+export class BgImageStore {
   setBgImage = (bg: string) => {
     getInstance().insert<KeyValue>({
       tableName: "Background",
@@ -20,9 +20,9 @@ export class BgImage {
     }
     return undefined;
   };
-  private static instance: BgImage;
+  private static instance: BgImageStore;
   static getInstance() {
-    if (!this.instance) this.instance = new BgImage();
+    if (!this.instance) this.instance = new BgImageStore();
     return this.instance;
   }
 }
@@ -34,3 +34,9 @@ export interface BgConfig {
   backgroundSize?: "cover" | "auto";
   opacity?: number;
 }
+export const bgConfig: BgConfig = {
+  backgroundPosition: "center",
+  backgroundRepeat: "no-repeat",
+  backgroundSize: "cover",
+  opacity: 0.5,
+};

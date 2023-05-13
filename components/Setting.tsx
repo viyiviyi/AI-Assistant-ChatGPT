@@ -1,5 +1,5 @@
 import { ApiClient } from "@/core/ApiClient";
-import { BgImage } from "@/core/BgImage";
+import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
@@ -63,7 +63,7 @@ export const Setting = ({
     group_name: string;
   }>();
   useEffect(() => {
-    BgImage.getInstance().getBgImage().then(setBackground);
+    BgImageStore.getInstance().getBgImage().then(setBackground);
     // ApiClient.getModelList(
     //   form.getFieldValue("setting_apitoken") ||
     //     KeyValueData.instance().getApiKey(),
@@ -93,7 +93,7 @@ export const Setting = ({
     chatMgt.group.avatar = group_Avatar;
     chatMgt.group.background = group_background;
     chatMgt.saveGroup();
-    BgImage.getInstance().setBgImage(background || "");
+    BgImageStore.getInstance().setBgImage(background || "");
     setBgConfig(group_background || background);
 
     KeyValueData.instance().setApiKey(

@@ -11,7 +11,7 @@ import {
 } from "@/Models/DataBase";
 import React from "react";
 import { getInstance } from "ts-indexdb";
-import { BgConfig } from "./BgImage";
+import { BgConfig } from "./BgImageStore";
 import { getUuid } from "./utils";
 
 const defaultChat: IChat = {
@@ -722,6 +722,7 @@ export class ChatManagement implements IChat {
   }
 }
 export const noneChat = new ChatManagement(defaultChat);
+const obj: { [key: string]: any } = {};
 export const ChatContext = React.createContext<{
   chat: ChatManagement;
   activityTopic: Topic;
@@ -730,8 +731,10 @@ export const ChatContext = React.createContext<{
   setBgConfig: (image?: string) => void;
 }>({
   chat: noneChat,
-  activityTopic: { id: "", name: "", groupId: "", createdAt: 0 },
-  setActivityTopic: (topic: Topic) => {},
+  activityTopic: obj.topic,
+  setActivityTopic: (topic: Topic) => {
+    obj.topic = topic;
+  },
   bgConfig: {
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
