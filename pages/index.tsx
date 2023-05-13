@@ -9,34 +9,19 @@ export default function Home() {
   const router = useRouter();
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
-  const [showGroups, setShowGroup] = useState(false);
+  const [showGroups, setShowGroup] = useState(true);
   const [groups, setGroups] = useState<IChat[]>(ChatManagement.getGroups());
   useEffect(() => {
     ChatManagement.load().then(() => {
       const groups = ChatManagement.getGroups();
       setGroups([...groups]);
-      if (screenSize.width * 1.5 <= screenSize.height) {
-        setShowGroup(true);
-      } else {
+      if (screenSize.width * 1.5 > screenSize.height) {
         router.replace("/chat?id=" + (groups.length ? groups[0].group.id : ""));
       }
     });
   }, [router, screenSize]);
 
-  return screenSize.height > screenSize.width * 1.5 ? (
-    <div style={{ padding: "1em 12px", overflow: "auto", maxHeight: "100%" }}>
-      {showGroups && (
-        <Groups
-          groups={groups}
-          onClick={(chat: IChat) => {
-            ChatManagement.toFirst(chat.group).then(() => {
-              router.push("/chat?id=" + chat.group.id);
-            });
-          }}
-        ></Groups>
-      )}
-    </div>
-  ) : (
+  return (
     <Layout
       style={{
         display: "flex",
@@ -51,7 +36,26 @@ export default function Home() {
         backgroundColor: token.colorBgContainer,
       }}
     >
-      loading...
+      <div
+        style={{
+          padding: "1em 12px",
+          overflow: "auto",
+          maxHeight: "100%",
+          width: "min(460px , 100%)",
+          margin: "0 auto",
+        }}
+      >
+        {showGroups && (
+          <Groups
+            groups={groups}
+            onClick={(chat: IChat) => {
+              ChatManagement.toFirst(chat.group).then(() => {
+                router.push("/chat?id=" + chat.group.id);
+              });
+            }}
+          ></Groups>
+        )}
+      </div>
     </Layout>
   );
 }
