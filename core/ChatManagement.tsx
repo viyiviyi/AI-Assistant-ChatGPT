@@ -563,7 +563,7 @@ export class ChatManagement implements IChat {
       });
     }
     if (this.topics.length && this.config.activityTopicId == topic.id)
-      this.config.activityTopicId = this.topics.slice(-1)[0].id;
+      this.config.activityTopicId = this.topics.slice(-1)[0]?.id;
     else this.config.activityTopicId = "";
   }
   static async saveSort() {

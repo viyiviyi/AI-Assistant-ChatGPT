@@ -190,7 +190,7 @@ function MessageList({
     steMessages([...topic.messages]);
     setTotal(topic.messages.length);
     setRange([Math.max(0, topic.messages.length - 20), topic.messages.length]);
-    scrollToBotton(messages.slice(-1)[0].id);
+    scrollToBotton(messages.slice(-1)[0]?.id);
   };
 
   return (
@@ -205,7 +205,7 @@ function MessageList({
                 Math.max(0, range[0] - 10),
                 Math.min(total, Math.max(range[1] - 10, 20)),
               ]);
-              scrollToBotton(messages.slice(range[0], range[1])[0].id);
+              scrollToBotton(messages.slice(range[0], range[1])[0]?.id);
             }}
           >
             上一页
@@ -247,7 +247,7 @@ function MessageList({
                 Math.min(Math.max(0, total - 20), range[0] + 10),
                 Math.min(total, range[1] + 10),
               ]);
-              scrollToBotton(messages.slice(range[1], range[1] + 1)[0].id);
+              scrollToBotton(messages.slice(range[1], range[1] + 1)[0]?.id);
             }}
           >
             下一页
@@ -260,7 +260,7 @@ function MessageList({
                 Math.max(0, topic.messages.length - 20),
                 topic.messages.length,
               ]);
-              scrollToBotton(messages.slice(-1)[0].id);
+              scrollToBotton(messages.slice(-1)[0]?.id);
             }}
           >
             底部

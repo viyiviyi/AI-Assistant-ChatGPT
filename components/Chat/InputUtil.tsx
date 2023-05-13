@@ -42,6 +42,7 @@ export function InputUtil() {
     const isSys = text.startsWith("/::") || text.startsWith("::");
     const skipRequest = text.startsWith("\\");
     text = ChatManagement.parseText(text);
+    console.log(chat)
     if (!chat.config.activityTopicId) isNewTopic = true;
     if (isNewTopic) {
       await chat.newTopic(text).then((topic) => {
