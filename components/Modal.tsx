@@ -31,7 +31,7 @@ export const Modal = ({
         justifyContent: "center",
         backgroundColor: token.colorBgMask,
         alignItems: "center",
-        zIndex: 1,
+        zIndex: 10,
       }}
     >
       <div
