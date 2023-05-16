@@ -159,8 +159,8 @@ export const MessageItem = ({
       >
         <Avatar
           src={msg.virtualRoleId ? chat.virtualRole.avatar : chat.user.avatar}
-          size={42}
-          style={{ minWidth: "42px", minHeight: "42px" }}
+          size={54}
+          // style={{ minWidth: "42px", minHeight: "42px" }}
           icon={<UserOutlined />}
         />
         <div
