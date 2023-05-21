@@ -10,8 +10,10 @@ export function useScreenSize() {
     if (retrieved.current) return;
     retrieved.current = true;
     setObj({ width: window.innerWidth, height: window.innerHeight });
+    // window.addEventListener("resize", () => {
+    //   setObj({ width: window.innerWidth, height: window.innerHeight });
+    // });
   }, []);
-
   return obj;
 }
 export function useDark() {

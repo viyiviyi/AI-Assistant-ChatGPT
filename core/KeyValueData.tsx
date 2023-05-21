@@ -19,6 +19,30 @@ export class KeyValueData {
     this._apiKey = val;
     this.provider.setItem(this.dataKeyPrefix + "ApiKey", save ? val : "");
   }
+  private _slackUserToken = "";
+  getSlackUserToken(): string {
+    if (this._slackUserToken) return this._slackUserToken;
+    return this.provider.getItem(this.dataKeyPrefix + "SlackUserToken") || "";
+  }
+  setSlackUserToken(val: string, save: boolean = true) {
+    this._slackUserToken = val;
+    this.provider.setItem(
+      this.dataKeyPrefix + "SlackUserToken",
+      save ? val : ""
+    );
+  }
+  private _slackClaudeId = "";
+  getSlackClaudeId(): string {
+    if (this._slackClaudeId) return this._slackClaudeId;
+    return this.provider.getItem(this.dataKeyPrefix + "SlackClaudeId") || "";
+  }
+  setSlackClaudeId(val: string, save: boolean = true) {
+    this._slackClaudeId = val;
+    this.provider.setItem(
+      this.dataKeyPrefix + "SlackClaudeId",
+      save ? val : ""
+    );
+  }
   static instance(): KeyValueData {
     return KeyValueData._instance
       ? KeyValueData._instance

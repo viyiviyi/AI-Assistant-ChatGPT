@@ -1,6 +1,7 @@
 import { ApiClient } from "@/core/ApiClient";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
+import { send_message_to_channel } from "@/core/Slack";
 import { scrollToBotton } from "@/core/utils";
 import style from "@/styles/index.module.css";
 import {
@@ -23,6 +24,7 @@ export function useInput() {
     },
   };
 }
+const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
@@ -42,75 +44,155 @@ export function InputUtil() {
     const isSys = text.startsWith("/::") || text.startsWith("::");
     const skipRequest = text.startsWith("\\");
     text = ChatManagement.parseText(text);
-    console.log(chat)
+    let topic = chat.getActivityTopic();
     if (!chat.config.activityTopicId) isNewTopic = true;
+    if (!chat.topics.find((t) => t.id == chat.config.activityTopicId))
+      isNewTopic = true;
     if (isNewTopic) {
-      await chat.newTopic(text).then((topic) => {
-        setActivityTopic(topic);
+      await chat.newTopic(text).then((_topic) => {
+        topic = _topic;
+        setActivityTopic(_topic);
       });
     }
-    let topicId = chat.config.activityTopicId;
-    const msg = await chat.pushMessage({
-      id: "",
-      groupId: chat.group.id,
-      senderId: isBot ? undefined : chat.user.id,
-      virtualRoleId: isBot ? chat.virtualRole.id : undefined,
-      ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
-      text: text,
-      timestamp: Date.now(),
-      topicId: topicId,
-    });
-    topicId = msg.topicId;
-    setInputText("");
-    if (topicId == chat.config.activityTopicId) scrollToBotton(msg.id);
-    reloadTopic(msg.topicId);
-    if (isBot || skipRequest || chat.config.disableChatGPT) return;
-    setLoading((v) => ++v);
-    const messages = chat.getAskContext();
-    if (messages.length == 0) {
-      setLoading((v) => --v);
-      reloadTopic(topicId);
-      return;
-    }
-    let result = await chat.pushMessage({
-      id: "",
-      groupId: chat.group.id,
-      virtualRoleId: chat.virtualRole.id,
-      ctxRole: "assistant",
-      text: "loading...",
-      timestamp: Date.now(),
-      topicId: topicId,
-    });
-    if (result.timestamp == msg.timestamp) result.timestamp += 1;
-    reloadTopic(result.topicId);
-    if (msg.topicId == chat.config.activityTopicId) scrollToBotton(result.id);
+    let topicId = topic.id;
     try {
-      if (KeyValueData.instance().getApiKey()) {
-        const res = await ApiClient.chatGpt({
-          messages,
-          model: chat.gptConfig.model,
-          max_tokens: chat.gptConfig.max_tokens,
-          top_p: chat.gptConfig.top_p,
-          temperature: chat.gptConfig.temperature,
-          n: chat.gptConfig.n,
-          user: chat.getNameByRole(result.ctxRole),
-          apiKey: KeyValueData.instance().getApiKey(),
-          baseUrl: chat.config.baseUrl || undefined,
-        });
-        result.text = res;
-        await chat.pushMessage(result);
-      } else {
-        message.error("缺少apikey，请在设置中配置后使用");
+      if (loadingTopic[topicId]) return;
+      loadingTopic[topicId] = true;
+      // Slack api时启用助理只有创建topic时才生效
+      if (chat.config.botType === "Slack") {
+        if (!chat.config.slackChannelId) {
+          message.error("缺少频道ID");
+          return;
+        }
       }
-    } catch (error: any) {
-      result.text = String(error);
-      await chat.pushMessage(result);
-    }
-    setTimeout(() => {
-      setLoading((v) => --v);
+      if (
+        isNewTopic &&
+        chat.config.botType === "Slack" &&
+        chat.config.enableVirtualRole
+      ) {
+        await chat.pushMessage({
+          id: "",
+          groupId: chat.group.id,
+          senderId: chat.user.id,
+          virtualRoleId: undefined,
+          ctxRole: "user",
+          text: ChatManagement.parseText(chat.virtualRole.bio),
+          timestamp: Date.now(),
+          topicId: topicId,
+        });
+        const sendBio = await chat.pushMessage({
+          id: "",
+          groupId: chat.group.id,
+          virtualRoleId: chat.virtualRole.id,
+          ctxRole: "assistant",
+          text: "loading...",
+          timestamp: Date.now(),
+          topicId: topicId,
+        });
+        reloadTopic(topicId);
+        await send_message_to_channel(
+          chat.config.slackChannelId!,
+          ChatManagement.parseText(chat.virtualRole.bio),
+          (res) => {
+            if (!topic.slack_thread_ts && res.thread_ts) {
+              topic.slack_thread_ts = res.thread_ts;
+              chat.saveTopic(topic.id, topic.name, res.thread_ts);
+            }
+            sendBio.text = res.text;
+            chat.pushMessage(sendBio).then(() => {
+              reloadTopic(topicId);
+            });
+          },
+          topic.slack_thread_ts
+        );
+        return;
+      }
+      if (chat.config.botType === "Slack") {
+        if (chat.config.enableVirtualRole && !topic.slack_thread_ts)
+          return message.error("数据错误，请新建话题后使用");
+      }
+      const msg = await chat.pushMessage({
+        id: "",
+        groupId: chat.group.id,
+        senderId: isBot ? undefined : chat.user.id,
+        virtualRoleId: isBot ? chat.virtualRole.id : undefined,
+        ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
+        text: text,
+        timestamp: Date.now(),
+        topicId: topicId,
+      });
+      setInputText("");
+      if (topicId == chat.config.activityTopicId) scrollToBotton(msg.id);
+      reloadTopic(msg.topicId);
+      if (isBot || skipRequest) return;
+      setLoading((v) => ++v);
+      const messages = chat.getAskContext();
+      if (messages.length == 0) {
+        setLoading((v) => --v);
+        reloadTopic(topicId);
+        return;
+      }
+      let result = await chat.pushMessage({
+        id: "",
+        groupId: chat.group.id,
+        virtualRoleId: chat.virtualRole.id,
+        ctxRole: "assistant",
+        text: "loading...",
+        timestamp: Date.now(),
+        topicId: topicId,
+      });
+      if (result.timestamp == msg.timestamp) result.timestamp += 1;
       reloadTopic(result.topicId);
       if (msg.topicId == chat.config.activityTopicId) scrollToBotton(result.id);
-    }, 500);
+      if (chat.config.botType === "Slack") {
+        await send_message_to_channel(
+          chat.config.slackChannelId || "",
+          msg.text,
+          (res) => {
+            if (!topic.slack_thread_ts && res.thread_ts) {
+              topic.slack_thread_ts = res.thread_ts;
+              chat.saveTopic(topic.id, topic.name, res.thread_ts);
+            }
+            result.text = res.text;
+            chat.pushMessage(result).then(() => {
+              reloadTopic(topicId);
+            });
+          },
+          topic.slack_thread_ts
+        );
+        return;
+      }
+      try {
+        if (KeyValueData.instance().getApiKey()) {
+          const res = await ApiClient.chatGpt({
+            messages,
+            model: chat.gptConfig.model,
+            max_tokens: chat.gptConfig.max_tokens,
+            top_p: chat.gptConfig.top_p,
+            temperature: chat.gptConfig.temperature,
+            n: chat.gptConfig.n,
+            user: chat.getNameByRole(result.ctxRole),
+            apiKey: KeyValueData.instance().getApiKey(),
+            baseUrl: chat.config.baseUrl || undefined,
+          });
+          result.text = res;
+          await chat.pushMessage(result);
+        } else {
+          message.error("缺少apikey，请在设置中配置后使用");
+        }
+      } catch (error: any) {
+        result.text = String(error);
+        await chat.pushMessage(result);
+      }
+      setTimeout(() => {
+        setLoading((v) => --v);
+        reloadTopic(result.topicId);
+        if (msg.topicId == chat.config.activityTopicId)
+          scrollToBotton(result.id);
+      }, 500);
+    } finally {
+      delete loadingTopic[topicId];
+    }
   };
 
   const onTextareaTab = (

@@ -28,7 +28,8 @@ export interface GroupConfig {
   activityTopicId: string; // 激活的话题
   defaultVirtualRole?: string; // 默认助理
   disableStrikethrough?: boolean; // 禁用删除线
-  disableChatGPT?: boolean;
+  botType: "None" | "ChatGPT" | "Slack";
+  slackChannelId?: string;
 }
 
 // 聊天消息表
@@ -50,6 +51,7 @@ export interface Topic {
   groupId: string; // 分组ID
   name: string; // 话题名称
   createdAt: number; // 创建时间
+  slack_thread_ts?: string;
 }
 
 // 虚拟角色表

@@ -27,6 +27,7 @@ const defaultChat: IChat = {
     enableVirtualRole: false,
     activityTopicId: "",
     baseUrl: "",
+    botType: "Slack",
   },
   gptConfig: {
     id: "",
@@ -328,15 +329,23 @@ export class ChatManagement implements IChat {
     this.config.activityTopicId = topic.id;
     return _topic;
   }
-  async saveTopic(topicId: string, name: string) {
+  getActivityTopic(): Topic {
+    return (
+      this.topics.find((f) => f.id === this.config.activityTopicId) ||
+      this.topics.slice(-1)[0]
+    );
+  }
+  async saveTopic(topicId: string, name: string, slack_thread_ts?: string) {
     const t = this.topics.find((f) => f.id == topicId);
     if (t) {
       t.name = name;
+      t.slack_thread_ts = slack_thread_ts;
       await getInstance().update_by_primaryKey<Topic>({
         tableName: "Topic",
         value: t.id,
         handle: (r) => {
           r.name = name;
+          r.slack_thread_ts = slack_thread_ts;
           return r;
         },
       });
@@ -416,6 +425,7 @@ export class ChatManagement implements IChat {
       enableVirtualRole: false,
       baseUrl: "",
       activityTopicId: "",
+      botType: "ChatGPT",
     };
     await getInstance().insert<GroupConfig>({ tableName: "GroupConfig", data });
     return data;

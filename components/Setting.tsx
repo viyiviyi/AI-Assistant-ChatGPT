@@ -2,6 +2,7 @@ import { ApiClient } from "@/core/ApiClient";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
+import { initClient } from "@/core/Slack";
 import { downloadJson } from "@/core/utils";
 import {
   DownloadOutlined,
@@ -59,8 +60,11 @@ export const Setting = ({
     config_saveKey: boolean;
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
-    config_disable_chat: boolean;
+    config_bot_type: "None" | "ChatGPT" | "Slack";
+    config_channel_id: string;
+    slack_claude_id: string;
     group_name: string;
+    slack_user_token: string;
   }>();
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
@@ -86,7 +90,8 @@ export const Setting = ({
 
     chatMgt.config.baseUrl = values.setting_baseurl;
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
-    chatMgt.config.disableChatGPT = !values.config_disable_chat;
+    chatMgt.config.botType = values.config_bot_type;
+    chatMgt.config.slackChannelId = values.config_channel_id;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -99,6 +104,18 @@ export const Setting = ({
     KeyValueData.instance().setApiKey(
       values.setting_apitoken,
       values.config_saveKey
+    );
+    KeyValueData.instance().setSlackClaudeId(
+      values.slack_claude_id,
+      values.config_saveKey
+    );
+    KeyValueData.instance().setSlackUserToken(
+      values.slack_user_token,
+      values.config_saveKey
+    );
+    initClient(
+      KeyValueData.instance().getSlackUserToken(),
+      KeyValueData.instance().getSlackClaudeId()
     );
     onSaved();
   }
@@ -120,7 +137,10 @@ export const Setting = ({
           config_saveKey: true,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl,
-          config_disable_chat: !chatMgt?.config.disableChatGPT,
+          config_bot_type: chatMgt?.config.botType,
+          config_channel_id: chatMgt?.config.slackChannelId,
+          slack_claude_id: KeyValueData.instance().getSlackClaudeId(),
+          slack_user_token: KeyValueData.instance().getSlackUserToken(),
           group_name: chatMgt?.group.name,
         }}
       >
@@ -248,6 +268,7 @@ export const Setting = ({
                     onOk: () => {
                       ChatManagement.remove(chatMgt!.group.id).then(() => {
                         router.push("/chat");
+                        onCancel();
                       });
                     },
                   });
@@ -274,17 +295,17 @@ export const Setting = ({
           >
             <Switch />
           </Form.Item>
-          <Form.Item
-            name="config_disable_chat"
-            valuePropName="checked"
-            label="启用ChatGPT"
-            extra={"关闭后发出消息将不会调用ChatGPT"}
-          >
-            <Switch />
+          <Form.Item name="config_bot_type" label="Ai类型">
+            <Radio.Group style={{ width: "100%" }}>
+              <Radio.Button value="None">不启用AI</Radio.Button>
+              <Radio.Button value="ChatGPT">ChatGPT</Radio.Button>
+              <Radio.Button value="Slack">Slack(Claude)</Radio.Button>
+            </Radio.Group>
           </Form.Item>
           <Form.Item
             name="GptConfig_role"
-            label="role  用户使用的角色 建议使用user"
+            label="ChatGPT参数： role"
+            extra={" 用户使用的角色 建议使用user"}
           >
             <Radio.Group style={{ width: "100%" }}>
               <Radio.Button value="assistant">assistant</Radio.Button>
@@ -294,29 +315,43 @@ export const Setting = ({
           </Form.Item>
           <Form.Item
             name="GptConfig_max_tokens"
-            label="max_tokens 指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
+            label="ChatGPT参数： max_tokens"
+            extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
           >
             <InputNumber step="50" min={0} />
           </Form.Item>
           <Form.Item
             name="GptConfig_top_p"
-            label="top_p 指定从概率分布中选择的标记的概率阈值（不懂）"
+            label="ChatGPT参数： top_p"
+            extra={"指定从概率分布中选择的标记的概率阈值（不懂）"}
           >
             <InputNumber step="0.05" min={0} max={1} />
           </Form.Item>
-          <Form.Item name="GptConfig_n" label="n 指定生成文本的数量">
+          <Form.Item
+            name="GptConfig_n"
+            label="ChatGPT参数： n"
+            extra={"指定生成文本的数量"}
+          >
             <InputNumber step="1" min={1} max={10} />
           </Form.Item>
           <Form.Item
             name="GptConfig_temperature"
-            label="temperature 较高的值会产生更多样化的文本"
+            label="ChatGPT参数： temperature"
+            extra={"较高的值会产生更多样化的文本"}
           >
             <InputNumber step="0.05" min={0} max={1} />
           </Form.Item>
           <Form.Item
             name="setting_baseurl"
-            label="接口访问地址"
+            label="ChatGPT参数： 接口访问地址"
             extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
+          >
+            <Input type="text" />
+          </Form.Item>
+          <Form.Item
+            name="config_channel_id"
+            label="Slack配置：频道id (channel_id)"
+            extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
           >
             <Input type="text" />
           </Form.Item>
@@ -381,7 +416,21 @@ export const Setting = ({
               </span>
             }
           >
-            <Input type="password" />
+            <Input type="password" autoComplete="false" />
+          </Form.Item>
+          <Form.Item
+            name="slack_user_token"
+            label="Slack配置：用户token (user-token)"
+            extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+          >
+            <Input type="text" />
+          </Form.Item>
+          <Form.Item
+            name="slack_claude_id"
+            label="Slack配置：ClaudeID"
+            extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+          >
+            <Input type="text" />
           </Form.Item>
           <Form.Item
             name="config_saveKey"

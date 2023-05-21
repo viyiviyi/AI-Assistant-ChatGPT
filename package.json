@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
+    "@slack/web-api": "^6.8.1",
     "@types/node": "18.14.6",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
