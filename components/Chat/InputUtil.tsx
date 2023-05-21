@@ -71,6 +71,7 @@ export function InputUtil() {
         chat.config.botType === "Slack" &&
         chat.config.enableVirtualRole
       ) {
+        setLoading((v) => ++v);
         await chat.pushMessage({
           id: "",
           groupId: chat.group.id,
@@ -106,6 +107,7 @@ export function InputUtil() {
           },
           topic.slack_thread_ts
         );
+        setLoading((v) => --v);
         return;
       }
       if (chat.config.botType === "Slack") {
@@ -161,6 +163,7 @@ export function InputUtil() {
           },
           topic.slack_thread_ts
         );
+        setLoading((v) => --v);
         return;
       }
       try {

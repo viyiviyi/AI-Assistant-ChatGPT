@@ -42,12 +42,13 @@ export const ChatMessage = () => {
       v.push(topic.id);
       if (topic.messages.length == 0) await ChatManagement.loadMessage(topic);
       reloadTopic(topic.id);
+      scrollToBotton(topic.messages.slice(-1)[0]?.id);
     }
     chat.config.activityTopicId = topic.id;
     setActivityKey(v);
     setActivityTopic(topic);
   }
-  Object.keys(reloadTopic).forEach((v) => {
+  Object.keys(renderTopic).forEach((v) => {
     delete renderTopic[v];
   });
 
@@ -190,7 +191,7 @@ function MessageList({
     steMessages([...topic.messages]);
     setTotal(topic.messages.length);
     setRange([Math.max(0, topic.messages.length - 20), topic.messages.length]);
-    scrollToBotton(messages.slice(-1)[0]?.id);
+    // scrollToBotton(messages.slice(-1)[0]?.id);
   };
 
   return (
