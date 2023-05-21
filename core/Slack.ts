@@ -33,9 +33,10 @@ export function initClient(
   claude_id = _claude_id;
   client = axios.create({
     baseURL:
-      baseUrl ?? location.origin.startsWith("/localhost")
+      (baseUrl ? baseUrl + "/api/" : undefined) ||
+      (location.origin.includes("localhost")
         ? "http://slack.yiyiooo.com/api/"
-        : "https://slack.22733.site/api/",
+        : "https://slack.22733.site/api/"),
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${slack_user_token}`,
