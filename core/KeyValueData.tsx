@@ -43,6 +43,18 @@ export class KeyValueData {
       save ? val : ""
     );
   }
+  private _slackProxyUrl = "";
+  getSlackProxyUrl(): string {
+    if (this._slackProxyUrl) return this._slackProxyUrl;
+    return this.provider.getItem(this.dataKeyPrefix + "SlackProxyUrl") || "";
+  }
+  setSlackProxyUrl(val: string, save: boolean = true) {
+    this._slackProxyUrl = val;
+    this.provider.setItem(
+      this.dataKeyPrefix + "SlackProxyUrl",
+      save ? val : ""
+    );
+  }
   static instance(): KeyValueData {
     return KeyValueData._instance
       ? KeyValueData._instance

@@ -64,6 +64,7 @@ export const Setting = ({
     config_channel_id: string;
     slack_claude_id: string;
     group_name: string;
+    setting_slack_proxy_url: string;
     slack_user_token: string;
   }>();
   useEffect(() => {
@@ -113,9 +114,14 @@ export const Setting = ({
       values.slack_user_token,
       values.config_saveKey
     );
+    KeyValueData.instance().setSlackProxyUrl(
+      values.setting_slack_proxy_url,
+      values.config_saveKey
+    );
     initClient(
       KeyValueData.instance().getSlackUserToken(),
-      KeyValueData.instance().getSlackClaudeId()
+      KeyValueData.instance().getSlackClaudeId(),
+      KeyValueData.instance().getSlackProxyUrl()
     );
     onSaved();
   }
@@ -141,6 +147,7 @@ export const Setting = ({
           config_channel_id: chatMgt?.config.slackChannelId,
           slack_claude_id: KeyValueData.instance().getSlackClaudeId(),
           slack_user_token: KeyValueData.instance().getSlackUserToken(),
+          setting_slack_proxy_url: KeyValueData.instance().getSlackProxyUrl(),
           group_name: chatMgt?.group.name,
         }}
       >
@@ -417,6 +424,13 @@ export const Setting = ({
             }
           >
             <Input type="password" autoComplete="false" />
+          </Form.Item>
+          <Form.Item
+            name="setting_slack_proxy_url"
+            label="Slack配置： 接口访问地址"
+            extra="api代理地址 (反向代理了 https://slack.com 的地址) 因为没能在云端把代理写上，所有需要自己整一个代理地址才能用"
+          >
+            <Input type="text" />
           </Form.Item>
           <Form.Item
             name="slack_user_token"

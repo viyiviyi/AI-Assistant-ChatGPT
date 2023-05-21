@@ -54,7 +54,8 @@ export default function Page() {
       });
       initClient(
         KeyValueData.instance().getSlackUserToken(),
-        KeyValueData.instance().getSlackClaudeId()
+        KeyValueData.instance().getSlackClaudeId(),
+        KeyValueData.instance().getSlackProxyUrl()
       );
       let aTopic = selectChat.topics.find(
         (f) => f.id == selectChat.config.activityTopicId

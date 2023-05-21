@@ -24,13 +24,18 @@ let client = axios.create({
 // 最大重试次数，如果响应时间超过3秒，则更新消息重试，重试次数超过最大次数，则返回未响应
 const max_retries = 5;
 
-export function initClient(slackUserToken: string, _claude_id: string) {
+export function initClient(
+  slackUserToken: string,
+  _claude_id: string,
+  baseUrl?: string
+) {
   slack_user_token = slackUserToken;
   claude_id = _claude_id;
   client = axios.create({
-    baseURL: location.origin.startsWith("/localhost")
-      ? "http://slack.yiyiooo.com/api/"
-      : "https://slack.22733.site/api/",
+    baseURL:
+      baseUrl ?? location.origin.startsWith("/localhost")
+        ? "http://slack.yiyiooo.com/api/"
+        : "https://slack.22733.site/api/",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${slack_user_token}`,
