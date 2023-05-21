@@ -65,6 +65,7 @@ export function InputUtil() {
           return;
         }
       }
+      let now = Date.now();
       if (
         isNewTopic &&
         chat.config.botType === "Slack" &&
@@ -77,7 +78,7 @@ export function InputUtil() {
           virtualRoleId: undefined,
           ctxRole: "user",
           text: ChatManagement.parseText(chat.virtualRole.bio),
-          timestamp: Date.now(),
+          timestamp: now++,
           topicId: topicId,
         });
         const sendBio = await chat.pushMessage({
@@ -86,7 +87,7 @@ export function InputUtil() {
           virtualRoleId: chat.virtualRole.id,
           ctxRole: "assistant",
           text: "loading...",
-          timestamp: Date.now(),
+          timestamp: now++,
           topicId: topicId,
         });
         reloadTopic(topicId);
@@ -118,7 +119,7 @@ export function InputUtil() {
         virtualRoleId: isBot ? chat.virtualRole.id : undefined,
         ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
         text: text,
-        timestamp: Date.now(),
+        timestamp: now++,
         topicId: topicId,
       });
       setInputText("");
@@ -138,7 +139,7 @@ export function InputUtil() {
         virtualRoleId: chat.virtualRole.id,
         ctxRole: "assistant",
         text: "loading...",
-        timestamp: Date.now(),
+        timestamp: now++,
         topicId: topicId,
       });
       if (result.timestamp == msg.timestamp) result.timestamp += 1;
