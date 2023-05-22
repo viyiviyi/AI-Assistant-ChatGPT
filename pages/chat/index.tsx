@@ -114,7 +114,7 @@ export default function Page() {
           }}
         ></div>
         <Head>
-          <title>ChatGPT聊天工具</title>
+          <title>Chat助理</title>
         </Head>
         <MemoChat />
         <Drawer
