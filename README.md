@@ -145,7 +145,6 @@ async function handleRequest(request) {
   new_request_headers.set('Host', 'https://slack.com');
   new_request_headers.set('Orgin', 'https://slack.com');
   new_request_headers.set('Referer', url.href);
-  // new_request_headers.set('Authorization', 'Bearer xoxp-5160057786369-5147306263411-5270028883986-bb93244bce22534f56a7a7571e8678e2');
 
   const modifiedRequest = new Request(url.toString(), {
     headers: new_request_headers,
