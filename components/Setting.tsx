@@ -428,7 +428,7 @@ export const Setting = ({
           <Form.Item
             name="setting_slack_proxy_url"
             label="Slack配置： 接口访问地址"
-            extra="api代理地址 (反向代理了 https://slack.com 的地址) 因为没能在云端把代理写上，所有需要自己整一个代理地址才能用"
+            extra="api代理地址 (反向代理了 https://slack.com 的地址)"
           >
             <Input type="text" />
           </Form.Item>
