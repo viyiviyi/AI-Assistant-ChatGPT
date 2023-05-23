@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import React from "react";
 import { getInstance } from "ts-indexdb";
@@ -329,7 +329,7 @@ export class ChatManagement implements IChat {
     this.config.activityTopicId = topic.id;
     return _topic;
   }
-  getActivityTopic(): Topic {
+  getActivityTopic(): Topic & { messages: Message[] } {
     return (
       this.topics.find((f) => f.id === this.config.activityTopicId) ||
       this.topics.slice(-1)[0]

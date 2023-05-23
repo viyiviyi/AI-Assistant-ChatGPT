@@ -1,13 +1,14 @@
 import { ApiClient } from "@/core/ApiClient";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
-import { send_message_to_channel } from "@/core/Slack";
+import { getHistoryMessage, send_message_to_channel } from "@/core/Slack";
 import { scrollToBotton } from "@/core/utils";
+import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
   MessageOutlined,
-  VerticalAlignMiddleOutlined
+  VerticalAlignMiddleOutlined,
 } from "@ant-design/icons";
 import { Button, Input, message, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
@@ -58,53 +59,75 @@ export function InputUtil() {
     try {
       if (loadingTopic[topicId]) return;
       loadingTopic[topicId] = true;
-      // Slack api时启用助理只有创建topic时才生效
       if (chat.config.botType === "Slack") {
         if (!chat.config.slackChannelId) {
           message.error("缺少频道ID");
           return;
         }
       }
+      // 时间戳 每次使用加1 保证顺序不错
       let now = Date.now();
+      let msg: Message = {
+        id: "",
+        groupId: chat.group.id,
+        senderId: isBot ? undefined : chat.user.id,
+        virtualRoleId: isBot ? chat.virtualRole.id : undefined,
+        ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
+        text: text,
+        timestamp: now++,
+        topicId: topicId,
+      };
+      let result: Message = {
+        id: "",
+        groupId: chat.group.id,
+        virtualRoleId: chat.virtualRole.id,
+        ctxRole: "assistant",
+        text: "loading...",
+        timestamp: now++,
+        topicId: topicId,
+      };
+      // 获取slack的响应
+      const onMessage = async (res: {
+        error: boolean;
+        text: string;
+        thread_ts?: string; // 发送给claude的第一条消息的ts
+        ts?: string; // claude回复的消息的ts
+        send_ts?: string; // 回复claude的消息的ts
+      }) => {
+        if (!topic.slack_thread_ts && res.thread_ts) {
+          topic.slack_thread_ts = res.thread_ts;
+          chat.saveTopic(topic.id, topic.name, res.thread_ts);
+        }
+        if (!msg.slackTs && res.send_ts) {
+          msg.slackTs = res.send_ts;
+          await chat.pushMessage(msg).then(() => {
+            reloadTopic(result.topicId);
+            if (msg.topicId == chat.config.activityTopicId)
+              scrollToBotton(result.id);
+          });
+        }
+        if (res.text || res.ts) {
+          result.text = res.text;
+          result.slackTs = res.ts;
+          chat.pushMessage(result).then(() => {
+            reloadTopic(topicId);
+          });
+        }
+      };
+      // 当开启了助理模式时，先把助理设定发送给Claude
       if (
         isNewTopic &&
         chat.config.botType === "Slack" &&
         chat.config.enableVirtualRole
       ) {
         setLoading((v) => ++v);
-        await chat.pushMessage({
-          id: "",
-          groupId: chat.group.id,
-          senderId: chat.user.id,
-          virtualRoleId: undefined,
-          ctxRole: "user",
-          text: ChatManagement.parseText(chat.virtualRole.bio),
-          timestamp: now++,
-          topicId: topicId,
-        });
-        const sendBio = await chat.pushMessage({
-          id: "",
-          groupId: chat.group.id,
-          virtualRoleId: chat.virtualRole.id,
-          ctxRole: "assistant",
-          text: "loading...",
-          timestamp: now++,
-          topicId: topicId,
-        });
-        reloadTopic(topicId);
+        msg.text = ChatManagement.parseText(chat.virtualRole.bio);
+        msg.virtualRoleId = undefined;
+        msg.senderId = chat.user.id;
         await send_message_to_channel(
           chat.config.slackChannelId!,
-          ChatManagement.parseText(chat.virtualRole.bio),
-          (res) => {
-            if (!topic.slack_thread_ts && res.thread_ts) {
-              topic.slack_thread_ts = res.thread_ts;
-              chat.saveTopic(topic.id, topic.name, res.thread_ts);
-            }
-            sendBio.text = res.text;
-            chat.pushMessage(sendBio).then(() => {
-              reloadTopic(topicId);
-            });
-          },
+          msg.text,
+          onMessage,
           topic.slack_thread_ts
         );
         setLoading((v) => --v);
@@ -114,58 +137,57 @@ export function InputUtil() {
         if (chat.config.enableVirtualRole && !topic.slack_thread_ts)
           return message.error("数据错误，请新建话题后使用");
       }
-      const msg = await chat.pushMessage({
-        id: "",
-        groupId: chat.group.id,
-        senderId: isBot ? undefined : chat.user.id,
-        virtualRoleId: isBot ? chat.virtualRole.id : undefined,
-        ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
-        text: text,
-        timestamp: now++,
-        topicId: topicId,
-      });
       setInputText("");
-      if (topicId == chat.config.activityTopicId) scrollToBotton(msg.id);
-      reloadTopic(msg.topicId);
-      if (isBot || skipRequest) return;
       setLoading((v) => ++v);
+      if (chat.config.botType === "Slack") {
+        if (msg.text) {
+          await send_message_to_channel(
+            chat.config.slackChannelId!,
+            msg.text,
+            onMessage,
+            topic.slack_thread_ts
+          );
+        } else if (topic.slack_thread_ts) {
+          // 如果发送空消息，则获取当前消息列最后一条消息之后的全部消息
+          let oldTs: string | undefined = undefined;
+          if (topic.messages.length) {
+            oldTs = topic.messages.slice(-1)[0].slackTs;
+          }
+          await getHistoryMessage(
+            chat.config.slackChannelId!,
+            topic.slack_thread_ts,
+            oldTs,
+            10
+          ).then((res) => {
+            res.forEach((v) => {
+              chat.pushMessage({
+                id: "",
+                groupId: chat.group.id,
+                senderId: v.isClaude ? undefined : chat.user.id,
+                virtualRoleId: v.isClaude ? chat.virtualRole.id : undefined,
+                ctxRole: v.isClaude ? "assistant" : "user",
+                text: v.text,
+                timestamp: v.ts ? Number(v.ts) * 1000 + 1 : now++,
+                topicId: topicId,
+                slackTs: v.ts,
+              });
+            });
+          });
+        }
+        setLoading((v) => --v);
+        return;
+      }
+      msg = await chat.pushMessage(msg);
+      if (isBot || skipRequest) return;
       const messages = chat.getAskContext();
       if (messages.length == 0) {
         setLoading((v) => --v);
         reloadTopic(topicId);
         return;
       }
-      let result = await chat.pushMessage({
-        id: "",
-        groupId: chat.group.id,
-        virtualRoleId: chat.virtualRole.id,
-        ctxRole: "assistant",
-        text: "loading...",
-        timestamp: now++,
-        topicId: topicId,
-      });
-      if (result.timestamp == msg.timestamp) result.timestamp += 1;
+      result = await chat.pushMessage(result);
       reloadTopic(result.topicId);
       if (msg.topicId == chat.config.activityTopicId) scrollToBotton(result.id);
-      if (chat.config.botType === "Slack") {
-        await send_message_to_channel(
-          chat.config.slackChannelId || "",
-          msg.text,
-          (res) => {
-            if (!topic.slack_thread_ts && res.thread_ts) {
-              topic.slack_thread_ts = res.thread_ts;
-              chat.saveTopic(topic.id, topic.name, res.thread_ts);
-            }
-            result.text = res.text;
-            chat.pushMessage(result).then(() => {
-              reloadTopic(topicId);
-            });
-          },
-          topic.slack_thread_ts
-        );
-        setLoading((v) => --v);
-        return;
-      }
       try {
         if (KeyValueData.instance().getApiKey()) {
           const res = await ApiClient.chatGpt({
