@@ -174,10 +174,25 @@ export async function getHistoryMessage(
   limit: number = 2
 ): Promise<{ text: string; ts: string; isClaude: boolean }[]> {
   const replies = await receive_message(channel_id, thread_ts, oldest, limit);
+  if (!replies || !replies.ok) {
+    return [
+      { text: replies.error || "获取历史记录出错", ts: "", isClaude: true },
+    ];
+  }
   const messages = replies["messages"] as Array<any>;
+  if (!messages) return [];
   return messages
-    .filter((f) => !/Please note:|Oops! Claude was un/.test(f.text))
-    .map((v) => ({ text: v.text, ts: v.ts, isClaude: v.user === claude_id }));
+    .filter(
+      (f) =>
+        !/Please note:|Oops! Claude was un/.test(f.text) &&
+        f.ts != oldest &&
+        f.ts != thread_ts
+    )
+    .map((v) => ({
+      text: v.text.replace(`<@${claude_id}>`, ""),
+      ts: v.ts,
+      isClaude: v.user === claude_id,
+    }));
 }
 
 // // 更新消息, 用于触发@Claude的响应

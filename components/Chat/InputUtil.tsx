@@ -100,7 +100,8 @@ export function InputUtil() {
         }
         if (!msg.slackTs && res.send_ts) {
           msg.slackTs = res.send_ts;
-          await chat.pushMessage(msg).then(() => {
+          await chat.pushMessage(msg).then((m) => {
+            msg = m;
             reloadTopic(result.topicId);
             if (msg.topicId == chat.config.activityTopicId)
               scrollToBotton(result.id);
@@ -109,7 +110,8 @@ export function InputUtil() {
         if (res.text || res.ts) {
           result.text = res.text;
           result.slackTs = res.ts;
-          chat.pushMessage(result).then(() => {
+          chat.pushMessage(result).then((r) => {
+            result = r;
             reloadTopic(topicId);
           });
         }
@@ -149,31 +151,35 @@ export function InputUtil() {
           );
         } else if (topic.slack_thread_ts) {
           // 如果发送空消息，则获取当前消息列最后一条消息之后的全部消息
-          let oldTs: string | undefined = undefined;
+          let oldTs: string = "0";
           if (topic.messages.length) {
-            oldTs = topic.messages.slice(-1)[0].slackTs;
+            oldTs = topic.messages.slice(-1)[0].slackTs || "0";
           }
           await getHistoryMessage(
             chat.config.slackChannelId!,
             topic.slack_thread_ts,
             oldTs,
-            10
+            topic.messages.length ? 100 : undefined
           ).then((res) => {
             res.forEach((v) => {
-              chat.pushMessage({
-                id: "",
-                groupId: chat.group.id,
-                senderId: v.isClaude ? undefined : chat.user.id,
-                virtualRoleId: v.isClaude ? chat.virtualRole.id : undefined,
-                ctxRole: v.isClaude ? "assistant" : "user",
-                text: v.text,
-                timestamp: v.ts ? Number(v.ts) * 1000 + 1 : now++,
-                topicId: topicId,
-                slackTs: v.ts,
-              });
+              chat
+                .pushMessage({
+                  id: "",
+                  groupId: chat.group.id,
+                  senderId: v.isClaude ? undefined : chat.user.id,
+                  virtualRoleId: v.isClaude ? chat.virtualRole.id : undefined,
+                  ctxRole: v.isClaude ? "assistant" : "user",
+                  text: v.text,
+                  timestamp: v.ts ? Number(v.ts) * 1000 + 1 : now++,
+                  topicId: topicId,
+                  slackTs: v.ts,
+                })
+                .then(() => reloadTopic(topicId));
             });
           });
         }
+        if (msg.topicId == chat.config.activityTopicId)
+          scrollToBotton(result.id);
         setLoading((v) => --v);
         return;
       }

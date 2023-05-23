@@ -322,7 +322,7 @@ export class ChatManagement implements IChat {
   async newTopic(name: string) {
     let topic = await ChatManagement.createTopic(
       this.group.id,
-      name.substring(0, 16) || new Date().toLocaleString()
+      name.substring(0, 100) || new Date().toLocaleString()
     );
     let _topic = { ...topic, messages: [] };
     this.topics.push(_topic);
