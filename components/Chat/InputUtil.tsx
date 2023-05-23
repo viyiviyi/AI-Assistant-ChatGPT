@@ -104,7 +104,7 @@ export function InputUtil() {
             msg = m;
             reloadTopic(result.topicId);
             if (msg.topicId == chat.config.activityTopicId)
-              scrollToBotton(result.id);
+              scrollToBotton(result.id,true);
           });
         }
         if (res.text || res.ts) {
@@ -143,6 +143,7 @@ export function InputUtil() {
       setLoading((v) => ++v);
       if (chat.config.botType === "Slack") {
         if (msg.text) {
+          msg = await chat.pushMessage(msg);
           await send_message_to_channel(
             chat.config.slackChannelId!,
             msg.text,
@@ -179,12 +180,12 @@ export function InputUtil() {
           });
         }
         if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id);
+          scrollToBotton(result.id,true);
         setLoading((v) => --v);
         return;
       }
       msg = await chat.pushMessage(msg);
-      if (isBot || skipRequest) return;
+      if (isBot || skipRequest) return setLoading((v) => --v);;
       const messages = chat.getAskContext();
       if (messages.length == 0) {
         setLoading((v) => --v);
@@ -193,7 +194,7 @@ export function InputUtil() {
       }
       result = await chat.pushMessage(result);
       reloadTopic(result.topicId);
-      if (msg.topicId == chat.config.activityTopicId) scrollToBotton(result.id);
+      if (msg.topicId == chat.config.activityTopicId) scrollToBotton(result.id,true);
       try {
         if (KeyValueData.instance().getApiKey()) {
           const res = await ApiClient.chatGpt({
@@ -220,7 +221,7 @@ export function InputUtil() {
         setLoading((v) => --v);
         reloadTopic(result.topicId);
         if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id);
+          scrollToBotton(result.id,true);
       }, 500);
     } finally {
       delete loadingTopic[topicId];

@@ -51,12 +51,15 @@ export function downloadJson(jsonData: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function scrollToBotton(id: string) {
+export function scrollToBotton(id: string, isAnm: boolean = false) {
   setTimeout(() => {
     if (window) {
       document
         .getElementById(id)
-        ?.scrollIntoView({ block: "nearest" });
+        ?.scrollIntoView({
+          behavior: isAnm ? "smooth" : undefined,
+          block: "nearest",
+        });
     }
   }, 500);
 }
