@@ -40,7 +40,6 @@ export function initClient(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${slack_user_token}`,
-      "ngrok-skip-browser-warning": 0,
     },
   });
 }
