@@ -185,7 +185,7 @@ export function InputUtil() {
         return;
       }
       msg = await chat.pushMessage(msg);
-      if (isBot || skipRequest) return setLoading((v) => --v);;
+      if (isBot || skipRequest || chat.config.botType === "None") return setLoading((v) => --v);;
       const messages = chat.getAskContext();
       if (messages.length == 0) {
         setLoading((v) => --v);
