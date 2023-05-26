@@ -228,7 +228,7 @@ export function InputUtil() {
             apiKey: KeyValueData.instance().getApiKey(),
             baseUrl: chat.config.baseUrl || undefined,
             onMessage: (m) => {
-              result.text = m.text;
+              result.text = m.text + (m.end?'':'\n\nloading...');
               chat.pushMessage(result).then(() => {
                 reloadTopic(result.topicId);
               });
