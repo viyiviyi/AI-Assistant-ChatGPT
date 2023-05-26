@@ -231,14 +231,11 @@ export function InputUtil() {
               result.text = m.text;
               chat.pushMessage(result).then(() => {
                 reloadTopic(result.topicId);
-                if (msg.topicId == chat.config.activityTopicId)
-                  scrollToBotton(result.id);
-                if (m.end) setLoading((v) => --v);
               });
             },
           });
           // result.text = res;
-          await chat.pushMessage(result);
+          // await chat.pushMessage(result);
         } else {
           message.error("缺少apikey，请在设置中配置后使用");
         }
