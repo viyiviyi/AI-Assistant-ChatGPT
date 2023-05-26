@@ -8,7 +8,7 @@ import {
   DownloadOutlined,
   EyeOutlined,
   GithubOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -21,7 +21,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload
+  Upload,
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
@@ -142,12 +142,15 @@ export const Setting = ({
           GptConfig_model: chatMgt?.gptConfig.model,
           config_saveKey: true,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
-          setting_baseurl: chatMgt?.config.baseUrl,
+          setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ""),
           config_bot_type: chatMgt?.config.botType,
-          config_channel_id: chatMgt?.config.slackChannelId,
-          slack_claude_id: KeyValueData.instance().getSlackClaudeId(),
-          slack_user_token: KeyValueData.instance().getSlackUserToken(),
-          setting_slack_proxy_url: KeyValueData.instance().getSlackProxyUrl(),
+          config_channel_id: chatMgt?.config.slackChannelId?.trim(),
+          slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
+          slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
+          setting_slack_proxy_url: KeyValueData.instance()
+            .getSlackProxyUrl()
+            .trim()
+            ?.replace(/\/$/, ""),
           group_name: chatMgt?.group.name,
         }}
       >
@@ -353,7 +356,7 @@ export const Setting = ({
             label="ChatGPT参数： 接口访问地址"
             extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
           >
-            <Input type="text" />
+            <Input type="text" placeholder="https://xxxx.xx.xx" />
           </Form.Item>
           <Form.Item
             name="config_channel_id"
@@ -430,7 +433,7 @@ export const Setting = ({
             label="Slack配置： 接口访问地址"
             extra="api代理地址 (反向代理了 https://slack.com 的地址)"
           >
-            <Input type="text" />
+            <Input type="text" placeholder="https://xxxx.xx.xx" />
           </Form.Item>
           <Form.Item
             name="slack_user_token"

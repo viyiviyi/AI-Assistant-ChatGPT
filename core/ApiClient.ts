@@ -117,6 +117,7 @@ export class ApiClient {
       baseOptions: {
         headers: {
           Authorization: "Bearer " + apiKey,
+          "ngrok-skip-browser-warning":0
         },
         timeout: 1000 * 60 * 5,
       },

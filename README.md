@@ -12,6 +12,7 @@
 - 通过有限发送上文的方法可以实现同话题超出token限制的对话（仅ChatGPT模式有效）
 - 可以访问 [https://litechat.22733.site](https://litechat.22733.site) 用自己的key体验
 - 如果你需要自己部署，请看[这里](#独立部署)
+- 如果要使用ChatGLM作为机器人，可以看这个项目：[ChatGLM-6B_Api_kaggle](https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle)
 
 
 [一个有很多助理设定的网站(为什么我没有早点发现Orz)](https://ai.usesless.com/scene)  

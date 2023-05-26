@@ -51,6 +51,8 @@ export async function send_message_to_channel(
     error: boolean;
     text: string;
     thread_ts?: string;
+    ts?: string;
+    send_ts?: string;
   }) => void,
   thread_ts?: string
 ): Promise<void> {
@@ -70,6 +72,7 @@ export async function send_message_to_channel(
       error: false,
       text: "loading...",
       thread_ts: thread_ts,
+      send_ts: ts,
     });
     // 初始化响应为_Typing…_，表示正在等待响应
     let response = "_Typing…_";
@@ -111,6 +114,7 @@ export async function send_message_to_channel(
       onMessage({
         error: false,
         text: response,
+        ts: message.ts,
       });
     }
     return;
@@ -149,7 +153,7 @@ async function send_message(
 async function receive_message(
   channel_id: string,
   ts: string,
-  oldest: string,
+  oldest?: string,
   limit: number = 2
 ): Promise<WebAPICallResult> {
   const result = await client.get(
@@ -161,6 +165,34 @@ async function receive_message(
   //   oldest: oldest,
   // });
   return result.data;
+}
+
+export async function getHistoryMessage(
+  channel_id: string,
+  thread_ts: string,
+  oldest?: string,
+  limit: number = 2
+): Promise<{ text: string; ts: string; isClaude: boolean }[]> {
+  const replies = await receive_message(channel_id, thread_ts, oldest, limit);
+  if (!replies || !replies.ok) {
+    return [
+      { text: replies.error || "获取历史记录出错", ts: "", isClaude: true },
+    ];
+  }
+  const messages = replies["messages"] as Array<any>;
+  if (!messages) return [];
+  return messages
+    .filter(
+      (f) =>
+        !/Please note:|Oops! Claude was un/.test(f.text) &&
+        f.ts != oldest &&
+        f.ts != thread_ts
+    )
+    .map((v) => ({
+      text: v.text.replace(`<@${claude_id}>`, ""),
+      ts: v.ts,
+      isClaude: v.user === claude_id,
+    }));
 }
 
 // // 更新消息, 用于触发@Claude的响应

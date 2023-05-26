@@ -44,6 +44,7 @@ export interface Message {
   timestamp: number; // 时间戳
   checked?: boolean;
   importMessage?: string;
+  slackTs?: string;
 }
 
 export interface Topic {

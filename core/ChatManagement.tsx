@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import React from "react";
 import { getInstance } from "ts-indexdb";
@@ -322,14 +322,14 @@ export class ChatManagement implements IChat {
   async newTopic(name: string) {
     let topic = await ChatManagement.createTopic(
       this.group.id,
-      name.substring(0, 16) || new Date().toLocaleString()
+      name.substring(0, 100) || new Date().toLocaleString()
     );
     let _topic = { ...topic, messages: [] };
     this.topics.push(_topic);
     this.config.activityTopicId = topic.id;
     return _topic;
   }
-  getActivityTopic(): Topic {
+  getActivityTopic(): Topic & { messages: Message[] } {
     return (
       this.topics.find((f) => f.id === this.config.activityTopicId) ||
       this.topics.slice(-1)[0]
