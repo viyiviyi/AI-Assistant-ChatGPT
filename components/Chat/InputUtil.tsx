@@ -168,6 +168,26 @@ export function InputUtil() {
       }
       try {
         if (KeyValueData.instance().getApiKey()) {
+          // generateChatStream(
+          //   messages,
+          //   chat.gptConfig.model,
+          //   chat.gptConfig.max_tokens,
+          //   chat.gptConfig.top_p,
+          //   chat.getNameByRole(result.ctxRole),
+          //   KeyValueData.instance().getApiKey(),
+          //   chat.gptConfig.n,
+          //   chat.gptConfig.temperature,
+          //   chat.config.baseUrl || undefined,
+          //   (m) => {
+          //     result.text = m.text;
+          //     chat.pushMessage(result).then(() => {
+          //       reloadTopic(result.topicId);
+          //       if (msg.topicId == chat.config.activityTopicId)
+          //         scrollToBotton(result.id);
+          //       if (m.end) setLoading((v) => --v);
+          //     });
+          //   }
+          // );
           const res = await ApiClient.chatGpt({
             messages,
             model: chat.gptConfig.model,
@@ -178,8 +198,17 @@ export function InputUtil() {
             user: chat.getNameByRole(result.ctxRole),
             apiKey: KeyValueData.instance().getApiKey(),
             baseUrl: chat.config.baseUrl || undefined,
+            onMessage: (m) => {
+              result.text = m.text;
+              chat.pushMessage(result).then(() => {
+                reloadTopic(result.topicId);
+                if (msg.topicId == chat.config.activityTopicId)
+                  scrollToBotton(result.id);
+                if (m.end) setLoading((v) => --v);
+              });
+            },
           });
-          result.text = res;
+          // result.text = res;
           await chat.pushMessage(result);
         } else {
           message.error("缺少apikey，请在设置中配置后使用");
