@@ -78,8 +78,9 @@ export function InputUtil() {
       timestamp: now++,
       topicId: topicId,
     };
+    let isContinue = false;
     try {
-      if (loadingTopic[result.virtualRoleId!]) return;
+      if (loadingTopic[result.virtualRoleId!]) return (isContinue = true);
       loadingTopic[result.virtualRoleId!] = true;
       if (chat.config.botType === "Slack") {
         if (!chat.config.slackChannelId) {
@@ -234,16 +235,16 @@ export function InputUtil() {
         result.text = String(error);
         await chat.pushMessage(result);
       }
-      delete loadingTopic[result.virtualRoleId!];
       setTimeout(() => {
         setLoading((v) => --v);
         reloadTopic(result.topicId, result.id);
         if (msg.topicId == chat.config.activityTopicId)
           scrollToBotton(result.id, true);
       }, 500);
-    } catch {
+    } finally {
       delete loadingTopic[result.virtualRoleId!];
     }
+    if (isContinue) loadingTopic[result.virtualRoleId!] = true;
   };
 
   const onTextareaTab = (
