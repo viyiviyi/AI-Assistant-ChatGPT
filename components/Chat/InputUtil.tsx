@@ -142,6 +142,8 @@ export function InputUtil() {
         msg.text = ChatManagement.parseText(chat.virtualRole.bio);
         msg.virtualRoleId = undefined;
         msg.senderId = chat.user.id;
+        msg = await chat.pushMessage(msg);
+        result = await chat.pushMessage(result);
         await send_message_to_channel(
           chat.config.slackChannelId!,
           msg.text,
@@ -160,6 +162,7 @@ export function InputUtil() {
       if (chat.config.botType === "Slack") {
         if (msg.text) {
           msg = await chat.pushMessage(msg);
+          result = await chat.pushMessage(result);
           await send_message_to_channel(
             chat.config.slackChannelId!,
             msg.text,
