@@ -10,7 +10,12 @@ export async function generateChatStream(
   n = 1,
   temperature = 0.7,
   baseUrl = "https://chat.22733.site",
-  onMessage?: (msg: { end: boolean; text: string }) => void
+  onMessage?: (msg: {
+    error: boolean;
+    text: string;
+    end: boolean;
+    stop?: () => void;
+  }) => void
 ) {
   let full_response = "";
 
@@ -42,7 +47,8 @@ export async function generateChatStream(
     }
   );
   if (!response.ok) {
-    onMessage && onMessage({ end: true, text: await response.text() });
+    onMessage &&
+      onMessage({ error: true, end: true, text: await response.text() });
     return;
   }
   const reader = response.body?.getReader();
@@ -50,7 +56,8 @@ export async function generateChatStream(
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        onMessage && onMessage({ end: true, text: full_response });
+        onMessage &&
+          onMessage({ error: false, end: true, text: full_response });
         break;
       }
       const decodedValue = new TextDecoder("utf-8").decode(value);
@@ -60,7 +67,8 @@ export async function generateChatStream(
           continue;
         }
         if (line.trim() === "data: [DONE]") {
-          onMessage && onMessage({ end: true, text: full_response });
+          onMessage &&
+            onMessage({ error: false, end: true, text: full_response });
           break;
         }
         const data = JSON.parse(line.substring(6));
@@ -75,7 +83,15 @@ export async function generateChatStream(
         if ("content" in delta) {
           const content = delta.content;
           full_response += content;
-          onMessage && onMessage({ end: false, text: full_response });
+          onMessage &&
+            onMessage({
+              error: false,
+              end: false,
+              text: full_response,
+              stop: () => {
+                response.clone();
+              },
+            });
         }
       }
     }
@@ -105,7 +121,7 @@ export class ApiClient {
     apiKey: string;
     n?: number;
     baseUrl?: string;
-    onMessage?: (msg: { end: boolean; text: string }) => void;
+    onMessage?: (msg: { error: boolean; end: boolean; text: string }) => void;
   }): Promise<string> {
     baseUrl = baseUrl || "https://chat.22733.site";
     const client = new OpenAIApi({
@@ -117,7 +133,7 @@ export class ApiClient {
       baseOptions: {
         headers: {
           Authorization: "Bearer " + apiKey,
-          "ngrok-skip-browser-warning":0
+          "ngrok-skip-browser-warning": 0,
         },
         timeout: 1000 * 60 * 5,
       },

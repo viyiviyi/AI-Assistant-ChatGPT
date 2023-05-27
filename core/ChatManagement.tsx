@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole,
+  VirtualRole
 } from "@/Models/DataBase";
 import React from "react";
 import { getInstance } from "ts-indexdb";
@@ -739,6 +739,7 @@ export const ChatContext = React.createContext<{
   setActivityTopic: (topic: Topic) => void;
   bgConfig: BgConfig;
   setBgConfig: (image?: string) => void;
+  loadingMsgs: { [key: string]: { stop: () => void } };
 }>({
   chat: noneChat,
   activityTopic: obj.topic,
@@ -752,4 +753,5 @@ export const ChatContext = React.createContext<{
     opacity: 0.5,
   },
   setBgConfig: (img?: string) => {},
+  loadingMsgs: {},
 });

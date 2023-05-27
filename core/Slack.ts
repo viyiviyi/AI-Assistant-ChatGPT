@@ -50,9 +50,11 @@ export async function send_message_to_channel(
   onMessage: (msg: {
     error: boolean;
     text: string;
+    end: boolean;
     thread_ts?: string;
     ts?: string;
     send_ts?: string;
+    stop?: () => void;
   }) => void,
   thread_ts?: string
 ): Promise<void> {
@@ -70,6 +72,7 @@ export async function send_message_to_channel(
     if (!thread_ts) thread_ts = ts;
     onMessage({
       error: false,
+      end: false,
       text: "loading...",
       thread_ts: thread_ts,
       send_ts: ts,
@@ -79,8 +82,9 @@ export async function send_message_to_channel(
     // 记录响应开始时间,重试次数
     let start_time = Date.now();
     let reties = 1;
+    let isStop = false;
     // 如果响应以_Typing…_结尾，则继续等待响应
-    while (response.trim().endsWith("_Typing…_")) {
+    while (!isStop && response.trim().endsWith("_Typing…_")) {
       if (reties > max_retries) return;
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const replies = await receive_message(channel_id, thread_ts, ts);
@@ -91,6 +95,7 @@ export async function send_message_to_channel(
       if (!result.ok && replies["error"] == "ratelimited") {
         onMessage({
           error: false,
+          end: false,
           text: "被限速了，稍等一会",
         });
         reties += 1;
@@ -113,15 +118,25 @@ export async function send_message_to_channel(
       if (/Please note:|Oops! Claude was un/.test(response)) continue;
       onMessage({
         error: false,
+        end: false,
         text: response,
         ts: message.ts,
+        stop: () => {
+          isStop = true;
+        },
       });
     }
+    onMessage({
+      error: false,
+      end: true,
+      text: response,
+    });
     return;
   } catch (e: any) {
     console.error(e);
     onMessage({
       error: true,
+      end: true,
       text: String(e),
       thread_ts: thread_ts,
     });

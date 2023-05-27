@@ -4,6 +4,7 @@ import {
   CopyOutlined,
   DeleteOutlined,
   EditOutlined,
+  PauseOutlined,
   RollbackOutlined,
   SaveOutlined,
   UserOutlined
@@ -24,20 +25,25 @@ import { MarkdownView } from "./MarkdownView";
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
   msg,
+  renderMessage,
   rBak,
   onDel,
   onCite,
 }: {
   msg: Message;
+  renderMessage: { [key: string]: () => void };
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   onCite: (message: Message) => void;
 }) => {
-  const { chat } = useContext(ChatContext);
+  const { chat, loadingMsgs } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState(msg.text);
   const [none, setNone] = useState([]);
+  renderMessage[msg.id] = () => {
+    setNone([]);
+  };
   const utilsEle = (
     <>
       <Checkbox
@@ -96,17 +102,29 @@ export const MessageItem = ({
         }}
       />
       <span style={{ marginLeft: "30px" }}></span>
-      <Popconfirm
-        title="确定删除？"
-        onConfirm={() => {
-          onDel(msg);
-          setNone([]);
-        }}
-        okText="确定"
-        cancelText="取消"
-      >
-        <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
-      </Popconfirm>
+      {loadingMsgs[msg.id] ? (
+        <Popconfirm
+          title="确定停止？"
+          onConfirm={() => {
+            loadingMsgs[msg.id]?.stop();
+          }}
+          okText="确定"
+          cancelText="取消"
+        >
+          <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+        </Popconfirm>
+      ) : (
+        <Popconfirm
+          title="确定删除？"
+          onConfirm={() => {
+            onDel(msg);
+          }}
+          okText="确定"
+          cancelText="取消"
+        >
+          <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
+        </Popconfirm>
+      )}
     </>
   );
   if (msg.ctxRole === "system") {

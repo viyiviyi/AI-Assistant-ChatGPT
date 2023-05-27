@@ -8,7 +8,7 @@ import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
   MessageOutlined,
-  VerticalAlignMiddleOutlined,
+  VerticalAlignMiddleOutlined
 } from "@ant-design/icons";
 import { Button, Input, message, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
@@ -29,7 +29,8 @@ const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
-  const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
+  const { chat, activityTopic, setActivityTopic, loadingMsgs } =
+    useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
   const { token } = theme.useToken();
@@ -56,43 +57,45 @@ export function InputUtil() {
       });
     }
     let topicId = topic.id;
+    // 时间戳 每次使用加1 保证顺序不错
+    let now = Date.now();
+    let msg: Message = {
+      id: "",
+      groupId: chat.group.id,
+      senderId: isBot ? undefined : chat.user.id,
+      virtualRoleId: isBot ? chat.virtualRole.id : undefined,
+      ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
+      text: text,
+      timestamp: now++,
+      topicId: topicId,
+    };
+    let result: Message = {
+      id: "",
+      groupId: chat.group.id,
+      virtualRoleId: chat.virtualRole.id,
+      ctxRole: "assistant",
+      text: "loading...",
+      timestamp: now++,
+      topicId: topicId,
+    };
     try {
-      if (loadingTopic[topicId]) return;
-      loadingTopic[topicId] = true;
+      if (loadingTopic[result.virtualRoleId!]) return;
+      loadingTopic[result.virtualRoleId!] = true;
       if (chat.config.botType === "Slack") {
         if (!chat.config.slackChannelId) {
           message.error("缺少频道ID");
           return;
         }
       }
-      // 时间戳 每次使用加1 保证顺序不错
-      let now = Date.now();
-      let msg: Message = {
-        id: "",
-        groupId: chat.group.id,
-        senderId: isBot ? undefined : chat.user.id,
-        virtualRoleId: isBot ? chat.virtualRole.id : undefined,
-        ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
-        text: text,
-        timestamp: now++,
-        topicId: topicId,
-      };
-      let result: Message = {
-        id: "",
-        groupId: chat.group.id,
-        virtualRoleId: chat.virtualRole.id,
-        ctxRole: "assistant",
-        text: "loading...",
-        timestamp: now++,
-        topicId: topicId,
-      };
       // 获取slack的响应
       const onMessage = async (res: {
         error: boolean;
         text: string;
+        end: boolean;
         thread_ts?: string; // 发送给claude的第一条消息的ts
         ts?: string; // claude回复的消息的ts
         send_ts?: string; // 回复claude的消息的ts
+        stop?: () => void;
       }) => {
         if (!topic.slack_thread_ts && res.thread_ts) {
           topic.slack_thread_ts = res.thread_ts;
@@ -104,15 +107,27 @@ export function InputUtil() {
             msg = m;
             reloadTopic(result.topicId);
             if (msg.topicId == chat.config.activityTopicId)
-              scrollToBotton(result.id,true);
+              scrollToBotton(result.id, true);
           });
         }
         if (res.text || res.ts) {
-          result.text = res.text;
-          result.slackTs = res.ts;
+          result.text = res.text + (res.end ? "" : "\n\nloading...");
+          result.slackTs = res.ts || result.slackTs;
           chat.pushMessage(result).then((r) => {
             result = r;
-            reloadTopic(topicId);
+            if (res.end) {
+              delete loadingMsgs[r.id];
+              if (msg.topicId == chat.config.activityTopicId)
+                scrollToBotton(result.id, true);
+            } else {
+              loadingMsgs[r.id] = {
+                stop: () => {
+                  stop && stop();
+                  delete loadingMsgs[r.id];
+                },
+              };
+            }
+            reloadTopic(topicId, r.id);
           });
         }
       };
@@ -162,9 +177,9 @@ export function InputUtil() {
             oldTs,
             topic.messages.length ? 100 : undefined
           ).then((res) => {
-            res.forEach((v) => {
-              chat
-                .pushMessage({
+            Promise.all(
+              res.map((v) => {
+                return chat.pushMessage({
                   id: "",
                   groupId: chat.group.id,
                   senderId: v.isClaude ? undefined : chat.user.id,
@@ -174,50 +189,31 @@ export function InputUtil() {
                   timestamp: v.ts ? Number(v.ts) * 1000 + 1 : now++,
                   topicId: topicId,
                   slackTs: v.ts,
-                })
-                .then(() => reloadTopic(topicId));
-            });
+                });
+              })
+            ).then(() => reloadTopic(topicId));
           });
         }
         if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id,true);
+          scrollToBotton(result.id, true);
         setLoading((v) => --v);
         return;
       }
       msg = await chat.pushMessage(msg);
-      if (isBot || skipRequest || chat.config.botType === "None") return setLoading((v) => --v);;
+      if (isBot || skipRequest || chat.config.botType === "None")
+        return setLoading((v) => --v);
       const messages = chat.getAskContext();
       if (messages.length == 0) {
         setLoading((v) => --v);
-        reloadTopic(topicId);
         return;
       }
       result = await chat.pushMessage(result);
       reloadTopic(result.topicId);
-      if (msg.topicId == chat.config.activityTopicId) scrollToBotton(result.id,true);
+      if (msg.topicId == chat.config.activityTopicId)
+        scrollToBotton(result.id, true);
       try {
         if (KeyValueData.instance().getApiKey()) {
-          // generateChatStream(
-          //   messages,
-          //   chat.gptConfig.model,
-          //   chat.gptConfig.max_tokens,
-          //   chat.gptConfig.top_p,
-          //   chat.getNameByRole(result.ctxRole),
-          //   KeyValueData.instance().getApiKey(),
-          //   chat.gptConfig.n,
-          //   chat.gptConfig.temperature,
-          //   chat.config.baseUrl || undefined,
-          //   (m) => {
-          //     result.text = m.text;
-          //     chat.pushMessage(result).then(() => {
-          //       reloadTopic(result.topicId);
-          //       if (msg.topicId == chat.config.activityTopicId)
-          //         scrollToBotton(result.id);
-          //       if (m.end) setLoading((v) => --v);
-          //     });
-          //   }
-          // );
-          const res = await ApiClient.chatGpt({
+          await ApiClient.chatGpt({
             messages,
             model: chat.gptConfig.model,
             max_tokens: chat.gptConfig.max_tokens,
@@ -227,15 +223,10 @@ export function InputUtil() {
             user: chat.getNameByRole(result.ctxRole),
             apiKey: KeyValueData.instance().getApiKey(),
             baseUrl: chat.config.baseUrl || undefined,
-            onMessage: (m) => {
-              result.text = m.text + (m.end?'':'\n\nloading...');
-              chat.pushMessage(result).then(() => {
-                reloadTopic(result.topicId);
-              });
-            },
+            onMessage: onMessage,
           });
-          // result.text = res;
-          // await chat.pushMessage(result);
+          if (msg.topicId == chat.config.activityTopicId)
+            scrollToBotton(result.id, true);
         } else {
           message.error("缺少apikey，请在设置中配置后使用");
         }
@@ -243,14 +234,15 @@ export function InputUtil() {
         result.text = String(error);
         await chat.pushMessage(result);
       }
+      delete loadingTopic[result.virtualRoleId!];
       setTimeout(() => {
         setLoading((v) => --v);
-        reloadTopic(result.topicId);
+        reloadTopic(result.topicId, result.id);
         if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id,true);
+          scrollToBotton(result.id, true);
       }, 500);
-    } finally {
-      delete loadingTopic[topicId];
+    } catch {
+      delete loadingTopic[result.virtualRoleId!];
     }
   };
 

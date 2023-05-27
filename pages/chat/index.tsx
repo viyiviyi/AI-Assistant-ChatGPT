@@ -20,7 +20,7 @@ export default function Page() {
   const screenSize = useScreenSize();
   const { id: groupId } = router.query;
   const { token } = theme.useToken();
-  const { bgConfig } = useContext(ChatContext);
+  const { bgConfig, loadingMsgs } = useContext(ChatContext);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
@@ -76,6 +76,7 @@ export default function Page() {
       value={{
         chat: chatMgt,
         activityTopic,
+        loadingMsgs,
         setActivityTopic: (topic: Topic) => {
           setActivityTopic(topic);
           chatMgt.config.activityTopicId = topic.id;

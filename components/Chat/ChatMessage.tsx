@@ -7,14 +7,21 @@ import {
   DownloadOutlined
 } from "@ant-design/icons";
 import { Button, Collapse, Popconfirm, theme, Typography } from "antd";
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
 import { MessageItem } from "./MessageItem";
 
 const { Panel } = Collapse;
 
+// 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
+const renderTopic: { [key: string]: (messageId?: string) => void } = {};
+export function reloadTopic(topicId: string, messageId?: string) {
+  renderTopic[topicId] && renderTopic[topicId](messageId);
+}
+
 const MemoMessageList = React.memo(MessageList);
+const MemoMessageItem = React.memo(MessageItem);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic } = useContext(ChatContext);
@@ -152,11 +159,6 @@ export const ChatMessage = () => {
   );
 };
 
-// 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
-const renderTopic: { [key: string]: () => void } = {};
-export function reloadTopic(topicId: string) {
-  renderTopic[topicId] && renderTopic[topicId]();
-}
 function MessageList({
   topic,
   chat,
@@ -167,27 +169,42 @@ function MessageList({
   const { inputRef, setInput } = useInput();
   const [messages, steMessages] = useState(topic.messages);
   const [total, setTotal] = useState(topic.messages.length);
+  const [renderMessage] = useState<{ [key: string]: () => void }>({});
   const [range, setRange] = useState([
     Math.max(0, topic.messages.length - 20),
     topic.messages.length,
   ]);
-  const { setCite, onlyOne } = useContext(MessageContext);
-  function rBak(v: Message) {
-    setInput(
-      (m) =>
-        (m ? m + "\n" : m) +
-        (!m
-          ? v.ctxRole == "system"
-            ? "/::"
-            : v.virtualRoleId
-            ? "/"
-            : ""
-          : "") +
-        v.text
-    );
-    inputRef.current?.focus();
-  }
-  renderTopic[topic.id] = () => {
+  const { setCite } = useContext(MessageContext);
+  const rBak = useCallback(
+    (v: Message) => {
+      setInput(
+        (m) =>
+          (m ? m + "\n" : m) +
+          (!m
+            ? v.ctxRole == "system"
+              ? "/::"
+              : v.virtualRoleId
+              ? "/"
+              : ""
+            : "") +
+          v.text
+      );
+      inputRef.current?.focus();
+    },
+    [inputRef, setInput]
+  );
+  const onDel = useCallback(
+    (msg: Message) => {
+      chat.removeMessage(msg)?.then(() => {
+        delete renderMessage[msg.id];
+        steMessages([...topic.messages]);
+      });
+    },
+    [renderMessage, steMessages, topic, chat]
+  );
+  renderTopic[topic.id] = (messageId?: string) => {
+    if (messageId)
+      return renderMessage[messageId] && renderMessage[messageId]();
     steMessages([...topic.messages]);
     setTotal(topic.messages.length);
     setRange([Math.max(0, topic.messages.length - 20), topic.messages.length]);
@@ -225,17 +242,14 @@ function MessageList({
         <></>
       )}
       {messages.slice(range[0], range[1]).map((v) => (
-        <MessageItem
+        <MemoMessageItem
+          renderMessage={renderMessage}
           msg={v}
-          onDel={(msg) => {
-            chat.removeMessage(msg)?.then(() => {
-              steMessages([...topic.messages]);
-            });
-          }}
+          onDel={onDel}
           rBak={rBak}
           onCite={setCite}
           key={v.id}
-        ></MessageItem>
+        ></MemoMessageItem>
       ))}
 
       {range[1] < total ? (
