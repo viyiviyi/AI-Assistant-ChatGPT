@@ -208,6 +208,7 @@ export function InputUtil() {
             ).then(() => rendAndScrollView());
           });
         }
+        setLoading((v) => --v);
         return;
       }
       rendAndScrollView(msg);

@@ -58,6 +58,7 @@ export async function send_message_to_channel(
   }) => void,
   thread_ts?: string
 ): Promise<void> {
+  let response = "_Typing…_";
   try {
     if (slack_user_token.slice(0, 4) !== "xoxp") {
       throw new Error("USER_TOKEN错误，请检查是否填写正确。");
@@ -73,12 +74,11 @@ export async function send_message_to_channel(
     onMessage({
       error: false,
       end: false,
-      text: "loading...",
+      text: "",
       thread_ts: thread_ts,
       send_ts: ts,
     });
     // 初始化响应为_Typing…_，表示正在等待响应
-    let response = "_Typing…_";
     // 记录响应开始时间,重试次数
     let start_time = Date.now();
     let reties = 1;
@@ -119,7 +119,7 @@ export async function send_message_to_channel(
       onMessage({
         error: false,
         end: false,
-        text: response,
+        text: response.replace(/[\s\n]*_Typing…_$/, ""),
         ts: message.ts,
         stop: () => {
           isStop = true;
@@ -129,15 +129,19 @@ export async function send_message_to_channel(
     onMessage({
       error: false,
       end: true,
-      text: response,
+      text:
+        response.replace(/[\s\n]*_Typing…_$/, "") +
+        (isStop ? "\n\n 请求已终止。" : ""),
     });
     return;
   } catch (e: any) {
-    console.error(e);
     onMessage({
       error: true,
       end: true,
-      text: String(e),
+      text:
+        response.replace(/[\s\n]*_Typing…_$/, "") +
+        "\n\n 请求发生错误。\n\n" +
+        String(e),
       thread_ts: thread_ts,
     });
   }
