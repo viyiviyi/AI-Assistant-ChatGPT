@@ -33,6 +33,7 @@ export async function generateChatStream(
     n,
     user: user,
   };
+  const controller = new AbortController();
   const response = await fetch(
     `${baseUrl || "https://api.openai.com"}/v1/chat/completions`,
     {
@@ -44,59 +45,81 @@ export async function generateChatStream(
       credentials: "same-origin",
       redirect: "follow",
       referrerPolicy: "no-referrer",
+      signal: controller.signal,
     }
-  );
-  if (!response.ok) {
-    onMessage &&
-      onMessage({ error: true, end: true, text: await response.text() });
-    return;
-  }
-  const reader = response.body?.getReader();
-  if (reader) {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
+  )
+    .then(async (response) => {
+      if (!response.ok) {
         onMessage &&
-          onMessage({ error: false, end: true, text: full_response });
-        break;
+          onMessage({ error: true, end: true, text: await response.text() });
+        return;
       }
-      const decodedValue = new TextDecoder("utf-8").decode(value);
-      const lines = decodedValue.split("\n");
-      for (const line of lines) {
-        if (line.trim() === "") {
-          continue;
+      const reader = response.body?.getReader();
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            onMessage &&
+              onMessage({ error: false, end: true, text: full_response });
+            break;
+          }
+          const decodedValue = new TextDecoder("utf-8").decode(value);
+          const lines = decodedValue.split("\n");
+          for (const line of lines) {
+            if (line.trim() === "") {
+              continue;
+            }
+            if (line.trim() === "data: [DONE]") {
+              onMessage &&
+                onMessage({ error: false, end: true, text: full_response });
+              break;
+            }
+            const data = JSON.parse(line.substring(6));
+            const choices = data.choices;
+            if (!choices) {
+              continue;
+            }
+            const delta = choices[0].delta;
+            if (!delta) {
+              continue;
+            }
+            if ("content" in delta) {
+              const content = delta.content;
+              full_response += content;
+              onMessage &&
+                onMessage({
+                  error: false,
+                  end: false,
+                  text: full_response,
+                  stop: () => {
+                    try {
+                      controller.abort();
+                    } catch (error) {}
+                  },
+                });
+            }
+          }
         }
-        if (line.trim() === "data: [DONE]") {
-          onMessage &&
-            onMessage({ error: false, end: true, text: full_response });
-          break;
-        }
-        const data = JSON.parse(line.substring(6));
-        const choices = data.choices;
-        if (!choices) {
-          continue;
-        }
-        const delta = choices[0].delta;
-        if (!delta) {
-          continue;
-        }
-        if ("content" in delta) {
-          const content = delta.content;
-          full_response += content;
-          onMessage &&
-            onMessage({
-              error: false,
-              end: false,
-              text: full_response,
-              stop: () => {
-                response.clone();
-              },
-            });
-        }
+        return full_response;
       }
-    }
-    return full_response;
-  }
+    })
+    .catch((error) => {
+      if (error.name === "AbortError") {
+        onMessage &&
+          onMessage({
+            error: false,
+            end: true,
+            text: full_response + "\n\n 请求已终止。",
+          });
+      } else {
+        onMessage &&
+          onMessage({
+            error: false,
+            end: true,
+            text: full_response + "\n\n 请求发生错误。\n\n" + error,
+          });
+      }
+    });
 }
 
 export class ApiClient {
@@ -121,8 +144,13 @@ export class ApiClient {
     apiKey: string;
     n?: number;
     baseUrl?: string;
-    onMessage?: (msg: { error: boolean; end: boolean; text: string }) => void;
-  }): Promise<string> {
+    onMessage?: (msg: {
+      error: boolean;
+      text: string;
+      end: boolean;
+      stop?: () => void;
+    }) => void;
+  }): Promise<void> {
     baseUrl = baseUrl || "https://chat.22733.site";
     const client = new OpenAIApi({
       basePath: baseUrl + "/v1",
@@ -139,7 +167,7 @@ export class ApiClient {
       },
     });
     if (model.startsWith("gpt-3")) {
-      return await generateChatStream(
+      await generateChatStream(
         messages,
         model,
         max_tokens <= 0 ? undefined : max_tokens,
@@ -150,11 +178,9 @@ export class ApiClient {
         temperature,
         baseUrl,
         onMessage
-      ).catch((error) => {
-        return this.handleError(error);
-      });
+      );
     } else if (model.startsWith("gpt-4")) {
-      return await generateChatStream(
+      await generateChatStream(
         messages,
         model,
         max_tokens <= 0 ? undefined : max_tokens,
@@ -165,9 +191,7 @@ export class ApiClient {
         temperature,
         baseUrl,
         onMessage
-      ).catch((error) => {
-        return this.handleError(error);
-      });
+      );
     } else {
       return await client
         .createCompletion({
@@ -181,9 +205,21 @@ export class ApiClient {
           user,
         })
         .then((res) => {
+          onMessage &&
+            onMessage({
+              end: true,
+              error: false,
+              text: res.data.choices[0].text || "",
+            });
           return res.data.choices[0].text || "";
         })
         .catch((error) => {
+          onMessage &&
+            onMessage({
+              end: true,
+              error: true,
+              text: this.handleError(error),
+            });
           return this.handleError(error);
         });
     }

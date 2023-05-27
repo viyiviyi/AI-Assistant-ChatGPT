@@ -80,15 +80,30 @@ export function InputUtil() {
     };
     let isContinue = false;
     try {
-      if (loadingTopic[result.virtualRoleId!]) return (isContinue = true);
+      // 阻止同时对同一个助理发起多个提问
+      if (chat.config.enableVirtualRole && loadingTopic[result.virtualRoleId!])
+        return (isContinue = true);
       loadingTopic[result.virtualRoleId!] = true;
+
+      // 检查配置
       if (chat.config.botType === "Slack") {
         if (!chat.config.slackChannelId) {
-          message.error("缺少频道ID");
+          message.error("缺少频道ID，请在设置中配置后使用");
           return;
         }
+      } else if (!KeyValueData.instance().getApiKey()) {
+        message.error("缺少apikey，请在设置中配置后使用");
+        return;
       }
-      // 获取slack的响应
+      // 渲染并滚动到最新内容
+      const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
+        if (_msg) msg = await chat.pushMessage(_msg);
+        if (_result) result = await chat.pushMessage(_result);
+        reloadTopic(result.topicId);
+        if (msg.topicId == chat.config.activityTopicId)
+          scrollToBotton(result.id, true);
+      };
+      // 接收消息的方法
       const onMessage = async (res: {
         error: boolean;
         text: string;
@@ -104,12 +119,7 @@ export function InputUtil() {
         }
         if (!msg.slackTs && res.send_ts) {
           msg.slackTs = res.send_ts;
-          await chat.pushMessage(msg).then((m) => {
-            msg = m;
-            reloadTopic(result.topicId);
-            if (msg.topicId == chat.config.activityTopicId)
-              scrollToBotton(result.id, true);
-          });
+          await chat.pushMessage(msg);
         }
         if (res.text || res.ts) {
           result.text = res.text + (res.end ? "" : "\n\nloading...");
@@ -118,13 +128,15 @@ export function InputUtil() {
             result = r;
             if (res.end) {
               delete loadingMsgs[r.id];
-              if (msg.topicId == chat.config.activityTopicId)
-                scrollToBotton(result.id, true);
+              rendAndScrollView();
             } else {
               loadingMsgs[r.id] = {
                 stop: () => {
-                  stop && stop();
-                  delete loadingMsgs[r.id];
+                  try {
+                    res.stop && res.stop();
+                  } finally {
+                    delete loadingMsgs[r.id];
+                  }
                 },
               };
             }
@@ -132,7 +144,7 @@ export function InputUtil() {
           });
         }
       };
-      // 当开启了助理模式时，先把助理设定发送给Claude
+      // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
       if (
         isNewTopic &&
         chat.config.botType === "Slack" &&
@@ -142,8 +154,7 @@ export function InputUtil() {
         msg.text = ChatManagement.parseText(chat.virtualRole.bio);
         msg.virtualRoleId = undefined;
         msg.senderId = chat.user.id;
-        msg = await chat.pushMessage(msg);
-        result = await chat.pushMessage(result);
+        rendAndScrollView(msg, result);
         await send_message_to_channel(
           chat.config.slackChannelId!,
           msg.text,
@@ -161,8 +172,7 @@ export function InputUtil() {
       setLoading((v) => ++v);
       if (chat.config.botType === "Slack") {
         if (msg.text) {
-          msg = await chat.pushMessage(msg);
-          result = await chat.pushMessage(result);
+          rendAndScrollView(msg, result);
           await send_message_to_channel(
             chat.config.slackChannelId!,
             msg.text,
@@ -195,15 +205,12 @@ export function InputUtil() {
                   slackTs: v.ts,
                 });
               })
-            ).then(() => reloadTopic(topicId));
+            ).then(() => rendAndScrollView());
           });
         }
-        if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id, true);
-        setLoading((v) => --v);
         return;
       }
-      msg = await chat.pushMessage(msg);
+      rendAndScrollView(msg);
       if (isBot || skipRequest || chat.config.botType === "None")
         return setLoading((v) => --v);
       const messages = chat.getAskContext();
@@ -211,43 +218,29 @@ export function InputUtil() {
         setLoading((v) => --v);
         return;
       }
-      result = await chat.pushMessage(result);
-      reloadTopic(result.topicId);
-      if (msg.topicId == chat.config.activityTopicId)
-        scrollToBotton(result.id, true);
-      try {
-        if (KeyValueData.instance().getApiKey()) {
-          await ApiClient.chatGpt({
-            messages,
-            model: chat.gptConfig.model,
-            max_tokens: chat.gptConfig.max_tokens,
-            top_p: chat.gptConfig.top_p,
-            temperature: chat.gptConfig.temperature,
-            n: chat.gptConfig.n,
-            user: chat.getNameByRole(result.ctxRole),
-            apiKey: KeyValueData.instance().getApiKey(),
-            baseUrl: chat.config.baseUrl || undefined,
-            onMessage: onMessage,
-          });
-          if (msg.topicId == chat.config.activityTopicId)
-            scrollToBotton(result.id, true);
-        } else {
-          message.error("缺少apikey，请在设置中配置后使用");
-        }
-      } catch (error: any) {
-        result.text = String(error);
-        await chat.pushMessage(result);
-      }
-      setTimeout(() => {
-        setLoading((v) => --v);
-        reloadTopic(result.topicId, result.id);
-        if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id, true);
-      }, 500);
+      rendAndScrollView(undefined, result);
+      await ApiClient.chatGpt({
+        messages,
+        model: chat.gptConfig.model,
+        max_tokens: chat.gptConfig.max_tokens,
+        top_p: chat.gptConfig.top_p,
+        temperature: chat.gptConfig.temperature,
+        n: chat.gptConfig.n,
+        user: chat.getNameByRole(result.ctxRole),
+        apiKey: KeyValueData.instance().getApiKey(),
+        baseUrl: chat.config.baseUrl || undefined,
+        onMessage: onMessage,
+      });
     } finally {
       delete loadingTopic[result.virtualRoleId!];
     }
     if (isContinue) loadingTopic[result.virtualRoleId!] = true;
+    setTimeout(() => {
+      setLoading((v) => --v);
+      reloadTopic(result.topicId, result.id);
+      if (msg.topicId == chat.config.activityTopicId)
+        scrollToBotton(result.id, true);
+    }, 500);
   };
 
   const onTextareaTab = (
