@@ -201,6 +201,21 @@ export const MessageItem = ({
             <span>
               {msg.virtualRoleId ? chat.virtualRole.name : chat.user?.name}
             </span>
+            <span style={{ marginLeft: "30px" }}></span>
+            {loadingMsgs[msg.id] ? (
+              <Popconfirm
+                title="确定停止？"
+                onConfirm={() => {
+                  loadingMsgs[msg.id]?.stop();
+                }}
+                okText="确定"
+                cancelText="取消"
+              >
+                <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+              </Popconfirm>
+            ) : (
+              <></>
+            )}
           </div>
           <div
             style={{
