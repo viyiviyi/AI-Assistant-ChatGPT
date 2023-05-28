@@ -28,7 +28,7 @@ export interface GroupConfig {
   activityTopicId: string; // 激活的话题
   defaultVirtualRole?: string; // 默认助理
   disableStrikethrough?: boolean; // 禁用删除线
-  botType: "None" | "ChatGPT" | "Slack";
+  botType: "None" | "ChatGPT" | "Slack"|"GPTFree";
   slackChannelId?: string;
 }
 

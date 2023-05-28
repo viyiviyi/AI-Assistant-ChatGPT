@@ -229,7 +229,7 @@ export function InputUtil() {
         n: chat.gptConfig.n,
         user: chat.getNameByRole(result.ctxRole),
         apiKey: KeyValueData.instance().getApiKey(),
-        baseUrl: chat.config.baseUrl || undefined,
+        baseUrl: chat.config.botType==='GPTFree'?'https://chat-free.22733.site':( chat.config.baseUrl || undefined),
         onMessage: onMessage,
       });
     } finally {

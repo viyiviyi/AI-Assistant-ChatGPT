@@ -8,7 +8,7 @@ import {
   DownloadOutlined,
   EyeOutlined,
   GithubOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -21,7 +21,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload,
+  Upload
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
@@ -305,11 +305,12 @@ export const Setting = ({
           >
             <Switch />
           </Form.Item>
-          <Form.Item name="config_bot_type" label="Ai类型">
+          <Form.Item name="config_bot_type" label="Ai类型" extra="这个免费的GPT地址临时开放且每天全局限制请求次数">
             <Radio.Group style={{ width: "100%" }}>
               <Radio.Button value="None">不启用AI</Radio.Button>
               <Radio.Button value="ChatGPT">ChatGPT</Radio.Button>
               <Radio.Button value="Slack">Slack(Claude)</Radio.Button>
+              <Radio.Button value="GPTFree">ChatGPT(免费)</Radio.Button>
             </Radio.Group>
           </Form.Item>
           <Form.Item
