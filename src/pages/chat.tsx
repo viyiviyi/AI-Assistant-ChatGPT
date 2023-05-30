@@ -1,12 +1,11 @@
 import { Chat } from "@/components/Chat/Chat";
-import { reloadTopic } from "@/components/Chat/ChatMessage";
 import { ChatList } from "@/components/ChatList";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
 import { initClient } from "@/core/Slack";
-import { Topic } from "@/Models/DataBase";
+import { TopicMessage } from "@/Models/Topic";
 import { Drawer, Layout, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -24,11 +23,13 @@ export default function Page() {
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
-  const [activityTopic, setActivityTopic] = useState({
+  const [activityTopic, setActivityTopic] = useState<TopicMessage>({
     id: "",
     name: "",
     groupId: "",
     createdAt: 0,
+    messages: [],
+    messageMap: {},
   });
   useEffect(() => {
     ChatManagement.load().then(async () => {
@@ -64,9 +65,10 @@ export default function Page() {
         name: "",
         groupId: "",
         createdAt: 0,
+        messages: [],
+        messageMap: {},
       };
       setActivityTopic(aTopic);
-      reloadTopic(aTopic.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
@@ -77,7 +79,7 @@ export default function Page() {
         chat: chatMgt,
         activityTopic,
         loadingMsgs,
-        setActivityTopic: (topic: Topic) => {
+        setActivityTopic: (topic: TopicMessage) => {
           setActivityTopic(topic);
           chatMgt.config.activityTopicId = topic.id;
           chatMgt.saveConfig();

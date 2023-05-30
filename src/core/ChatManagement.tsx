@@ -9,6 +9,7 @@ import {
   User,
   VirtualRole
 } from "@/Models/DataBase";
+import { TopicMessage } from "@/Models/Topic";
 import React from "react";
 import { getInstance } from "ts-indexdb";
 import { BgConfig } from "./BgImageStore";
@@ -43,7 +44,7 @@ export interface IChat {
   user: User;
   virtualRole: VirtualRole;
   virtualRoles: { [key: string]: VirtualRole | undefined };
-  topics: (Topic & { messages: Message[] })[];
+  topics: TopicMessage[];
   group: Group;
   config: GroupConfig;
   gptConfig: GptConfig;
@@ -58,7 +59,7 @@ export class ChatManagement implements IChat {
     this.user = chat.user;
     this.virtualRole = chat.virtualRole;
   }
-  readonly topics: (Topic & { messages: Message[] })[];
+  readonly topics: TopicMessage[];
   readonly config: GroupConfig;
   readonly user: User;
   readonly virtualRole: VirtualRole;
@@ -116,7 +117,7 @@ export class ChatManagement implements IChat {
             thisVirtualRoles[v.id] = v;
           });
         if (!virtualRole) virtualRole = await this.createVirtualRoleBio(g.id);
-        let topics: (Topic & { messages: Message[] })[] = [];
+        let topics: TopicMessage[] = [];
         const chat = {
           group: g,
           user,
@@ -140,7 +141,7 @@ export class ChatManagement implements IChat {
     return this.loadAwait;
   }
   static async loadTopics(chat: IChat) {
-    let topics: (Topic & { messages: Message[] })[] = [];
+    let topics: TopicMessage[] = [];
     topics = await getInstance()
       .query<Topic>({
         tableName: "Topic",
@@ -152,6 +153,7 @@ export class ChatManagement implements IChat {
           .map((t) => ({
             ...t,
             messages: [],
+            messageMap: {},
           }));
       });
     chat.topics = topics;
@@ -167,7 +169,7 @@ export class ChatManagement implements IChat {
       }
     }
   }
-  static async loadMessage(topic: Topic & { messages: Message[] }) {
+  static async loadMessage(topic: TopicMessage) {
     if (topic.messages.length) return;
     let msgs = await getInstance().query<Message>({
       tableName: "Message",
@@ -178,6 +180,7 @@ export class ChatManagement implements IChat {
       .sort((s, n) => s.timestamp - n.timestamp)
       .map((v) => {
         if (!v.ctxRole) v.ctxRole = v.virtualRoleId ? "assistant" : "user";
+        topic.messageMap[v.id] = v;
       });
     topic.messages = msgs;
   }
@@ -324,12 +327,12 @@ export class ChatManagement implements IChat {
       this.group.id,
       name.substring(0, 100) || new Date().toLocaleString()
     );
-    let _topic = { ...topic, messages: [] };
+    let _topic = { ...topic, messages: [], messageMap: {} };
     this.topics.push(_topic);
     this.config.activityTopicId = topic.id;
     return _topic;
   }
-  getActivityTopic(): Topic & { messages: Message[] } {
+  getActivityTopic(): TopicMessage {
     return (
       this.topics.find((f) => f.id === this.config.activityTopicId) ||
       this.topics.slice(-1)[0]
@@ -527,6 +530,7 @@ export class ChatManagement implements IChat {
       let msg = topic.messages.find((f) => f.id == message.id);
       if (!msg) {
         topic.messages.push(message);
+        topic.messageMap[message.id] = message;
         await ChatManagement.createMessage(message);
         return message;
       }
@@ -544,6 +548,7 @@ export class ChatManagement implements IChat {
     } else {
       message.id = getUuid();
       topic.messages.push(message);
+      topic.messageMap[message.id] = message;
       await ChatManagement.createMessage(message);
       return message;
     }
@@ -555,6 +560,7 @@ export class ChatManagement implements IChat {
       if (delIdx > -1) {
         topic.messages.splice(delIdx, 1);
       }
+      delete topic.messageMap[message.id];
     }
     if (message.id) {
       return getInstance().delete_by_primaryKey({
@@ -735,15 +741,15 @@ export const noneChat = new ChatManagement(defaultChat);
 const obj: { [key: string]: any } = {};
 export const ChatContext = React.createContext<{
   chat: ChatManagement;
-  activityTopic: Topic;
-  setActivityTopic: (topic: Topic) => void;
+  activityTopic: TopicMessage;
+  setActivityTopic: (topic: TopicMessage) => void;
   bgConfig: BgConfig;
   setBgConfig: (image?: string) => void;
   loadingMsgs: { [key: string]: { stop: () => void } };
 }>({
   chat: noneChat,
   activityTopic: obj.topic,
-  setActivityTopic: (topic: Topic) => {
+  setActivityTopic: (topic: TopicMessage) => {
     obj.topic = topic;
   },
   bgConfig: {

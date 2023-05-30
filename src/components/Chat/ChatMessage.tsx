@@ -1,13 +1,14 @@
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
 import { scrollToBotton } from "@/core/utils";
-import { Message, Topic } from "@/Models/DataBase";
+import { Message } from "@/Models/DataBase";
+import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
   DeleteOutlined,
   DownloadOutlined
 } from "@ant-design/icons";
 import { Button, Collapse, Popconfirm, theme, Typography } from "antd";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
 import { MessageItem } from "./MessageItem";
@@ -15,23 +16,20 @@ import { MessageItem } from "./MessageItem";
 const { Panel } = Collapse;
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
-const renderTopic: { [key: string]: (messageId?: string) => void } = {};
+const topicRender: { [key: string]: (messageId?: string) => void } = {};
 export function reloadTopic(topicId: string, messageId?: string) {
-  renderTopic[topicId] && renderTopic[topicId](messageId);
+  topicRender[topicId] && topicRender[topicId](messageId);
 }
 
 const MemoMessageList = React.memo(MessageList);
 const MemoMessageItem = React.memo(MessageItem);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
-  const { chat, setActivityTopic } = useContext(ChatContext);
+  const { chat, setActivityTopic, activityTopic } = useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([]);
   const { onlyOne, closeAll, setCloasAll } = useContext(MessageContext);
-  async function onClickTopicTitle(
-    topic: Topic & {
-      messages: Message[];
-    }
-  ) {
+  const [none, setNone] = useState([]);
+  async function onClickTopicTitle(topic: TopicMessage) {
     let v = [...activityKey];
     if (closeAll) {
       v = [];
@@ -55,11 +53,20 @@ export const ChatMessage = () => {
     setActivityKey(v);
     setActivityTopic(topic);
   }
-  Object.keys(renderTopic).forEach((v) => {
-    delete renderTopic[v];
-  });
+  useEffect(() => {
+    ChatManagement.load().then(() => {
+      activityTopic &&
+        ChatManagement.loadMessage(activityTopic).then(() => {
+          setNone([]);
+          if (!activityKey.includes(activityTopic.id))
+            setActivityKey((v) => [...v, activityTopic.id]);
+        });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activityTopic]);
+  Object.keys(topicRender).forEach((v) => delete topicRender[v]);
 
-  function rendTopic(topic: Topic & { messages: Message[] }) {
+  function rendTopic(topic: TopicMessage) {
     return (
       <Panel
         header={
@@ -158,12 +165,11 @@ export const ChatMessage = () => {
     </Collapse>
   );
 };
-
 function MessageList({
   topic,
   chat,
 }: {
-  topic: Topic & { messages: Message[] };
+  topic: TopicMessage;
   chat: ChatManagement;
 }) {
   const { inputRef, setInput } = useInput();
@@ -202,15 +208,13 @@ function MessageList({
     },
     [renderMessage, steMessages, topic, chat]
   );
-  renderTopic[topic.id] = (messageId?: string) => {
+  topicRender[topic.id] = (messageId?: string) => {
     if (messageId)
       return renderMessage[messageId] && renderMessage[messageId]();
     steMessages([...topic.messages]);
     setTotal(topic.messages.length);
     setRange([Math.max(0, topic.messages.length - 20), topic.messages.length]);
-    // scrollToBotton(messages.slice(-1)[0]?.id);
   };
-
   return (
     <>
       {range[0] > 0 ? (
@@ -288,11 +292,7 @@ function MessageList({
   );
 }
 
-function downloadTopic(
-  topic: Topic & { messages: Message[] },
-  useRole: boolean,
-  chat: IChat
-) {
+function downloadTopic(topic: TopicMessage, useRole: boolean, chat: IChat) {
   let str = topic.name.replace(/^\\/, "").replace(/^\/:?:?/, "");
   str += "\n\n";
   topic.messages.forEach((v) => {

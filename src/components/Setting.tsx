@@ -5,6 +5,7 @@ import { KeyValueData } from "@/core/KeyValueData";
 import { initClient } from "@/core/Slack";
 import { downloadJson } from "@/core/utils";
 import {
+  CaretRightOutlined,
   DownloadOutlined,
   EyeOutlined,
   GithubOutlined,
@@ -12,7 +13,7 @@ import {
 } from "@ant-design/icons";
 import {
   Button,
-  Divider,
+  Collapse,
   Form,
   Input,
   InputNumber,
@@ -37,6 +38,7 @@ export const Setting = ({
   onCancel: () => void;
 }) => {
   const [modal, contextHolder] = Modal.useModal();
+  const [activityKey, setActivityKey] = useState<string[]>(["GPT"]);
   const router = useRouter();
   const { setBgConfig } = useContext(ChatContext);
   const [models, setModels] = useState<string[]>(ApiClient.textModels);
@@ -214,7 +216,7 @@ export const Setting = ({
                   showUploadList: false,
                 }}
               >
-                <Button block style={{ width: "220px" }}>
+                <Button block style={{ width: "min(220px, 40vw)" }}>
                   设置
                 </Button>
               </Upload>
@@ -288,175 +290,224 @@ export const Setting = ({
               </Button>
             </Button.Group>
           </Form.Item>
-          <Form.Item label="模型名称" name={"GptConfig_model"}>
-            <Select options={models.map((v) => ({ value: v, label: v }))} />
-          </Form.Item>
           <Form.Item
-            name="GptConfig_msgCount"
-            label="上下文数量"
-            extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
+            name="config_bot_type"
+            label="Ai类型"
+            extra="包含了一个临时开放且每天全局限制请求次数免费的GPT服务"
           >
-            <Input.TextArea autoSize />
+            <Select style={{ width: "100%" }}>
+              <Select.Option value="None">不启用AI</Select.Option>
+              <Select.Option value="ChatGPT">ChatGPT</Select.Option>
+              <Select.Option value="Slack">Slack(Claude)</Select.Option>
+              <Select.Option value="GPTFree">ChatGPT(免费)</Select.Option>
+            </Select>
           </Form.Item>
-          <Form.Item
-            name="config_disable_strikethrough"
-            valuePropName="checked"
-            label="禁用删除线 (使用中文～替换了~)"
+          <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+            <Form.Item
+              style={{ flex: "1" }}
+              name="config_disable_strikethrough"
+              valuePropName="checked"
+              label="禁用删除线"
+            >
+              <Switch />
+            </Form.Item>
+            <Form.Item
+              style={{ flex: "1" }}
+              name="config_saveKey"
+              valuePropName="checked"
+              label="保存秘钥到浏览器"
+            >
+              <Switch />
+            </Form.Item>
+          </div>
+          <Collapse
+            // ghost
+            bordered={false}
+            activeKey={activityKey}
+            onChange={(keys) => setActivityKey(keys as string[])}
+            defaultActiveKey={"GPT"}
+            expandIcon={({ isActive }) => (
+              <CaretRightOutlined rotate={isActive ? 90 : 0} />
+            )}
           >
-            <Switch />
-          </Form.Item>
-          <Form.Item name="config_bot_type" label="Ai类型" extra="这个免费的GPT地址临时开放且每天全局限制请求次数">
-            <Radio.Group style={{ width: "100%" }}>
-              <Radio.Button value="None">不启用AI</Radio.Button>
-              <Radio.Button value="ChatGPT">ChatGPT</Radio.Button>
-              <Radio.Button value="Slack">Slack(Claude)</Radio.Button>
-              <Radio.Button value="GPTFree">ChatGPT(免费)</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item
-            name="GptConfig_role"
-            label="ChatGPT参数： role"
-            extra={" 用户使用的角色 建议使用user"}
-          >
-            <Radio.Group style={{ width: "100%" }}>
-              <Radio.Button value="assistant">assistant</Radio.Button>
-              <Radio.Button value="system">system</Radio.Button>
-              <Radio.Button value="user">user</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item
-            name="GptConfig_max_tokens"
-            label="ChatGPT参数： max_tokens"
-            extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
-          >
-            <InputNumber step="50" min={0} />
-          </Form.Item>
-          <Form.Item
-            name="GptConfig_top_p"
-            label="ChatGPT参数： top_p"
-            extra={"指定从概率分布中选择的标记的概率阈值（不懂）"}
-          >
-            <InputNumber step="0.05" min={0} max={1} />
-          </Form.Item>
-          <Form.Item
-            name="GptConfig_n"
-            label="ChatGPT参数： n"
-            extra={"指定生成文本的数量"}
-          >
-            <InputNumber step="1" min={1} max={10} />
-          </Form.Item>
-          <Form.Item
-            name="GptConfig_temperature"
-            label="ChatGPT参数： temperature"
-            extra={"较高的值会产生更多样化的文本"}
-          >
-            <InputNumber step="0.05" min={0} max={1} />
-          </Form.Item>
-          <Form.Item
-            name="setting_baseurl"
-            label="ChatGPT参数： 接口访问地址"
-            extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
-          >
-            <Input type="text" placeholder="https://xxxx.xx.xx" />
-          </Form.Item>
-          <Form.Item
-            name="config_channel_id"
-            label="Slack配置：频道id (channel_id)"
-            extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
-          >
-            <Input type="text" />
-          </Form.Item>
-          <Divider>以下配置全局生效</Divider>
-          <Form.Item label={"全局背景图片"}>
-            <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-              <Upload
-                accept=".png,.jpg,.gif"
-                {...{
-                  beforeUpload(file, FileList) {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onloadend = (event) => {
-                      if (event.target?.result) {
-                        setBackground(event.target?.result.toString());
-                      }
-                    };
-                    return false;
-                  },
-                  defaultFileList: [],
-                  showUploadList: false,
-                }}
+            <Collapse.Panel
+              key={"GPT"}
+              header={"GPT配置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item label="模型名称" name={"GptConfig_model"}>
+                <Select options={models.map((v) => ({ value: v, label: v }))} />
+              </Form.Item>
+              <Form.Item
+                name="GptConfig_msgCount"
+                label="上下文数量"
+                extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
               >
-                <Button block style={{ width: "220px" }}>
-                  设置
-                </Button>
-              </Upload>
-              <Button
-                style={{ flex: "1" }}
-                onClick={() => {
-                  setBackground("");
-                }}
+                <Input.TextArea autoSize />
+              </Form.Item>
+              <Form.Item
+                name="setting_baseurl"
+                label="ChatGPT参数： 接口访问地址"
+                extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
               >
-                清除
-              </Button>
-            </div>
-          </Form.Item>
-          <Form.Item
-            name="setting_apitoken"
-            label="openapi key"
-            extra={
-              <span>
-                请填写自己的key，没有key将不能使用。
-                <span>
-                  余额：{balance || ""}
-                  <span style={{ marginLeft: "1em" }}>
-                    <Button
-                      type={"ghost"}
-                      onClick={() => {
-                        ApiClient.getOpanAIBalance(
-                          KeyValueData.instance().getApiKey(),
-                          chatMgt?.config.baseUrl
-                        ).then((res) => {
-                          steBalance(res);
-                        });
-                      }}
-                    >
-                      <EyeOutlined />
-                    </Button>
+                <Input type="text" placeholder="https://xxxx.xx.xx" />
+              </Form.Item>
+              <Form.Item
+                name="setting_apitoken"
+                label="OpenApi Key (全局生效)"
+                extra={
+                  <span>
+                    请填写自己的key，没有key将不能使用。
+                    <span>
+                      余额：{balance || ""}
+                      <span style={{ marginLeft: "1em" }}>
+                        <Button
+                          type={"ghost"}
+                          onClick={() => {
+                            ApiClient.getOpanAIBalance(
+                              KeyValueData.instance().getApiKey(),
+                              chatMgt?.config.baseUrl
+                            ).then((res) => {
+                              steBalance(res);
+                            });
+                          }}
+                        >
+                          <EyeOutlined />
+                        </Button>
+                      </span>
+                    </span>
                   </span>
-                </span>
-              </span>
-            }
-          >
-            <Input type="password" autoComplete="false" />
-          </Form.Item>
-          <Form.Item
-            name="setting_slack_proxy_url"
-            label="Slack配置： 接口访问地址"
-            extra="api代理地址 (反向代理了 https://slack.com 的地址)"
-          >
-            <Input type="text" placeholder="https://xxxx.xx.xx" />
-          </Form.Item>
-          <Form.Item
-            name="slack_user_token"
-            label="Slack配置：用户token (user-token)"
-            extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-          >
-            <Input type="text" />
-          </Form.Item>
-          <Form.Item
-            name="slack_claude_id"
-            label="Slack配置：ClaudeID"
-            extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-          >
-            <Input type="text" />
-          </Form.Item>
-          <Form.Item
-            name="config_saveKey"
-            valuePropName="checked"
-            label="保存key到浏览器（不加密，请在私人设备时才勾选）"
-          >
-            <Switch />
-          </Form.Item>
+                }
+              >
+                <Input type="password" autoComplete="false" />
+              </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              key={"GPT_Args"}
+              header={"GPT参数配置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item
+                name="GptConfig_role"
+                label="ChatGPT参数： role"
+                extra={" 用户使用的角色 建议使用user"}
+              >
+                <Radio.Group style={{ width: "100%" }}>
+                  <Radio.Button value="assistant">assistant</Radio.Button>
+                  <Radio.Button value="system">system</Radio.Button>
+                  <Radio.Button value="user">user</Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+              <Form.Item
+                name="GptConfig_max_tokens"
+                label="ChatGPT参数： max_tokens"
+                extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
+              >
+                <InputNumber step="50" min={0} />
+              </Form.Item>
+              <Form.Item
+                name="GptConfig_top_p"
+                label="ChatGPT参数： top_p"
+                extra={"指定从概率分布中选择的标记的概率阈值（不懂）"}
+              >
+                <InputNumber step="0.05" min={0} max={1} />
+              </Form.Item>
+              <Form.Item
+                name="GptConfig_n"
+                label="ChatGPT参数： n"
+                extra={"指定生成文本的数量"}
+              >
+                <InputNumber step="1" min={1} max={10} />
+              </Form.Item>
+              <Form.Item
+                name="GptConfig_temperature"
+                label="ChatGPT参数： temperature"
+                extra={"较高的值会产生更多样化的文本"}
+              >
+                <InputNumber step="0.05" min={0} max={1} />
+              </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              key={"Slack"}
+              header={"Slack配置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item
+                name="config_channel_id"
+                label="Slack配置：频道id (channel_id)"
+                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
+              >
+                <Input type="text" />
+              </Form.Item>
+              <Form.Item
+                name="setting_slack_proxy_url"
+                label="Slack配置： 接口访问地址 (全局生效)"
+                extra="api代理地址 (反向代理了 https://slack.com 的地址)"
+              >
+                <Input type="text" placeholder="https://xxxx.xx.xx" />
+              </Form.Item>
+              <Form.Item
+                name="slack_user_token"
+                label="Slack配置：用户token (user-token) (全局生效)"
+                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+              >
+                <Input type="text" />
+              </Form.Item>
+              <Form.Item
+                name="slack_claude_id"
+                label="Slack配置：ClaudeID (全局生效)"
+                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+              >
+                <Input type="text" />
+              </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              key={"Glabal"}
+              header={"全局设置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item label={"全局背景图片"}>
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    gap: "10px",
+                  }}
+                >
+                  <Upload
+                    accept=".png,.jpg,.gif"
+                    {...{
+                      beforeUpload(file, FileList) {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onloadend = (event) => {
+                          if (event.target?.result) {
+                            setBackground(event.target?.result.toString());
+                          }
+                        };
+                        return false;
+                      },
+                      defaultFileList: [],
+                      showUploadList: false,
+                    }}
+                  >
+                    <Button block style={{ width: "min(220px, 40vw)" }}>
+                      设置
+                    </Button>
+                  </Upload>
+                  <Button
+                    style={{ flex: "1" }}
+                    onClick={() => {
+                      setBackground("");
+                    }}
+                  >
+                    清除
+                  </Button>
+                </div>
+              </Form.Item>
+            </Collapse.Panel>
+          </Collapse>
+          <Form.Item></Form.Item>
         </div>
         <Button.Group style={{ width: "100%" }}>
           <Button

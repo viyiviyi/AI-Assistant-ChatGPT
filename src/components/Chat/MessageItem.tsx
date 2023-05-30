@@ -39,11 +39,12 @@ export const MessageItem = ({
   const { chat, loadingMsgs } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
-  const [messageText, setMessage] = useState(msg.text);
+  const [messageText, setMessage] = useState("");
   const [none, setNone] = useState([]);
   renderMessage[msg.id] = () => {
     setNone([]);
   };
+  // console.log(msg.id);
   const utilsEle = (
     <>
       <Checkbox
