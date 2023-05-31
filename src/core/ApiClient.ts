@@ -74,29 +74,35 @@ export async function generateChatStream(
                 onMessage({ error: false, end: true, text: full_response });
               break;
             }
-            const data = JSON.parse(line.substring(6));
-            const choices = data.choices;
-            if (!choices) {
+            try {
+              const data = JSON.parse(line.substring(6));
+              const choices = data.choices;
+              if (!choices) {
+                continue;
+              }
+              const delta = choices[0].delta;
+              if (!delta) {
+                continue;
+              }
+              if ("content" in delta) {
+                const content = delta.content;
+                full_response += content;
+                onMessage &&
+                  onMessage({
+                    error: false,
+                    end: false,
+                    text: full_response,
+                    stop: () => {
+                      try {
+                        controller.abort();
+                      } catch (error) {}
+                    },
+                  });
+              }
+            } catch (error) {
+              console.error(error)
+              console.log('出错的内容：',line)
               continue;
-            }
-            const delta = choices[0].delta;
-            if (!delta) {
-              continue;
-            }
-            if ("content" in delta) {
-              const content = delta.content;
-              full_response += content;
-              onMessage &&
-                onMessage({
-                  error: false,
-                  end: false,
-                  text: full_response,
-                  stop: () => {
-                    try {
-                      controller.abort();
-                    } catch (error) {}
-                  },
-                });
             }
           }
         }
