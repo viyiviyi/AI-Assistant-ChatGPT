@@ -69,6 +69,7 @@ export const Setting = ({
   }>();
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
+    console.log(KeyValueData.instance());
     // ApiClient.getModelList(
     //   form.getFieldValue("setting_apitoken") ||
     //     KeyValueData.instance().getApiKey(),
@@ -325,6 +326,7 @@ export const Setting = ({
             )}
           >
             <Collapse.Panel
+              forceRender={true}
               key={"GPT"}
               header={"GPT配置"}
               style={{ padding: "0 8px" }}
@@ -355,6 +357,7 @@ export const Setting = ({
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
+              forceRender={true}
               key={"GPT_Args"}
               header={"GPT参数配置"}
               style={{ padding: "0 8px" }}
@@ -400,6 +403,7 @@ export const Setting = ({
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
+              forceRender={true}
               key={"Slack"}
               header={"Slack配置"}
               style={{ padding: "0 8px" }}
@@ -434,6 +438,7 @@ export const Setting = ({
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
+              forceRender={true}
               key={"Glabal"}
               header={"全局设置"}
               style={{ padding: "0 8px" }}
