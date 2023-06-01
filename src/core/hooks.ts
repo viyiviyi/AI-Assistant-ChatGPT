@@ -35,3 +35,14 @@ export function useDark() {
 
   return obj;
 }
+
+export function useEnv() {
+  const [obj, setObj] = useState<"dev" | "prod">("prod");
+  const retrieved = useRef(false);
+  useEffect(() => {
+    if (retrieved.current) return;
+    retrieved.current = true;
+    setObj("prod");
+  }, []);
+  return obj;
+}

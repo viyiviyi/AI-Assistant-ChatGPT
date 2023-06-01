@@ -1,15 +1,14 @@
-import { ApiClient } from "@/core/ApiClient";
+import { chatGptModels, useService } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
-import { initClient } from "@/core/Slack";
 import { downloadJson } from "@/core/utils";
 import {
   CaretRightOutlined,
   DownloadOutlined,
   EyeOutlined,
   GithubOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -22,7 +21,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload
+  Upload,
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
@@ -41,10 +40,10 @@ export const Setting = ({
   const [activityKey, setActivityKey] = useState<string[]>(["GPT"]);
   const router = useRouter();
   const { setBgConfig } = useContext(ChatContext);
-  const [models, setModels] = useState<string[]>(ApiClient.textModels);
-  const [balance, steBalance] = useState("");
+  const [models, setModels] = useState<string[]>(chatGptModels);
   const [nextChat, setNextChat] = useState<ChatManagement>();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
+  const [_, clearServices] = useService();
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
   );
@@ -94,7 +93,7 @@ export const Setting = ({
     chatMgt.config.baseUrl = values.setting_baseurl;
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
     chatMgt.config.botType = values.config_bot_type;
-    chatMgt.config.slackChannelId = values.config_channel_id;
+    chatMgt.config.cloudChannelId = values.config_channel_id;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -120,11 +119,7 @@ export const Setting = ({
       values.setting_slack_proxy_url,
       values.config_saveKey
     );
-    initClient(
-      KeyValueData.instance().getSlackUserToken(),
-      KeyValueData.instance().getSlackClaudeId(),
-      KeyValueData.instance().getSlackProxyUrl()
-    );
+    clearServices();
     onSaved();
   }
   return (
@@ -146,7 +141,7 @@ export const Setting = ({
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ""),
           config_bot_type: chatMgt?.config.botType,
-          config_channel_id: chatMgt?.config.slackChannelId?.trim(),
+          config_channel_id: chatMgt?.config.cloudChannelId?.trim(),
           slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
           slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
           setting_slack_proxy_url: KeyValueData.instance()
@@ -358,24 +353,6 @@ export const Setting = ({
                 extra={
                   <span>
                     请填写自己的key，没有key将不能使用。
-                    <span>
-                      余额：{balance || ""}
-                      <span style={{ marginLeft: "1em" }}>
-                        <Button
-                          type={"ghost"}
-                          onClick={() => {
-                            ApiClient.getOpanAIBalance(
-                              KeyValueData.instance().getApiKey(),
-                              chatMgt?.config.baseUrl
-                            ).then((res) => {
-                              steBalance(res);
-                            });
-                          }}
-                        >
-                          <EyeOutlined />
-                        </Button>
-                      </span>
-                    </span>
                   </span>
                 }
               >

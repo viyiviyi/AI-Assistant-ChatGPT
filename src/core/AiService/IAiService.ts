@@ -1,6 +1,10 @@
 import { ChatCompletionRequestMessage } from "openai";
 import { Message } from "../../Models/DataBase";
+import { ServiceTokens } from "./ServiceProvider";
 export interface IAiService {
+  baseUrl: string;
+  tokens: ServiceTokens;
+  customContext: boolean;
   sendMessage(input: {
     msg: Message;
     context: Array<ChatCompletionRequestMessage>;
@@ -8,29 +12,37 @@ export interface IAiService {
       error: boolean;
       text: string;
       end: boolean;
+      cloud_topic_id?: string;
+      cloud_send_id?: string;
+      cloud_result_id?: string;
       stop?: () => void;
     }) => void;
-    config?: InputConfig;
-  }): void;
-  isContext: boolean;
+    config: InputConfig;
+  }): Promise<void>;
   history?: (input: {
     lastMsgCloudId?: string;
     topicCloudId: string;
-    onMessage: (msg: {
-      error: boolean;
-      result: Message;
-      end: boolean;
-      stop?: () => void;
-    }) => void;
-  }) => void;
+    onMessage: (
+      text: string,
+      isAiMsg: boolean,
+      msgCloudId: string,
+      error: boolean
+    ) => void;
+    config: InputConfig;
+  }) => Promise<void>;
 }
+
 type chatGPTConfig = {
   model: string;
-  max_tokens: number;
-  top_p: number;
-  user: "assistant" | "system" | "user";
-  apiKey: string;
-  n: number;
-  temperature: number;
+  max_tokens?: number;
+  top_p?: number;
+  user?: "assistant" | "system" | "user";
+  n?: number;
+  temperature?: number;
 };
-export type InputConfig = chatGPTConfig;
+
+type slackConfig = {
+  channel_id?: string;
+};
+
+export type InputConfig = chatGPTConfig & slackConfig;

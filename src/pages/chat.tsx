@@ -4,7 +4,6 @@ import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
-import { initClient } from "@/core/Slack";
 import { TopicMessage } from "@/Models/Topic";
 import { Drawer, Layout, theme } from "antd";
 import Head from "next/head";
@@ -53,11 +52,6 @@ export default function Page() {
           setlistIsShow(false);
         }
       });
-      initClient(
-        KeyValueData.instance().getSlackUserToken(),
-        KeyValueData.instance().getSlackClaudeId(),
-        KeyValueData.instance().getSlackProxyUrl()
-      );
       let aTopic = selectChat.topics.find(
         (f) => f.id == selectChat.config.activityTopicId
       ) || {

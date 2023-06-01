@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -338,17 +338,17 @@ export class ChatManagement implements IChat {
       this.topics.slice(-1)[0]
     );
   }
-  async saveTopic(topicId: string, name: string, slack_thread_ts?: string) {
+  async saveTopic(topicId: string, name: string, cloudTopicId?: string) {
     const t = this.topics.find((f) => f.id == topicId);
     if (t) {
       t.name = name;
-      t.slack_thread_ts = slack_thread_ts;
+      t.cloudTopicId = cloudTopicId;
       await getInstance().update_by_primaryKey<Topic>({
         tableName: "Topic",
         value: t.id,
         handle: (r) => {
           r.name = name;
-          r.slack_thread_ts = slack_thread_ts;
+          r.cloudTopicId = cloudTopicId;
           return r;
         },
       });

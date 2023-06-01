@@ -1,17 +1,23 @@
-import { ApiClient } from "@/core/ApiClient";
+import { ChatGPT } from "@/core/AiService/ChatGPT";
+import { IAiService } from "@/core/AiService/IAiService";
+import {
+  DevBaseUrl,
+  ProxyBaseUrl,
+  useService,
+} from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { useEnv } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
-import { getHistoryMessage, send_message_to_channel } from "@/core/Slack";
 import { scrollToBotton } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
   MessageOutlined,
-  VerticalAlignMiddleOutlined
+  VerticalAlignMiddleOutlined,
 } from "@ant-design/icons";
 import { Button, Input, message, theme, Typography } from "antd";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { reloadTopic } from "./ChatMessage";
 
@@ -29,6 +35,7 @@ const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
+  const [aiService] = useService();
   const { chat, activityTopic, setActivityTopic, loadingMsgs } =
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
@@ -84,17 +91,6 @@ export function InputUtil() {
       if (chat.config.enableVirtualRole && loadingTopic[result.virtualRoleId!])
         return (isContinue = true);
       loadingTopic[result.virtualRoleId!] = true;
-
-      // 检查配置
-      if (chat.config.botType === "Slack") {
-        if (!chat.config.slackChannelId) {
-          message.error("缺少频道ID，请在设置中配置后使用");
-          return;
-        }
-      } else if (!KeyValueData.instance().getApiKey()) {
-        message.error("缺少apikey，请在设置中配置后使用");
-        return;
-      }
       // 渲染并滚动到最新内容
       const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
         if (_msg) msg = await chat.pushMessage(_msg);
@@ -108,22 +104,24 @@ export function InputUtil() {
         error: boolean;
         text: string;
         end: boolean;
-        thread_ts?: string; // 发送给claude的第一条消息的ts
-        ts?: string; // claude回复的消息的ts
-        send_ts?: string; // 回复claude的消息的ts
+        cloud_topic_id?: string;
+        cloud_send_id?: string;
+        cloud_result_id?: string;
         stop?: () => void;
       }) => {
-        if (!topic.slack_thread_ts && res.thread_ts) {
-          topic.slack_thread_ts = res.thread_ts;
-          chat.saveTopic(topic.id, topic.name, res.thread_ts);
+        if (!topic.cloudTopicId && res.cloud_topic_id) {
+          topic.cloudTopicId = res.cloud_topic_id;
+          msg.cloudTopicId = res.cloud_topic_id;
+          result.cloudTopicId = res.cloud_topic_id;
+          chat.saveTopic(topic.id, topic.name, res.cloud_topic_id);
         }
-        if (!msg.slackTs && res.send_ts) {
-          msg.slackTs = res.send_ts;
+        if (!msg.cloudMsgId && res.cloud_send_id) {
+          msg.cloudMsgId = res.cloud_send_id;
           await chat.pushMessage(msg);
         }
-        if (res.text || res.ts) {
+        if (res.text || res.cloud_result_id) {
           result.text = res.text + (res.end ? "" : "\n\nloading...");
-          result.slackTs = res.ts || result.slackTs;
+          result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           chat.pushMessage(result).then((r) => {
             result = r;
             if (res.end) {
@@ -144,6 +142,10 @@ export function InputUtil() {
           });
         }
       };
+      if (!aiService) {
+        await chat.pushMessage(msg);
+        return;
+      }
       // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
       if (
         isNewTopic &&
@@ -155,86 +157,64 @@ export function InputUtil() {
         msg.virtualRoleId = undefined;
         msg.senderId = chat.user.id;
         rendAndScrollView(msg, result);
-        await send_message_to_channel(
-          chat.config.slackChannelId!,
-          msg.text,
+        await aiService.sendMessage({
+          msg,
+          context: chat.getAskContext(),
           onMessage,
-          topic.slack_thread_ts
-        );
+          config: {
+            channel_id: chat.config.cloudChannelId,
+            ...chat.gptConfig,
+            user: "user",
+          },
+        });
         setLoading((v) => --v);
         return;
-      }
-      if (chat.config.botType === "Slack") {
-        if (chat.config.enableVirtualRole && !topic.slack_thread_ts)
-          return message.error("数据错误，请新建话题后使用");
       }
       setInputText("");
+      if (isBot || skipRequest) return rendAndScrollView(msg);
       setLoading((v) => ++v);
-      if (chat.config.botType === "Slack") {
-        if (msg.text) {
-          rendAndScrollView(msg, result);
-          await send_message_to_channel(
-            chat.config.slackChannelId!,
-            msg.text,
-            onMessage,
-            topic.slack_thread_ts
-          );
-        } else if (topic.slack_thread_ts) {
-          // 如果发送空消息，则获取当前消息列最后一条消息之后的全部消息
-          let oldTs: string = "0";
-          if (topic.messages.length) {
-            oldTs = topic.messages.slice(-1)[0].slackTs || "0";
-          }
-          await getHistoryMessage(
-            chat.config.slackChannelId!,
-            topic.slack_thread_ts,
-            oldTs,
-            topic.messages.length ? 100 : undefined
-          ).then((res) => {
-            Promise.all(
-              res.map((v) => {
-                return chat.pushMessage({
-                  id: "",
-                  groupId: chat.group.id,
-                  senderId: v.isClaude ? undefined : chat.user.id,
-                  virtualRoleId: v.isClaude ? chat.virtualRole.id : undefined,
-                  ctxRole: v.isClaude ? "assistant" : "user",
-                  text: v.text,
-                  timestamp: v.ts ? Number(v.ts) * 1000 + 1 : now++,
-                  topicId: topicId,
-                  slackTs: v.ts,
-                });
-              })
-            ).then(() => rendAndScrollView());
-          });
+      if (msg.text || aiService.customContext) {
+        rendAndScrollView(msg,result);
+        await aiService.sendMessage({
+          msg,
+          context: chat.getAskContext(),
+          onMessage,
+          config: {
+            channel_id: chat.config.cloudChannelId,
+            ...chat.gptConfig,
+            user: "user",
+          },
+        });
+      } else if (aiService.history && topic.cloudTopicId) {
+        let oldTs: string = "0";
+        if (topic.messages.length) {
+          oldTs = topic.messages.slice(-1)[0].cloudMsgId || "0";
         }
-        setLoading((v) => --v);
-        return;
+        await aiService.history({
+          async onMessage(text, isAi, cloudId, err) {
+            chat.pushMessage({
+              id: "",
+              groupId: chat.group.id,
+              senderId: isAi ? undefined : chat.user.id,
+              virtualRoleId: isAi ? chat.virtualRole.id : undefined,
+              ctxRole: isAi ? "assistant" : "user",
+              text: text,
+              timestamp: now++,
+              topicId: topicId,
+              cloudTopicId: topic.cloudTopicId,
+              cloudMsgId: cloudId,
+            });
+          },
+          lastMsgCloudId: oldTs,
+          topicCloudId: topic.cloudTopicId,
+          config: {
+            channel_id: chat.config.cloudChannelId,
+            ...chat.gptConfig,
+            user: "user",
+          },
+        });
       }
-      rendAndScrollView(msg);
-      if (isBot || skipRequest || chat.config.botType === "None")
-        return setLoading((v) => --v);
-      const messages = chat.getAskContext();
-      if (messages.length == 0) {
-        setLoading((v) => --v);
-        return;
-      }
-      rendAndScrollView(undefined, result);
-      await ApiClient.chatGpt({
-        messages,
-        model: chat.gptConfig.model,
-        max_tokens: chat.gptConfig.max_tokens,
-        top_p: chat.gptConfig.top_p,
-        temperature: chat.gptConfig.temperature,
-        n: chat.gptConfig.n,
-        user: chat.getNameByRole(result.ctxRole),
-        apiKey: KeyValueData.instance().getApiKey(),
-        baseUrl:
-          chat.config.botType === "GPTFree"
-            ? "https://chat-free.22733.site"
-            : chat.config.baseUrl || undefined,
-        onMessage: onMessage,
-      });
+      rendAndScrollView();
     } finally {
       delete loadingTopic[result.virtualRoleId!];
     }
