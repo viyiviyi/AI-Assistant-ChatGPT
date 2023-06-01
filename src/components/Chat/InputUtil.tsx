@@ -149,7 +149,7 @@ export function InputUtil() {
       // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
       if (
         isNewTopic &&
-        chat.config.botType === "Slack" &&
+        !aiService.customContext &&
         chat.config.enableVirtualRole
       ) {
         setLoading((v) => ++v);
@@ -174,7 +174,7 @@ export function InputUtil() {
       if (isBot || skipRequest) return rendAndScrollView(msg);
       setLoading((v) => ++v);
       if (msg.text || aiService.customContext) {
-        rendAndScrollView(msg,result);
+        rendAndScrollView(msg, result);
         await aiService.sendMessage({
           msg,
           context: chat.getAskContext(),

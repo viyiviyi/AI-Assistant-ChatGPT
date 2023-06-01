@@ -4,6 +4,7 @@ import { ServiceTokens } from "./ServiceProvider";
 export interface IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
+  // 是否支持自定义上下文 如果不支持，表示上下文存在服务器
   customContext: boolean;
   sendMessage(input: {
     msg: Message;
