@@ -52,8 +52,8 @@ export default function Page() {
         if (screenSize.width <= 1420) {
           setlistIsShow(false);
         }
+        reloadService(selectChat);
       });
-      reloadService(chatMgt);
       let aTopic = selectChat.topics.find(
         (f) => f.id == selectChat.config.activityTopicId
       ) || {
