@@ -148,7 +148,7 @@ export function InputUtil() {
         msg.text = ChatManagement.parseText(chat.virtualRole.bio);
         msg.virtualRoleId = undefined;
         msg.senderId = chat.user.id;
-        rendAndScrollView(msg, result);
+        await rendAndScrollView(msg, result);
         await aiService.sendMessage({
           msg,
           context: chat.getAskContext(),
