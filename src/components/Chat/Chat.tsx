@@ -23,6 +23,7 @@ export const Chat = () => {
   const [_, contextHolder] = message.useMessage();
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
+  
   return (
     <MessageContext.Provider
       value={{

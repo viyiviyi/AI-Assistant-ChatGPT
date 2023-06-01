@@ -7,12 +7,11 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole,
+  VirtualRole
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
 import { getInstance } from "ts-indexdb";
-import { IAiService } from "./AiService/IAiService";
 import { BgConfig } from "./BgImageStore";
 import { getUuid } from "./utils";
 
@@ -746,8 +745,8 @@ export const ChatContext = React.createContext<{
   setActivityTopic: (topic: TopicMessage) => void;
   bgConfig: BgConfig;
   setBgConfig: (image?: string) => void;
-  aiService: IAiService | undefined;
-  resetService: (chat:IChat) => void;
+  // aiService: IAiService | undefined;
+  // resetService: (chat:IChat) => void;
   loadingMsgs: { [key: string]: { stop: () => void } };
 }>({
   chat: noneChat,
@@ -762,7 +761,7 @@ export const ChatContext = React.createContext<{
     opacity: 0.5,
   },
   setBgConfig: (img?: string) => {},
-  aiService: undefined,
-  resetService: (chat:IChat) => {},
+  // aiService: undefined,
+  // resetService: (chat:IChat) => {},
   loadingMsgs: {},
 });

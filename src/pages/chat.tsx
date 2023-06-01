@@ -4,7 +4,6 @@ import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
-import { KeyValueData } from "@/core/KeyValueData";
 import { TopicMessage } from "@/Models/Topic";
 import { Drawer, Layout, theme } from "antd";
 import Head from "next/head";
@@ -23,7 +22,6 @@ export default function Page() {
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
-  const [aiService, resetService] = useService();
   const [activityTopic, setActivityTopic] = useState<TopicMessage>({
     id: "",
     name: "",
@@ -32,6 +30,7 @@ export default function Page() {
     messages: [],
     messageMap: {},
   });
+  const { reloadService } = useService();
   useEffect(() => {
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
@@ -54,7 +53,7 @@ export default function Page() {
           setlistIsShow(false);
         }
       });
-      resetService(chatMgt);
+      reloadService(chatMgt);
       let aTopic = selectChat.topics.find(
         (f) => f.id == selectChat.config.activityTopicId
       ) || {
@@ -82,8 +81,8 @@ export default function Page() {
           chatMgt.saveConfig();
         },
         bgConfig: bgImg,
-        aiService,
-        resetService,
+        // aiService,
+        // resetService,
         setBgConfig(image) {
           setBgImg((v) => {
             if (v.backgroundImage == `url(${image})`) return v;

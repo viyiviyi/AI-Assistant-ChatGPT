@@ -19,7 +19,7 @@ import {
   Typography
 } from "antd";
 import copy from "copy-to-clipboard";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { MarkdownView } from "./MarkdownView";
 
 const MemoMarkdownView = React.memo(MarkdownView);
@@ -41,9 +41,14 @@ export const MessageItem = ({
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState("");
   const [none, setNone] = useState([]);
-  renderMessage[msg.id] = () => {
-    setNone([]);
-  };
+  useEffect(() => {
+    renderMessage[msg.id] = () => {
+      setNone([]);
+    };
+    return () => {
+      delete renderMessage[msg.id];
+    };
+  }, [renderMessage, msg]);
   // console.log(msg.id);
   const utilsEle = (
     <>

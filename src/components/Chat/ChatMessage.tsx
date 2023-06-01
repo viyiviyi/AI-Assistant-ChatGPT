@@ -60,11 +60,14 @@ export const ChatMessage = () => {
           setNone([]);
           if (!activityKey.includes(activityTopic.id))
             setActivityKey((v) => [...v, activityTopic.id]);
+          scrollToBotton(
+            activityTopic.messages[activityTopic.messages.length - 1]?.id
+          );
         });
+      reloadTopic(activityTopic.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
-  Object.keys(topicRender).forEach((v) => delete topicRender[v]);
 
   function rendTopic(topic: TopicMessage) {
     return (
@@ -139,9 +142,8 @@ export const ChatMessage = () => {
       </Panel>
     );
   }
-
   if (onlyOne) {
-    let topic = chat.topics.find((f) => f.id == chat.config.activityTopicId);
+    let topic = activityTopic;
     if (topic) {
       return (
         <div style={{ padding: token.paddingContentVerticalSM }}>
@@ -208,13 +210,21 @@ function MessageList({
     },
     [renderMessage, steMessages, topic, chat]
   );
-  topicRender[topic.id] = (messageId?: string) => {
-    if (messageId)
-      return renderMessage[messageId] && renderMessage[messageId]();
-    steMessages([...topic.messages]);
-    setTotal(topic.messages.length);
-    setRange([Math.max(0, topic.messages.length - 20), topic.messages.length]);
-  };
+  useEffect(() => {
+    topicRender[topic.id] = (messageId?: string) => {
+      if (messageId)
+        return renderMessage[messageId] && renderMessage[messageId]();
+      steMessages([...topic.messages]);
+      setTotal(topic.messages.length);
+      setRange([
+        Math.max(0, topic.messages.length - 20),
+        topic.messages.length,
+      ]);
+    };
+    return () => {
+      delete topicRender[topic.id];
+    };
+  }, [renderMessage, topic]);
   return (
     <>
       {range[0] > 0 ? (

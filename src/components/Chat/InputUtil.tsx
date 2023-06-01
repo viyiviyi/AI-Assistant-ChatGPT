@@ -1,23 +1,15 @@
-import { ChatGPT } from "@/core/AiService/ChatGPT";
-import { IAiService } from "@/core/AiService/IAiService";
-import {
-  DevBaseUrl,
-  ProxyBaseUrl,
-  useService,
-} from "@/core/AiService/ServiceProvider";
+import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useEnv } from "@/core/hooks";
-import { KeyValueData } from "@/core/KeyValueData";
 import { scrollToBotton } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
   MessageOutlined,
-  VerticalAlignMiddleOutlined,
+  VerticalAlignMiddleOutlined
 } from "@ant-design/icons";
-import { Button, Input, message, theme, Typography } from "antd";
-import React, { useContext, useEffect, useState } from "react";
+import { Button, Input, theme, Typography } from "antd";
+import React, { useContext, useState } from "react";
 import { MessageContext } from "./Chat";
 import { reloadTopic } from "./ChatMessage";
 
@@ -35,7 +27,7 @@ const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
-  const { chat, activityTopic, setActivityTopic, loadingMsgs, aiService } =
+  const { chat, activityTopic, setActivityTopic, loadingMsgs } =
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
@@ -96,8 +88,9 @@ export function InputUtil() {
         if (_result) result = await chat.pushMessage(_result);
         reloadTopic(result.topicId);
         if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id, true);
+          scrollToBotton(result.id || msg.id, true);
       };
+      const aiService = aiServices.current;
       if (isBot || skipRequest || !aiService) {
         setInputText("");
         return await rendAndScrollView(msg);

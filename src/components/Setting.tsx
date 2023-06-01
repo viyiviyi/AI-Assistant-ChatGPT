@@ -6,9 +6,8 @@ import { downloadJson } from "@/core/utils";
 import {
   CaretRightOutlined,
   DownloadOutlined,
-  EyeOutlined,
   GithubOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -21,7 +20,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload,
+  Upload
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
@@ -39,7 +38,8 @@ export const Setting = ({
   const [modal, contextHolder] = Modal.useModal();
   const [activityKey, setActivityKey] = useState<string[]>(["GPT"]);
   const router = useRouter();
-  const { setBgConfig, resetService } = useContext(ChatContext);
+  const { setBgConfig } = useContext(ChatContext);
+  const { reloadService } = useService();
   const [models, setModels] = useState<string[]>(chatGptModels);
   const [nextChat, setNextChat] = useState<ChatManagement>();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
@@ -118,8 +118,7 @@ export const Setting = ({
       values.setting_slack_proxy_url,
       values.config_saveKey
     );
-    console.log(chatMgt)
-    resetService(chatMgt);
+    reloadService(chatMgt);
     onSaved();
   }
   return (
