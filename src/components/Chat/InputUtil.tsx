@@ -148,7 +148,7 @@ export function InputUtil() {
         msg.text = ChatManagement.parseText(chat.virtualRole.bio);
         msg.virtualRoleId = undefined;
         msg.senderId = chat.user.id;
-        await rendAndScrollView(msg, result);
+        await rendAndScrollView(msg);
         await aiService.sendMessage({
           msg,
           context: chat.getAskContext(),
@@ -165,7 +165,7 @@ export function InputUtil() {
       setInputText("");
       setLoading((v) => ++v);
       if (msg.text || aiService.customContext) {
-        await rendAndScrollView(msg, result);
+        await rendAndScrollView(msg);
         await aiService.sendMessage({
           msg,
           context: chat.getAskContext(),
