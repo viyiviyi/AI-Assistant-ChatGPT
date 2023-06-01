@@ -1,8 +1,8 @@
 import { ChatGPT } from "@/core/AiService/ChatGPT";
 import { KeyValueData } from "./../KeyValueData";
 
-import { ChatContext } from "./../ChatManagement";
-import { useContext } from "react";
+import { ChatContext, ChatManagement, IChat } from "./../ChatManagement";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useEnv } from "../hooks";
 import { IAiService } from "./IAiService";
 import { SlackClaude } from "./SlackClaude";
@@ -31,42 +31,48 @@ export const DevBaseUrl: BaseUrlScheam = {
   chatGPT: ProxyBaseUrl.chatGPT,
   slackClaude: "http://slack.yiyiooo.com",
 };
-const services: { [key: string]: IAiService } = {};
-function clear() {
-  Object.keys(services).forEach((key) => delete services[key]);
-}
-export function useService(): [IAiService | undefined, () => void] {
-  const { chat } = useContext(ChatContext);
+// const services: { [key: string]: IAiService | undefined } = {};
+// function clear() {
+//   Object.keys(services).forEach((key) => delete services[key]);
+// }
+export function useService(): [IAiService | undefined, (chat: IChat) => void] {
   const env = useEnv();
-  if (chat.config.botType === "None") return [undefined, clear];
-  if (services[chat.config.botType])
-    return [services[chat.config.botType], clear];
-  let service: IAiService;
-  let baseUrl: BaseUrlScheam = env == "dev" ? DevBaseUrl : ProxyBaseUrl;
-  let tokens: ServiceTokens = {
-    openai: { apiKey: KeyValueData.instance().getApiKey() },
-    slack: {
-      slack_user_token: KeyValueData.instance().getSlackUserToken(),
-      claude_id: KeyValueData.instance().getSlackClaudeId(),
-    },
+  const [data, setData] = useState<KeyValueData>();
+  let [service, setService] = useState<IAiService | undefined>();
+  useEffect(() => {
+    setData(KeyValueData.instance());
+  }, []);
+  
+  let reloadService = (chat: IChat) => {
+    let baseUrl: BaseUrlScheam = env == "dev" ? DevBaseUrl : ProxyBaseUrl;
+    if (!data) return;
+    let tokens: ServiceTokens = {
+      openai: { apiKey: KeyValueData.instance().getApiKey() },
+      slack: {
+        slack_user_token: KeyValueData.instance().getSlackUserToken(),
+        claude_id: KeyValueData.instance().getSlackClaudeId(),
+      },
+    };
+    let _service: IAiService | undefined = undefined;
+    switch (chat.config.botType) {
+      case "Slack":
+        _service = new SlackClaude(
+          KeyValueData.instance().getSlackProxyUrl() || baseUrl.slackClaude,
+          tokens
+        );
+        break;
+      case "GPTFree":
+        _service = new ChatGPT("https://chat-free.22733.site", {
+          openai: { apiKey: "123" },
+        });
+        break;
+      case "ChatGPT":
+        _service = new ChatGPT(chat.config.baseUrl || baseUrl.chatGPT, tokens);
+    }
+    setService(_service);
   };
-  switch (chat.config.botType) {
-    case "Slack":
-      service = new SlackClaude(
-        KeyValueData.instance().getSlackProxyUrl() || baseUrl.slackClaude,
-        tokens
-      );
-      break;
-    case "GPTFree":
-      service = new ChatGPT("https://chat-free.22733.site", {
-        openai: { apiKey: "123" },
-      });
-      break;
-    case "ChatGPT":
-      service = new ChatGPT(chat.config.baseUrl || baseUrl.chatGPT, tokens);
-  }
-  services[chat.config.botType] = service;
-  return [services[chat.config.botType], clear];
+
+  return [service, reloadService];
 }
 
 export const chatGptModels = [

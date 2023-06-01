@@ -1,5 +1,6 @@
 import { Chat } from "@/components/Chat/Chat";
 import { ChatList } from "@/components/ChatList";
+import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
@@ -22,6 +23,7 @@ export default function Page() {
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
+  const [aiService, resetService] = useService();
   const [activityTopic, setActivityTopic] = useState<TopicMessage>({
     id: "",
     name: "",
@@ -52,6 +54,7 @@ export default function Page() {
           setlistIsShow(false);
         }
       });
+      resetService(chatMgt);
       let aTopic = selectChat.topics.find(
         (f) => f.id == selectChat.config.activityTopicId
       ) || {
@@ -79,6 +82,8 @@ export default function Page() {
           chatMgt.saveConfig();
         },
         bgConfig: bgImg,
+        aiService,
+        resetService,
         setBgConfig(image) {
           setBgImg((v) => {
             if (v.backgroundImage == `url(${image})`) return v;

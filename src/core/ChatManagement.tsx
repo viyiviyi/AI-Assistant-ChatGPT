@@ -12,6 +12,7 @@ import {
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
 import { getInstance } from "ts-indexdb";
+import { IAiService } from "./AiService/IAiService";
 import { BgConfig } from "./BgImageStore";
 import { getUuid } from "./utils";
 
@@ -28,7 +29,7 @@ const defaultChat: IChat = {
     enableVirtualRole: false,
     activityTopicId: "",
     baseUrl: "",
-    botType: "Slack",
+    botType: "ChatGPT",
   },
   gptConfig: {
     id: "",
@@ -745,6 +746,8 @@ export const ChatContext = React.createContext<{
   setActivityTopic: (topic: TopicMessage) => void;
   bgConfig: BgConfig;
   setBgConfig: (image?: string) => void;
+  aiService: IAiService | undefined;
+  resetService: (chat:IChat) => void;
   loadingMsgs: { [key: string]: { stop: () => void } };
 }>({
   chat: noneChat,
@@ -759,5 +762,7 @@ export const ChatContext = React.createContext<{
     opacity: 0.5,
   },
   setBgConfig: (img?: string) => {},
+  aiService: undefined,
+  resetService: (chat:IChat) => {},
   loadingMsgs: {},
 });

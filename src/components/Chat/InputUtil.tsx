@@ -35,8 +35,7 @@ const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
-  const [aiService] = useService();
-  const { chat, activityTopic, setActivityTopic, loadingMsgs } =
+  const { chat, activityTopic, setActivityTopic, loadingMsgs, aiService } =
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
@@ -99,6 +98,10 @@ export function InputUtil() {
         if (msg.topicId == chat.config.activityTopicId)
           scrollToBotton(result.id, true);
       };
+      if (isBot || skipRequest || !aiService) {
+        setInputText("");
+        return await rendAndScrollView(msg);
+      }
       // 接收消息的方法
       const onMessage = async (res: {
         error: boolean;
@@ -142,10 +145,6 @@ export function InputUtil() {
           });
         }
       };
-      if (!aiService) {
-        await chat.pushMessage(msg);
-        return;
-      }
       // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
       if (
         isNewTopic &&
@@ -171,10 +170,9 @@ export function InputUtil() {
         return;
       }
       setInputText("");
-      if (isBot || skipRequest) return rendAndScrollView(msg);
       setLoading((v) => ++v);
       if (msg.text || aiService.customContext) {
-        rendAndScrollView(msg, result);
+        await rendAndScrollView(msg, result);
         await aiService.sendMessage({
           msg,
           context: chat.getAskContext(),

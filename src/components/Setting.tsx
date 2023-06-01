@@ -39,11 +39,10 @@ export const Setting = ({
   const [modal, contextHolder] = Modal.useModal();
   const [activityKey, setActivityKey] = useState<string[]>(["GPT"]);
   const router = useRouter();
-  const { setBgConfig } = useContext(ChatContext);
+  const { setBgConfig, resetService } = useContext(ChatContext);
   const [models, setModels] = useState<string[]>(chatGptModels);
   const [nextChat, setNextChat] = useState<ChatManagement>();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
-  const [_, clearServices] = useService();
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
   );
@@ -119,7 +118,8 @@ export const Setting = ({
       values.setting_slack_proxy_url,
       values.config_saveKey
     );
-    clearServices();
+    console.log(chatMgt)
+    resetService(chatMgt);
     onSaved();
   }
   return (
@@ -350,11 +350,7 @@ export const Setting = ({
               <Form.Item
                 name="setting_apitoken"
                 label="OpenApi Key (全局生效)"
-                extra={
-                  <span>
-                    请填写自己的key，没有key将不能使用。
-                  </span>
-                }
+                extra={<span>请填写自己的key，没有key将不能使用。</span>}
               >
                 <Input type="password" autoComplete="false" />
               </Form.Item>
