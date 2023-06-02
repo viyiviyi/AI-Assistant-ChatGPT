@@ -79,9 +79,12 @@ export function InputUtil() {
     let isContinue = false;
     try {
       // 阻止同时对同一个助理发起多个提问
-      if (chat.config.enableVirtualRole && loadingTopic[result.virtualRoleId!])
+      if (
+        chat.config.enableVirtualRole &&
+        loadingTopic[result.topicId + "_" + result.virtualRoleId]
+      )
         return (isContinue = true);
-      loadingTopic[result.virtualRoleId!] = true;
+      loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
       // 渲染并滚动到最新内容
       const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
         if (_msg) msg = await chat.pushMessage(_msg);
@@ -185,7 +188,7 @@ export function InputUtil() {
         }
         await aiService.history({
           async onMessage(text, isAi, cloudId, err) {
-           await chat.pushMessage({
+            await chat.pushMessage({
               id: "",
               groupId: chat.group.id,
               senderId: isAi ? undefined : chat.user.id,
@@ -209,9 +212,10 @@ export function InputUtil() {
         reloadTopic(result.topicId);
       }
     } finally {
-      delete loadingTopic[result.virtualRoleId!];
+      delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
     }
-    if (isContinue) loadingTopic[result.virtualRoleId!] = true;
+    if (isContinue)
+      loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
     setTimeout(() => {
       setLoading((v) => --v);
       if (msg.topicId == chat.config.activityTopicId)

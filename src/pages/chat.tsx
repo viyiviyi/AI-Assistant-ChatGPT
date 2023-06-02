@@ -46,13 +46,13 @@ export default function Page() {
             return v;
           });
         });
+      reloadService(selectChat);
       if (chatMgt.group.id == groupId) return;
       await ChatManagement.loadTopics(selectChat).then(() => {
         setChatMgt(new ChatManagement(selectChat));
         if (screenSize.width <= 1420) {
           setlistIsShow(false);
         }
-        reloadService(selectChat);
       });
       let aTopic = selectChat.topics.find(
         (f) => f.id == selectChat.config.activityTopicId
