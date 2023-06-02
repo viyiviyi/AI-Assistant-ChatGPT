@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/cssinjs": "^1.9.1",
     "@ant-design/icons": "^5.0.1",
     "@slack/web-api": "^6.8.1",
     "@types/node": "18.14.6",

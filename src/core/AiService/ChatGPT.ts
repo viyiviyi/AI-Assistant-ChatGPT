@@ -47,6 +47,11 @@ export class ChatGPT implements IAiService {
     if (!this.tokens) {
       return onMessage({error:true,end:true,text:'请填写API key后继续使用。'})
     }
+    onMessage({
+      end: false,
+      error: false,
+      text: 'loading...',
+    });
     if (config.model.startsWith("gpt-3")) {
       await this.generateChatStream(context, config, onMessage);
     } else if (config.model.startsWith("gpt-4")) {

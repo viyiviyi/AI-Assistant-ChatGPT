@@ -45,6 +45,18 @@ export class SlackClaude implements IAiService {
         text: "缺少频道id，请在设置添加频道id后使用",
         end: true,
       });
+    if (!this.tokens.slack?.slack_user_token.startsWith('xoxp-'))
+      return onMessage({
+        error: true,
+        text: "错误的slack_user_token，请在设置页面配置后使用",
+        end: true,
+      });
+    onMessage({
+      error: true,
+      text: "loading...",
+      end: false,
+    });
+
     await this.send_message_to_channel(config.channel_id, msg.text, onMessage);
   }
   history = async ({
@@ -107,9 +119,7 @@ export class SlackClaude implements IAiService {
         cloud_topic_id: thread_ts,
         cloud_send_id: ts,
       });
-      // 初始化响应为_Typing…_，表示正在等待响应
       // 记录响应开始时间,重试次数
-      let start_time = Date.now();
       let reties = 1;
       let isStop = false;
       // 如果响应以_Typing…_结尾，则继续等待响应
@@ -117,7 +127,7 @@ export class SlackClaude implements IAiService {
         if (reties > this.max_retries) return;
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const replies = await this.receive_message(channel_id, thread_ts, ts);
-        // 如果replies['ok']为False或消息列表长度小于等于1，则表示没有响应
+        // 如果没有响应，直接报错，结束等待
         if (!replies) {
           throw new Error("未收到Claude响应，请重试。");
         }
@@ -129,7 +139,6 @@ export class SlackClaude implements IAiService {
           });
           reties += 1;
           await new Promise((resolve) => setTimeout(resolve, 5000));
-          start_time = Date.now();
           continue;
         }
         const messages = replies["messages"] as Array<any>;
