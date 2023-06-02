@@ -167,7 +167,7 @@ export const Setting = ({
             }}
           >
             <a
-              href="https://github.com/viyiviyi/ChatGpt-lite-chat-web"
+              href="https://github.com/viyiviyi/AI-Assistant-ChatGPT"
               rel="noopener noreferrer"
               target={"_blank"}
             >

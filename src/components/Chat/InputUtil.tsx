@@ -115,11 +115,11 @@ export function InputUtil() {
           msg.cloudMsgId = res.cloud_send_id;
           await chat.pushMessage(msg);
         }
-        if (!result.id) reloadTopic(topicId);
         if (res.text || res.cloud_result_id) {
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           chat.pushMessage(result).then((r) => {
+            if (!result.id) reloadTopic(topicId);
             result = r;
             if (res.end) {
               delete loadingMsgs[r.id];
