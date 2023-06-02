@@ -6,7 +6,7 @@ import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
   MessageOutlined,
-  VerticalAlignMiddleOutlined
+  VerticalAlignMiddleOutlined,
 } from "@ant-design/icons";
 import { Button, Input, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
@@ -120,7 +120,6 @@ export function InputUtil() {
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           let isFirst = !result.id;
           chat.pushMessage(result).then((r) => {
-            if (isFirst) reloadTopic(topicId);
             result = r;
             if (res.end) {
               delete loadingMsgs[r.id];
@@ -136,7 +135,8 @@ export function InputUtil() {
                 },
               };
             }
-            reloadTopic(topicId, r.id);
+            if (isFirst) rendAndScrollView(undefined, result);
+            else reloadTopic(topicId, r.id);
           });
         }
       };
@@ -181,11 +181,17 @@ export function InputUtil() {
       } else if (aiService.history && topic.cloudTopicId) {
         let oldTs: string = "0";
         if (topic.messages.length) {
-          oldTs = topic.messages.slice(-1)[0].cloudMsgId || "0";
+          for (let index = topic.messages.length - 1; index >= 0; index--) {
+            const item = topic.messages[index];
+            if (item.cloudMsgId) {
+              oldTs = item.cloudMsgId;
+              break;
+            }
+          }
         }
         await aiService.history({
           async onMessage(text, isAi, cloudId, err) {
-           await chat.pushMessage({
+            await chat.pushMessage({
               id: "",
               groupId: chat.group.id,
               senderId: isAi ? undefined : chat.user.id,
