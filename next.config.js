@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  env: {
-    //SALT
-  },
+
+  images: { unoptimized: true },
+  env: {},
 };
 module.exports = nextConfig;
