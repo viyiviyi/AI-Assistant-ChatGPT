@@ -53,7 +53,7 @@ export class SlackClaude implements IAiService {
       });
     onMessage({
       error: true,
-      text: "loading...",
+      text: "",
       end: false,
     });
 

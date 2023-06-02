@@ -98,13 +98,11 @@ export const MarkdownView = ({
   menu,
 }: {
   markdown: string;
-  menu: MenuProps;
+  menu?: MenuProps;
 }) => {
   const renderedMarkdown = processor.processSync(markdown).result;
   return (
-    <div>
-      {renderedMarkdown}
-    </div>
+    <div>{renderedMarkdown}</div>
     // <Dropdown menu={menu}  trigger={["contextMenu"]}>
 
     // </Dropdown>

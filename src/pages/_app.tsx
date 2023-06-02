@@ -1,5 +1,5 @@
 import { useDark } from "@/core/hooks";
-import { StyleProvider, legacyLogicalPropertiesTransformer } from "@ant-design/cssinjs";
+import { legacyLogicalPropertiesTransformer, StyleProvider } from "@ant-design/cssinjs";
 
 import "@/styles/globals.css";
 import { ConfigProvider, theme } from "antd";
@@ -32,15 +32,6 @@ export default function App({ Component, pageProps }: AppProps) {
             name="viewport"
             content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
           />
-          {orgin == "https://22733.site" ? (
-            <script
-              async
-              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7936769145776010"
-              crossOrigin="anonymous"
-            ></script>
-          ) : (
-            <></>
-          )}
         </Head>
         <Component {...pageProps} />
       </ConfigProvider>

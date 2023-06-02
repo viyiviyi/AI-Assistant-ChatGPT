@@ -3,6 +3,7 @@ import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
+
 import {
   CaretRightOutlined,
   DownloadOutlined,
@@ -25,6 +26,7 @@ import {
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import AvatarUpload from "./AvatarUpload";
+import { MarkdownView } from "./Chat/MarkdownView";
 
 export const Setting = ({
   chatMgt,
@@ -482,6 +484,16 @@ export const Setting = ({
                   </Button>
                 </div>
               </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              forceRender={false}
+              key={"what?"}
+              header={"化缘入口"}
+              style={{ padding: "0 8px" }}
+            >
+              <MarkdownView
+                markdown={`**<center>这里啥也没有</center>**`}
+              ></MarkdownView>
             </Collapse.Panel>
           </Collapse>
           <Form.Item></Form.Item>
