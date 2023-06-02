@@ -3,7 +3,6 @@ import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
-
 import {
   CaretRightOutlined,
   DownloadOutlined,
@@ -23,8 +22,11 @@ import {
   theme,
   Upload
 } from "antd";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
+import wx from "../public/images/微信收款码.png";
+import zfb from "../public/images/支付宝收款码.jpg";
 import AvatarUpload from "./AvatarUpload";
 import { MarkdownView } from "./Chat/MarkdownView";
 
@@ -492,8 +494,22 @@ export const Setting = ({
               style={{ padding: "0 8px" }}
             >
               <MarkdownView
-                markdown={`**<center>这里啥也没有</center>**`}
+                markdown={`**这里只有两个收款码，～(￣▽￣～)~**
+
+**项目现在是部署在cloudfire上面，使用的免费额度，功能需求也只是我自己的需求，四舍五入就是0成本，加上~没合适的地方放广告~自己也很会反感广告，又想着"时间都花了，能不能有点收益"，所以这里就有了个赞助码（随缘化缘 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎）**
+
+**如果有赞助的话，新需求写起来就更有动力了 (ง •̀_•́)ง**`}
               ></MarkdownView>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <Image src={zfb} alt="支付宝收款码" width={300}></Image>
+                <Image src={wx} alt="微信收款码" width={300}></Image>
+              </div>
             </Collapse.Panel>
           </Collapse>
           <Form.Item></Form.Item>

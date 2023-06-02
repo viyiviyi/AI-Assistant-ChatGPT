@@ -15,9 +15,14 @@
 - 如果要使用ChatGLM作为机器人，可以看这个项目：[ChatGLM-6B_Api_kaggle](https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle)
 
 
-[一个有很多助理设定的网站(为什么我没有早点发现Orz)](https://ai.usesless.com/scene)  
-[一个购买key的商店（询问过卖家可以挂上来）,一个5刀的key就可以用半个月了。](https://gptnb.net)  
-[ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api)  
+[一个有很多助理设定的网站(为什么我没有早点发现Orz)](https://ai.usesless.com/scene)
+
+[一个购买key的商店（询问过卖家可以挂上来）,一个5刀的key就可以用半个月了。](https://gptnb.net)
+
+[ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api) 
+
+[一个赞助入口 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎](./%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E6%B2%A1%E4%BA%BA%E4%BC%9A%E7%82%B9%E5%BC%80%E7%9A%84%E5%90%A7.md)
+
 ## 功能说明
 ---
 
