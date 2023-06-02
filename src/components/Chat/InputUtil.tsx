@@ -118,8 +118,9 @@ export function InputUtil() {
         if (res.text || res.cloud_result_id) {
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
+          let isFirst = !result.id;
           chat.pushMessage(result).then((r) => {
-            if (!result.id) reloadTopic(topicId);
+            if (isFirst) reloadTopic(topicId);
             result = r;
             if (res.end) {
               delete loadingMsgs[r.id];
@@ -184,7 +185,7 @@ export function InputUtil() {
         }
         await aiService.history({
           async onMessage(text, isAi, cloudId, err) {
-            chat.pushMessage({
+           await chat.pushMessage({
               id: "",
               groupId: chat.group.id,
               senderId: isAi ? undefined : chat.user.id,
@@ -205,15 +206,14 @@ export function InputUtil() {
             user: "user",
           },
         });
+        reloadTopic(result.topicId);
       }
-      rendAndScrollView();
     } finally {
       delete loadingTopic[result.virtualRoleId!];
     }
     if (isContinue) loadingTopic[result.virtualRoleId!] = true;
     setTimeout(() => {
       setLoading((v) => --v);
-      reloadTopic(result.topicId, result.id);
       if (msg.topicId == chat.config.activityTopicId)
         scrollToBotton(result.id, true);
     }, 500);

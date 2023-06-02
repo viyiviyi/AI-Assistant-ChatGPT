@@ -3,7 +3,7 @@ import { WebAPICallResult } from "@slack/web-api";
 import axios, { AxiosInstance } from "axios";
 import { ChatCompletionRequestMessage } from "openai";
 import { IAiService, InputConfig } from "./IAiService";
-import { BaseUrlScheam, ServiceTokens } from "./ServiceProvider";
+import { ServiceTokens } from "./ServiceProvider";
 export class SlackClaude implements IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
@@ -60,7 +60,7 @@ export class SlackClaude implements IAiService {
       isAiMsg: boolean,
       msgCloudId: string,
       error: boolean
-    ) => void;
+    ) => Promise<void>;
     config: InputConfig;
   }) => {
     if (!config.channel_id)
@@ -71,9 +71,9 @@ export class SlackClaude implements IAiService {
       lastMsgCloudId,
       999
     );
-    list.forEach((v) => {
-      onMessage(v.text, v.isClaude, v.ts, false);
-    });
+    for (const item of list) {
+      await onMessage(item.text, item.isClaude, item.ts, false);
+    }
   };
 
   private async send_message_to_channel(

@@ -28,7 +28,7 @@ export interface IAiService {
       isAiMsg: boolean,
       msgCloudId: string,
       error: boolean
-    ) => void;
+    ) => Promise<void>;
     config: InputConfig;
   }) => Promise<void>;
 }
