@@ -7,11 +7,12 @@ const Navigation = () => {
   const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
   const { token } = theme.useToken();
   return (
-    <div style={{ padding: "0 1em 1em", maxWidth: "100%" }}>
+    <div style={{ padding: "0 1em 1em", maxWidth: "100%" }} key={"nav"}>
       {chat.topics.map((t) => {
         return (
-          <>
+          <div key={"nav_wrap_" + t.id}>
             <p
+              key={"nav_" + t.id}
               className={style.nav_item}
               style={{
                 cursor: "pointer",
@@ -36,6 +37,7 @@ const Navigation = () => {
             </p>
             {...t.titleTree.map((m) => (
               <p
+                key={"nav_" + m.msgId}
                 className={style.nav_item}
                 style={{
                   cursor: "pointer",
@@ -48,7 +50,7 @@ const Navigation = () => {
                 <Typography.Text ellipsis={true}>{m.title}</Typography.Text>
               </p>
             ))}
-          </>
+          </div>
         );
       })}
     </div>

@@ -1,7 +1,7 @@
-import logo from "@/public/logo.png";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import logo from "../../public/logo.png";
 
 export default function Custom404() {
   const router = useRouter();

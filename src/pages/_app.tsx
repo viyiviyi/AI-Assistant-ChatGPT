@@ -1,5 +1,8 @@
 import { useDark } from "@/core/hooks";
-import { legacyLogicalPropertiesTransformer, StyleProvider } from "@ant-design/cssinjs";
+import {
+  legacyLogicalPropertiesTransformer,
+  StyleProvider
+} from "@ant-design/cssinjs";
 
 import "@/styles/globals.css";
 import { ConfigProvider, theme } from "antd";
@@ -16,7 +19,10 @@ export default function App({ Component, pageProps }: AppProps) {
     setOrgin(location.origin);
   }, []);
   return (
-    <StyleProvider hashPriority="high" transformers={[legacyLogicalPropertiesTransformer]}>
+    <StyleProvider
+      hashPriority="high"
+      transformers={[legacyLogicalPropertiesTransformer]}
+    >
       <ConfigProvider
         theme={{
           token: {

@@ -25,8 +25,8 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
-import wx from "../public/images/微信收款码.png";
-import zfb from "../public/images/支付宝收款码.jpg";
+import wx from "../../public/images/微信收款码.png";
+import zfb from "../../public/images/支付宝收款码.jpg";
 import AvatarUpload from "./AvatarUpload";
 import { downloadTopic } from "./Chat/ChatMessage";
 import { MarkdownView } from "./Chat/MarkdownView";
