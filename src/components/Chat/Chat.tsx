@@ -55,14 +55,14 @@ export const Chat = () => {
         <Layout
           style={{
             color: token.colorTextBase,
-            backgroundColor: token.colorBgContainer,
+            backgroundColor: "#0000",
           }}
         >
           <Layout.Sider
             hidden={screenSize.width < 1500}
             width={250}
             style={{
-              overflow:'auto',
+              overflow: "auto",
               lineHeight: 1,
               borderRadius: token.borderRadius,
               backgroundColor: token.colorFillContent,

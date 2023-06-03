@@ -74,7 +74,6 @@ export const Setting = ({
   }>();
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
-    console.log(KeyValueData.instance());
     // ApiClient.getModelList(
     //   form.getFieldValue("setting_apitoken") ||
     //     KeyValueData.instance().getApiKey(),
