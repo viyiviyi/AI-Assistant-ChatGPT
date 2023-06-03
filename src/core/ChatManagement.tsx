@@ -117,6 +117,7 @@ export class ChatManagement implements IChat {
             thisVirtualRoles[v.id] = v;
           });
         if (!virtualRole) virtualRole = await this.createVirtualRoleBio(g.id);
+        if (!config.botType) config.botType = "ChatGPT";
         let topics: TopicMessage[] = [];
         const chat = {
           group: g,
