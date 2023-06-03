@@ -6,7 +6,7 @@ import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
   MessageOutlined,
-  VerticalAlignMiddleOutlined,
+  VerticalAlignMiddleOutlined
 } from "@ant-design/icons";
 import { Button, Input, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
@@ -76,15 +76,15 @@ export function InputUtil() {
       timestamp: now++,
       topicId: topicId,
     };
-    let isContinue = false;
+    // 防止使用为完成的上下文发起提问
+    if (
+      (text ? chat.gptConfig.msgCount != 1 : true) &&
+      chat.config.enableVirtualRole &&
+      loadingTopic[result.topicId + "_" + result.virtualRoleId]
+    )
+      return;
+    loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
     try {
-      // 阻止同时对同一个助理发起多个提问
-      if (
-        chat.config.enableVirtualRole &&
-        loadingTopic[result.topicId + "_" + result.virtualRoleId]
-      )
-        return (isContinue = true);
-      loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
       // 渲染并滚动到最新内容
       const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
         if (_msg) msg = await chat.pushMessage(_msg);
@@ -118,30 +118,28 @@ export function InputUtil() {
           msg.cloudMsgId = res.cloud_send_id;
           await chat.pushMessage(msg);
         }
-        if (res.text || res.cloud_result_id) {
-          result.text = res.text + (res.end ? "" : "\n\nloading...");
-          result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
-          let isFirst = !result.id;
-          chat.pushMessage(result).then((r) => {
-            result = r;
-            if (res.end) {
-              delete loadingMsgs[r.id];
-              rendAndScrollView();
-            } else {
-              loadingMsgs[r.id] = {
-                stop: () => {
-                  try {
-                    res.stop && res.stop();
-                  } finally {
-                    delete loadingMsgs[r.id];
-                  }
-                },
-              };
-            }
-            if (isFirst) rendAndScrollView(undefined, result);
-            else reloadTopic(topicId, r.id);
-          });
-        }
+        result.text = res.text + (res.end ? "" : "\n\nloading...");
+        result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
+        let isFirst = !result.id;
+        chat.pushMessage(result).then((r) => {
+          result = r;
+          if (res.end) {
+            delete loadingMsgs[r.id];
+            rendAndScrollView();
+          } else {
+            loadingMsgs[r.id] = {
+              stop: () => {
+                try {
+                  res.stop && res.stop();
+                } finally {
+                  delete loadingMsgs[r.id];
+                }
+              },
+            };
+          }
+          if (isFirst) rendAndScrollView(undefined, result);
+          else reloadTopic(topicId, r.id);
+        });
       };
       // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
       if (
@@ -220,8 +218,6 @@ export function InputUtil() {
     } finally {
       delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
     }
-    if (isContinue)
-      loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
     setTimeout(() => {
       setLoading((v) => --v);
       if (msg.topicId == chat.config.activityTopicId)
