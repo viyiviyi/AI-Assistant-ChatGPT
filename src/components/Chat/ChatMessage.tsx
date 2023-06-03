@@ -40,14 +40,14 @@ export const ChatMessage = () => {
         v = v.filter((f) => f !== topic.id);
         topic = chat.topics.slice(-1)[0];
       } else {
-        scrollToBotton(topic.messages.slice(-1)[0]?.id);
+        scrollToBotton(topic.messages.slice(-1)[0]?.id, true);
         return;
       }
     } else {
       v.push(topic.id);
       if (topic.messages.length == 0) await ChatManagement.loadMessage(topic);
       reloadTopic(topic.id);
-      scrollToBotton(topic.messages.slice(-1)[0]?.id);
+      scrollToBotton(topic.messages.slice(-1)[0]?.id, true);
     }
     chat.config.activityTopicId = topic.id;
     setActivityKey(v);
@@ -61,7 +61,8 @@ export const ChatMessage = () => {
           if (!activityKey.includes(activityTopic.id))
             setActivityKey((v) => [...v, activityTopic.id]);
           scrollToBotton(
-            activityTopic.messages[activityTopic.messages.length - 1]?.id
+            activityTopic.messages[activityTopic.messages.length - 1]?.id,
+            true
           );
         });
       reloadTopic(activityTopic.id);
@@ -75,6 +76,7 @@ export const ChatMessage = () => {
         header={
           <div style={{ display: "flex" }}>
             <Typography.Title
+              id={topic.id}
               editable={{
                 onChange: (e) => {
                   chat.saveTopic(topic.id, e);
@@ -302,7 +304,7 @@ function MessageList({
   );
 }
 
-function downloadTopic(topic: TopicMessage, useRole: boolean, chat: IChat) {
+export function downloadTopic(topic: TopicMessage, useRole: boolean, chat: IChat) {
   let str = topic.name.replace(/^\\/, "").replace(/^\/:?:?/, "");
   str += "\n\n";
   topic.messages.forEach((v) => {

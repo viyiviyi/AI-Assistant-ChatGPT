@@ -28,6 +28,7 @@ import { useContext, useEffect, useState } from "react";
 import wx from "../public/images/微信收款码.png";
 import zfb from "../public/images/支付宝收款码.jpg";
 import AvatarUpload from "./AvatarUpload";
+import { downloadTopic } from "./Chat/ChatMessage";
 import { MarkdownView } from "./Chat/MarkdownView";
 
 export const Setting = ({
@@ -234,9 +235,29 @@ export const Setting = ({
               <Button
                 block
                 onClick={() => {
-                  let _chat = chatMgt!.toJson();
-                  _chat.group.background = undefined;
-                  downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
+                  modal.confirm({
+                    title: "可选择导出的文件类型",
+                    content:
+                      "Markdown格式是分开导出所有的话题，且不支持用于还原",
+                    okText: "JSON",
+                    cancelText: "Markdown",
+                    onCancel: () => {
+                      chatMgt?.topics.forEach((v) => {
+                        ChatManagement.loadMessage(v).then((t) => {
+                          downloadTopic(v, false, chatMgt);
+                        });
+                      });
+                    },
+                    onOk: () => {
+                      let _chat = chatMgt!.toJson();
+                      _chat.group.background = undefined;
+                      downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
+                      ChatManagement.remove(chatMgt!.group.id).then(() => {
+                        router.push("/chat");
+                        onCancel();
+                      });
+                    },
+                  });
                 }}
               >
                 <DownloadOutlined key="download" />

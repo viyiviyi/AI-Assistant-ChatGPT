@@ -9,7 +9,7 @@ import {
   User,
   VirtualRole
 } from "@/Models/DataBase";
-import { TopicMessage } from "@/Models/Topic";
+import { TitleTree, TopicMessage } from "@/Models/Topic";
 import React from "react";
 import { getInstance } from "ts-indexdb";
 import { BgConfig } from "./BgImageStore";
@@ -131,9 +131,6 @@ export class ChatManagement implements IChat {
           chat.group.createTime = Date.now();
           chat.gptConfig.role = "user";
         }
-        // if (i == 0) {
-        //   await this.loadTopics(chat);
-        // }
         this.chatList.push(chat);
       }
       res();
@@ -154,6 +151,7 @@ export class ChatManagement implements IChat {
             ...t,
             messages: [],
             messageMap: {},
+            titleTree: [],
           }));
       });
     chat.topics = topics;
@@ -183,6 +181,36 @@ export class ChatManagement implements IChat {
         topic.messageMap[v.id] = v;
       });
     topic.messages = msgs;
+    this.loadTitleTree(topic);
+  }
+  static lastLoadTime = Date.now();
+  static loadTimeout: any = 0;
+  static async loadTitleTree(topic: TopicMessage) {
+    // 因为这里会遍历整个列表，可能有性能问题，所以做了节流
+    clearTimeout(this.loadTimeout);
+    this.loadTimeout = setTimeout(
+      () => {
+        if (Date.now() - this.lastLoadTime < 1500) return;
+        this.lastLoadTime = Date.now();
+        let tree: TitleTree[] = [];
+        topic.messages.forEach((v) => {
+          let lv = -1;
+          let m = v.text.match(/^#+/);
+          if (m) lv = m[0].length;
+          if (lv > 5) lv = -1;
+          if (lv != -1) {
+            tree.push({
+              lv: lv as 1 | 2 | 3 | 4 | 5,
+              title: v.text.substring(0, 50).replace(/^#+/, "").trim(),
+              msgId: v.id,
+            });
+          }
+        });
+        topic.titleTree = tree;
+      },
+      // 当距离上次刷新已经超过5秒，则让下次刷新的延迟为0（还是有极小小几率不刷新）
+      Date.now() - this.lastLoadTime > 5000 ? 0 : 1500
+    );
   }
 
   static async toFirst(group: Group): Promise<void> {
@@ -195,7 +223,7 @@ export class ChatManagement implements IChat {
     ChatManagement.chatList;
     await ChatManagement.saveSort();
   }
-  getAskContext(): Array<{
+  getAskContext(index?: number): Array<{
     role: "assistant" | "user" | "system";
     content: string;
     name: string;
@@ -207,13 +235,15 @@ export class ChatManagement implements IChat {
       name: string;
     }> = [];
     if (topic) {
+      let messages = topic.messages;
+      if (index) messages = messages.slice(0, index + 1);
       if (
         this.gptConfig.msgCount > 0 &&
-        topic.messages.length > this.gptConfig.msgCount
+        messages.length > this.gptConfig.msgCount
       ) {
         // 不在记忆范围内 且勾选了的消息
-        topic.messages
-          .slice(0, topic.messages.length - this.gptConfig.msgCount)
+        messages
+          .slice(0, messages.length - this.gptConfig.msgCount)
           .filter((v) => v.checked)
           .forEach((v) => {
             let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
@@ -224,8 +254,8 @@ export class ChatManagement implements IChat {
             });
           });
         // 表示这中间省略了很多内容
-        let lastMsg = topic.messages
-          .slice(0, topic.messages.length - this.gptConfig.msgCount)
+        let lastMsg = messages
+          .slice(0, messages.length - this.gptConfig.msgCount)
           .slice(-1)[0];
         if (!lastMsg.checked) {
           ctx.push({
@@ -236,7 +266,7 @@ export class ChatManagement implements IChat {
         }
       }
       // 勾选的消息
-      topic.messages.slice(-this.gptConfig.msgCount).forEach((v) => {
+      messages.slice(-this.gptConfig.msgCount).forEach((v) => {
         let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
         ctx.push({
           role: ChatManagement.parseMsgToRole(v, this.gptConfig.role),
@@ -327,7 +357,12 @@ export class ChatManagement implements IChat {
       this.group.id,
       name.substring(0, 100) || new Date().toLocaleString()
     );
-    let _topic = { ...topic, messages: [], messageMap: {} };
+    let _topic: TopicMessage = {
+      ...topic,
+      messages: [],
+      messageMap: {},
+      titleTree: [],
+    };
     this.topics.push(_topic);
     this.config.activityTopicId = topic.id;
     return _topic;
@@ -526,30 +561,43 @@ export class ChatManagement implements IChat {
     if (!topic) topic = await await this.newTopic(message.text);
     message.topicId = topic.id;
     message.groupId = this.group.id;
+    let previousMessage: Message;
+    let insertIndex = -1;
+    if (message.previousMessage) {
+      insertIndex = topic.messages.findIndex(
+        (f) => f.id == message.previousMessage
+      );
+      if (insertIndex !== -1) previousMessage = topic.messages[insertIndex];
+    }
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);
       if (!msg) {
-        topic.messages.push(message);
+        if (insertIndex !== -1)
+          topic.messages.splice(insertIndex, 1, ...[previousMessage!, message]);
+        else topic.messages.push(message);
         topic.messageMap[message.id] = message;
         await ChatManagement.createMessage(message);
+        ChatManagement.loadTitleTree(topic);
         return message;
       }
-      msg.text = message.text;
       await getInstance().update_by_primaryKey<Message>({
         tableName: "Message",
         value: msg.id,
         handle: (r) => {
-          r.text = message.text;
-          r.checked = message.checked;
+          r = Object.assign(r, message);
           return r;
         },
       });
+      ChatManagement.loadTitleTree(topic);
       return msg;
     } else {
       message.id = getUuid();
-      topic.messages.push(message);
+      if (insertIndex !== -1)
+        topic.messages.splice(insertIndex, 1, ...[previousMessage!, message]);
+      else topic.messages.push(message);
       topic.messageMap[message.id] = message;
       await ChatManagement.createMessage(message);
+      ChatManagement.loadTitleTree(topic);
       return message;
     }
   }
@@ -644,7 +692,11 @@ export class ChatManagement implements IChat {
       gptConfig: this.gptConfig,
       topics: this.topics,
     };
-    chat.virtualRole.avatar = undefined;
+    chat = JSON.parse(JSON.stringify(chat));
+    chat.topics.forEach((v) => {
+      v.titleTree = [];
+      v.messageMap = {};
+    });
     return chat;
   }
   async fromJson(json: IChat) {
@@ -745,8 +797,6 @@ export const ChatContext = React.createContext<{
   setActivityTopic: (topic: TopicMessage) => void;
   bgConfig: BgConfig;
   setBgConfig: (image?: string) => void;
-  // aiService: IAiService | undefined;
-  // resetService: (chat:IChat) => void;
   loadingMsgs: { [key: string]: { stop: () => void } };
 }>({
   chat: noneChat,
@@ -761,7 +811,5 @@ export const ChatContext = React.createContext<{
     opacity: 0.5,
   },
   setBgConfig: (img?: string) => {},
-  // aiService: undefined,
-  // resetService: (chat:IChat) => {},
   loadingMsgs: {},
 });

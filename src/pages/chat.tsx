@@ -29,6 +29,7 @@ export default function Page() {
     createdAt: 0,
     messages: [],
     messageMap: {},
+    titleTree: [],
   });
   const { reloadService } = useService();
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function Page() {
         createdAt: 0,
         messages: [],
         messageMap: {},
+        titleTree: [],
       };
       setActivityTopic(aTopic);
     });

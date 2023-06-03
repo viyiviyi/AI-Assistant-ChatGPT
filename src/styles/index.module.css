@@ -62,3 +62,8 @@
 .message .message__footer .message__timestamp{
   font-size: 12px;
 }
+.nav_item:hover{
+  position: relative;
+  top: -1px;
+  border-bottom: 1px solid #ccc5;
+}

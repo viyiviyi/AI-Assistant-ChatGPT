@@ -5,14 +5,18 @@ export function useScreenSize() {
     width: 0,
     height: 0,
   });
+  const timeout = useRef<any>();
   const retrieved = useRef(false);
   useEffect(() => {
     if (retrieved.current) return;
     retrieved.current = true;
     setObj({ width: window.innerWidth, height: window.innerHeight });
-    // window.addEventListener("resize", () => {
-    //   setObj({ width: window.innerWidth, height: window.innerHeight });
-    // });
+    window.addEventListener("resize", () => {
+      clearTimeout(timeout.current);
+      timeout.current = setTimeout(() => {
+        setObj({ width: window.innerWidth, height: window.innerHeight });
+      }, 1000);
+    });
   }, []);
   return obj;
 }

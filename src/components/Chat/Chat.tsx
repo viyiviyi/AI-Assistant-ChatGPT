@@ -1,9 +1,11 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
+import { useScreenSize } from "@/core/hooks";
 import { Message } from "@/Models/DataBase";
 import { Layout, message, theme } from "antd";
 import React, { useState } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { InputUtil } from "./InputUtil";
+import { MemoNavigation } from "./Navigation";
 
 const { Content, Footer } = Layout;
 const MemoChatMessage = React.memo(ChatMessage);
@@ -23,7 +25,7 @@ export const Chat = () => {
   const [_, contextHolder] = message.useMessage();
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
-  
+  const screenSize = useScreenSize();
   return (
     <MessageContext.Provider
       value={{
@@ -45,23 +47,43 @@ export const Chat = () => {
           height: "100%",
           width: "100%",
           maxHeight: "100%",
-          maxWidth: "min(1200px, 100%)",
+          maxWidth: "min(1500px, 100%)",
           margin: "0 auto",
         }}
       >
         <ChatHeader></ChatHeader>
-        <Content
-          id="content"
+        <Layout
           style={{
-            overflow: "auto",
-            borderRadius: token.borderRadius,
-            backgroundColor: token.colorFillContent,
-            width: "100%",
-            maxWidth: "100%",
+            color: token.colorTextBase,
+            backgroundColor: token.colorBgContainer,
           }}
         >
-          <MemoChatMessage />
-        </Content>
+          <Layout.Sider
+            hidden={screenSize.width < 1500}
+            width={250}
+            style={{
+              overflow:'auto',
+              lineHeight: 1,
+              borderRadius: token.borderRadius,
+              backgroundColor: token.colorFillContent,
+            }}
+          >
+            <MemoNavigation></MemoNavigation>
+          </Layout.Sider>
+          <Content
+            id="content"
+            style={{
+              overflow: "auto",
+              borderRadius: token.borderRadius,
+              backgroundColor: token.colorFillContent,
+              width: "100%",
+              maxWidth: "100%",
+              marginLeft: screenSize.width >= 1500 ? "50px" : 0,
+            }}
+          >
+            <MemoChatMessage />
+          </Content>
+        </Layout>
         <Footer
           id="footer"
           style={{
