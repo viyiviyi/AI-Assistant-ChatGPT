@@ -59,7 +59,7 @@ export const Chat = () => {
           }}
         >
           <Layout.Sider
-            hidden={screenSize.width < 1500}
+            hidden={screenSize.width < 1200}
             width={250}
             style={{
               overflow: "auto",
@@ -78,7 +78,7 @@ export const Chat = () => {
               backgroundColor: token.colorFillContent,
               width: "100%",
               maxWidth: "100%",
-              marginLeft: screenSize.width >= 1500 ? "50px" : 0,
+              marginLeft: screenSize.width >= 1200 ? "max(min(50px,100vw - 1195px),5px)" : 0,
             }}
           >
             <MemoChatMessage />
