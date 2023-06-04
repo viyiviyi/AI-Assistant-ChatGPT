@@ -32,6 +32,26 @@ export const DevBaseUrl: BaseUrlScheam = {
   slackClaude: "http://slack.yiyiooo.com",
 };
 
+export type aiServiceType = "None" | "ChatGPT" | "Slack" | "GPTFree";
+export const aiServerList: { key: aiServiceType; name: string }[] = [
+  {
+    key: "None",
+    name: "不启用AI",
+  },
+  {
+    key: "ChatGPT",
+    name: "ChatGPT",
+  },
+  {
+    key: "Slack",
+    name: "Slack(Claude)",
+  },
+  {
+    key: "GPTFree",
+    name: "ChatGPT(免费)",
+  },
+];
+
 export const aiServices: {
   current?: IAiService;
 } = {};

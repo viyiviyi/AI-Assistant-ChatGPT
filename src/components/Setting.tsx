@@ -1,4 +1,8 @@
-import { chatGptModels, useService } from "@/core/AiService/ServiceProvider";
+import {
+  aiServerList,
+  chatGptModels,
+  useService
+} from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
@@ -311,10 +315,11 @@ export const Setting = ({
             extra="包含了一个临时开放且每天全局限制请求次数免费的GPT服务"
           >
             <Select style={{ width: "100%" }}>
-              <Select.Option value="None">不启用AI</Select.Option>
-              <Select.Option value="ChatGPT">ChatGPT</Select.Option>
-              <Select.Option value="Slack">Slack(Claude)</Select.Option>
-              <Select.Option value="GPTFree">ChatGPT(免费)</Select.Option>
+              {aiServerList.map((v) => (
+                <Select.Option key={"ai_type" + v.key} value={v.key}>
+                  {v.name}
+                </Select.Option>
+              ))}
             </Select>
           </Form.Item>
           <div style={{ width: "100%", display: "flex", gap: "10px" }}>

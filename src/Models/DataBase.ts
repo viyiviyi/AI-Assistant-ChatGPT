@@ -1,3 +1,5 @@
+import { aiServiceType } from "@/core/AiService/ServiceProvider";
+
 // 用户表
 export interface User {
   id: string; // 用户ID
@@ -28,7 +30,7 @@ export interface GroupConfig {
   activityTopicId: string; // 激活的话题
   defaultVirtualRole?: string; // 默认助理
   disableStrikethrough?: boolean; // 禁用删除线
-  botType: "None" | "ChatGPT" | "Slack" | "GPTFree";
+  botType: aiServiceType;
   cloudChannelId?: string;
 }
 
