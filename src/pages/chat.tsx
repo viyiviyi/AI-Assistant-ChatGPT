@@ -75,6 +75,7 @@ export default function Page() {
     <ChatContext.Provider
       value={{
         chat: chatMgt,
+        setChat: setChatMgt,
         activityTopic,
         loadingMsgs,
         setActivityTopic: (topic: TopicMessage) => {

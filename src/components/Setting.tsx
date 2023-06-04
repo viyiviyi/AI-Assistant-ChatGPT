@@ -1,6 +1,6 @@
 import { chatGptModels, useService } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
-import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
 import {
@@ -43,10 +43,10 @@ export const Setting = ({
   const [modal, contextHolder] = Modal.useModal();
   const [activityKey, setActivityKey] = useState<string[]>(["GPT"]);
   const router = useRouter();
-  const { setBgConfig } = useContext(ChatContext);
+  const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
   const [models, setModels] = useState<string[]>(chatGptModels);
-  const [nextChat, setNextChat] = useState<ChatManagement>();
+  // const [nextChat, setNextChat] = useState<ChatManagement>();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
@@ -84,7 +84,6 @@ export const Setting = ({
   async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    if (nextChat) await chatMgt.fromJson(nextChat);
     chatMgt.gptConfig.model = values.GptConfig_model;
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
@@ -251,10 +250,6 @@ export const Setting = ({
                       let _chat = chatMgt!.toJson();
                       _chat.group.background = undefined;
                       downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
-                      ChatManagement.remove(chatMgt!.group.id).then(() => {
-                        router.push("/chat");
-                        onCancel();
-                      });
                     },
                   });
                 }}
@@ -270,11 +265,12 @@ export const Setting = ({
                       const fr = new FileReader();
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
-                          const chat = nextChat || noneChat;
-                          chat
-                            .fromJson(JSON.parse(e.target.result.toString()))
-                            .then();
-                          setNextChat(chat);
+                          chatMgt
+                            ?.fromJson(JSON.parse(e.target.result.toString()))
+                            .then((chat) => {
+                              setChat(new ChatManagement(chat));
+                              onCancel();
+                            });
                         }
                       };
                       fr.readAsText(file);

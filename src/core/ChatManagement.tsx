@@ -702,16 +702,18 @@ export class ChatManagement implements IChat {
   }
   async fromJson(json: IChat) {
     if (!json.group.createTime) json.gptConfig.role = "user";
+    let gid = this.group.id;
     await ChatManagement.remove(this.group.id, json);
-    Object.assign(this.group, json.group, { id: getUuid() });
+    Object.assign(this.group, json.group, { id: gid });
     await ChatManagement.createGroup(this.group).then();
     Object.assign(this.config, json.config, {
       id: getUuid(),
       groupId: this.group.id,
     });
     await ChatManagement.createConfig(this.group.id, this.config);
+    const virtualRoleIdMap = { [json.virtualRole.id]: getUuid() };
     Object.assign(this.virtualRole, json.virtualRole, {
-      id: getUuid(),
+      id: virtualRoleIdMap[json.virtualRole.id],
       groupId: this.group.id,
     });
     if (Object.keys(this.virtualRoles).length == 0) {
@@ -726,7 +728,9 @@ export class ChatManagement implements IChat {
         if (!this.virtualRoles[key]) return;
         let e = this.config.defaultVirtualRole == this.virtualRoles[key]!.id;
         this.virtualRoles[key]!.groupId = this.group.id;
-        this.virtualRoles[key]!.id = getUuid();
+        virtualRoleIdMap[this.virtualRoles[key]!.id] = getUuid();
+        this.virtualRoles[key]!.id =
+          virtualRoleIdMap[this.virtualRoles[key]!.id];
         if (e) {
           Object.assign(this.virtualRole, this.virtualRoles[key]);
           this.config.defaultVirtualRole = this.virtualRoles[key]!.id;
@@ -777,23 +781,27 @@ export class ChatManagement implements IChat {
         )
       );
       v.messages.forEach((m) => {
-        m.groupId = this.group.id;
-        m.topicId = v.id;
-        m.ctxRole = m.ctxRole || (m.virtualRoleId ? "assistant" : "user");
-        m.virtualRoleId;
-        m.id = getUuid();
+        Object.assign(m, {
+          groupId: this.group.id,
+          topicId: v.id,
+          ctxRole: m.ctxRole || (m.virtualRoleId ? "assistant" : "user"),
+          virtualRoleId: virtualRoleIdMap[m.virtualRoleId || ""],
+          id: getUuid(),
+        });
         proM.push(ChatManagement.createMessage(m));
       });
     });
     await Promise.all(proT);
     await Promise.all(proM);
     ChatManagement.chatList.splice(this.group.index, 1, this.toJson());
+    return this;
   }
 }
 export const noneChat = new ChatManagement(defaultChat);
 const obj: { [key: string]: any } = {};
 export const ChatContext = React.createContext<{
   chat: ChatManagement;
+  setChat: (chat: ChatManagement) => void;
   activityTopic: TopicMessage;
   setActivityTopic: (topic: TopicMessage) => void;
   bgConfig: BgConfig;
@@ -801,6 +809,7 @@ export const ChatContext = React.createContext<{
   loadingMsgs: { [key: string]: { stop: () => void } };
 }>({
   chat: noneChat,
+  setChat: (chat: ChatManagement) => { },
   activityTopic: obj.topic,
   setActivityTopic: (topic: TopicMessage) => {
     obj.topic = topic;
