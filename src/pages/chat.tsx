@@ -19,6 +19,7 @@ export default function Page() {
   const { id: groupId } = router.query;
   const { token } = theme.useToken();
   const { bgConfig, loadingMsgs } = useContext(ChatContext);
+  const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
@@ -92,6 +93,10 @@ export default function Page() {
             v.backgroundImage = `url(${image})`;
             return { ...v };
           });
+        },
+        navList,
+        reloadNav: (topic: TopicMessage) => {
+          ChatManagement.loadTitleTree(topic).then(() => setNavList([]));
         },
       }}
     >

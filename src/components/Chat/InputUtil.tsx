@@ -27,7 +27,7 @@ const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
-  const { chat, activityTopic, setActivityTopic, loadingMsgs } =
+  const { chat, activityTopic, setActivityTopic, loadingMsgs, reloadNav } =
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
@@ -218,6 +218,9 @@ export function InputUtil() {
     } finally {
       delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
     }
+
+    if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
+      reloadNav(topic);
     setTimeout(() => {
       setLoading((v) => --v);
       if (msg.topicId == chat.config.activityTopicId)

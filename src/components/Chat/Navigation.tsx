@@ -4,7 +4,8 @@ import style from "@/styles/index.module.css";
 import { theme, Typography } from "antd";
 import React, { useContext } from "react";
 const Navigation = () => {
-  const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
+  const { chat, activityTopic, setActivityTopic, navList } =
+    useContext(ChatContext);
   const { token } = theme.useToken();
   return (
     <div style={{ padding: "0 1em 1em", maxWidth: "100%" }} key={"nav"}>
@@ -45,7 +46,10 @@ const Navigation = () => {
                   marginBottom: 0,
                   lineHeight: 1.5,
                 }}
-                onClick={() => scrollToBotton(m.msgId, true)}
+                onClick={() => {
+                  setActivityTopic(t);
+                  scrollToBotton(m.msgId, true);
+                }}
               >
                 <Typography.Text ellipsis={true}>{m.title}</Typography.Text>
               </p>

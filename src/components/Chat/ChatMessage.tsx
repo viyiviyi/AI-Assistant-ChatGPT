@@ -57,7 +57,7 @@ export const ChatMessage = () => {
     ChatManagement.load().then(() => {
       activityTopic &&
         ChatManagement.loadMessage(activityTopic).then(() => {
-          setNone([]);
+          setNone([])
           if (!activityKey.includes(activityTopic.id))
             setActivityKey((v) => [...v, activityTopic.id]);
           scrollToBotton(
@@ -304,7 +304,11 @@ function MessageList({
   );
 }
 
-export function downloadTopic(topic: TopicMessage, useRole: boolean, chat: IChat) {
+export function downloadTopic(
+  topic: TopicMessage,
+  useRole: boolean,
+  chat: IChat
+) {
   let str = topic.name.replace(/^\\/, "").replace(/^\/:?:?/, "");
   str += "\n\n";
   topic.messages.forEach((v) => {

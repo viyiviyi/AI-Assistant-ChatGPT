@@ -36,7 +36,7 @@ export const MessageItem = ({
   onDel: (v: Message) => void;
   onCite: (message: Message) => void;
 }) => {
-  const { chat, loadingMsgs } = useContext(ChatContext);
+  const { chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState("");
@@ -72,9 +72,13 @@ export const MessageItem = ({
       {edit ? (
         <SaveOutlined
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => {
+          onClick={async () => {
+            const isReloadNav =
+              /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
             msg.text = messageText;
-            chat.pushMessage(msg);
+            await chat.pushMessage(msg);
+            var topic = chat.topics.find((f) => f.id === msg.topicId);
+            if (topic && isReloadNav) reloadNav(topic);
             setEdit(false);
           }}
           style={{ marginLeft: "16px" }}

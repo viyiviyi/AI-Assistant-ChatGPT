@@ -9,7 +9,7 @@ import {
   User,
   VirtualRole
 } from "@/Models/DataBase";
-import { TitleTree, TopicMessage } from "@/Models/Topic";
+import { TopicMessage } from "@/Models/Topic";
 import React from "react";
 import { getInstance } from "ts-indexdb";
 import { BgConfig } from "./BgImageStore";
@@ -158,21 +158,18 @@ export class ChatManagement implements IChat {
     chat.topics = topics;
     for (let i = 0; i < topics.length; i++) {
       const topic = topics[i];
-      if (topic.id === chat.config.activityTopicId) {
-        await this.loadMessage(topic);
-        break;
-      }
-      if (i == topics.length - 1) {
-        chat.config.activityTopicId = topic.id;
-        await this.loadMessage(topic);
-      }
+      await this.loadMessage(topic, true);
     }
   }
-  static async loadMessage(topic: TopicMessage) {
-    if (topic.messages.length) return;
+  static async loadMessage(topic: TopicMessage, onlyTitle = false) {
+    if (topic.loadAll) return;
+    topic.loadAll = !onlyTitle;
     let msgs = await getInstance().query<Message>({
       tableName: "Message",
-      condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id,
+      condition: (v) =>
+        v.groupId == topic.groupId &&
+        v.topicId == topic.id &&
+        (!onlyTitle || /^#{1,5}\s/.test(v.text)),
     });
     // 兼容旧数据
     msgs
@@ -182,36 +179,19 @@ export class ChatManagement implements IChat {
         topic.messageMap[v.id] = v;
       });
     topic.messages = msgs;
-    this.loadTitleTree(topic);
+    await this.loadTitleTree(topic);
   }
-  static lastLoadTime = Date.now();
-  static loadTimeout: any = 0;
   static async loadTitleTree(topic: TopicMessage) {
-    // 因为这里会遍历整个列表，可能有性能问题，所以做了节流
-    clearTimeout(this.loadTimeout);
-    this.loadTimeout = setTimeout(
-      () => {
-        if (Date.now() - this.lastLoadTime < 1500) return;
-        this.lastLoadTime = Date.now();
-        let tree: TitleTree[] = [];
-        topic.messages.forEach((v) => {
-          let lv = -1;
-          let m = v.text.match(/^#+/);
-          if (m) lv = m[0].length;
-          if (lv > 5) lv = -1;
-          if (lv != -1) {
-            tree.push({
-              lv: lv as 1 | 2 | 3 | 4 | 5,
-              title: v.text.substring(0, 50).replace(/^#+/, "").trim(),
-              msgId: v.id,
-            });
-          }
-        });
-        topic.titleTree = tree;
-      },
-      // 当距离上次刷新已经超过5秒，则让下次刷新的延迟为0（还是有极小小几率不刷新）
-      Date.now() - this.lastLoadTime > 5000 ? 0 : 1500
-    );
+    topic.titleTree = topic.messages
+      .filter((v) => /^#{1,5}\s/.test(v.text))
+      .map((v) => {
+        let m = v.text.match(/^#+/);
+        return {
+          lv: m![0].length as 1 | 2 | 3 | 4 | 5,
+          title: v.text.substring(0, 50).replace(/^#+/, "").trim(),
+          msgId: v.id,
+        };
+      });
   }
 
   static async toFirst(group: Group): Promise<void> {
@@ -578,7 +558,6 @@ export class ChatManagement implements IChat {
         else topic.messages.push(message);
         topic.messageMap[message.id] = message;
         await ChatManagement.createMessage(message);
-        ChatManagement.loadTitleTree(topic);
         return message;
       }
       await getInstance().update_by_primaryKey<Message>({
@@ -589,7 +568,6 @@ export class ChatManagement implements IChat {
           return r;
         },
       });
-      ChatManagement.loadTitleTree(topic);
       return msg;
     } else {
       message.id = getUuid();
@@ -598,7 +576,6 @@ export class ChatManagement implements IChat {
       else topic.messages.push(message);
       topic.messageMap[message.id] = message;
       await ChatManagement.createMessage(message);
-      ChatManagement.loadTitleTree(topic);
       return message;
     }
   }
@@ -799,17 +776,9 @@ export class ChatManagement implements IChat {
 }
 export const noneChat = new ChatManagement(defaultChat);
 const obj: { [key: string]: any } = {};
-export const ChatContext = React.createContext<{
-  chat: ChatManagement;
-  setChat: (chat: ChatManagement) => void;
-  activityTopic: TopicMessage;
-  setActivityTopic: (topic: TopicMessage) => void;
-  bgConfig: BgConfig;
-  setBgConfig: (image?: string) => void;
-  loadingMsgs: { [key: string]: { stop: () => void } };
-}>({
+let context = {
   chat: noneChat,
-  setChat: (chat: ChatManagement) => { },
+  setChat: (chat: ChatManagement) => {},
   activityTopic: obj.topic,
   setActivityTopic: (topic: TopicMessage) => {
     obj.topic = topic;
@@ -819,7 +788,10 @@ export const ChatContext = React.createContext<{
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
     opacity: 0.5,
-  },
+  } as BgConfig,
   setBgConfig: (img?: string) => {},
-  loadingMsgs: {},
-});
+  loadingMsgs: {} as { [key: string]: { stop: () => void } },
+  navList: [],
+  reloadNav: (topic: TopicMessage) => {},
+};
+export const ChatContext = React.createContext(context);
