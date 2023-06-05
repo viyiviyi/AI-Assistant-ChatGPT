@@ -8,7 +8,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Input, Space, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
@@ -97,7 +97,7 @@ export function InputUtil() {
         if (_result) result = await chat.pushMessage(_result);
         reloadTopic(result.topicId);
         if (lockEnd && msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id || msg.id, true, true);
+          scrollToBotton(result.id || msg.id, true);
       };
       const aiService = aiServices.current;
       if (isBot || skipRequest || !aiService) {
@@ -147,8 +147,7 @@ export function InputUtil() {
           if (isFirst) rendAndScrollView(undefined, undefined);
           else if (lockEnd && onlyOne) {
             reloadTopic(topicId, r.id);
-            if (topic)
-              scrollToBotton(topic.messages.slice(-1)[0].id, true, true);
+            if (topic) scrollToBotton(topic.messages.slice(-1)[0].id, true);
           } else reloadTopic(topicId, r.id);
         });
       };
@@ -300,19 +299,21 @@ export function InputUtil() {
               opacity: 0.5,
             }}
           >
+            {!onlyOne && (
+              <Button
+                shape={"circle"}
+                size="large"
+                icon={<VerticalAlignTopOutlined />}
+                onClick={() => {
+                  setLockEnd(false);
+                  if (chat.topics.length == 0) return;
+                  scrollToBotton(chat.topics[0].id, true);
+                }}
+              />
+            )}
             <Button
               shape={"circle"}
-              style={{ height: 32, width: 32 }}
-              icon={<VerticalAlignTopOutlined />}
-              onClick={() => {
-                setLockEnd(false);
-                if (chat.topics.length == 0) return;
-                scrollToBotton(chat.topics[0].id, true);
-              }}
-            />
-            <Button
-              shape={"circle"}
-              style={{ height: 32, width: 32 }}
+              size="large"
               type={lockEnd ? "primary" : undefined}
               icon={<VerticalAlignBottomOutlined />}
               onClick={() => {

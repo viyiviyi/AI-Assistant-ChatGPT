@@ -24,7 +24,8 @@ const Navigation = () => {
               }}
               onClick={() => {
                 setActivityTopic(t);
-                scrollToBotton(t.id, true);
+                reloadTopic(t.id, t.messages.length - 1);
+                scrollToBotton(t.messages.slice(-1)[0]?.id || t.id, true);
               }}
             >
               <Typography.Text

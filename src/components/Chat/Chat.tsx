@@ -1,11 +1,7 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
 import { useScreenSize } from "@/core/hooks";
 import { Message } from "@/Models/DataBase";
-import {
-  VerticalAlignBottomOutlined,
-  VerticalAlignTopOutlined,
-} from "@ant-design/icons";
-import { FloatButton, Layout, message, theme } from "antd";
+import { Layout, message, theme } from "antd";
 import React, { useState } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { InputUtil } from "./InputUtil";
@@ -31,7 +27,7 @@ export const Chat = () => {
   const [_, contextHolder] = message.useMessage();
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
-  const [lockEnd, setLockEnd] = useState(false);
+  let [lockEnd, setLockEnd] = useState(false);
   const screenSize = useScreenSize();
   return (
     <MessageContext.Provider
@@ -93,6 +89,8 @@ export const Chat = () => {
                   : 0,
             }}
             onWheel={() => {
+              if (lockEnd == false) return;
+              lockEnd = false;
               setLockEnd(false);
             }}
           >

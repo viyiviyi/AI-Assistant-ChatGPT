@@ -5,17 +5,13 @@ import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
   DeleteOutlined,
-  DownloadOutlined,
-  EditOutlined,
+  DownloadOutlined
 } from "@ant-design/icons";
 import {
   Button,
-  Collapse,
-  Input,
-  Modal,
-  Popconfirm,
+  Collapse, Popconfirm,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
@@ -30,14 +26,15 @@ const topicRender: { [key: string]: (messageId?: string | number) => void } =
 export function reloadTopic(topicId: string, messageId?: string | number) {
   topicRender[topicId] && topicRender[topicId](messageId);
 }
-
 const MemoTopicTitle = React.memo(TopicTitle);
 const MemoMessageList = React.memo(MessageList);
 const MemoMessageItem = React.memo(MessageItem);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic, activityTopic } = useContext(ChatContext);
-  const [activityKey, setActivityKey] = useState<string[]>([chat.config.activityTopicId]);
+  const [activityKey, setActivityKey] = useState<string[]>([
+    chat.config.activityTopicId,
+  ]);
   const { onlyOne, closeAll, setCloasAll } = useContext(MessageContext);
   const [none, setNone] = useState([]);
   const onClickTopicTitle = useCallback(
@@ -63,11 +60,9 @@ export const ChatMessage = () => {
       if (!activityTopic) return setNone([]);
       if (!activityKey.includes(activityTopic.id))
         setActivityKey((v) => [...v, activityTopic.id]);
-      setTimeout(() => {
-        scrollToBotton(activityTopic.messages.slice(-1)[0].id, true, true);
-      }, 500);
+      if (onlyOne) reloadTopic(activityTopic.id);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
 
   if (onlyOne) {

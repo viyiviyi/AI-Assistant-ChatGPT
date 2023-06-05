@@ -4,6 +4,7 @@ import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
+import { KeyValueData } from "@/core/KeyValueData";
 import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
 import { Drawer, Layout, theme } from "antd";
@@ -43,7 +44,7 @@ export default function Page() {
             return { ...v };
           });
         });
-      reloadService(selectChat);
+      reloadService(selectChat, KeyValueData.instance());
       if (chatMgt.group.id == groupId) return;
       if (!selectChat.topics.length)
         await ChatManagement.loadTopics(selectChat);
@@ -52,7 +53,13 @@ export default function Page() {
       if (screenSize.width <= 1420) {
         setlistIsShow(false);
       }
-      setActivityTopic(newChatMgt.getActivityTopic());
+
+      const activityTopic = newChatMgt.getActivityTopic();
+      setActivityTopic(activityTopic);
+      setTimeout(() => {
+        // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
+        scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || "", true);
+      }, 500);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);

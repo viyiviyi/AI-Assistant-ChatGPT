@@ -1,7 +1,7 @@
 import { ChatGPT } from "@/core/AiService/ChatGPT";
 import { KeyValueData } from "./../KeyValueData";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useEnv } from "../hooks";
 import { IChat } from "./../ChatManagement";
 import { IAiService } from "./IAiService";
@@ -58,12 +58,8 @@ export const aiServices: {
 
 export function useService() {
   const env = useEnv();
-  const [data, setData] = useState<KeyValueData>();
-  useEffect(() => {
-    setData(KeyValueData.instance());
-  }, []);
   let reloadService = useCallback(
-    (chat: IChat) => {
+    (chat: IChat, data: KeyValueData) => {
       let baseUrl: BaseUrlScheam = env == "dev" ? DevBaseUrl : ProxyBaseUrl;
       if (!data) return;
       let tokens: ServiceTokens = {
@@ -94,7 +90,7 @@ export function useService() {
       }
       aiServices.current = _service;
     },
-    [data, env]
+    [env]
   );
 
   return { reloadService };
