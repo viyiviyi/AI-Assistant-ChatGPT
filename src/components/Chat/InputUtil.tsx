@@ -294,7 +294,7 @@ export function InputUtil() {
             direction="vertical"
             style={{
               position: "absolute",
-              bottom: "calc(100% + 5px)",
+              bottom: "calc(100% + 60px)",
               right: 0,
               opacity: 0.5,
             }}
