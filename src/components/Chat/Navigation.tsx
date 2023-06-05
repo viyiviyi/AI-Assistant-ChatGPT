@@ -30,7 +30,7 @@ const Navigation = () => {
               <Typography.Text
                 style={{
                   color:
-                    t.id == activityTopic.id ? token.colorPrimary : undefined,
+                    t.id == activityTopic?.id ? token.colorPrimary : undefined,
                 }}
                 ellipsis={true}
               >

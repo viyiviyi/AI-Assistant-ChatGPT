@@ -4,6 +4,7 @@ import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
+import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
 import { Drawer, Layout, theme } from "antd";
 import Head from "next/head";
@@ -23,15 +24,9 @@ export default function Page() {
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
-  const [activityTopic, setActivityTopic] = useState<TopicMessage>({
-    id: "",
-    name: "",
-    groupId: "",
-    createdAt: 0,
-    messages: [],
-    messageMap: {},
-    titleTree: [],
-  });
+  const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
+    chatMgt.getActivityTopic()
+  );
   const { reloadService } = useService();
   useEffect(() => {
     ChatManagement.load().then(async () => {
@@ -45,29 +40,19 @@ export default function Page() {
         .then((res) => {
           setBgImg((v) => {
             v.backgroundImage = `url(${selectChat.group.background || res})`;
-            return {...v};
+            return { ...v };
           });
         });
       reloadService(selectChat);
       if (chatMgt.group.id == groupId) return;
       if (!selectChat.topics.length)
         await ChatManagement.loadTopics(selectChat);
-      setChatMgt(new ChatManagement(selectChat));
+      const newChatMgt = new ChatManagement(selectChat);
+      setChatMgt(newChatMgt);
       if (screenSize.width <= 1420) {
         setlistIsShow(false);
       }
-      let aTopic = selectChat.topics.find(
-        (f) => f.id == selectChat.config.activityTopicId
-      ) || {
-        id: "",
-        name: "",
-        groupId: "",
-        createdAt: 0,
-        messages: [],
-        messageMap: {},
-        titleTree: [],
-      };
-      setActivityTopic(aTopic);
+      setActivityTopic(newChatMgt.getActivityTopic());
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);

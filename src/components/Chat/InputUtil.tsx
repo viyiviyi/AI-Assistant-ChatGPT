@@ -57,6 +57,7 @@ export function InputUtil() {
         setActivityTopic(_topic);
       });
     }
+    if (!topic) return;
     let topicId = topic.id;
     // 时间戳 每次使用加1 保证顺序不错
     let now = Date.now();
@@ -113,6 +114,7 @@ export function InputUtil() {
         cloud_result_id?: string;
         stop?: () => void;
       }) => {
+        if (!topic) return;
         if (!topic.cloudTopicId && res.cloud_topic_id) {
           topic.cloudTopicId = res.cloud_topic_id;
           msg.cloudTopicId = res.cloud_topic_id;
@@ -131,7 +133,7 @@ export function InputUtil() {
           if (res.end) {
             delete loadingMsgs[r.id];
             rendAndScrollView();
-          } else if (isFirst) {
+          } else {
             loadingMsgs[r.id] = {
               stop: () => {
                 try {
@@ -145,7 +147,8 @@ export function InputUtil() {
           if (isFirst) rendAndScrollView(undefined, undefined);
           else if (lockEnd && onlyOne) {
             reloadTopic(topicId, r.id);
-            scrollToBotton(topic.messages.slice(-1)[0].id, true, true);
+            if (topic)
+              scrollToBotton(topic.messages.slice(-1)[0].id, true, true);
           } else reloadTopic(topicId, r.id);
         });
       };
@@ -200,6 +203,7 @@ export function InputUtil() {
         }
         await aiService.history({
           async onMessage(text, isAi, cloudId, err) {
+            if (!topic) return;
             await chat.pushMessage({
               id: "",
               groupId: chat.group.id,

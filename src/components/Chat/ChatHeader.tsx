@@ -2,7 +2,7 @@ import { ChatContext } from "@/core/ChatManagement";
 import {
   SettingOutlined,
   UnorderedListOutlined,
-  UserAddOutlined
+  UserAddOutlined,
 } from "@ant-design/icons";
 import { Avatar, Layout, theme, Typography } from "antd";
 import { useContext, useState } from "react";
@@ -72,7 +72,7 @@ export const ChatHeader = () => {
           }}
           onSaved={() => {
             setRoleConfigShow(false);
-            reloadTopic(activityTopic.id);
+            if (activityTopic) reloadTopic(activityTopic.id);
           }}
           chatMgt={chat}
         ></VirtualRoleConfig>

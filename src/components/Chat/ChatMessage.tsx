@@ -37,7 +37,7 @@ const MemoMessageItem = React.memo(MessageItem);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic, activityTopic } = useContext(ChatContext);
-  const [activityKey, setActivityKey] = useState<string[]>([]);
+  const [activityKey, setActivityKey] = useState<string[]>([chat.config.activityTopicId]);
   const { onlyOne, closeAll, setCloasAll } = useContext(MessageContext);
   const [none, setNone] = useState([]);
   const onClickTopicTitle = useCallback(
@@ -53,7 +53,6 @@ export const ChatMessage = () => {
         return;
       }
       v.push(topic.id);
-      reloadTopic(topic.id);
       setActivityKey(v);
       setActivityTopic(topic);
     },
@@ -61,12 +60,14 @@ export const ChatMessage = () => {
   );
   useEffect(() => {
     ChatManagement.load().then(() => {
-      setNone([]);
+      if (!activityTopic) return setNone([]);
       if (!activityKey.includes(activityTopic.id))
         setActivityKey((v) => [...v, activityTopic.id]);
-      reloadTopic(activityTopic.id);
+      setTimeout(() => {
+        scrollToBotton(activityTopic.messages.slice(-1)[0].id, true, true);
+      }, 500);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
 
   if (onlyOne) {

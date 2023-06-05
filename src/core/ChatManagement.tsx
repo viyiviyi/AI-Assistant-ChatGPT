@@ -349,7 +349,7 @@ export class ChatManagement implements IChat {
     this.config.activityTopicId = topic.id;
     return _topic;
   }
-  getActivityTopic(): TopicMessage {
+  getActivityTopic(): TopicMessage | undefined {
     return (
       this.topics.find((f) => f.id === this.config.activityTopicId) ||
       this.topics.slice(-1)[0]
@@ -364,7 +364,7 @@ export class ChatManagement implements IChat {
         tableName: "Topic",
         value: t.id,
         handle: (r) => {
-          return Object.assign(r, t);;
+          return Object.assign(r, t);
         },
       });
     }
@@ -778,7 +778,7 @@ const obj: { [key: string]: any } = {};
 let context = {
   chat: noneChat,
   setChat: (chat: ChatManagement) => {},
-  activityTopic: obj.topic as TopicMessage,
+  activityTopic: obj.topic as TopicMessage | undefined,
   setActivityTopic: (topic: TopicMessage) => {
     obj.topic = topic;
   },
