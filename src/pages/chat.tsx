@@ -45,13 +45,13 @@ export default function Page() {
         .then((res) => {
           setBgImg((v) => {
             v.backgroundImage = `url(${selectChat.group.background || res})`;
-            return v;
+            return {...v};
           });
         });
       reloadService(selectChat);
       if (chatMgt.group.id == groupId) return;
       if (!selectChat.topics.length)
-        await ChatManagement.loadTopics(selectChat).then(() => {});
+        await ChatManagement.loadTopics(selectChat);
       setChatMgt(new ChatManagement(selectChat));
       if (screenSize.width <= 1420) {
         setlistIsShow(false);

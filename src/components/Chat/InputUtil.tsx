@@ -31,8 +31,9 @@ export function InputUtil() {
   const [loading, setLoading] = useState(0);
   const { chat, activityTopic, setActivityTopic, loadingMsgs, reloadNav } =
     useContext(ChatContext);
-  const { onlyOne, setOnlyOne, closeAll, setCloasAll, lockEnd, setLockEnd } =
+  const { onlyOne, setOnlyOne, closeAll, setCloasAll, setLockEnd } =
     useContext(MessageContext);
+  let { lockEnd } = useContext(MessageContext);
   const { token } = theme.useToken();
   objs.setInput = setInputText;
   /**
@@ -86,6 +87,8 @@ export function InputUtil() {
     )
       return;
     loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
+    lockEnd = true;
+    setLockEnd(true);
     try {
       // 渲染并滚动到最新内容
       const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
@@ -93,7 +96,7 @@ export function InputUtil() {
         if (_result) result = await chat.pushMessage(_result);
         reloadTopic(result.topicId);
         if (lockEnd && msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id || msg.id, true);
+          scrollToBotton(result.id || msg.id, true, true);
       };
       const aiService = aiServices.current;
       if (isBot || skipRequest || !aiService) {
@@ -128,7 +131,7 @@ export function InputUtil() {
           if (res.end) {
             delete loadingMsgs[r.id];
             rendAndScrollView();
-          } else {
+          } else if (isFirst) {
             loadingMsgs[r.id] = {
               stop: () => {
                 try {
@@ -139,8 +142,11 @@ export function InputUtil() {
               },
             };
           }
-          if (isFirst) rendAndScrollView(undefined, result);
-          else reloadTopic(topicId, r.id);
+          if (isFirst) rendAndScrollView(undefined, undefined);
+          else if (lockEnd && onlyOne) {
+            reloadTopic(topicId, r.id);
+            scrollToBotton(topic.messages.slice(-1)[0].id, true, true);
+          } else reloadTopic(topicId, r.id);
         });
       };
       // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
@@ -287,6 +293,7 @@ export function InputUtil() {
               position: "absolute",
               bottom: "calc(100% + 5px)",
               right: 0,
+              opacity: 0.5,
             }}
           >
             <Button

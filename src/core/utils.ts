@@ -51,15 +51,22 @@ export function downloadJson(jsonData: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function scrollToBotton(id: string, isAnm: boolean = false) {
+let toEndCache = { id: "", await: false };
+export function scrollToBotton(
+  id: string,
+  isAnm: boolean = false,
+  toEnd = false
+) {
+  toEndCache.id = id;
+  if (toEndCache.await) return;
+  toEndCache.await = true;
   setTimeout(() => {
+    toEndCache.await = false;
     if (window) {
-      document
-        .getElementById(id)
-        ?.scrollIntoView({
-          behavior: isAnm ? "smooth" : undefined,
-          block: "nearest",
-        });
+      document.getElementById(toEndCache.id)?.scrollIntoView({
+        behavior: isAnm ? "smooth" : undefined,
+        block: toEnd ? "end" : "nearest",
+      });
     }
   }, 500);
 }
