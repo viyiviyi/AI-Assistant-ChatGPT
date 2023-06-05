@@ -7,7 +7,7 @@ import {
   PauseOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined
+  UserOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -16,7 +16,7 @@ import {
   message,
   Popconfirm,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useContext, useEffect, useState } from "react";
@@ -49,7 +49,6 @@ export const MessageItem = ({
       delete renderMessage[msg.id];
     };
   }, [renderMessage, msg]);
-  // console.log(msg.id);
   const utilsEle = (
     <>
       <Checkbox

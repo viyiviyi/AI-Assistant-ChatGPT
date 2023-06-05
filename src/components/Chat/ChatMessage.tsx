@@ -5,7 +5,7 @@ import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
   DeleteOutlined,
-  DownloadOutlined
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { Button, Collapse, Popconfirm, theme, Typography } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
@@ -16,8 +16,9 @@ import { MessageItem } from "./MessageItem";
 const { Panel } = Collapse;
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
-const topicRender: { [key: string]: (messageId?: string) => void } = {};
-export function reloadTopic(topicId: string, messageId?: string) {
+const topicRender: { [key: string]: (messageId?: string | number) => void } =
+  {};
+export function reloadTopic(topicId: string, messageId?: string | number) {
   topicRender[topicId] && topicRender[topicId](messageId);
 }
 
@@ -57,7 +58,7 @@ export const ChatMessage = () => {
     ChatManagement.load().then(() => {
       activityTopic &&
         ChatManagement.loadMessage(activityTopic).then(() => {
-          setNone([])
+          setNone([]);
           if (!activityKey.includes(activityTopic.id))
             setActivityKey((v) => [...v, activityTopic.id]);
           scrollToBotton(
@@ -213,9 +214,26 @@ function MessageList({
     [renderMessage, steMessages, topic, chat]
   );
   useEffect(() => {
-    topicRender[topic.id] = (messageId?: string) => {
-      if (messageId)
+    topicRender[topic.id] = (messageId?: string | number) => {
+      if (typeof messageId == "number") {
+        if (messageId < range[0] || messageId >= range[1]) {
+          setRange([
+            Math.max(
+              messageId -
+                Math.max(10, 20 - (topic.messages.length - messageId)),
+              0
+            ),
+            Math.min(
+              topic.messages.length,
+              messageId + Math.max(10, 20 - messageId)
+            ),
+          ]);
+        }
+        return;
+      }
+      if (messageId) {
         return renderMessage[messageId] && renderMessage[messageId]();
+      }
       steMessages([...topic.messages]);
       setTotal(topic.messages.length);
       setRange([
@@ -226,7 +244,7 @@ function MessageList({
     return () => {
       delete topicRender[topic.id];
     };
-  }, [renderMessage, topic]);
+  }, [renderMessage, topic, range]);
   return (
     <>
       {range[0] > 0 ? (

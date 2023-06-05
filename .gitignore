@@ -35,3 +35,20 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 users.json
+
+# android
+Android/*.iml
+Android/.gradle
+Android/local.properties
+Android/.idea/caches
+Android/.idea/libraries
+Android/.idea/modules.xml
+Android/.idea/workspace.xml
+Android/.idea/navEditor.xml
+Android/.idea/assetWizardSettings.xml
+Android/.DS_Store
+Android/build
+Android/captures
+Android/.externalNativeBuild
+Android/.cxx
+Android/local.properties

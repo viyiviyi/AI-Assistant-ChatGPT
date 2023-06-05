@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -132,6 +132,7 @@ export class ChatManagement implements IChat {
           chat.group.createTime = Date.now();
           chat.gptConfig.role = "user";
         }
+        if (i == 0) await this.loadTopics(chat);
         this.chatList.push(chat);
       }
       res();
@@ -157,19 +158,16 @@ export class ChatManagement implements IChat {
       });
     chat.topics = topics;
     for (let i = 0; i < topics.length; i++) {
-      const topic = topics[i];
-      await this.loadMessage(topic, true);
+      await this.loadMessage(topics[i], true);
     }
   }
   static async loadMessage(topic: TopicMessage, onlyTitle = false) {
-    if (topic.loadAll) return;
-    topic.loadAll = !onlyTitle;
+    // if (topic.loadAll) return;
+    topic.loadAll = true;
     let msgs = await getInstance().query<Message>({
       tableName: "Message",
-      condition: (v) =>
-        v.groupId == topic.groupId &&
-        v.topicId == topic.id &&
-        (!onlyTitle || /^#{1,5}\s/.test(v.text)),
+      condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id,
+      //  && (!onlyTitle || /^#{1,5}\s/.test(v.text)),
     });
     // 兼容旧数据
     msgs
@@ -182,16 +180,18 @@ export class ChatManagement implements IChat {
     await this.loadTitleTree(topic);
   }
   static async loadTitleTree(topic: TopicMessage) {
-    topic.titleTree = topic.messages
-      .filter((v) => /^#{1,5}\s/.test(v.text))
-      .map((v) => {
-        let m = v.text.match(/^#+/);
-        return {
-          lv: m![0].length as 1 | 2 | 3 | 4 | 5,
-          title: v.text.substring(0, 50).replace(/^#+/, "").trim(),
-          msgId: v.id,
-        };
+    const l = topic.messages.length;
+    for (let idx = 0; idx < l; idx++) {
+      const v = topic.messages[idx];
+      if (!/^#{1,5}\s/.test(v.text)) continue;
+      let m = v.text.match(/^#+/);
+      topic.titleTree.push({
+        lv: m![0].length as 1 | 2 | 3 | 4 | 5,
+        title: v.text.substring(0, 50).replace(/^#+/, "").trim(),
+        msgId: v.id,
+        index: idx,
       });
+    }
   }
 
   static async toFirst(group: Group): Promise<void> {
@@ -539,7 +539,7 @@ export class ChatManagement implements IChat {
     );
 
     let topic = this.topics.find((f) => f.id == message.topicId);
-    if (!topic) topic = await await this.newTopic(message.text);
+    if (!topic) return message;
     message.topicId = topic.id;
     message.groupId = this.group.id;
     let previousMessage: Message;
