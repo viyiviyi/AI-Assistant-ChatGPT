@@ -6,9 +6,11 @@ import style from "@/styles/index.module.css";
 import {
   CommentOutlined,
   MessageOutlined,
-  VerticalAlignMiddleOutlined
+  VerticalAlignBottomOutlined,
+  VerticalAlignMiddleOutlined,
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
-import { Button, Input, theme, Typography } from "antd";
+import { Button, Input, Space, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
 import { MessageContext } from "./Chat";
 import { reloadTopic } from "./ChatMessage";
@@ -29,7 +31,7 @@ export function InputUtil() {
   const [loading, setLoading] = useState(0);
   const { chat, activityTopic, setActivityTopic, loadingMsgs, reloadNav } =
     useContext(ChatContext);
-  const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
+  const { onlyOne, setOnlyOne, closeAll, setCloasAll, lockEnd, setLockEnd } =
     useContext(MessageContext);
   const { token } = theme.useToken();
   objs.setInput = setInputText;
@@ -90,7 +92,7 @@ export function InputUtil() {
         if (_msg) msg = await chat.pushMessage(_msg);
         if (_result) result = await chat.pushMessage(_result);
         reloadTopic(result.topicId);
-        if (msg.topicId == chat.config.activityTopicId)
+        if (lockEnd && msg.topicId == chat.config.activityTopicId)
           scrollToBotton(result.id || msg.id, true);
       };
       const aiService = aiServices.current;
@@ -223,7 +225,7 @@ export function InputUtil() {
       reloadNav(topic);
     setTimeout(() => {
       setLoading((v) => --v);
-      if (msg.topicId == chat.config.activityTopicId)
+      if (lockEnd && msg.topicId == chat.config.activityTopicId)
         scrollToBotton(result.id, true);
     }, 500);
   };
@@ -275,8 +277,43 @@ export function InputUtil() {
             display: "flex",
             alignItems: "center",
             marginBottom: "3px",
+            position: "relative",
           }}
         >
+          <Space
+            size={10}
+            direction="vertical"
+            style={{
+              position: "absolute",
+              bottom: "calc(100% + 5px)",
+              right: 0,
+            }}
+          >
+            <Button
+              shape={"circle"}
+              style={{ height: 32, width: 32 }}
+              icon={<VerticalAlignTopOutlined />}
+              onClick={() => {
+                setLockEnd(false);
+                if (chat.topics.length == 0) return;
+                scrollToBotton(chat.topics[0].id, true);
+              }}
+            />
+            <Button
+              shape={"circle"}
+              style={{ height: 32, width: 32 }}
+              type={lockEnd ? "primary" : undefined}
+              icon={<VerticalAlignBottomOutlined />}
+              onClick={() => {
+                if (!activityTopic) return;
+                scrollToBotton(
+                  activityTopic.messages.slice(-1)[0]?.id || activityTopic.id,
+                  true
+                );
+                setLockEnd(true);
+              }}
+            />
+          </Space>
           <Typography.Text
             style={{
               cursor: "pointer",

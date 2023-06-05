@@ -6,8 +6,17 @@ import {
   CaretRightOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
-import { Button, Collapse, Popconfirm, theme, Typography } from "antd";
+import {
+  Button,
+  Collapse,
+  Input,
+  Modal,
+  Popconfirm,
+  theme,
+  Typography,
+} from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
@@ -22,6 +31,7 @@ export function reloadTopic(topicId: string, messageId?: string | number) {
   topicRender[topicId] && topicRender[topicId](messageId);
 }
 
+const MemoTopicTitle = React.memo(TopicTitle);
 const MemoMessageList = React.memo(MessageList);
 const MemoMessageItem = React.memo(MessageItem);
 export const ChatMessage = () => {
@@ -30,121 +40,35 @@ export const ChatMessage = () => {
   const [activityKey, setActivityKey] = useState<string[]>([]);
   const { onlyOne, closeAll, setCloasAll } = useContext(MessageContext);
   const [none, setNone] = useState([]);
-  async function onClickTopicTitle(topic: TopicMessage) {
-    let v = [...activityKey];
-    if (closeAll) {
-      v = [];
-      setCloasAll(false);
-    }
-    if (v.includes(topic.id)) {
-      if (topic.id !== chat.config.activityTopicId) {
+  const onClickTopicTitle = useCallback(
+    async (topic: TopicMessage) => {
+      let v = [...activityKey];
+      if (closeAll) {
+        v = [];
+        setCloasAll(false);
+      }
+      if (v.includes(topic.id)) {
         v = v.filter((f) => f !== topic.id);
-        topic = chat.topics.slice(-1)[0];
-      } else {
-        scrollToBotton(topic.messages.slice(-1)[0]?.id, true);
+        setActivityKey(v);
         return;
       }
-    } else {
       v.push(topic.id);
-      if (topic.messages.length == 0) await ChatManagement.loadMessage(topic);
       reloadTopic(topic.id);
-      scrollToBotton(topic.messages.slice(-1)[0]?.id, true);
-    }
-    chat.config.activityTopicId = topic.id;
-    setActivityKey(v);
-    setActivityTopic(topic);
-  }
+      setActivityKey(v);
+      setActivityTopic(topic);
+    },
+    [activityKey, closeAll, setCloasAll, setActivityTopic]
+  );
   useEffect(() => {
     ChatManagement.load().then(() => {
-      activityTopic &&
-        ChatManagement.loadMessage(activityTopic).then(() => {
-          setNone([]);
-          if (!activityKey.includes(activityTopic.id))
-            setActivityKey((v) => [...v, activityTopic.id]);
-          scrollToBotton(
-            activityTopic.messages[activityTopic.messages.length - 1]?.id,
-            true
-          );
-        });
+      setNone([]);
+      if (!activityKey.includes(activityTopic.id))
+        setActivityKey((v) => [...v, activityTopic.id]);
       reloadTopic(activityTopic.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
 
-  function rendTopic(topic: TopicMessage) {
-    return (
-      <Panel
-        header={
-          <div style={{ display: "flex" }}>
-            <Typography.Title
-              id={topic.id}
-              editable={{
-                onChange: (e) => {
-                  chat.saveTopic(topic.id, e);
-                  setActivityTopic(Object.assign({}, topic));
-                },
-              }}
-              ellipsis={{ rows: 1 }}
-              level={5}
-              onClick={(e) => {
-                e.stopPropagation();
-                onClickTopicTitle(topic);
-              }}
-              style={{
-                color:
-                  chat.config.activityTopicId == topic.id
-                    ? token.colorPrimary
-                    : undefined,
-                flex: 1,
-                maxWidth: "calc(100vw - 140px)",
-              }}
-            >
-              {topic.name}
-            </Typography.Title>
-            <span style={{ marginLeft: "30px" }}></span>
-            <Typography.Title level={5} style={{ opacity: 0.5 }}>
-              <Popconfirm
-                title="确定删除？"
-                onConfirm={() => {
-                  chat.removeTopic(topic);
-                  setActivityKey([...activityKey]);
-                }}
-                okText="确定"
-                cancelText="取消"
-              >
-                <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
-              </Popconfirm>
-            </Typography.Title>
-            <span style={{ marginLeft: "30px" }}></span>
-            <Typography.Title level={5} style={{ opacity: 0.5 }}>
-              <Popconfirm
-                title="选择内容保存格式"
-                onConfirm={() => {
-                  downloadTopic(topic, false, chat);
-                }}
-                onCancel={() => {
-                  downloadTopic(topic, true, chat);
-                }}
-                okText="仅内容"
-                cancelText="包括角色"
-              >
-                <DownloadOutlined></DownloadOutlined>
-              </Popconfirm>
-            </Typography.Title>
-          </div>
-        }
-        key={topic.id}
-        style={{
-          border: "none",
-          padding: "0 8px",
-        }}
-      >
-        {activityKey.includes(topic.id) && (
-          <MemoMessageList chat={chat} topic={topic}></MemoMessageList>
-        )}
-      </Panel>
-    );
-  }
   if (onlyOne) {
     let topic = activityTopic;
     if (topic) {
@@ -161,15 +85,105 @@ export const ChatMessage = () => {
       ghost
       bordered={false}
       activeKey={closeAll ? [] : activityKey}
-      defaultActiveKey={chat.config.activityTopicId}
       expandIcon={({ isActive }) => (
         <CaretRightOutlined rotate={isActive ? 90 : 0} />
       )}
     >
-      {chat.topics.map(rendTopic)}
+      {chat.topics.map((v) => (
+        <Panel
+          header={
+            <MemoTopicTitle
+              topic={v}
+              onClick={() => onClickTopicTitle(v)}
+              onRemove={(t) => {
+                chat.removeTopic(t);
+                setNone([]);
+              }}
+            ></MemoTopicTitle>
+          }
+          key={v.id}
+          style={{
+            border: "none",
+            padding: "0 8px",
+          }}
+        >
+          {activityKey.includes(v.id) && (
+            <MemoMessageList chat={chat} topic={v}></MemoMessageList>
+          )}
+        </Panel>
+      ))}
     </Collapse>
   );
 };
+
+function TopicTitle({
+  topic,
+  onClick,
+  onRemove,
+}: {
+  topic: TopicMessage;
+  onClick: () => void;
+  onRemove: (topic: TopicMessage) => void;
+}) {
+  const { token } = theme.useToken();
+  const { chat } = useContext(ChatContext);
+  const [title, setTitle] = useState(topic.name);
+  return (
+    <div style={{ display: "flex", width: "100%", maxWidth: "100%" }}>
+      <Typography.Title
+        id={topic.id}
+        editable={{
+          onChange: (e) => {
+            chat.saveTopic(topic.id, e);
+            setTitle(e);
+          },
+        }}
+        ellipsis={{ rows: 1 }}
+        level={5}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        style={{
+          color:
+            chat.config.activityTopicId == topic.id
+              ? token.colorPrimary
+              : undefined,
+          flex: 1,
+          maxWidth: "calc(100% - 100px)",
+        }}
+      >
+        {title}
+      </Typography.Title>
+      <span style={{ marginLeft: "20px" }}></span>
+      <Typography.Title level={5} style={{ opacity: 0.5 }}>
+        <Popconfirm title="确定删除？" onConfirm={() => onRemove(topic)}>
+          <DeleteOutlined
+            style={{ color: "#ff8d8f", padding: "0 5px" }}
+          ></DeleteOutlined>
+        </Popconfirm>
+      </Typography.Title>
+      <span style={{ marginLeft: "20px" }}></span>
+      <Typography.Title level={5} style={{ opacity: 0.5, padding: "0 5px" }}>
+        <Popconfirm
+          title="请选择内容格式。"
+          description="当选择对话时，将会给每条消息前加上助理或用户的名字。"
+          onConfirm={() => {
+            downloadTopic(topic, false, chat);
+          }}
+          onCancel={() => {
+            downloadTopic(topic, true, chat);
+          }}
+          okText="文档"
+          cancelText="对话"
+        >
+          <DownloadOutlined></DownloadOutlined>
+        </Popconfirm>
+      </Typography.Title>
+    </div>
+  );
+}
+
 function MessageList({
   topic,
   chat,
@@ -327,8 +341,13 @@ export function downloadTopic(
   useRole: boolean,
   chat: IChat
 ) {
-  let str = topic.name.replace(/^\\/, "").replace(/^\/:?:?/, "");
-  str += "\n\n";
+  let str =
+    "#" +
+    topic.name
+      .replace(/^\\/, "")
+      .replace(/^\/:?:?/, "")
+      .substring(0, 32);
+  str += "\n---\n";
   topic.messages.forEach((v) => {
     let virtualRole = chat.virtualRole;
     if (v.virtualRoleId != chat.virtualRole.id) {

@@ -181,6 +181,7 @@ export class ChatManagement implements IChat {
   }
   static async loadTitleTree(topic: TopicMessage) {
     const l = topic.messages.length;
+    topic.titleTree = [];
     for (let idx = 0; idx < l; idx++) {
       const v = topic.messages[idx];
       if (!/^#{1,5}\s/.test(v.text)) continue;
@@ -357,15 +358,13 @@ export class ChatManagement implements IChat {
   async saveTopic(topicId: string, name: string, cloudTopicId?: string) {
     const t = this.topics.find((f) => f.id == topicId);
     if (t) {
-      t.name = name;
-      t.cloudTopicId = cloudTopicId;
+      t.name = name || t.name;
+      t.cloudTopicId = cloudTopicId || t.cloudTopicId;
       await getInstance().update_by_primaryKey<Topic>({
         tableName: "Topic",
         value: t.id,
         handle: (r) => {
-          r.name = name;
-          r.cloudTopicId = cloudTopicId;
-          return r;
+          return Object.assign(r, t);;
         },
       });
     }
@@ -779,7 +778,7 @@ const obj: { [key: string]: any } = {};
 let context = {
   chat: noneChat,
   setChat: (chat: ChatManagement) => {},
-  activityTopic: obj.topic,
+  activityTopic: obj.topic as TopicMessage,
   setActivityTopic: (topic: TopicMessage) => {
     obj.topic = topic;
   },

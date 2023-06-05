@@ -1,7 +1,11 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
 import { useScreenSize } from "@/core/hooks";
 import { Message } from "@/Models/DataBase";
-import { Layout, message, theme } from "antd";
+import {
+  VerticalAlignBottomOutlined,
+  VerticalAlignTopOutlined,
+} from "@ant-design/icons";
+import { FloatButton, Layout, message, theme } from "antd";
 import React, { useState } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { InputUtil } from "./InputUtil";
@@ -17,6 +21,8 @@ export const MessageContext = React.createContext({
   setOnlyOne: (b: boolean) => {},
   setCloasAll: (b: boolean) => {},
   setCite: (msg: Message) => {},
+  lockEnd: false,
+  setLockEnd: (isLock: boolean) => {},
 });
 
 export const Chat = () => {
@@ -25,6 +31,7 @@ export const Chat = () => {
   const [_, contextHolder] = message.useMessage();
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
+  const [lockEnd, setLockEnd] = useState(false);
   const screenSize = useScreenSize();
   return (
     <MessageContext.Provider
@@ -35,6 +42,8 @@ export const Chat = () => {
         setCloasAll,
         cite,
         setCite,
+        lockEnd,
+        setLockEnd,
       }}
     >
       {contextHolder}
@@ -78,7 +87,13 @@ export const Chat = () => {
               backgroundColor: token.colorFillContent,
               width: "100%",
               maxWidth: "100%",
-              marginLeft: screenSize.width >= 1200 ? "max(min(50px,100vw - 1195px),5px)" : 0,
+              marginLeft:
+                screenSize.width >= 1200
+                  ? "max(min(50px,100vw - 1195px),5px)"
+                  : 0,
+            }}
+            onWheel={() => {
+              setLockEnd(false);
             }}
           >
             <MemoChatMessage />

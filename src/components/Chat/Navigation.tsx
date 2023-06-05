@@ -14,7 +14,7 @@ const Navigation = () => {
         return (
           <div key={"nav_wrap_" + t.id}>
             <p
-              key={"nav_" + t.id}
+              key={"nav_t_" + t.id}
               className={style.nav_item}
               style={{
                 cursor: "pointer",
@@ -39,7 +39,7 @@ const Navigation = () => {
             </p>
             {...t.titleTree.map((m) => (
               <p
-                key={"nav_" + m.msgId}
+                key={"nav_m_" + m.msgId}
                 className={style.nav_item}
                 style={{
                   cursor: "pointer",
