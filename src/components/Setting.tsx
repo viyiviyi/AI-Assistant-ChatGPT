@@ -126,7 +126,7 @@ export const Setting = ({
       values.setting_slack_proxy_url,
       values.config_saveKey
     );
-    reloadService(chatMgt);
+    reloadService(chatMgt,KeyValueData.instance());
     onSaved();
   }
   return (
