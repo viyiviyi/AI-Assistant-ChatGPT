@@ -1,10 +1,11 @@
-import { ChatManagement } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { VirtualRole } from "@/Models/DataBase";
+import { useContext } from "react";
 import {
   MenuOutlined,
   MinusCircleOutlined,
-  PlusOutlined
+  PlusOutlined,
 } from "@ant-design/icons";
 import { Button, Form, Input, Popconfirm, Space, Switch, theme } from "antd";
 import { useState } from "react";
@@ -26,6 +27,7 @@ export const VirtualRoleConfig = ({
   );
   const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
   const { token } = theme.useToken();
+  const { setChat } = useContext(ChatContext);
   const [form] = Form.useForm<{
     virtualRole_name: string;
     virtualRole_bio: string;
@@ -57,6 +59,7 @@ export const VirtualRoleConfig = ({
     chatMgt.user.enName = values.user_en_name;
     chatMgt.user.avatar = user_Avatar || "";
     chatMgt.saveUser();
+    setChat(new ChatManagement(chatMgt));
     onSaved();
   }
   return (

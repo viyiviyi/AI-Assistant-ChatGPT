@@ -238,6 +238,7 @@ export const MessageItem = ({
               backgroundColor: token.colorInfoBg,
               marginBottom: "12px",
               boxShadow: token.boxShadowTertiary,
+              lineHeight:1.7
             }}
           >
             <div>
