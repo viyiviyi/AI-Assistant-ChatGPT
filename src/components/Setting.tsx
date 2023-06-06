@@ -365,21 +365,21 @@ export const Setting = ({
                 label="上下文数量"
                 extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
               >
-                <Input.TextArea autoSize />
+                <Input.TextArea autoSize autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="setting_baseurl"
                 label="ChatGPT参数： 接口访问地址"
                 extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
               >
-                <Input type="text" placeholder="https://xxxx.xx.xx" />
+                <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="setting_apitoken"
                 label="OpenApi Key (全局生效)"
                 extra={<span>请填写自己的key，没有key将不能使用。</span>}
               >
-                <Input type="password" autoComplete="false" />
+                <Input type="password" autoComplete="off"/>
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -404,28 +404,28 @@ export const Setting = ({
                 label="ChatGPT参数： max_tokens"
                 extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
               >
-                <InputNumber step="50" min={0} />
+                <InputNumber step="50" min={0} autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="GptConfig_top_p"
                 label="ChatGPT参数： top_p"
                 extra={"指定从概率分布中选择的标记的概率阈值（不懂）"}
               >
-                <InputNumber step="0.05" min={0} max={1} />
+                <InputNumber step="0.05" min={0} max={1} autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="GptConfig_n"
                 label="ChatGPT参数： n"
                 extra={"指定生成文本的数量"}
               >
-                <InputNumber step="1" min={1} max={10} />
+                <InputNumber step="1" min={1} max={10} autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="GptConfig_temperature"
                 label="ChatGPT参数： temperature"
                 extra={"较高的值会产生更多样化的文本"}
               >
-                <InputNumber step="0.05" min={0} max={1} />
+                <InputNumber step="0.05" min={0} max={1} autoComplete="off"/>
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -439,28 +439,28 @@ export const Setting = ({
                 label="Slack配置：频道id (channel_id)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
               >
-                <Input type="text" />
+                <Input type="text" autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="setting_slack_proxy_url"
                 label="Slack配置： 接口访问地址 (全局生效)"
                 extra="api代理地址 (反向代理了 https://slack.com 的地址)"
               >
-                <Input type="text" placeholder="https://xxxx.xx.xx" />
+                <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="slack_user_token"
                 label="Slack配置：用户token (user-token) (全局生效)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
               >
-                <Input type="text" />
+                <Input type="text" autoComplete="off"/>
               </Form.Item>
               <Form.Item
                 name="slack_claude_id"
                 label="Slack配置：ClaudeID (全局生效)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
               >
-                <Input type="text" />
+                <Input type="text" autoComplete="off"/>
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
