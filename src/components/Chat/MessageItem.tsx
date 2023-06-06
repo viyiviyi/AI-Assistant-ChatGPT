@@ -1,5 +1,6 @@
 import { ChatContext } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
+import style from "@/styles/index.module.css";
 import {
   CopyOutlined,
   DeleteOutlined,
@@ -7,7 +8,7 @@ import {
   PauseOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -16,7 +17,7 @@ import {
   message,
   Popconfirm,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useContext, useEffect, useState } from "react";
@@ -190,11 +191,12 @@ export const MessageItem = ({
           // style={{ minWidth: "42px", minHeight: "42px" }}
           icon={<UserOutlined />}
         />
+        {/* {min(calc(max(1200px, 100vw) - calc(250px + max(min(50px,100vw - 1195px),5px))), calc(100vw - 100px))} */}
         <div
+          className={style.message_item}
           style={{
             display: "flex",
             flex: edit ? 1 : undefined,
-            maxWidth: "min(900px, calc(100vw - 100px))",
             wordWrap: "break-word",
             flexDirection: "column",
           }}
@@ -238,7 +240,7 @@ export const MessageItem = ({
               backgroundColor: token.colorInfoBg,
               marginBottom: "12px",
               boxShadow: token.boxShadowTertiary,
-              lineHeight:1.7
+              lineHeight: 1.7,
             }}
           >
             <div>

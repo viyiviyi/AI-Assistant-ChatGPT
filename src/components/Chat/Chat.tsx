@@ -85,7 +85,7 @@ export const Chat = () => {
               maxWidth: "100%",
               marginLeft:
                 screenSize.width >= 1200
-                  ? "max(min(50px,100vw - 1195px),5px)"
+                  ? "clamp(5px,100vw - 1200px,50px)"
                   : 0,
             }}
             onWheel={() => {
