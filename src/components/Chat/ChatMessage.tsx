@@ -146,7 +146,7 @@ function TopicTitle({
               ? token.colorPrimary
               : undefined,
           flex: 1,
-          maxWidth: "min(100vh - 100px, 800px)",
+          maxWidth: "min(100vw - 140px, 800px)",
         }}
       >
         {title}
