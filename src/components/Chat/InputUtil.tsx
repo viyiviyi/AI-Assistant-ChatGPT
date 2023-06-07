@@ -70,6 +70,7 @@ export function InputUtil() {
       text: text,
       timestamp: now++,
       topicId: topicId,
+      cloudTopicId: topic.cloudTopicId,
     };
     let result: Message = {
       id: "",
@@ -190,6 +191,7 @@ export function InputUtil() {
           },
         });
       } else if (aiService.history && topic.cloudTopicId) {
+        // 获取历史记录
         let oldTs: string = "0";
         if (topic.messages.length) {
           for (let index = topic.messages.length - 1; index >= 0; index--) {

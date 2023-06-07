@@ -24,7 +24,7 @@ export class SlackClaude implements IAiService {
   async sendMessage({
     msg,
     onMessage,
-    config,
+    config
   }: {
     msg: Message;
     context: ChatCompletionRequestMessage[];
@@ -45,7 +45,7 @@ export class SlackClaude implements IAiService {
         text: "缺少频道id，请在设置添加频道id后使用",
         end: true,
       });
-    if (!this.tokens.slack?.slack_user_token.startsWith('xoxp-'))
+    if (!this.tokens.slack?.slack_user_token.startsWith("xoxp-"))
       return onMessage({
         error: true,
         text: "错误的slack_user_token，请在设置页面配置后使用",
@@ -57,7 +57,7 @@ export class SlackClaude implements IAiService {
       end: false,
     });
 
-    await this.send_message_to_channel(config.channel_id, msg.text, onMessage);
+    await this.send_message_to_channel(config.channel_id, msg.text, onMessage,msg.cloudTopicId);
   }
   history = async ({
     lastMsgCloudId,

@@ -146,12 +146,12 @@ function TopicTitle({
               ? token.colorPrimary
               : undefined,
           flex: 1,
-          maxWidth: "calc(100% - 100px)",
+          maxWidth: "min(100vh - 100px, 800px)",
         }}
       >
         {title}
       </Typography.Title>
-      <span style={{ marginLeft: "20px" }}></span>
+      <span style={{ marginLeft: "20px", flex: 1, }}></span>
       <Typography.Title level={5} style={{ opacity: 0.5 }}>
         <Popconfirm title="确定删除？" onConfirm={() => onRemove(topic)}>
           <DeleteOutlined
@@ -254,7 +254,8 @@ function MessageList({
     return () => {
       delete topicRender[topic.id];
     };
-  }, [renderMessage, topic, range]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renderMessage, topic]);
   return (
     <>
       {range[0] > 0 ? (
