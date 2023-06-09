@@ -52,7 +52,7 @@ export function downloadJson(jsonData: string, filename: string) {
 }
 
 let toEndCache = { id: "", await: false, animation: 0 as any };
-export function scrollToBotton(id?: string, isAnm: boolean = false) {
+export function scrollToBotton(id?: string, isAnm: boolean = true) {
   toEndCache.id = id || "";
   if (toEndCache.await) return;
   toEndCache.await = true;

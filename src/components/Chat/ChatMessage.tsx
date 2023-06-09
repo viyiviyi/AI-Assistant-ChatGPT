@@ -1,34 +1,19 @@
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
-import { scrollToBotton } from "@/core/utils";
-import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
   DeleteOutlined,
   DownloadOutlined
 } from "@ant-design/icons";
-import {
-  Button,
-  Collapse, Popconfirm,
-  theme,
-  Typography
-} from "antd";
+import { Collapse, Popconfirm, theme, Typography } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
-import { useInput } from "./InputUtil";
-import { MessageItem } from "./MessageItem";
+import { MessageList, reloadTopic } from "./MessageList";
 
 const { Panel } = Collapse;
 
-// 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
-const topicRender: { [key: string]: (messageId?: string | number) => void } =
-  {};
-export function reloadTopic(topicId: string, messageId?: string | number) {
-  topicRender[topicId] && topicRender[topicId](messageId);
-}
 const MemoTopicTitle = React.memo(TopicTitle);
 const MemoMessageList = React.memo(MessageList);
-const MemoMessageItem = React.memo(MessageItem);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const { chat, setActivityTopic, activityTopic } = useContext(ChatContext);
@@ -151,7 +136,7 @@ function TopicTitle({
       >
         {title}
       </Typography.Title>
-      <span style={{ marginLeft: "20px", flex: 1, }}></span>
+      <span style={{ marginLeft: "20px", flex: 1 }}></span>
       <Typography.Title level={5} style={{ opacity: 0.5 }}>
         <Popconfirm title="确定删除？" onConfirm={() => onRemove(topic)}>
           <DeleteOutlined
@@ -177,159 +162,6 @@ function TopicTitle({
         </Popconfirm>
       </Typography.Title>
     </div>
-  );
-}
-
-function MessageList({
-  topic,
-  chat,
-}: {
-  topic: TopicMessage;
-  chat: ChatManagement;
-}) {
-  const { inputRef, setInput } = useInput();
-  const [messages, steMessages] = useState(topic.messages);
-  const [total, setTotal] = useState(topic.messages.length);
-  const [renderMessage] = useState<{ [key: string]: () => void }>({});
-  const [range, setRange] = useState([
-    Math.max(0, topic.messages.length - 20),
-    topic.messages.length,
-  ]);
-  const { setCite } = useContext(MessageContext);
-  const rBak = useCallback(
-    (v: Message) => {
-      setInput(
-        (m) =>
-          (m ? m + "\n" : m) +
-          (!m
-            ? v.ctxRole == "system"
-              ? "/::"
-              : v.virtualRoleId
-              ? "/"
-              : ""
-            : "") +
-          v.text
-      );
-      inputRef.current?.focus();
-    },
-    [inputRef, setInput]
-  );
-  const onDel = useCallback(
-    (msg: Message) => {
-      chat.removeMessage(msg)?.then(() => {
-        delete renderMessage[msg.id];
-        steMessages([...topic.messages]);
-      });
-    },
-    [renderMessage, steMessages, topic, chat]
-  );
-  useEffect(() => {
-    topicRender[topic.id] = (messageId?: string | number) => {
-      if (typeof messageId == "number") {
-        if (messageId < range[0] || messageId >= range[1]) {
-          setRange([
-            Math.max(
-              messageId -
-                Math.max(10, 20 - (topic.messages.length - messageId)),
-              0
-            ),
-            Math.min(
-              topic.messages.length,
-              messageId + Math.max(10, 20 - messageId)
-            ),
-          ]);
-        }
-        return;
-      }
-      if (messageId) {
-        return renderMessage[messageId] && renderMessage[messageId]();
-      }
-      steMessages([...topic.messages]);
-      setTotal(topic.messages.length);
-      setRange([
-        Math.max(0, topic.messages.length - 20),
-        topic.messages.length,
-      ]);
-    };
-    return () => {
-      delete topicRender[topic.id];
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [renderMessage, topic]);
-  return (
-    <>
-      {range[0] > 0 ? (
-        <Button.Group style={{ width: "100%" }}>
-          <Button
-            block
-            type="text"
-            onClick={() => {
-              setRange([
-                Math.max(0, range[0] - 10),
-                Math.min(total, Math.max(range[1] - 10, 20)),
-              ]);
-              scrollToBotton(messages.slice(range[0], range[1])[0]?.id);
-            }}
-          >
-            上一页
-          </Button>
-          <Button
-            block
-            type="text"
-            onClick={() => {
-              setRange([0, Math.min(total, 20)]);
-            }}
-          >
-            顶部
-          </Button>
-        </Button.Group>
-      ) : (
-        <></>
-      )}
-      {messages.slice(range[0], range[1]).map((v) => (
-        <MemoMessageItem
-          renderMessage={renderMessage}
-          msg={v}
-          onDel={onDel}
-          rBak={rBak}
-          onCite={setCite}
-          key={v.id}
-        ></MemoMessageItem>
-      ))}
-
-      {range[1] < total ? (
-        <Button.Group style={{ width: "100%" }}>
-          <Button
-            block
-            type="text"
-            onClick={() => {
-              setRange([
-                Math.min(Math.max(0, total - 20), range[0] + 10),
-                Math.min(total, range[1] + 10),
-              ]);
-              scrollToBotton(messages.slice(range[1], range[1] + 1)[0]?.id);
-            }}
-          >
-            下一页
-          </Button>
-          <Button
-            block
-            type="text"
-            onClick={() => {
-              setRange([
-                Math.max(0, topic.messages.length - 20),
-                topic.messages.length,
-              ]);
-              scrollToBotton(messages.slice(-1)[0]?.id);
-            }}
-          >
-            底部
-          </Button>
-        </Button.Group>
-      ) : (
-        <></>
-      )}
-    </>
   );
 }
 

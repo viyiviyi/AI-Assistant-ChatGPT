@@ -2,7 +2,7 @@ import { ChatContext } from "@/core/ChatManagement";
 import {
   SettingOutlined,
   UnorderedListOutlined,
-  UserAddOutlined,
+  UserAddOutlined
 } from "@ant-design/icons";
 import { Avatar, Layout, theme, Typography } from "antd";
 import { useContext, useState } from "react";
@@ -10,7 +10,7 @@ import { ChatList } from "../ChatList";
 import { Modal } from "../Modal";
 import { Setting } from "../Setting";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
-import { reloadTopic } from "./ChatMessage";
+import { reloadTopic } from "./MessageList";
 
 export const ChatHeader = () => {
   const { chat, activityTopic } = useContext(ChatContext);

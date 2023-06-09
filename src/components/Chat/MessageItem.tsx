@@ -1,3 +1,4 @@
+import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -5,14 +6,18 @@ import {
   CopyOutlined,
   DeleteOutlined,
   EditOutlined,
+  MessageOutlined,
   PauseOutlined,
+  PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
   UserOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
+  Button,
   Checkbox,
+  Divider,
   Input,
   message,
   Popconfirm,
@@ -30,14 +35,19 @@ export const MessageItem = ({
   rBak,
   onDel,
   onCite,
+  onPush,
+  onSned,
 }: {
   msg: Message;
   renderMessage: { [key: string]: () => void };
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   onCite: (message: Message) => void;
+  onPush: () => void;
+  onSned: () => void;
 }) => {
   const { chat, loadingMsgs, reloadNav } = useContext(ChatContext);
+  const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState("");
@@ -53,6 +63,7 @@ export const MessageItem = ({
   const utilsEle = (
     <>
       <Checkbox
+        disabled={!aiService?.customContext}
         checked={msg.checked || false}
         onChange={(e) => {
           msg.checked = e.target.checked;
@@ -172,9 +183,12 @@ export const MessageItem = ({
   }
   return (
     <div
+      className={style.message_box}
       style={{
         display: "flex",
         justifyContent: msg.virtualRoleId ? "flex-start" : "flex-end",
+        position: "relative",
+        flexDirection: "column",
       }}
       id={msg.id}
     >
@@ -288,6 +302,7 @@ export const MessageItem = ({
               )}
             </div>
             <div
+              className=""
               style={{
                 display: "flex",
                 borderTop: "1px solid #ccc3",
@@ -300,6 +315,28 @@ export const MessageItem = ({
           </div>
         </div>
       </div>
+      {!loadingMsgs[msg.id] && (
+        <div className={style.message_extend_but}>
+          <Divider style={{ margin: 0 }}>
+            <Button.Group>
+              {aiService?.customContext && (
+                <Button
+                  type="text"
+                  icon={<MessageOutlined />}
+                  onClick={onSned}
+                ></Button>
+              )}
+              <Button
+                type="text"
+                icon={<PlusOutlined />}
+                onClick={onPush}
+              ></Button>
+            </Button.Group>
+          </Divider>
+        </div>
+      )}
     </div>
   );
 };
+
+export const MemoMessageItem = React.memo(MessageItem);

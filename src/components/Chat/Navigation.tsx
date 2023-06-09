@@ -3,7 +3,7 @@ import { scrollToBotton } from "@/core/utils";
 import style from "@/styles/index.module.css";
 import { theme, Typography } from "antd";
 import React, { useContext } from "react";
-import { reloadTopic } from "./ChatMessage";
+import { reloadTopic } from "./MessageList";
 const Navigation = () => {
   const { chat, activityTopic, setActivityTopic, navList } =
     useContext(ChatContext);

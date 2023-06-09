@@ -46,7 +46,6 @@ export interface Message {
   timestamp: number; // 时间戳
   checked?: boolean;
   importMessage?: string;
-  previousMessage?: string;
   cloudTopicId?: string;
   cloudMsgId?: string;
 }

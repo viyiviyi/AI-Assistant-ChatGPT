@@ -1,19 +1,22 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 import { scrollToBotton } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
+  AlignLeftOutlined,
   CommentOutlined,
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
 } from "@ant-design/icons";
-import { Button, Input, Space, theme, Typography } from "antd";
+import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
 import { MessageContext } from "./Chat";
-import { reloadTopic } from "./ChatMessage";
+import { reloadTopic } from "./MessageList";
+import { MemoNavigation } from "./Navigation";
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };
@@ -29,12 +32,14 @@ const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
+  const [showNav, setShowNav] = useState(false);
   const { chat, activityTopic, setActivityTopic, loadingMsgs, reloadNav } =
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll, setLockEnd } =
     useContext(MessageContext);
   let { lockEnd } = useContext(MessageContext);
   const { token } = theme.useToken();
+  const screenSize = useScreenSize();
   objs.setInput = setInputText;
   /**
    * 提交内容
@@ -328,6 +333,27 @@ export function InputUtil() {
               }}
             />
           </Space>
+          {screenSize.width < 1200 && (
+            <AlignLeftOutlined
+              onClick={(e) => {
+                setShowNav(true);
+              }}
+            />
+          )}
+          <Drawer
+            placement={"left"}
+            closable={false}
+            key={"nav_drawer"}
+            style={{
+              backgroundColor: token.colorInfoBg,
+            }}
+            open={showNav}
+            onClose={() => {
+              setShowNav(false);
+            }}
+          >
+            <MemoNavigation />
+          </Drawer>
           <Typography.Text
             style={{
               cursor: "pointer",

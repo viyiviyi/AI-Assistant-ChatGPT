@@ -44,30 +44,20 @@
   }
 }
 
-.message {
-  display: flex;
-}
-.message .message__header {
-  display: flex;
-}
-.message .message__footer {
-  display: flex;
-  align-items: flex-end;
-  opacity: 0.5;
-}
-.message .message__footer .message__nickname {
-  font-size: 14px;
-}
-.message .message__footer .message__timestamp {
-  font-size: 12px;
-}
 .nav_item:hover {
   position: relative;
   top: -1px;
   border-bottom: 1px solid #ccc5;
 }
-
-
+.message_box .message_extend_but {
+  display: none;
+  position: absolute;
+  width: 100%;
+  top: calc(100% - 11px);
+}
+.message_box:hover .message_extend_but {
+  display: block;
+}
 
 /* 屏幕宽度小于 1300px */
 @media (max-width: 1299px) {

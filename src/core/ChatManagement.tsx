@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole,
+  VirtualRole
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -524,7 +524,10 @@ export class ChatManagement implements IChat {
     this.chatList.push(chat);
     return chat;
   }
-  async pushMessage(message: Message): Promise<Message> {
+  async pushMessage(
+    message: Message,
+    insertIndex: number = -1
+  ): Promise<Message> {
     if (!message.text || !message.text.trim()) return message;
     message.text = message.text.trim();
     // 让纯xml内容显示正常
@@ -542,13 +545,8 @@ export class ChatManagement implements IChat {
     message.topicId = topic.id;
     message.groupId = this.group.id;
     let previousMessage: Message;
-    let insertIndex = -1;
-    if (message.previousMessage) {
-      insertIndex = topic.messages.findIndex(
-        (f) => f.id == message.previousMessage
-      );
-      if (insertIndex !== -1) previousMessage = topic.messages[insertIndex];
-    }
+    // let insertIndex = -1;
+    if (insertIndex !== -1) previousMessage = topic.messages[insertIndex];
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);
       if (!msg) {
