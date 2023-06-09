@@ -9,8 +9,7 @@ import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
 import {
   CaretRightOutlined,
-  DownloadOutlined,
-  GithubOutlined,
+  DownloadOutlined, GithubOutlined,
   UploadOutlined
 } from "@ant-design/icons";
 import {
@@ -332,14 +331,6 @@ export const Setting = ({
             >
               <Switch />
             </Form.Item>
-            <Form.Item
-              style={{ flex: "1" }}
-              name="config_saveKey"
-              valuePropName="checked"
-              label="保存秘钥到浏览器"
-            >
-              <Switch />
-            </Form.Item>
           </div>
           <Collapse
             // ghost
@@ -365,21 +356,7 @@ export const Setting = ({
                 label="上下文数量"
                 extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
               >
-                <Input.TextArea autoSize autoComplete="off"/>
-              </Form.Item>
-              <Form.Item
-                name="setting_baseurl"
-                label="ChatGPT参数： 接口访问地址"
-                extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
-              >
-                <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off"/>
-              </Form.Item>
-              <Form.Item
-                name="setting_apitoken"
-                label="OpenApi Key (全局生效)"
-                extra={<span>请填写自己的key，没有key将不能使用。</span>}
-              >
-                <Input type="password" autoComplete="off"/>
+                <Input.TextArea autoSize autoComplete="off" />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -404,28 +381,28 @@ export const Setting = ({
                 label="ChatGPT参数： max_tokens"
                 extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
               >
-                <InputNumber step="50" min={0} autoComplete="off"/>
+                <InputNumber step="50" min={0} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_top_p"
                 label="ChatGPT参数： top_p"
                 extra={"指定从概率分布中选择的标记的概率阈值（不懂）"}
               >
-                <InputNumber step="0.05" min={0} max={1} autoComplete="off"/>
+                <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_n"
                 label="ChatGPT参数： n"
                 extra={"指定生成文本的数量"}
               >
-                <InputNumber step="1" min={1} max={10} autoComplete="off"/>
+                <InputNumber step="1" min={1} max={10} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_temperature"
                 label="ChatGPT参数： temperature"
                 extra={"较高的值会产生更多样化的文本"}
               >
-                <InputNumber step="0.05" min={0} max={1} autoComplete="off"/>
+                <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -439,28 +416,72 @@ export const Setting = ({
                 label="Slack配置：频道id (channel_id)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
               >
-                <Input type="text" autoComplete="off"/>
-              </Form.Item>
-              <Form.Item
-                name="setting_slack_proxy_url"
-                label="Slack配置： 接口访问地址 (全局生效)"
-                extra="api代理地址 (反向代理了 https://slack.com 的地址)"
-              >
-                <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off"/>
-              </Form.Item>
-              <Form.Item
-                name="slack_user_token"
-                label="Slack配置：用户token (user-token) (全局生效)"
-                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-              >
-                <Input type="text" autoComplete="off"/>
+                <Input type="text" autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="slack_claude_id"
                 label="Slack配置：ClaudeID (全局生效)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
               >
-                <Input type="text" autoComplete="off"/>
+                <Input type="text" autoComplete="off" />
+              </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              forceRender={true}
+              key={"token"}
+              header={"秘钥配置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item
+                style={{ flex: "1" }}
+                name="config_saveKey"
+                valuePropName="checked"
+                label="保存秘钥到浏览器"
+              >
+                <Switch />
+              </Form.Item>
+              <Form.Item
+                name="setting_apitoken"
+                label="OpenApi Key (全局生效)"
+                extra={<span>请填写自己的key，没有key将不能使用。</span>}
+              >
+                <Input.Password autoComplete="off" />
+              </Form.Item>
+              <Form.Item
+                name="slack_user_token"
+                label="Slack配置：用户token (user-token) (全局生效)"
+                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+              >
+                <Input.Password autoComplete="off" />
+              </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              forceRender={true}
+              key={"network"}
+              header={"网络配置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item
+                name="setting_baseurl"
+                label="ChatGPT参数： 接口访问地址"
+                extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
+              >
+                <Input
+                  type="text"
+                  placeholder="https://xxxx.xx.xx"
+                  autoComplete="off"
+                />
+              </Form.Item>
+              <Form.Item
+                name="setting_slack_proxy_url"
+                label="Slack配置： 接口访问地址 (全局生效)"
+                extra="api代理地址 (反向代理了 https://slack.com 的地址)"
+              >
+                <Input
+                  type="text"
+                  placeholder="https://xxxx.xx.xx"
+                  autoComplete="off"
+                />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -512,19 +533,53 @@ export const Setting = ({
             <Collapse.Panel
               forceRender={false}
               key={"what?"}
-              header={"勉强算个帮助文档"}
+              header={"帮助文档"}
               style={{ padding: "0 8px" }}
             >
               <MarkdownView
                 markdown={`
+### 对话功能
 
-**此项目提供了一个使用ChatGPT或Claude (暂时只有这两) 来创作或模拟对话的工具，需要使用自己的OpenApi key或者Slack的App token+频道ID+ClaudeID后使用。**
+- 使用/开头代替AI发言。
+- 使用\\开头发送一条不会发送给ChatGPT的消息。
+- 使用::开头以系统的身份发送内容，/::可以发送后不触发ChatGPT。
+- 输入内容为空时在支持上下文的AI会把当前上下文发送出去，不支持上下文的AI会获取历史记录。
+- 每条消息都可以任意编辑、删除、重复发送（电脑端把鼠标移到消息上，手机端点击消息，消息下方会出现插入内容和重复发送的按钮）。
+- 输入框上方的话题名称点击后可以锁定只显示当前话题，锁定后正在回复的消息将会保持在页面底部。
+- 左侧导航将会显示全部话题，并且能从消息中读取标题（只读取第一行）。可以通过增加话题或增加标题（Markdown语法 #开头加空格后接标题内容）的方式方便查找。
+- 可以通过选中消息的方式灵活的指定哪些内容不受上下文限制的发送给AI。
+- 可以快速复制内容。
+- 可以快速导入消息到编辑框。
+- 可以复制代码块。
+- 可以开任意数量话题，可以多个话题同步进行（如果上下文数量是1时，单个话题也能同时进行多个对话）。
+- 可以备份还原会话的配置和消息。
+- 可以导出话题为markdown文档（在话题标题的下载按钮），可以导出会话的全部话题到单独的Markdown文档（在设置的备份按钮）。
+- 上下文的配置将会影响发送给AI时的上下文数量，更多的上下文会让对话更合理，但也会消耗更多的token，并且总的token是有上限的，也可以通过在消息列表里勾选指定消息的方式让限制范围外的重要消息也被发送。
 
-**此项目的目标是提供一个在一个工具里可以自由使用国内外的AI语言模型进行创作的工具，现在仅支持了ChatGPT和Claude(Slack)**
+### 助理配置
 
-- 此项目没有后端服务也没有直接访问ChatGPT或Claude的api地址，而是访问另两个使用cloudflare Workers反向代理([示例](#cloudflare反向代理))的地址，用于绕过浏览器的跨域检测。
-- 支持随时修改到自己的反向代理地址，文档后面有代码配置示例。
-- 提供了一个类似聊天窗口的使用界面，可以同时发起多个对话，并及时的显示回复进度。
+- 可配置头像和昵称，英语名称用于多助理(人格)模式时区分发言的助理(还没写完)
+- 使用/开头的内容将用于伪造AI的发言。
+- 使用::开头以系统的身份发送内容。
+- 可以增加任意数量的附加配置，方便诱导AI和编写规则。
+- 可以删除或调整附加配置的顺序。
+- 可配置用户的头像，显示的名称
+- 用户简介配置后将会自动以系统的身份告诉ChatGPT用户的简介。
+
+### 会话配置
+
+- 可配置会话标题和头像。
+- 可以指定AI类型，可以使用不同的AI交叉使用，但可能出问题。
+- 可以为会话指定使用的模型
+- 可以指定上下文数量。上下文数量在支持上下文的AI里，可以自由的调整发送内容给AI时从当前话题加载多少条记录发送给AI，如果是模拟聊天，建议10以上，如果是提问或创作，建议设为1，临时需要包含前面的内容进行提问时，可以临时勾选后发送。
+- 需要在秘钥配置配置相关的key后才能使用对应的AI
+- 可配置接口代理地址(因为没有使用服务器转发的方式，而是直接由浏览器请求，所有代理地址需要将此网站加入允许跨域访问的名单)，同ip多人访问可能产生封号危险，所有这里你可以使用你自己的代理地址。参考[chatgptProxyAPI](https://github.com/x-dr/chatgptProxyAPI)
+- 接口代理地址的最后不能有‘/’
+- 可以配置AI支持的参数，如果有需要的话，正常情况下使用默认值即可。
+- 除标注的几个配置外，其他配置都是仅当前会话生效。
+
+## 关于此项目
+- 此项目提供了一个类似聊天窗口的使用界面，可以同时发起多个对话，并及时的显示回复进度。
 - 可以随时编辑对话历史（Slack(Claude)模式无效，因为这个的上下文是存在Slack的服务里的）。
 - 可以导出为markdown文档，可以导出为json格式用于备份或在设备间传递。
 - 支持自定义上下文数量，创作或工作时设置为1，对话时建议设置10条以上。
@@ -532,9 +587,8 @@ export const Setting = ({
 - 使用 会话-话题 的方式管理对话，一个会话有多个话题，大部分配置都安照会话做区分。
 - 可以为每个会话独立的配置助理设定，工作娱乐分开进行。
 - 可以自定义修改每个会话的背景（可以让界面好看一些）。
-
-## 其他
-
+- 此项目没有后端服务也没有直接访问ChatGPT或Claude的api地址，而是访问另两个使用cloudflare Workers反向代理([示例](#cloudflare反向代理))的地址，用于绕过浏览器的跨域检测。
+- 支持随时修改到自己的反向代理地址，文档后面有代码配置示例。
 - 如果担心代理地址多人在用有可能被封号，可以使用自己的API代理地址
 - 可以访问 [https://litechat.22733.site](https://litechat.22733.site) 或 [https://22733.site](https://22733.site) 直接使用（可能被墙了）。
 - 如果你需要自己部署，请看[这里](#独立部署)
@@ -544,39 +598,6 @@ export const Setting = ({
 - [ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api) 
 - [一个赞助入口 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎](./%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E6%B2%A1%E4%BA%BA%E4%BC%9A%E7%82%B9%E5%BC%80%E7%9A%84%E5%90%A7.md)
 
-### 对话功能
-
-- 使用/开头代替AI发言。
-- 使用\\开头发送一条不会马上发送给ChatGPT的消息。
-- 使用::开头以系统的身份发送内容，/::可以发送后不触发ChatGPT。
-- 每条消息都可以任意编辑、删除。
-- 可以快速复制内容。
-- 可以快速导入消息到编辑框。
-- 可以复制代码块。
-- 使用Markdown渲染。
-- 可以开任意数量话题，可以多个话题同步进行。
-- 可以备份还原会话的配置和消息。
-- 可以导出话题为markdown文档（在话题标题的下载按钮），可以导出会话的全部话题到单独的Markdown文档（在设置的备份按钮）。
-- 上下文的配置将会影响发送给AI时的上下文数量，更多的上下文会让对话更合理，但也会消耗更多的token，并且总的token是有上限的，也可以通过在消息列表里勾选指定消息的方式让限制范围外的重要消息也被发送。
-
-### 设置功能说明
-
-- 助理配置(人格配置)也可用来配置成
-  - 可配置头像和昵称，英语名称用于多助理(人格)模式时区分发言的助理(还没写完)
-  - 使用/开头的内容将用于伪造AI的发言。
-  - 使用::开头以系统的身份发送内容。
-  - 可以增加任意数量的附加配置，方便诱导AI和编写规则。
-  - 可以删除或调整附加配置的顺序。
-- 用户配置
-  - 可配置用户的头像，显示的名称
-  - 用户简介配置后将会自动以系统的身份告诉ChatGPT用户的简介。
-- 基本配置
-  - 可以配置key(在公共电脑请不要勾选保存) 可以查看余额了（查看余额暂时不能用了）
-  - 可配置接口代理地址(因为没有使用服务器转发的方式，而是直接由浏览器请求，所有代理地址需要将此网站加入允许跨域访问的名单)，同ip多人访问可能产生封号危险，所有这里你可以使用你自己的代理地址。参考[chatgptProxyAPI](https://github.com/x-dr/chatgptProxyAPI)
-  - 接口代理地址的最后不能有‘/’
-  - 上下文数量用于配置发送消息给AI时把前面的几条对话记录也发送过去，一般情况下有4 5条记录就能正常对话了。
-- 接口参数
-  - 这些都是调用OpenAPI时使用的参数，参数具体的作用我也不太明白，默认的说明是ChatGPT告诉我的。
 
 **最后两个收款码，～(￣▽￣～)~**
 

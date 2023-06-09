@@ -138,6 +138,7 @@ export function MessageList({
         user: "user",
       },
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onSubmit = async function (text: string, idx: number) {
     text = text.trim();
