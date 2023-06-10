@@ -45,12 +45,6 @@ export const ChatMessage = () => {
     if (!activityKey.includes(activityTopic.id))
       setActivityKey((v) => [...v, activityTopic.id]);
     if (onlyOne) reloadTopic(activityTopic.id);
-    // ChatManagement.load().then(() => {
-    //   if (!activityTopic) return setNone([]);
-    //   if (!activityKey.includes(activityTopic.id))
-    //     setActivityKey((v) => [...v, activityTopic.id]);
-    //   if (onlyOne) reloadTopic(activityTopic.id);
-    // });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
 
