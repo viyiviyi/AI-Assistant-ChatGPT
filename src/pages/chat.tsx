@@ -31,6 +31,7 @@ export default function Page() {
   );
   const { reloadService } = useService();
   useEffect(() => {
+    if(typeof window == 'undefined') return
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;
