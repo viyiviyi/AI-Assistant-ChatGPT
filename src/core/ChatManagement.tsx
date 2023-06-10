@@ -679,59 +679,60 @@ export class ChatManagement implements IChat {
   async fromJson(json: IChat) {
     if (!json.group.createTime) json.gptConfig.role = "user";
     let gid = this.group.id;
-    await ChatManagement.remove(this.group.id, json);
-    Object.assign(this.group, json.group, { id: gid });
-    await ChatManagement.createGroup(this.group).then();
-    Object.assign(this.config, json.config, {
+    const _this: IChat = JSON.parse(JSON.stringify(this.toJson()));
+    await ChatManagement.remove(_this.group.id, _this);
+    Object.assign(_this.group, json.group, { id: gid });
+    await ChatManagement.createGroup(_this.group).then();
+    Object.assign(_this.config, json.config, {
       id: getUuid(),
-      groupId: this.group.id,
+      groupId: _this.group.id,
     });
-    await ChatManagement.createConfig(this.group.id, this.config);
+    await ChatManagement.createConfig(_this.group.id, _this.config);
     const virtualRoleIdMap = { [json.virtualRole.id]: getUuid() };
-    Object.assign(this.virtualRole, json.virtualRole, {
+    Object.assign(_this.virtualRole, json.virtualRole, {
       id: virtualRoleIdMap[json.virtualRole.id],
-      groupId: this.group.id,
+      groupId: _this.group.id,
     });
-    if (Object.keys(this.virtualRoles).length == 0) {
+    if (Object.keys(_this.virtualRoles).length == 0) {
       await ChatManagement.createVirtualRoleBio(
-        this.group.id,
-        this.virtualRole
+        _this.group.id,
+        _this.virtualRole
       );
-      this.virtualRoles[this.virtualRole.id] = this.virtualRole;
+      _this.virtualRoles[_this.virtualRole.id] = _this.virtualRole;
     } else {
       let prs: Promise<VirtualRole>[] = [];
-      Object.keys(this.virtualRoles).forEach((key) => {
-        if (!this.virtualRoles[key]) return;
-        let e = this.config.defaultVirtualRole == this.virtualRoles[key]!.id;
-        this.virtualRoles[key]!.groupId = this.group.id;
-        virtualRoleIdMap[this.virtualRoles[key]!.id] = getUuid();
-        this.virtualRoles[key]!.id =
-          virtualRoleIdMap[this.virtualRoles[key]!.id];
+      Object.keys(_this.virtualRoles).forEach((key) => {
+        if (!_this.virtualRoles[key]) return;
+        let e = _this.config.defaultVirtualRole == _this.virtualRoles[key]!.id;
+        _this.virtualRoles[key]!.groupId = _this.group.id;
+        virtualRoleIdMap[_this.virtualRoles[key]!.id] = getUuid();
+        _this.virtualRoles[key]!.id =
+          virtualRoleIdMap[_this.virtualRoles[key]!.id];
         if (e) {
-          Object.assign(this.virtualRole, this.virtualRoles[key]);
-          this.config.defaultVirtualRole = this.virtualRoles[key]!.id;
+          Object.assign(_this.virtualRole, _this.virtualRoles[key]);
+          _this.config.defaultVirtualRole = _this.virtualRoles[key]!.id;
         }
         prs.push(
           ChatManagement.createVirtualRoleBio(
-            this.group.id,
-            this.virtualRoles[key]
+            _this.group.id,
+            _this.virtualRoles[key]
           )
         );
       });
       await Promise.all(prs);
     }
-    Object.assign(this.gptConfig, json.gptConfig, {
+    Object.assign(_this.gptConfig, json.gptConfig, {
       id: getUuid(),
-      groupId: this.group.id,
+      groupId: _this.group.id,
     });
-    await ChatManagement.createGptConfig(this.group.id, this.gptConfig);
-    await ChatManagement.createConfig(this.group.id, this.config);
-    Object.assign(this.user, json.user, {
+    await ChatManagement.createGptConfig(_this.group.id, _this.gptConfig);
+    await ChatManagement.createConfig(_this.group.id, _this.config);
+    Object.assign(_this.user, json.user, {
       id: getUuid(),
-      groupId: this.group.id,
+      groupId: _this.group.id,
     });
-    await ChatManagement.createUser(this.group.id, this.user);
-    this.topics.splice(0, this.topics.length);
+    await ChatManagement.createUser(_this.group.id, _this.user);
+    _this.topics.splice(0, _this.topics.length);
     if (
       Array.isArray((json as any).topic) &&
       Array.isArray((json as any).messages)
@@ -743,22 +744,22 @@ export class ChatManagement implements IChat {
         ),
       }));
     }
-    this.topics.push(...json.topics);
+    _this.topics.push(...json.topics);
     let proT: Promise<Topic>[] = [];
     let proM: Promise<void>[] = [];
-    this.topics.forEach((v) => {
-      v.groupId = this.group.id;
+    _this.topics.forEach((v) => {
+      v.groupId = _this.group.id;
       v.id = getUuid();
       proT.push(
         ChatManagement.createTopic(
-          this.group.id,
+          _this.group.id,
           v.name,
           Object.assign({}, v, { messages: undefined })
         )
       );
       v.messages.forEach((m) => {
         Object.assign(m, {
-          groupId: this.group.id,
+          groupId: _this.group.id,
           topicId: v.id,
           ctxRole: m.ctxRole || (m.virtualRoleId ? "assistant" : "user"),
           virtualRoleId: virtualRoleIdMap[m.virtualRoleId || ""],
@@ -769,8 +770,8 @@ export class ChatManagement implements IChat {
     });
     await Promise.all(proT);
     await Promise.all(proM);
-    ChatManagement.chatList.splice(this.group.index, 1, this.toJson());
-    return this;
+    ChatManagement.toFirst(_this.group);
+    return _this;
   }
 }
 export const noneChat = new ChatManagement(defaultChat);
