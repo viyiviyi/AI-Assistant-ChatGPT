@@ -125,7 +125,7 @@ export function MessageList({
             reloadIndex(topic, idx + 1);
             steMessages([...topic.messages]);
             if (range[1] - range[0] < 20) {
-              setRange([range[0], range[1] + 1]);
+              setRange([range[0], ++range[1]]);
             }
             scrollToBotton(result.id);
           }
@@ -160,6 +160,9 @@ export function MessageList({
     await chat.pushMessage(msg, idx);
     reloadIndex(topic, idx + (msg.id ? 1 : 0));
     steMessages([...topic.messages]);
+    if (range[1] - range[0] < 20) {
+      setRange([range[0], ++range[1]]);
+    }
     setInsertIndex(-1);
     if (isBot || isSys || skipRequest) return;
     onSend(idx + +(msg.id ? 1 : 0));
@@ -230,14 +233,13 @@ export function MessageList({
       )}
       {messages.slice(range[0], range[1]).map((v, idx) => {
         return (
-          <>
+          <div key={v.id}>
             <MemoMessageItem
               renderMessage={renderMessage}
               msg={v}
               onDel={onDel}
               rBak={rBak}
               onCite={setCite}
-              key={v.id}
               onPush={() => {
                 onPush(idx);
               }}
@@ -252,7 +254,7 @@ export function MessageList({
                 onSubmit={onSubmit}
               />
             )}
-          </>
+          </div>
         );
       })}
 
