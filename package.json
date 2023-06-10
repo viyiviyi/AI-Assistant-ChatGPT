@@ -52,6 +52,7 @@
   "devDependencies": {
     "@types/react-avatar-editor": "^13.0.0",
     "@types/react-copy-to-clipboard": "^5.0.4",
-    "@types/react-no-ssr": "^1.1.3"
+    "@types/react-no-ssr": "^1.1.3",
+    "next-on-pages-vercel-cli": "^29.3.0-next-on-pages-fix-3"
   }
 }
