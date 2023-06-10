@@ -1,5 +1,5 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
-import { useScreenSize } from "@/core/hooks";
+import { useLockScroll, useScreenSize } from "@/core/hooks";
 import { Message } from "@/Models/DataBase";
 import { Layout, message, theme } from "antd";
 import React, { useState } from "react";
@@ -17,8 +17,6 @@ export const MessageContext = React.createContext({
   setOnlyOne: (b: boolean) => {},
   setCloasAll: (b: boolean) => {},
   setCite: (msg: Message) => {},
-  lockEnd: false,
-  setLockEnd: (isLock: boolean) => {},
 });
 
 export const Chat = () => {
@@ -27,8 +25,9 @@ export const Chat = () => {
   const [_, contextHolder] = message.useMessage();
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
-  let [lockEnd, setLockEnd] = useState(false);
   const screenSize = useScreenSize();
+  const { setLockEnd } = useLockScroll();
+
   return (
     <MessageContext.Provider
       value={{
@@ -38,8 +37,6 @@ export const Chat = () => {
         setCloasAll,
         cite,
         setCite,
-        lockEnd,
-        setLockEnd,
       }}
     >
       {contextHolder}
@@ -84,13 +81,12 @@ export const Chat = () => {
               width: "100%",
               maxWidth: "100%",
               marginLeft:
-                screenSize.width >= 1200
-                  ? "clamp(5px,100vw - 1200px,50px)"
-                  : 0,
+                screenSize.width >= 1200 ? "clamp(5px,100vw - 1200px,50px)" : 0,
+            }}
+            onTouchMove={() => {
+              setLockEnd(false);
             }}
             onWheel={() => {
-              if (lockEnd == false) return;
-              lockEnd = false;
               setLockEnd(false);
             }}
           >

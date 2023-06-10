@@ -73,6 +73,11 @@ export function scrollToBotton(id?: string, isAnm: boolean = true) {
     }
   }, 500);
 }
+export const scrollStatus = { enable: false };
+export function stopScroll() {
+  scrollStatus.enable = false;
+  clearInterval(toEndCache.animation);
+}
 
 const smoothScroll = (
   target: HTMLElement,
@@ -81,6 +86,7 @@ const smoothScroll = (
   duration: number
 ) => {
   clearInterval(toEndCache.animation);
+  if (!scrollStatus.enable) return;
   const distance = targetPosition - startPosition;
   const pixelsPerSecond = distance / (duration / 1000);
   let currentTime = 0;

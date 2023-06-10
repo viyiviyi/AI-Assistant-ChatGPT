@@ -1,6 +1,6 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
+import { useLockScroll, useScreenSize } from "@/core/hooks";
 import { scrollToBotton } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -35,9 +35,9 @@ export function InputUtil() {
   const [showNav, setShowNav] = useState(false);
   const { chat, activityTopic, setActivityTopic, loadingMsgs, reloadNav } =
     useContext(ChatContext);
-  const { onlyOne, setOnlyOne, closeAll, setCloasAll, setLockEnd } =
+  const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
-  let { lockEnd } = useContext(MessageContext);
+  const {  setLockEnd } = useLockScroll();
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
   objs.setInput = setInputText;
@@ -94,7 +94,7 @@ export function InputUtil() {
     )
       return;
     loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
-    lockEnd = true;
+
     setLockEnd(true);
     try {
       // 渲染并滚动到最新内容
@@ -102,7 +102,7 @@ export function InputUtil() {
         if (_msg) msg = await chat.pushMessage(_msg);
         if (_result) result = await chat.pushMessage(_result);
         reloadTopic(result.topicId);
-        if (lockEnd && msg.topicId == chat.config.activityTopicId)
+        if (msg.topicId == chat.config.activityTopicId)
           scrollToBotton(result.id || msg.id, true);
       };
       const aiService = aiServices.current;
@@ -138,7 +138,8 @@ export function InputUtil() {
           result = r;
           if (res.end) {
             delete loadingMsgs[r.id];
-            rendAndScrollView();
+            reloadTopic(topicId);
+            scrollToBotton(r.id);
           } else {
             loadingMsgs[r.id] = {
               stop: () => {
@@ -150,12 +151,14 @@ export function InputUtil() {
               },
             };
           }
-          if (isFirst) rendAndScrollView(undefined, undefined);
-          else if (lockEnd && onlyOne) {
-            // 这里并不会100%生效，比如在提交消息之后再更新lockEnd 和 onlyOne的值，在这里并不会得到新的值
-            reloadTopic(topicId, r.id);
-            if (topic) scrollToBotton(topic.messages.slice(-1)[0].id, true);
-          } else reloadTopic(topicId, r.id);
+          reloadTopic(topicId, r.id);
+          if (isFirst) reloadTopic(topicId);
+          if (
+            topic &&
+            topic.id == chat.config.activityTopicId &&
+            topic.messages.slice(-1)[0].id == r.id
+          )
+            scrollToBotton(r.id);
         });
       };
       // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
@@ -242,7 +245,7 @@ export function InputUtil() {
       reloadNav(topic);
     setTimeout(() => {
       setLoading((v) => --v);
-      if (lockEnd && msg.topicId == chat.config.activityTopicId)
+      if (msg.topicId == chat.config.activityTopicId)
         scrollToBotton(result.id, true);
     }, 500);
   };
@@ -321,7 +324,7 @@ export function InputUtil() {
             <Button
               shape={"circle"}
               size="large"
-              type={lockEnd ? "primary" : undefined}
+              // type={lockEnd ? "primary" : undefined}
               icon={<VerticalAlignBottomOutlined />}
               onClick={() => {
                 if (!activityTopic) return;

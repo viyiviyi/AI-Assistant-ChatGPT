@@ -259,7 +259,7 @@ export function MessageList({
       })}
 
       {range[1] < total ? (
-        <Button.Group style={{ width: "100%" }}>
+        <Button.Group style={{ width: "100%", marginTop: "2em" }}>
           <Button
             block
             type="text"
