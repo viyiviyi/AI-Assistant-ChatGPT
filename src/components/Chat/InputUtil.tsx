@@ -152,6 +152,7 @@ export function InputUtil() {
           }
           if (isFirst) rendAndScrollView(undefined, undefined);
           else if (lockEnd && onlyOne) {
+            // 这里并不会100%生效，比如在提交消息之后再更新lockEnd 和 onlyOne的值，在这里并不会得到新的值
             reloadTopic(topicId, r.id);
             if (topic) scrollToBotton(topic.messages.slice(-1)[0].id, true);
           } else reloadTopic(topicId, r.id);
@@ -287,7 +288,6 @@ export function InputUtil() {
         <div
           style={{
             flexWrap: "nowrap",
-            gap: "16px",
             width: "100%",
             justifyContent: "flex-end",
             display: "flex",
@@ -335,6 +335,7 @@ export function InputUtil() {
           </Space>
           {screenSize.width < 1200 && (
             <AlignLeftOutlined
+              style={{ padding: "8px 12px 8px 0" }}
               onClick={(e) => {
                 setShowNav(true);
               }}
@@ -344,6 +345,7 @@ export function InputUtil() {
             placement={"left"}
             closable={false}
             key={"nav_drawer"}
+            bodyStyle={{ padding: "1em 0" }}
             style={{
               backgroundColor: token.colorInfoBg,
             }}
@@ -379,6 +381,7 @@ export function InputUtil() {
             <CommentOutlined />
             <VerticalAlignMiddleOutlined />
           </Button>
+          <span style={{ marginLeft: 16 }}></span>
           <Button
             shape="circle"
             size="large"
@@ -388,6 +391,7 @@ export function InputUtil() {
               onSubmit(true);
             }}
           ></Button>
+          <span style={{ marginLeft: 16 }}></span>
           <Button
             shape="circle"
             size="large"
