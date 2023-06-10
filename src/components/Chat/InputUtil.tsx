@@ -14,6 +14,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
+import { MemoBackgroundImage } from "../BackgroundImage";
 import { MessageContext } from "./Chat";
 import { reloadTopic } from "./MessageList";
 import { MemoNavigation } from "./Navigation";
@@ -37,7 +38,7 @@ export function InputUtil() {
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
-  const {  setLockEnd } = useLockScroll();
+  const { setLockEnd } = useLockScroll();
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
   objs.setInput = setInputText;
@@ -349,15 +350,21 @@ export function InputUtil() {
             closable={false}
             key={"nav_drawer"}
             bodyStyle={{ padding: "1em 0" }}
-            style={{
-              backgroundColor: token.colorInfoBg,
-            }}
             open={showNav}
             onClose={() => {
               setShowNav(false);
             }}
           >
-            <MemoNavigation />
+            <MemoBackgroundImage />
+            <div
+              style={{
+                position: "relative",
+                height:'100%',
+                zIndex: 99,
+              }}
+            >
+              <MemoNavigation />
+            </div>
           </Drawer>
           <Typography.Text
             style={{
@@ -433,3 +440,4 @@ export function InputUtil() {
     </>
   );
 }
+export const MemoInputUtil = React.memo(InputUtil);

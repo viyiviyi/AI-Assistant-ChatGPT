@@ -1,5 +1,5 @@
 import { ChatContext } from "@/core/ChatManagement";
-import { scrollToBotton } from "@/core/utils";
+import { scrollStatus, scrollToBotton } from "@/core/utils";
 import style from "@/styles/index.module.css";
 import { theme, Typography } from "antd";
 import React, { useContext } from "react";
@@ -25,6 +25,7 @@ const Navigation = () => {
               onClick={() => {
                 setActivityTopic(t);
                 reloadTopic(t.id, t.messages.length - 1);
+                scrollStatus.enable = true;
                 scrollToBotton(t.messages.slice(-1)[0]?.id || t.id, true);
               }}
             >
@@ -51,6 +52,7 @@ const Navigation = () => {
                 onClick={() => {
                   setActivityTopic(t);
                   reloadTopic(t.id, m.index);
+                  scrollStatus.enable = true;
                   scrollToBotton(m.msgId, true);
                 }}
               >

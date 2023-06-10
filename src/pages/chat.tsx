@@ -1,3 +1,4 @@
+import { MemoBackgroundImage } from "@/components/BackgroundImage";
 import { Chat } from "@/components/Chat/Chat";
 import { ChatList } from "@/components/ChatList";
 import { useService } from "@/core/AiService/ServiceProvider";
@@ -7,7 +8,7 @@ import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
 import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
-import { Drawer, Layout, theme } from "antd";
+import { Layout, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
@@ -104,36 +105,11 @@ export default function Page() {
           backgroundColor: token.colorBgContainer,
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: "100%",
-            height: "100%",
-            ...bgImg,
-          }}
-        ></div>
+        <MemoBackgroundImage />
         <Head>
           <title>Chat助理</title>
         </Head>
         <MemoChat />
-        <Drawer
-          title="Basic Drawer"
-          placement="right"
-          closable={false}
-          onClose={() => {
-            setlistIsShow(false);
-          }}
-          open={listIsShow}
-          getContainer={false}
-        >
-          <MemoChatList
-            onCacle={() => {
-              setlistIsShow(false);
-            }}
-          ></MemoChatList>
-        </Drawer>
         {screenSize.width > 1420 && listIsShow ? (
           <MemoChatList
             onCacle={() => {

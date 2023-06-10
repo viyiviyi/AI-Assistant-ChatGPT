@@ -3,8 +3,8 @@ import { useLockScroll, useScreenSize } from "@/core/hooks";
 import { Message } from "@/Models/DataBase";
 import { Layout, message, theme } from "antd";
 import React, { useState } from "react";
-import { ChatHeader } from "./ChatHeader";
-import { InputUtil } from "./InputUtil";
+import { MemoChatHeader } from "./ChatHeader";
+import { MemoInputUtil } from "./InputUtil";
 import { MemoNavigation } from "./Navigation";
 
 const { Content, Footer } = Layout;
@@ -53,7 +53,7 @@ export const Chat = () => {
           margin: "0 auto",
         }}
       >
-        <ChatHeader></ChatHeader>
+        <MemoChatHeader></MemoChatHeader>
         <Layout
           style={{
             color: token.colorTextBase,
@@ -98,13 +98,12 @@ export const Chat = () => {
           style={{
             padding: 0,
             backgroundColor: "#0000",
-            // position: "absolute",
             bottom: 0,
             left: 0,
             width: "100%",
           }}
         >
-          <InputUtil></InputUtil>
+          <MemoInputUtil></MemoInputUtil>
         </Footer>
       </div>
     </MessageContext.Provider>

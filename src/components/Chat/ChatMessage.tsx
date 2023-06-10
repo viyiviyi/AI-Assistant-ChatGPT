@@ -1,4 +1,4 @@
-import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
+import { ChatContext, IChat } from "@/core/ChatManagement";
 import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
@@ -41,12 +41,16 @@ export const ChatMessage = () => {
     [activityKey, closeAll, setCloasAll, setActivityTopic]
   );
   useEffect(() => {
-    ChatManagement.load().then(() => {
-      if (!activityTopic) return setNone([]);
-      if (!activityKey.includes(activityTopic.id))
-        setActivityKey((v) => [...v, activityTopic.id]);
-      if (onlyOne) reloadTopic(activityTopic.id);
-    });
+    if (!activityTopic) return setNone([]);
+    if (!activityKey.includes(activityTopic.id))
+      setActivityKey((v) => [...v, activityTopic.id]);
+    if (onlyOne) reloadTopic(activityTopic.id);
+    // ChatManagement.load().then(() => {
+    //   if (!activityTopic) return setNone([]);
+    //   if (!activityKey.includes(activityTopic.id))
+    //     setActivityKey((v) => [...v, activityTopic.id]);
+    //   if (onlyOne) reloadTopic(activityTopic.id);
+    // });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
 

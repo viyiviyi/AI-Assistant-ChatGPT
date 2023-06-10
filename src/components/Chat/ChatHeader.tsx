@@ -5,7 +5,7 @@ import {
   UserAddOutlined
 } from "@ant-design/icons";
 import { Avatar, Layout, theme, Typography } from "antd";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { ChatList } from "../ChatList";
 import { Modal } from "../Modal";
 import { Setting } from "../Setting";
@@ -110,3 +110,4 @@ export const ChatHeader = () => {
     </Layout.Header>
   );
 };
+export const MemoChatHeader = React.memo(ChatHeader);
