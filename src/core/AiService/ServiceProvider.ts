@@ -1,7 +1,7 @@
 import { ChatGPT } from "@/core/AiService/ChatGPT";
 import { KeyValueData } from "./../KeyValueData";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useEnv } from "../hooks";
 import { IChat } from "./../ChatManagement";
 import { IAiService } from "./IAiService";
@@ -32,18 +32,35 @@ export const DevBaseUrl: BaseUrlScheam = {
   slackClaude: "http://slack.yiyiooo.com",
 };
 
+export type aiServiceType = "None" | "ChatGPT" | "Slack" | "GPTFree";
+export const aiServerList: { key: aiServiceType; name: string }[] = [
+  {
+    key: "None",
+    name: "不启用AI",
+  },
+  {
+    key: "ChatGPT",
+    name: "ChatGPT",
+  },
+  {
+    key: "Slack",
+    name: "Slack(Claude)",
+  },
+  {
+    key: "GPTFree",
+    name: "ChatGPT(免费)",
+  },
+];
+
 export const aiServices: {
   current?: IAiService;
 } = {};
 
 export function useService() {
   const env = useEnv();
-  const [data, setData] = useState<KeyValueData>();
-  useEffect(() => {
-    setData(KeyValueData.instance());
-  }, []);
+  const [_, setService] = useState(aiServices.current);
   let reloadService = useCallback(
-    (chat: IChat) => {
+    (chat: IChat, data: KeyValueData) => {
       let baseUrl: BaseUrlScheam = env == "dev" ? DevBaseUrl : ProxyBaseUrl;
       if (!data) return;
       let tokens: ServiceTokens = {
@@ -72,12 +89,13 @@ export function useService() {
             tokens
           );
       }
+      setService(_service);
       aiServices.current = _service;
     },
-    [data, env]
+    [env]
   );
 
-  return { reloadService };
+  return { reloadService, aiService: aiServices.current };
 }
 
 export const chatGptModels = [

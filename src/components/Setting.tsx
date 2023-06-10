@@ -1,12 +1,15 @@
-import { chatGptModels, useService } from "@/core/AiService/ServiceProvider";
+import {
+  aiServerList,
+  chatGptModels,
+  useService
+} from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
-import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
 import {
   CaretRightOutlined,
-  DownloadOutlined,
-  GithubOutlined,
+  DownloadOutlined, GithubOutlined,
   UploadOutlined
 } from "@ant-design/icons";
 import {
@@ -22,9 +25,14 @@ import {
   theme,
   Upload
 } from "antd";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
+import wx from "../../public/images/微信收款码.png";
+import zfb from "../../public/images/支付宝收款码.jpg";
 import AvatarUpload from "./AvatarUpload";
+import { downloadTopic } from "./Chat/ChatMessage";
+import { MarkdownView } from "./Chat/MarkdownView";
 
 export const Setting = ({
   chatMgt,
@@ -38,10 +46,10 @@ export const Setting = ({
   const [modal, contextHolder] = Modal.useModal();
   const [activityKey, setActivityKey] = useState<string[]>(["GPT"]);
   const router = useRouter();
-  const { setBgConfig } = useContext(ChatContext);
+  const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
   const [models, setModels] = useState<string[]>(chatGptModels);
-  const [nextChat, setNextChat] = useState<ChatManagement>();
+  // const [nextChat, setNextChat] = useState<ChatManagement>();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
@@ -69,7 +77,6 @@ export const Setting = ({
   }>();
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
-    console.log(KeyValueData.instance());
     // ApiClient.getModelList(
     //   form.getFieldValue("setting_apitoken") ||
     //     KeyValueData.instance().getApiKey(),
@@ -80,7 +87,6 @@ export const Setting = ({
   async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    if (nextChat) await chatMgt.fromJson(nextChat);
     chatMgt.gptConfig.model = values.GptConfig_model;
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
@@ -119,7 +125,8 @@ export const Setting = ({
       values.setting_slack_proxy_url,
       values.config_saveKey
     );
-    reloadService(chatMgt);
+    reloadService(chatMgt, KeyValueData.instance());
+    setChat(new ChatManagement(chatMgt));
     onSaved();
   }
   return (
@@ -230,9 +237,25 @@ export const Setting = ({
               <Button
                 block
                 onClick={() => {
-                  let _chat = chatMgt!.toJson();
-                  _chat.group.background = undefined;
-                  downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
+                  modal.confirm({
+                    title: "可选择导出的文件类型",
+                    content:
+                      "Markdown格式是分开导出所有的话题，且不支持用于还原",
+                    okText: "JSON",
+                    cancelText: "Markdown",
+                    onCancel: () => {
+                      chatMgt?.topics.forEach((v) => {
+                        ChatManagement.loadMessage(v).then((t) => {
+                          downloadTopic(v, false, chatMgt);
+                        });
+                      });
+                    },
+                    onOk: () => {
+                      let _chat = chatMgt!.toJson();
+                      _chat.group.background = undefined;
+                      downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
+                    },
+                  });
                 }}
               >
                 <DownloadOutlined key="download" />
@@ -246,11 +269,12 @@ export const Setting = ({
                       const fr = new FileReader();
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
-                          const chat = nextChat || noneChat;
-                          chat
-                            .fromJson(JSON.parse(e.target.result.toString()))
-                            .then();
-                          setNextChat(chat);
+                          chatMgt
+                            ?.fromJson(JSON.parse(e.target.result.toString()))
+                            .then((chat) => {
+                              setChat(new ChatManagement(chat));
+                              onCancel();
+                            });
                         }
                       };
                       fr.readAsText(file);
@@ -291,10 +315,11 @@ export const Setting = ({
             extra="包含了一个临时开放且每天全局限制请求次数免费的GPT服务"
           >
             <Select style={{ width: "100%" }}>
-              <Select.Option value="None">不启用AI</Select.Option>
-              <Select.Option value="ChatGPT">ChatGPT</Select.Option>
-              <Select.Option value="Slack">Slack(Claude)</Select.Option>
-              <Select.Option value="GPTFree">ChatGPT(免费)</Select.Option>
+              {aiServerList.map((v) => (
+                <Select.Option key={"ai_type" + v.key} value={v.key}>
+                  {v.name}
+                </Select.Option>
+              ))}
             </Select>
           </Form.Item>
           <div style={{ width: "100%", display: "flex", gap: "10px" }}>
@@ -303,14 +328,6 @@ export const Setting = ({
               name="config_disable_strikethrough"
               valuePropName="checked"
               label="禁用删除线"
-            >
-              <Switch />
-            </Form.Item>
-            <Form.Item
-              style={{ flex: "1" }}
-              name="config_saveKey"
-              valuePropName="checked"
-              label="保存秘钥到浏览器"
             >
               <Switch />
             </Form.Item>
@@ -339,21 +356,7 @@ export const Setting = ({
                 label="上下文数量"
                 extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
               >
-                <Input.TextArea autoSize />
-              </Form.Item>
-              <Form.Item
-                name="setting_baseurl"
-                label="ChatGPT参数： 接口访问地址"
-                extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
-              >
-                <Input type="text" placeholder="https://xxxx.xx.xx" />
-              </Form.Item>
-              <Form.Item
-                name="setting_apitoken"
-                label="OpenApi Key (全局生效)"
-                extra={<span>请填写自己的key，没有key将不能使用。</span>}
-              >
-                <Input type="password" autoComplete="false" />
+                <Input.TextArea autoSize autoComplete="off" />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -378,28 +381,28 @@ export const Setting = ({
                 label="ChatGPT参数： max_tokens"
                 extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
               >
-                <InputNumber step="50" min={0} />
+                <InputNumber step="50" min={0} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_top_p"
                 label="ChatGPT参数： top_p"
                 extra={"指定从概率分布中选择的标记的概率阈值（不懂）"}
               >
-                <InputNumber step="0.05" min={0} max={1} />
+                <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_n"
                 label="ChatGPT参数： n"
                 extra={"指定生成文本的数量"}
               >
-                <InputNumber step="1" min={1} max={10} />
+                <InputNumber step="1" min={1} max={10} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_temperature"
                 label="ChatGPT参数： temperature"
                 extra={"较高的值会产生更多样化的文本"}
               >
-                <InputNumber step="0.05" min={0} max={1} />
+                <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -413,28 +416,72 @@ export const Setting = ({
                 label="Slack配置：频道id (channel_id)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
               >
-                <Input type="text" />
-              </Form.Item>
-              <Form.Item
-                name="setting_slack_proxy_url"
-                label="Slack配置： 接口访问地址 (全局生效)"
-                extra="api代理地址 (反向代理了 https://slack.com 的地址)"
-              >
-                <Input type="text" placeholder="https://xxxx.xx.xx" />
-              </Form.Item>
-              <Form.Item
-                name="slack_user_token"
-                label="Slack配置：用户token (user-token) (全局生效)"
-                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-              >
-                <Input type="text" />
+                <Input type="text" autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="slack_claude_id"
                 label="Slack配置：ClaudeID (全局生效)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
               >
-                <Input type="text" />
+                <Input type="text" autoComplete="off" />
+              </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              forceRender={true}
+              key={"token"}
+              header={"秘钥配置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item
+                style={{ flex: "1" }}
+                name="config_saveKey"
+                valuePropName="checked"
+                label="保存秘钥到浏览器"
+              >
+                <Switch />
+              </Form.Item>
+              <Form.Item
+                name="setting_apitoken"
+                label="OpenApi Key (全局生效)"
+                extra={<span>请填写自己的key，没有key将不能使用。</span>}
+              >
+                <Input.Password autoComplete="off" />
+              </Form.Item>
+              <Form.Item
+                name="slack_user_token"
+                label="Slack配置：用户token (user-token) (全局生效)"
+                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+              >
+                <Input.Password autoComplete="off" />
+              </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              forceRender={true}
+              key={"network"}
+              header={"网络配置"}
+              style={{ padding: "0 8px" }}
+            >
+              <Form.Item
+                name="setting_baseurl"
+                label="ChatGPT参数： 接口访问地址"
+                extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
+              >
+                <Input
+                  type="text"
+                  placeholder="https://xxxx.xx.xx"
+                  autoComplete="off"
+                />
+              </Form.Item>
+              <Form.Item
+                name="setting_slack_proxy_url"
+                label="Slack配置： 接口访问地址 (全局生效)"
+                extra="api代理地址 (反向代理了 https://slack.com 的地址)"
+              >
+                <Input
+                  type="text"
+                  placeholder="https://xxxx.xx.xx"
+                  autoComplete="off"
+                />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -482,6 +529,92 @@ export const Setting = ({
                   </Button>
                 </div>
               </Form.Item>
+            </Collapse.Panel>
+            <Collapse.Panel
+              forceRender={false}
+              key={"what?"}
+              header={"帮助文档"}
+              style={{ padding: "0 8px" }}
+            >
+              <MarkdownView
+                markdown={`
+### 对话功能
+
+- 使用/开头代替AI发言。
+- 使用\\开头发送一条不会发送给ChatGPT的消息。
+- 使用::开头以系统的身份发送内容，/::可以发送后不触发ChatGPT。
+- 输入内容为空时在支持上下文的AI会把当前上下文发送出去，不支持上下文的AI会获取历史记录。
+- 每条消息都可以任意编辑、删除、重复发送（电脑端把鼠标移到消息上，手机端点击消息，消息下方会出现插入内容和重复发送的按钮）。
+- 输入框上方的话题名称点击后可以锁定只显示当前话题，锁定后正在回复的消息将会保持在页面底部。
+- 左侧导航将会显示全部话题，并且能从消息中读取标题（只读取第一行）。可以通过增加话题或增加标题（Markdown语法 #开头加空格后接标题内容）的方式方便查找。
+- 可以通过选中消息的方式灵活的指定哪些内容不受上下文限制的发送给AI。
+- 可以快速复制内容。
+- 可以快速导入消息到编辑框。
+- 可以复制代码块。
+- 可以开任意数量话题，可以多个话题同步进行（如果上下文数量是1时，单个话题也能同时进行多个对话）。
+- 可以备份还原会话的配置和消息。
+- 可以导出话题为markdown文档（在话题标题的下载按钮），可以导出会话的全部话题到单独的Markdown文档（在设置的备份按钮）。
+- 上下文的配置将会影响发送给AI时的上下文数量，更多的上下文会让对话更合理，但也会消耗更多的token，并且总的token是有上限的，也可以通过在消息列表里勾选指定消息的方式让限制范围外的重要消息也被发送。
+
+### 助理配置
+
+- 可配置头像和昵称，英语名称用于多助理(人格)模式时区分发言的助理(还没写完)
+- 使用/开头的内容将用于伪造AI的发言。
+- 使用::开头以系统的身份发送内容。
+- 可以增加任意数量的附加配置，方便诱导AI和编写规则。
+- 可以删除或调整附加配置的顺序。
+- 可配置用户的头像，显示的名称
+- 用户简介配置后将会自动以系统的身份告诉ChatGPT用户的简介。
+
+### 会话配置
+
+- 可配置会话标题和头像。
+- 可以指定AI类型，可以使用不同的AI交叉使用，但可能出问题。
+- 可以为会话指定使用的模型
+- 可以指定上下文数量。上下文数量在支持上下文的AI里，可以自由的调整发送内容给AI时从当前话题加载多少条记录发送给AI，如果是模拟聊天，建议10以上，如果是提问或创作，建议设为1，临时需要包含前面的内容进行提问时，可以临时勾选后发送。
+- 需要在秘钥配置配置相关的key后才能使用对应的AI
+- 可配置接口代理地址(因为没有使用服务器转发的方式，而是直接由浏览器请求，所有代理地址需要将此网站加入允许跨域访问的名单)，同ip多人访问可能产生封号危险，所有这里你可以使用你自己的代理地址。参考[chatgptProxyAPI](https://github.com/x-dr/chatgptProxyAPI)
+- 接口代理地址的最后不能有‘/’
+- 可以配置AI支持的参数，如果有需要的话，正常情况下使用默认值即可。
+- 除标注的几个配置外，其他配置都是仅当前会话生效。
+
+## 关于此项目
+- 此项目提供了一个类似聊天窗口的使用界面，可以同时发起多个对话，并及时的显示回复进度。
+- 可以随时编辑对话历史（Slack(Claude)模式无效，因为这个的上下文是存在Slack的服务里的）。
+- 可以导出为markdown文档，可以导出为json格式用于备份或在设备间传递。
+- 支持自定义上下文数量，创作或工作时设置为1，对话时建议设置10条以上。
+- 可以自由勾选提问时发送的上下文，对于需要连续提问时很方便。
+- 使用 会话-话题 的方式管理对话，一个会话有多个话题，大部分配置都安照会话做区分。
+- 可以为每个会话独立的配置助理设定，工作娱乐分开进行。
+- 可以自定义修改每个会话的背景（可以让界面好看一些）。
+- 此项目没有后端服务也没有直接访问ChatGPT或Claude的api地址，而是访问另两个使用cloudflare Workers反向代理([示例](#cloudflare反向代理))的地址，用于绕过浏览器的跨域检测。
+- 支持随时修改到自己的反向代理地址，文档后面有代码配置示例。
+- 如果担心代理地址多人在用有可能被封号，可以使用自己的API代理地址
+- 可以访问 [https://litechat.22733.site](https://litechat.22733.site) 或 [https://22733.site](https://22733.site) 直接使用（可能被墙了）。
+- 如果你需要自己部署，请看[这里](#独立部署)
+- 如果要使用ChatGLM作为机器人，可以看这个项目：[ChatGLM-6B_Api_kaggle](https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle) 并将得到的地址填到ChatGPT的代理地址里就可以使用ChatGLM作为免费的AI助理。
+- [一个有很多助理设定的网站 (为什么我没有早点发现Orz)](https://ai.usesless.com/scene)
+- [一个购买key的商店（询问过卖家可以挂上来）,一个5刀的key就可以用半个月了。](https://gptnb.net)
+- [ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api) 
+- [一个赞助入口 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎](./%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E6%B2%A1%E4%BA%BA%E4%BC%9A%E7%82%B9%E5%BC%80%E7%9A%84%E5%90%A7.md)
+
+
+**最后两个收款码，～(￣▽￣～)~**
+
+**项目现在是部署在cloudfire上面，使用的免费额度，功能需求也只是我自己的需求，四舍五入就是0成本，所以...这个赞助码 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎**
+
+`}
+              ></MarkdownView>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <Image src={zfb} alt="支付宝收款码" width={300}></Image>
+                <Image src={wx} alt="微信收款码" width={300}></Image>
+              </div>
             </Collapse.Panel>
           </Collapse>
           <Form.Item></Form.Item>

@@ -36,7 +36,6 @@ yarn-error.log*
 next-env.d.ts
 users.json
 
-
 # android
 Android/*.iml
 Android/.gradle

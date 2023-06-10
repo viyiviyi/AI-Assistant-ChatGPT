@@ -1,11 +1,14 @@
+import { MemoBackgroundImage } from "@/components/BackgroundImage";
 import { Chat } from "@/components/Chat/Chat";
 import { ChatList } from "@/components/ChatList";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
+import { KeyValueData } from "@/core/KeyValueData";
+import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
-import { Drawer, Layout, theme } from "antd";
+import { Layout, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
@@ -19,19 +22,16 @@ export default function Page() {
   const { id: groupId } = router.query;
   const { token } = theme.useToken();
   const { bgConfig, loadingMsgs } = useContext(ChatContext);
+  const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
-  const [activityTopic, setActivityTopic] = useState<TopicMessage>({
-    id: "",
-    name: "",
-    groupId: "",
-    createdAt: 0,
-    messages: [],
-    messageMap: {},
-  });
+  const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
+    chatMgt.getActivityTopic()
+  );
   const { reloadService } = useService();
   useEffect(() => {
+    if(typeof window == 'undefined') return
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;
@@ -43,28 +43,25 @@ export default function Page() {
         .then((res) => {
           setBgImg((v) => {
             v.backgroundImage = `url(${selectChat.group.background || res})`;
-            return v;
+            return { ...v };
           });
         });
+      reloadService(selectChat, KeyValueData.instance());
       if (chatMgt.group.id == groupId) return;
-      await ChatManagement.loadTopics(selectChat).then(() => {
-        setChatMgt(new ChatManagement(selectChat));
-        if (screenSize.width <= 1420) {
-          setlistIsShow(false);
-        }
-        reloadService(selectChat);
-      });
-      let aTopic = selectChat.topics.find(
-        (f) => f.id == selectChat.config.activityTopicId
-      ) || {
-        id: "",
-        name: "",
-        groupId: "",
-        createdAt: 0,
-        messages: [],
-        messageMap: {},
-      };
-      setActivityTopic(aTopic);
+      if (!selectChat.topics.length)
+        await ChatManagement.loadTopics(selectChat);
+      const newChatMgt = new ChatManagement(selectChat);
+      setChatMgt(newChatMgt);
+      if (screenSize.width <= 1420) {
+        setlistIsShow(false);
+      }
+
+      const activityTopic = newChatMgt.getActivityTopic();
+      setActivityTopic(activityTopic);
+      setTimeout(() => {
+        // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
+        scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || "", true);
+      }, 500);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupId]);
@@ -73,6 +70,7 @@ export default function Page() {
     <ChatContext.Provider
       value={{
         chat: chatMgt,
+        setChat: setChatMgt,
         activityTopic,
         loadingMsgs,
         setActivityTopic: (topic: TopicMessage) => {
@@ -90,6 +88,10 @@ export default function Page() {
             return { ...v };
           });
         },
+        navList,
+        reloadNav: (topic: TopicMessage) => {
+          ChatManagement.loadTitleTree(topic).then(() => setNavList([]));
+        },
       }}
     >
       <Layout
@@ -104,36 +106,11 @@ export default function Page() {
           backgroundColor: token.colorBgContainer,
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            width: "100%",
-            height: "100%",
-            ...bgImg,
-          }}
-        ></div>
+        <MemoBackgroundImage />
         <Head>
           <title>Chat助理</title>
         </Head>
         <MemoChat />
-        <Drawer
-          title="Basic Drawer"
-          placement="right"
-          closable={false}
-          onClose={() => {
-            setlistIsShow(false);
-          }}
-          open={listIsShow}
-          getContainer={false}
-        >
-          <MemoChatList
-            onCacle={() => {
-              setlistIsShow(false);
-            }}
-          ></MemoChatList>
-        </Drawer>
         {screenSize.width > 1420 && listIsShow ? (
           <MemoChatList
             onCacle={() => {

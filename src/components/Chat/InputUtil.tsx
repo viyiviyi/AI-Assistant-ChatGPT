@@ -1,17 +1,23 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { useLockScroll, useScreenSize } from "@/core/hooks";
 import { scrollToBotton } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
+  AlignLeftOutlined,
   CommentOutlined,
   MessageOutlined,
+  VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
-import { Button, Input, theme, Typography } from "antd";
+import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
+import { MemoBackgroundImage } from "../BackgroundImage";
 import { MessageContext } from "./Chat";
-import { reloadTopic } from "./ChatMessage";
+import { reloadTopic } from "./MessageList";
+import { MemoNavigation } from "./Navigation";
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };
@@ -27,11 +33,14 @@ const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
-  const { chat, activityTopic, setActivityTopic, loadingMsgs } =
+  const [showNav, setShowNav] = useState(false);
+  const { chat, activityTopic, setActivityTopic, loadingMsgs, reloadNav } =
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
+  const { setLockEnd } = useLockScroll();
   const { token } = theme.useToken();
+  const screenSize = useScreenSize();
   objs.setInput = setInputText;
   /**
    * 提交内容
@@ -54,6 +63,7 @@ export function InputUtil() {
         setActivityTopic(_topic);
       });
     }
+    if (!topic) return;
     let topicId = topic.id;
     // 时间戳 每次使用加1 保证顺序不错
     let now = Date.now();
@@ -66,6 +76,7 @@ export function InputUtil() {
       text: text,
       timestamp: now++,
       topicId: topicId,
+      cloudTopicId: topic.cloudTopicId,
     };
     let result: Message = {
       id: "",
@@ -76,12 +87,17 @@ export function InputUtil() {
       timestamp: now++,
       topicId: topicId,
     };
-    let isContinue = false;
+    // 防止使用为完成的上下文发起提问
+    if (
+      (text ? chat.gptConfig.msgCount != 1 : true) &&
+      chat.config.enableVirtualRole &&
+      loadingTopic[result.topicId + "_" + result.virtualRoleId]
+    )
+      return;
+    loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
+
+    setLockEnd(true);
     try {
-      // 阻止同时对同一个助理发起多个提问
-      if (chat.config.enableVirtualRole && loadingTopic[result.virtualRoleId!])
-        return (isContinue = true);
-      loadingTopic[result.virtualRoleId!] = true;
       // 渲染并滚动到最新内容
       const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
         if (_msg) msg = await chat.pushMessage(_msg);
@@ -105,6 +121,7 @@ export function InputUtil() {
         cloud_result_id?: string;
         stop?: () => void;
       }) => {
+        if (!topic) return;
         if (!topic.cloudTopicId && res.cloud_topic_id) {
           topic.cloudTopicId = res.cloud_topic_id;
           msg.cloudTopicId = res.cloud_topic_id;
@@ -115,30 +132,35 @@ export function InputUtil() {
           msg.cloudMsgId = res.cloud_send_id;
           await chat.pushMessage(msg);
         }
-        if (res.text || res.cloud_result_id) {
-          result.text = res.text + (res.end ? "" : "\n\nloading...");
-          result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
-          let isFirst = !result.id;
-          chat.pushMessage(result).then((r) => {
-            result = r;
-            if (res.end) {
-              delete loadingMsgs[r.id];
-              rendAndScrollView();
-            } else {
-              loadingMsgs[r.id] = {
-                stop: () => {
-                  try {
-                    res.stop && res.stop();
-                  } finally {
-                    delete loadingMsgs[r.id];
-                  }
-                },
-              };
-            }
-            if (isFirst) rendAndScrollView(undefined, result);
-            else reloadTopic(topicId, r.id);
-          });
-        }
+        result.text = res.text + (res.end ? "" : "\n\nloading...");
+        result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
+        let isFirst = !result.id;
+        chat.pushMessage(result).then((r) => {
+          result = r;
+          if (res.end) {
+            delete loadingMsgs[r.id];
+            reloadTopic(topicId);
+            scrollToBotton(r.id);
+          } else {
+            loadingMsgs[r.id] = {
+              stop: () => {
+                try {
+                  res.stop && res.stop();
+                } finally {
+                  delete loadingMsgs[r.id];
+                }
+              },
+            };
+          }
+          reloadTopic(topicId, r.id);
+          if (isFirst) reloadTopic(topicId);
+          if (
+            topic &&
+            topic.id == chat.config.activityTopicId &&
+            topic.messages.slice(-1)[0].id == r.id
+          )
+            scrollToBotton(r.id);
+        });
       };
       // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
       if (
@@ -179,6 +201,7 @@ export function InputUtil() {
           },
         });
       } else if (aiService.history && topic.cloudTopicId) {
+        // 获取历史记录
         let oldTs: string = "0";
         if (topic.messages.length) {
           for (let index = topic.messages.length - 1; index >= 0; index--) {
@@ -191,6 +214,7 @@ export function InputUtil() {
         }
         await aiService.history({
           async onMessage(text, isAi, cloudId, err) {
+            if (!topic) return;
             await chat.pushMessage({
               id: "",
               groupId: chat.group.id,
@@ -215,9 +239,11 @@ export function InputUtil() {
         reloadTopic(result.topicId);
       }
     } finally {
-      delete loadingTopic[result.virtualRoleId!];
+      delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
     }
-    if (isContinue) loadingTopic[result.virtualRoleId!] = true;
+
+    if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
+      reloadNav(topic);
     setTimeout(() => {
       setLoading((v) => --v);
       if (msg.topicId == chat.config.activityTopicId)
@@ -266,14 +292,80 @@ export function InputUtil() {
         <div
           style={{
             flexWrap: "nowrap",
-            gap: "16px",
             width: "100%",
             justifyContent: "flex-end",
             display: "flex",
             alignItems: "center",
             marginBottom: "3px",
+            position: "relative",
           }}
         >
+          <Space
+            size={10}
+            direction="vertical"
+            style={{
+              position: "absolute",
+              bottom: "calc(100% + 60px)",
+              right: 0,
+              opacity: 0.5,
+            }}
+          >
+            {!onlyOne && (
+              <Button
+                shape={"circle"}
+                size="large"
+                icon={<VerticalAlignTopOutlined />}
+                onClick={() => {
+                  setLockEnd(false);
+                  if (chat.topics.length == 0) return;
+                  scrollToBotton(chat.topics[0].id, true);
+                }}
+              />
+            )}
+            <Button
+              shape={"circle"}
+              size="large"
+              // type={lockEnd ? "primary" : undefined}
+              icon={<VerticalAlignBottomOutlined />}
+              onClick={() => {
+                if (!activityTopic) return;
+                scrollToBotton(
+                  activityTopic.messages.slice(-1)[0]?.id || activityTopic.id,
+                  true
+                );
+                setLockEnd(true);
+              }}
+            />
+          </Space>
+          {screenSize.width < 1200 && (
+            <AlignLeftOutlined
+              style={{ padding: "8px 12px 8px 0" }}
+              onClick={(e) => {
+                setShowNav(true);
+              }}
+            />
+          )}
+          <Drawer
+            placement={"left"}
+            closable={false}
+            key={"nav_drawer"}
+            bodyStyle={{ padding: "1em 0" }}
+            open={showNav}
+            onClose={() => {
+              setShowNav(false);
+            }}
+          >
+            <MemoBackgroundImage />
+            <div
+              style={{
+                position: "relative",
+                height:'100%',
+                zIndex: 99,
+              }}
+            >
+              <MemoNavigation />
+            </div>
+          </Drawer>
           <Typography.Text
             style={{
               cursor: "pointer",
@@ -299,6 +391,7 @@ export function InputUtil() {
             <CommentOutlined />
             <VerticalAlignMiddleOutlined />
           </Button>
+          <span style={{ marginLeft: 16 }}></span>
           <Button
             shape="circle"
             size="large"
@@ -308,6 +401,7 @@ export function InputUtil() {
               onSubmit(true);
             }}
           ></Button>
+          <span style={{ marginLeft: 16 }}></span>
           <Button
             shape="circle"
             size="large"
@@ -346,3 +440,4 @@ export function InputUtil() {
     </>
   );
 }
+export const MemoInputUtil = React.memo(InputUtil);

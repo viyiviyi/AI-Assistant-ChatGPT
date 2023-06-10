@@ -5,12 +5,12 @@ import {
   UserAddOutlined
 } from "@ant-design/icons";
 import { Avatar, Layout, theme, Typography } from "antd";
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { ChatList } from "../ChatList";
 import { Modal } from "../Modal";
 import { Setting } from "../Setting";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
-import { reloadTopic } from "./ChatMessage";
+import { reloadTopic } from "./MessageList";
 
 export const ChatHeader = () => {
   const { chat, activityTopic } = useContext(ChatContext);
@@ -72,7 +72,7 @@ export const ChatHeader = () => {
           }}
           onSaved={() => {
             setRoleConfigShow(false);
-            reloadTopic(activityTopic.id);
+            if (activityTopic) reloadTopic(activityTopic.id);
           }}
           chatMgt={chat}
         ></VirtualRoleConfig>
@@ -110,3 +110,4 @@ export const ChatHeader = () => {
     </Layout.Header>
   );
 };
+export const MemoChatHeader = React.memo(ChatHeader);

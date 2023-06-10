@@ -1,7 +1,7 @@
 import { Message } from "@/Models/DataBase";
 import { ChatCompletionRequestMessage, OpenAIApi } from "openai";
 import { IAiService, InputConfig } from "./IAiService";
-import { BaseUrlScheam, ServiceTokens } from "./ServiceProvider";
+import { ServiceTokens } from "./ServiceProvider";
 export class ChatGPT implements IAiService {
   customContext = true;
   history = undefined;
@@ -50,7 +50,7 @@ export class ChatGPT implements IAiService {
     onMessage({
       end: false,
       error: false,
-      text: 'loading...',
+      text: '',
     });
     if (config.model.startsWith("gpt-3")) {
       await this.generateChatStream(context, config, onMessage);

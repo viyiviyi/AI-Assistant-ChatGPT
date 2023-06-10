@@ -1,4 +1,3 @@
-
 .loading {
   display: flex;
   justify-content: center;
@@ -45,20 +44,54 @@
   }
 }
 
-.message {
-  display: flex;
+.nav_item:hover {
+  position: relative;
+  top: -1px;
+  border-bottom: 1px solid #ccc5;
 }
-.message .message__header {
-  display: flex;
+.message_box {
+  position: relative;
+  margin-top: 0.5em;
 }
-.message .message__footer {
-  display: flex;
-  align-items: flex-end;
-  opacity:.5;
+.message_box .message_extend_but {
+  display: none;
+  position: absolute;
+  width: 100%;
+  top: calc(100% - 11px);
+  left: 0;
 }
-.message .message__footer .message__nickname{
-  font-size: 14px;
+.message_box .message_extend_but > div > span {
+  z-index: 1;
 }
-.message .message__footer .message__timestamp{
-  font-size: 12px;
+.message_box:hover .message_extend_but {
+  display: block;
+}
+
+/* 屏幕宽度小于 1300px */
+@media (max-width: 1299px) {
+  /* 在这里添加适用于大屏幕的样式 */
+  .message_item {
+    width: calc(100vw - 400px);
+  }
+}
+/* 屏幕宽度小于 1200px */
+@media (max-width: 1199px) {
+  /* 在这里添加适用于中等屏幕的样式 */
+  .message_item {
+    width: 900px;
+  }
+}
+/* 屏幕宽度小于 1000px */
+@media (max-width: 999px) {
+  /* 在这里添加适用于小屏幕的样式 */
+  .message_item {
+    width: calc(100vw - 100px);
+  }
+}
+/* 屏幕宽度小于 1300px */
+@media (min-width: 1299px) {
+  /* 在这里添加适用于大屏幕的样式 */
+  .message_item {
+    width: 900px;
+  }
 }

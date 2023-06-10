@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "static": "next build && next export",
+    "cloudflare": "npx @cloudflare/next-on-pages@1",
     "start": "next start",
     "lint": "next lint"
   },
@@ -29,6 +30,7 @@
     "react-avatar-editor": "^13.0.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "18.2.0",
+    "react-no-ssr": "^1.1.0",
     "rehype-external-links": "^2.0.1",
     "rehype-highlight": "^6.0.0",
     "rehype-mathjax": "^4.0.2",
@@ -49,6 +51,7 @@
   },
   "devDependencies": {
     "@types/react-avatar-editor": "^13.0.0",
-    "@types/react-copy-to-clipboard": "^5.0.4"
+    "@types/react-copy-to-clipboard": "^5.0.4",
+    "@types/react-no-ssr": "^1.1.3"
   }
 }

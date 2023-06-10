@@ -1,22 +1,28 @@
+import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
+import style from "@/styles/index.module.css";
 import {
   CopyOutlined,
   DeleteOutlined,
   EditOutlined,
+  MessageOutlined,
   PauseOutlined,
+  PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
   UserOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
+  Button,
   Checkbox,
+  Divider,
   Input,
   message,
   Popconfirm,
-  theme,
-  Typography
+  Space,
+  theme
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useContext, useEffect, useState } from "react";
@@ -29,14 +35,19 @@ export const MessageItem = ({
   rBak,
   onDel,
   onCite,
+  onPush,
+  onSned,
 }: {
   msg: Message;
   renderMessage: { [key: string]: () => void };
   rBak: (v: Message) => void;
   onDel: (v: Message) => void;
   onCite: (message: Message) => void;
+  onPush: () => void;
+  onSned: () => void;
 }) => {
-  const { chat, loadingMsgs } = useContext(ChatContext);
+  const { chat, loadingMsgs, reloadNav } = useContext(ChatContext);
+  const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState("");
@@ -49,10 +60,10 @@ export const MessageItem = ({
       delete renderMessage[msg.id];
     };
   }, [renderMessage, msg]);
-  // console.log(msg.id);
   const utilsEle = (
     <>
       <Checkbox
+        disabled={!aiService?.customContext}
         checked={msg.checked || false}
         onChange={(e) => {
           msg.checked = e.target.checked;
@@ -72,9 +83,13 @@ export const MessageItem = ({
       {edit ? (
         <SaveOutlined
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => {
+          onClick={async () => {
+            const isReloadNav =
+              /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
             msg.text = messageText;
-            chat.pushMessage(msg);
+            await chat.pushMessage(msg);
+            var topic = chat.topics.find((f) => f.id === msg.topicId);
+            if (topic && isReloadNav) reloadNav(topic);
             setEdit(false);
           }}
           style={{ marginLeft: "16px" }}
@@ -133,9 +148,38 @@ export const MessageItem = ({
       )}
     </>
   );
+  const Extend = (
+    <div className={style.message_extend_but}>
+      <Divider style={{ margin: 0 }}>
+        <Space size={6}>
+          {aiService?.customContext && (
+            <Button
+              shape="circle"
+              type="text"
+              icon={<MessageOutlined />}
+              onClick={onSned}
+            ></Button>
+          )}
+          <Button
+            shape="circle"
+            type="text"
+            icon={<PlusOutlined />}
+            onClick={onPush}
+          ></Button>
+        </Space>
+      </Divider>
+    </div>
+  );
   if (msg.ctxRole === "system") {
     return (
-      <div style={{ padding: "1em 32px", textAlign: "center" }} id={msg.id}>
+      <div
+        style={{
+          padding: "1em 42px 0",
+          textAlign: "center",
+        }}
+        id={msg.id}
+        className={style.message_box}
+      >
         <div>
           {edit ? (
             <Input.TextArea
@@ -147,9 +191,16 @@ export const MessageItem = ({
               }}
             />
           ) : (
-            <Typography.Text type="secondary">
-              {"系统：" + msg.text}
-            </Typography.Text>
+            <MemoMarkdownView
+              markdown={
+                chat.config.disableStrikethrough
+                  ? ("系统：" + msg.text).replaceAll("~", "～")
+                  : "系统：" + msg.text
+              }
+            />
+            // <Typography.Text type="secondary">
+            //   {"系统：" + msg.text}
+            // </Typography.Text>
           )}
         </div>
         <div
@@ -163,14 +214,18 @@ export const MessageItem = ({
         >
           {utilsEle}
         </div>
+        {Extend}
       </div>
     );
   }
   return (
     <div
+      className={style.message_box}
       style={{
         display: "flex",
         justifyContent: msg.virtualRoleId ? "flex-start" : "flex-end",
+        position: "relative",
+        flexDirection: "column",
       }}
       id={msg.id}
     >
@@ -187,11 +242,12 @@ export const MessageItem = ({
           // style={{ minWidth: "42px", minHeight: "42px" }}
           icon={<UserOutlined />}
         />
+        {/* {min(calc(max(1200px, 100vw) - calc(250px + max(min(50px,100vw - 1195px),5px))), calc(100vw - 100px))} */}
         <div
+          className={style.message_item}
           style={{
             display: "flex",
             flex: edit ? 1 : undefined,
-            maxWidth: "min(900px, calc(100vw - 100px))",
             wordWrap: "break-word",
             flexDirection: "column",
           }}
@@ -235,6 +291,7 @@ export const MessageItem = ({
               backgroundColor: token.colorInfoBg,
               marginBottom: "12px",
               boxShadow: token.boxShadowTertiary,
+              lineHeight: 1.7,
             }}
           >
             <div>
@@ -282,6 +339,7 @@ export const MessageItem = ({
               )}
             </div>
             <div
+              className=""
               style={{
                 display: "flex",
                 borderTop: "1px solid #ccc3",
@@ -294,6 +352,9 @@ export const MessageItem = ({
           </div>
         </div>
       </div>
+      {!loadingMsgs[msg.id] && Extend}
     </div>
   );
 };
+
+export const MemoMessageItem = React.memo(MessageItem);
