@@ -3,7 +3,7 @@ import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { scrollToBotton } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
-import { MessageOutlined } from "@ant-design/icons";
+import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
@@ -252,8 +252,10 @@ export function MessageList({
                 key={"insert_input"}
                 insertIndex={insertIndex}
                 onSubmit={onSubmit}
+                onHidden={() => setInsertIndex(-1)}
               />
             )}
+            {idx==messages.length-1&&<div style={{marginTop:'2em'}}></div>}
           </div>
         );
       })}
@@ -296,9 +298,11 @@ export function MessageList({
 
 function InsertInput({
   onSubmit: _onSubmit,
+  onHidden,
   insertIndex,
 }: {
   onSubmit: (text: string, idx: number) => void;
+  onHidden?: () => void;
   insertIndex: number;
 }) {
   const [insertText, setInsertText] = useState("");
@@ -323,7 +327,7 @@ function InsertInput({
         style={{
           width: "calc(100% - 100px)",
           display: "flex",
-          margin: "0 auto",
+          margin: "1.5em auto 0",
         }}
       >
         <Input.TextArea
@@ -358,6 +362,16 @@ function InsertInput({
           icon={<MessageOutlined />}
           onClick={() => {
             onSubmit(insertText, insertIndex);
+          }}
+        ></Button>
+        <span style={{ marginLeft: 10 }}></span>
+        <Button
+          shape="circle"
+          size="large"
+          onMouseDown={(e) => e.preventDefault()}
+          icon={<CloseOutlined />}
+          onClick={() => {
+            onHidden && onHidden();
           }}
         ></Button>
       </div>

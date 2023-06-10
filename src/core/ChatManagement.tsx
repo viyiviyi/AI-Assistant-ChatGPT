@@ -207,7 +207,7 @@ export class ChatManagement implements IChat {
     ChatManagement.chatList;
     await ChatManagement.saveSort();
   }
-  getAskContext(index?: number): Array<{
+  getAskContext(index: number = -1): Array<{
     role: "assistant" | "user" | "system";
     content: string;
     name: string;
@@ -220,7 +220,7 @@ export class ChatManagement implements IChat {
     }> = [];
     if (topic) {
       let messages = topic.messages;
-      if (index) messages = messages.slice(0, index + 1);
+      if (index > -1) messages = messages.slice(0, index + 1);
       if (
         this.gptConfig.msgCount > 0 &&
         messages.length > this.gptConfig.msgCount
