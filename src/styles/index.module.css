@@ -49,11 +49,16 @@
   top: -1px;
   border-bottom: 1px solid #ccc5;
 }
+.message_box {
+  position: relative;
+  margin-top: .5em;
+}
 .message_box .message_extend_but {
   display: none;
   position: absolute;
   width: 100%;
   top: calc(100% - 11px);
+  left: 0;
 }
 .message_box:hover .message_extend_but {
   display: block;

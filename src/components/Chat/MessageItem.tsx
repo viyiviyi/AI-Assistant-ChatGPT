@@ -21,8 +21,8 @@ import {
   Input,
   message,
   Popconfirm,
-  theme,
-  Typography
+  Space,
+  theme
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useContext, useEffect, useState } from "react";
@@ -148,9 +148,38 @@ export const MessageItem = ({
       )}
     </>
   );
+  const Extend = (
+    <div className={style.message_extend_but}>
+      <Divider style={{ margin: 0 }}>
+        <Space size={6}>
+          {aiService?.customContext && (
+            <Button
+              shape="circle"
+              type="text"
+              icon={<MessageOutlined />}
+              onClick={onSned}
+            ></Button>
+          )}
+          <Button
+            shape="circle"
+            type="text"
+            icon={<PlusOutlined />}
+            onClick={onPush}
+          ></Button>
+        </Space>
+      </Divider>
+    </div>
+  );
   if (msg.ctxRole === "system") {
     return (
-      <div style={{ padding: "1em 32px", textAlign: "center" }} id={msg.id}>
+      <div
+        style={{
+          padding: "1em 42px 0",
+          textAlign: "center",
+        }}
+        id={msg.id}
+        className={style.message_box}
+      >
         <div>
           {edit ? (
             <Input.TextArea
@@ -162,9 +191,16 @@ export const MessageItem = ({
               }}
             />
           ) : (
-            <Typography.Text type="secondary">
-              {"系统：" + msg.text}
-            </Typography.Text>
+            <MemoMarkdownView
+              markdown={
+                chat.config.disableStrikethrough
+                  ? ("系统：" + msg.text).replaceAll("~", "～")
+                  : "系统：" + msg.text
+              }
+            />
+            // <Typography.Text type="secondary">
+            //   {"系统：" + msg.text}
+            // </Typography.Text>
           )}
         </div>
         <div
@@ -178,6 +214,7 @@ export const MessageItem = ({
         >
           {utilsEle}
         </div>
+        {Extend}
       </div>
     );
   }
@@ -315,26 +352,7 @@ export const MessageItem = ({
           </div>
         </div>
       </div>
-      {!loadingMsgs[msg.id] && (
-        <div className={style.message_extend_but}>
-          <Divider style={{ margin: 0 }}>
-            <Button.Group>
-              {aiService?.customContext && (
-                <Button
-                  type="text"
-                  icon={<MessageOutlined />}
-                  onClick={onSned}
-                ></Button>
-              )}
-              <Button
-                type="text"
-                icon={<PlusOutlined />}
-                onClick={onPush}
-              ></Button>
-            </Button.Group>
-          </Divider>
-        </div>
-      )}
+      {!loadingMsgs[msg.id] && Extend}
     </div>
   );
 };

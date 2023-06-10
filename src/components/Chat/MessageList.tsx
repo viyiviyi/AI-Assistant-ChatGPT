@@ -65,7 +65,7 @@ export function MessageList({
   );
   // 整理idx之后的message的timestamp的值, 并获取一个可以使用的值，因为这个值用于排序用，如果前后顺序相同时，需要将后一个+0.01 并且需要递归只到最后一个或者与下一个不一样为止
   function reloadIndex(topic: TopicMessage, idx: number) {
-    if (topic.messages.length == idx) return;
+    if (topic.messages.length <= idx + 1) return;
     if (topic.messages[idx].timestamp != topic.messages[idx + 1].timestamp)
       return;
     topic.messages[idx + 1].timestamp += 0.001;
@@ -138,7 +138,7 @@ export function MessageList({
         user: "user",
       },
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const onSubmit = async function (text: string, idx: number) {
     text = text.trim();
@@ -158,11 +158,11 @@ export function MessageList({
       cloudTopicId: topic.cloudTopicId,
     };
     await chat.pushMessage(msg, idx);
-    reloadIndex(topic, idx + 1);
+    reloadIndex(topic, idx + (msg.id ? 1 : 0));
     steMessages([...topic.messages]);
     setInsertIndex(-1);
     if (isBot || isSys || skipRequest) return;
-    onSend(idx + 1);
+    onSend(idx + +(msg.id ? 1 : 0));
   };
 
   useEffect(() => {
@@ -246,7 +246,11 @@ export function MessageList({
               }}
             ></MemoMessageItem>
             {idx === insertIndex && (
-              <InsertInput insertIndex={insertIndex} onSubmit={onSubmit} />
+              <InsertInput
+                key={"insert_input"}
+                insertIndex={insertIndex}
+                onSubmit={onSubmit}
+              />
             )}
           </>
         );
