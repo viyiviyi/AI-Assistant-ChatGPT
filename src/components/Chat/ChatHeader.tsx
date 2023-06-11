@@ -1,16 +1,19 @@
 import { ChatContext } from "@/core/ChatManagement";
 import {
+  SearchOutlined,
   SettingOutlined,
   UnorderedListOutlined,
   UserAddOutlined
 } from "@ant-design/icons";
-import { Avatar, Layout, theme, Typography } from "antd";
+import { Avatar, Drawer, Layout, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
+import { MemoBackgroundImage } from "../BackgroundImage";
 import { ChatList } from "../ChatList";
 import { Modal } from "../Modal";
 import { Setting } from "../Setting";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
 import { reloadTopic } from "./MessageList";
+import { MemoSearchWrap } from "./Search";
 
 export const ChatHeader = () => {
   const { chat, activityTopic } = useContext(ChatContext);
@@ -18,6 +21,7 @@ export const ChatHeader = () => {
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);
   const [roleConfigShow, setRoleConfigShow] = useState(false);
+  const [openSearch, setOpenSearch] = useState(false);
   return (
     <Layout.Header
       style={{
@@ -48,6 +52,29 @@ export const ChatHeader = () => {
         {chat?.group.name}
       </Typography.Text>
       <span style={{ flex: 1 }}></span>
+      <SearchOutlined onClick={() => setOpenSearch(true)} />
+      <Drawer
+        placement={"right"}
+        closable={false}
+        key={"search_nav_drawer"}
+        bodyStyle={{ padding: "1em 0" }}
+        open={openSearch}
+        maskStyle={{ backgroundColor: "#0000" }}
+        onClose={() => {
+          setOpenSearch(false);
+        }}
+      >
+        <MemoBackgroundImage />
+        <div
+          style={{
+            position: "relative",
+            height: "100%",
+            zIndex: 99,
+          }}
+        >
+          <MemoSearchWrap />
+        </div>
+      </Drawer>
       <UserAddOutlined onClick={() => setRoleConfigShow(!roleConfigShow)} />
       <SettingOutlined
         onClick={() => setSettingShow(!settingIsShow)}

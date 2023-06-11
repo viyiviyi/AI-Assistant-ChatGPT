@@ -53,7 +53,9 @@ const Navigation = () => {
                   setActivityTopic(t);
                   reloadTopic(t.id, m.index);
                   scrollStatus.enable = true;
-                  scrollToBotton(m.msgId, true);
+                  setTimeout(() => {
+                    scrollToBotton(m.msgId, true);
+                  }, 200);
                 }}
               >
                 <Typography.Text ellipsis={true}>{m.title}</Typography.Text>

@@ -42,8 +42,12 @@ export const ChatMessage = () => {
   );
   useEffect(() => {
     if (!activityTopic) return setNone([]);
-    if (!activityKey.includes(activityTopic.id))
+    if (closeAll) {
+      setCloasAll(false);
+      setActivityKey([activityTopic.id]);
+    } else if (!activityKey.includes(activityTopic.id)) {
       setActivityKey((v) => [...v, activityTopic.id]);
+    }
     if (onlyOne) reloadTopic(activityTopic.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
