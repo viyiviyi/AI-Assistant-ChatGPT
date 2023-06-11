@@ -207,12 +207,14 @@ export class ChatManagement implements IChat {
     ChatManagement.chatList;
     await ChatManagement.saveSort();
   }
-  getAskContext(index: number = -1): Array<{
+  getAskContext(
+    topic: TopicMessage,
+    index: number = -1
+  ): Array<{
     role: "assistant" | "user" | "system";
     content: string;
     name: string;
   }> {
-    const topic = this.topics.find((f) => f.id == this.config.activityTopicId);
     let ctx: Array<{
       role: "assistant" | "user" | "system";
       content: string;

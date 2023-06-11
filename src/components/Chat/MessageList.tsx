@@ -93,7 +93,7 @@ export function MessageList({
 
     aiService.sendMessage({
       msg: topic.messages[idx],
-      context: chat.getAskContext(idx),
+      context: chat.getAskContext(topic, idx),
       onMessage(res) {
         if (!topic) return;
         if (!topic.cloudTopicId && res.cloud_topic_id) {
@@ -255,7 +255,9 @@ export function MessageList({
                 onHidden={() => setInsertIndex(-1)}
               />
             )}
-            {idx==messages.length-1&&<div style={{marginTop:'2em'}}></div>}
+            {idx == messages.length - 1 && (
+              <div style={{ marginTop: "2em" }}></div>
+            )}
           </div>
         );
       })}

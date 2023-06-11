@@ -175,7 +175,7 @@ export function InputUtil() {
         await rendAndScrollView(msg);
         await aiService.sendMessage({
           msg,
-          context: chat.getAskContext(),
+          context: chat.getAskContext(topic),
           onMessage,
           config: {
             channel_id: chat.config.cloudChannelId,
@@ -192,7 +192,7 @@ export function InputUtil() {
         await rendAndScrollView(msg);
         await aiService.sendMessage({
           msg,
-          context: chat.getAskContext(),
+          context: chat.getAskContext(topic),
           onMessage,
           config: {
             channel_id: chat.config.cloudChannelId,
@@ -359,7 +359,7 @@ export function InputUtil() {
             <div
               style={{
                 position: "relative",
-                height:'100%',
+                height: "100%",
                 zIndex: 99,
               }}
             >
