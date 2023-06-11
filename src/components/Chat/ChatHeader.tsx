@@ -26,7 +26,7 @@ export const ChatHeader = () => {
     <Layout.Header
       style={{
         flexWrap: "nowrap",
-        gap: "16px",
+        // gap: "16px",
         width: "100%",
         justifyContent: "flex-end",
         display: "flex",
@@ -48,11 +48,15 @@ export const ChatHeader = () => {
         style={{ minWidth: "32px", minHeight: "32px" }}
         src={chat.group.avatar || chat?.virtualRole.avatar || undefined}
       ></Avatar>
+      <span style={{ marginLeft: 10 }}></span>
       <Typography.Text ellipsis onClick={() => setSettingShow(!settingIsShow)}>
         {chat?.group.name}
       </Typography.Text>
       <span style={{ flex: 1 }}></span>
-      <SearchOutlined onClick={() => setOpenSearch(true)} />
+      <SearchOutlined
+        style={{ padding: "5px 10px" }}
+        onClick={() => setOpenSearch(true)}
+      />
       <Drawer
         placement={"right"}
         closable={false}
@@ -75,16 +79,19 @@ export const ChatHeader = () => {
           <MemoSearchWrap />
         </div>
       </Drawer>
-      <UserAddOutlined onClick={() => setRoleConfigShow(!roleConfigShow)} />
+      <UserAddOutlined
+        style={{ padding: "5px 10px" }}
+        onClick={() => setRoleConfigShow(!roleConfigShow)}
+      />
       <SettingOutlined
         onClick={() => setSettingShow(!settingIsShow)}
-        style={{ marginLeft: "10px" }}
+        style={{ padding: "5px 10px" }}
       />
       <UnorderedListOutlined
         onClick={() => {
           setlistIsShow(!listIsShow);
         }}
-        style={{ marginLeft: "10px", marginRight: "10px" }}
+        style={{ padding: "5px 10px" }}
       />
       <Modal
         isShow={roleConfigShow}
