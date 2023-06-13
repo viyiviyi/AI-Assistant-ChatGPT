@@ -10,10 +10,10 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { MemoBackgroundImage } from "../BackgroundImage";
 import { MessageContext } from "./Chat";
 import { reloadTopic } from "./MessageList";
@@ -47,209 +47,212 @@ export function InputUtil() {
    * @param isNewTopic 是否开启新话题
    * @returns
    */
-  const onSubmit = async function (isNewTopic: boolean) {
-    let text = inputText.trim();
-    const isBot = text.startsWith("/");
-    const isSys = text.startsWith("/::") || text.startsWith("::");
-    const skipRequest = text.startsWith("\\");
-    text = ChatManagement.parseText(text);
-    let topic = chat.getActivityTopic();
-    if (!chat.config.activityTopicId) isNewTopic = true;
-    if (!chat.topics.find((t) => t.id == chat.config.activityTopicId))
-      isNewTopic = true;
-    if (isNewTopic) {
-      await chat.newTopic(text).then((_topic) => {
-        topic = _topic;
-        setActivityTopic(_topic);
-      });
-    }
-    if (!topic) return;
-    let topicId = topic.id;
-    // 时间戳 每次使用加1 保证顺序不错
-    let now = Date.now();
-    let msg: Message = {
-      id: "",
-      groupId: chat.group.id,
-      senderId: isBot ? undefined : chat.user.id,
-      virtualRoleId: isBot ? chat.virtualRole.id : undefined,
-      ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
-      text: text,
-      timestamp: now++,
-      topicId: topicId,
-      cloudTopicId: topic.cloudTopicId,
-    };
-    let result: Message = {
-      id: "",
-      groupId: chat.group.id,
-      virtualRoleId: chat.virtualRole.id,
-      ctxRole: "assistant",
-      text: "loading...",
-      timestamp: now++,
-      topicId: topicId,
-    };
-    // 防止使用为完成的上下文发起提问
-    if (
-      (text ? chat.gptConfig.msgCount != 1 : true) &&
-      chat.config.enableVirtualRole &&
-      loadingTopic[result.topicId + "_" + result.virtualRoleId]
-    )
-      return;
-    loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
-
-    setLockEnd(true);
-    try {
-      // 渲染并滚动到最新内容
-      const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
-        if (_msg) msg = await chat.pushMessage(_msg);
-        if (_result) result = await chat.pushMessage(_result);
-        reloadTopic(result.topicId);
-        if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id || msg.id, true);
-      };
-      const aiService = aiServices.current;
-      if (isBot || skipRequest || !aiService) {
-        setInputText("");
-        return await rendAndScrollView(msg);
-      }
-      // 接收消息的方法
-      const onMessage = async (res: {
-        error: boolean;
-        text: string;
-        end: boolean;
-        cloud_topic_id?: string;
-        cloud_send_id?: string;
-        cloud_result_id?: string;
-        stop?: () => void;
-      }) => {
-        if (!topic) return;
-        if (!topic.cloudTopicId && res.cloud_topic_id) {
-          topic.cloudTopicId = res.cloud_topic_id;
-          msg.cloudTopicId = res.cloud_topic_id;
-          result.cloudTopicId = res.cloud_topic_id;
-          chat.saveTopic(topic.id, topic.name, res.cloud_topic_id);
-        }
-        if (!msg.cloudMsgId && res.cloud_send_id) {
-          msg.cloudMsgId = res.cloud_send_id;
-          await chat.pushMessage(msg);
-        }
-        result.text = res.text + (res.end ? "" : "\n\nloading...");
-        result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
-        let isFirst = !result.id;
-        chat.pushMessage(result).then((r) => {
-          result = r;
-          if (res.end) {
-            delete loadingMsgs[r.id];
-            reloadTopic(topicId);
-            scrollToBotton(r.id);
-          } else {
-            loadingMsgs[r.id] = {
-              stop: () => {
-                try {
-                  res.stop && res.stop();
-                } finally {
-                  delete loadingMsgs[r.id];
-                }
-              },
-            };
-          }
-          reloadTopic(topicId, r.id);
-          if (isFirst) reloadTopic(topicId);
-          if (
-            topic &&
-            topic.id == chat.config.activityTopicId &&
-            topic.messages.slice(-1)[0].id == r.id
-          )
-            scrollToBotton(r.id);
+  const onSubmit = useCallback(
+    async function (isNewTopic: boolean) {
+      let text = inputText.trim();
+      const isBot = text.startsWith("/");
+      const isSys = text.startsWith("/::") || text.startsWith("::");
+      const skipRequest = text.startsWith("\\");
+      text = ChatManagement.parseText(text);
+      let topic = chat.getActivityTopic();
+      if (!chat.config.activityTopicId) isNewTopic = true;
+      if (!chat.topics.find((t) => t.id == chat.config.activityTopicId))
+        isNewTopic = true;
+      if (isNewTopic) {
+        await chat.newTopic(text).then((_topic) => {
+          topic = _topic;
+          setActivityTopic(_topic);
         });
+      }
+      if (!topic) return;
+      let topicId = topic.id;
+      // 时间戳 每次使用加1 保证顺序不错
+      let now = Date.now();
+      let msg: Message = {
+        id: "",
+        groupId: chat.group.id,
+        senderId: isBot ? undefined : chat.user.id,
+        virtualRoleId: isBot ? chat.virtualRole.id : undefined,
+        ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
+        text: text,
+        timestamp: now++,
+        topicId: topicId,
+        cloudTopicId: topic.cloudTopicId,
       };
-      // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
+      let result: Message = {
+        id: "",
+        groupId: chat.group.id,
+        virtualRoleId: chat.virtualRole.id,
+        ctxRole: "assistant",
+        text: "loading...",
+        timestamp: now++,
+        topicId: topicId,
+      };
+      // 防止使用为完成的上下文发起提问
       if (
-        isNewTopic &&
-        !aiService.customContext &&
-        chat.config.enableVirtualRole
-      ) {
-        setLoading((v) => ++v);
-        msg.text = ChatManagement.parseText(chat.virtualRole.bio);
-        msg.virtualRoleId = undefined;
-        msg.senderId = chat.user.id;
-        await rendAndScrollView(msg);
-        await aiService.sendMessage({
-          msg,
-          context: chat.getAskContext(topic),
-          onMessage,
-          config: {
-            channel_id: chat.config.cloudChannelId,
-            ...chat.gptConfig,
-            user: "user",
-          },
-        });
-        setLoading((v) => --v);
+        (text ? chat.gptConfig.msgCount != 1 : true) &&
+        chat.config.enableVirtualRole &&
+        loadingTopic[result.topicId + "_" + result.virtualRoleId]
+      )
         return;
-      }
-      setInputText("");
-      setLoading((v) => ++v);
-      if (msg.text || aiService.customContext) {
-        await rendAndScrollView(msg);
-        await aiService.sendMessage({
-          msg,
-          context: chat.getAskContext(topic),
-          onMessage,
-          config: {
-            channel_id: chat.config.cloudChannelId,
-            ...chat.gptConfig,
-            user: "user",
-          },
-        });
-      } else if (aiService.history && topic.cloudTopicId) {
-        // 获取历史记录
-        let oldTs: string = "0";
-        if (topic.messages.length) {
-          for (let index = topic.messages.length - 1; index >= 0; index--) {
-            const item = topic.messages[index];
-            if (item.cloudMsgId) {
-              oldTs = item.cloudMsgId;
-              break;
+      loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
+
+      setLockEnd(true);
+      try {
+        // 渲染并滚动到最新内容
+        const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
+          if (_msg) msg = await chat.pushMessage(_msg);
+          if (_result) result = await chat.pushMessage(_result);
+          reloadTopic(result.topicId);
+          if (msg.topicId == chat.config.activityTopicId)
+            scrollToBotton(result.id || msg.id, true);
+        };
+        const aiService = aiServices.current;
+        if (isBot || skipRequest || !aiService) {
+          setInputText("");
+          return await rendAndScrollView(msg);
+        }
+        // 接收消息的方法
+        const onMessage = async (res: {
+          error: boolean;
+          text: string;
+          end: boolean;
+          cloud_topic_id?: string;
+          cloud_send_id?: string;
+          cloud_result_id?: string;
+          stop?: () => void;
+        }) => {
+          if (!topic) return;
+          if (!topic.cloudTopicId && res.cloud_topic_id) {
+            topic.cloudTopicId = res.cloud_topic_id;
+            msg.cloudTopicId = res.cloud_topic_id;
+            result.cloudTopicId = res.cloud_topic_id;
+            chat.saveTopic(topic.id, topic.name, res.cloud_topic_id);
+          }
+          if (!msg.cloudMsgId && res.cloud_send_id) {
+            msg.cloudMsgId = res.cloud_send_id;
+            await chat.pushMessage(msg);
+          }
+          result.text = res.text + (res.end ? "" : "\n\nloading...");
+          result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
+          let isFirst = !result.id;
+          chat.pushMessage(result).then((r) => {
+            result = r;
+            if (res.end) {
+              delete loadingMsgs[r.id];
+              reloadTopic(topicId);
+              scrollToBotton(r.id);
+            } else {
+              loadingMsgs[r.id] = {
+                stop: () => {
+                  try {
+                    res.stop && res.stop();
+                  } finally {
+                    delete loadingMsgs[r.id];
+                  }
+                },
+              };
+            }
+            reloadTopic(topicId, r.id);
+            if (isFirst) reloadTopic(topicId);
+            if (
+              topic &&
+              topic.id == chat.config.activityTopicId &&
+              topic.messages.slice(-1)[0].id == r.id
+            )
+              scrollToBotton(r.id);
+          });
+        };
+        // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
+        if (
+          isNewTopic &&
+          !aiService.customContext &&
+          chat.config.enableVirtualRole
+        ) {
+          setLoading((v) => ++v);
+          msg.text = ChatManagement.parseText(chat.virtualRole.bio);
+          msg.virtualRoleId = undefined;
+          msg.senderId = chat.user.id;
+          await rendAndScrollView(msg);
+          await aiService.sendMessage({
+            msg,
+            context: chat.getAskContext(topic),
+            onMessage,
+            config: {
+              channel_id: chat.config.cloudChannelId,
+              ...chat.gptConfig,
+              user: "user",
+            },
+          });
+          setLoading((v) => --v);
+          return;
+        }
+        setInputText("");
+        setLoading((v) => ++v);
+        if (msg.text || aiService.customContext) {
+          await rendAndScrollView(msg);
+          await aiService.sendMessage({
+            msg,
+            context: chat.getAskContext(topic),
+            onMessage,
+            config: {
+              channel_id: chat.config.cloudChannelId,
+              ...chat.gptConfig,
+              user: "user",
+            },
+          });
+        } else if (aiService.history && topic.cloudTopicId) {
+          // 获取历史记录
+          let oldTs: string = "0";
+          if (topic.messages.length) {
+            for (let index = topic.messages.length - 1; index >= 0; index--) {
+              const item = topic.messages[index];
+              if (item.cloudMsgId) {
+                oldTs = item.cloudMsgId;
+                break;
+              }
             }
           }
+          await aiService.history({
+            async onMessage(text, isAi, cloudId, err) {
+              if (!topic) return;
+              await chat.pushMessage({
+                id: "",
+                groupId: chat.group.id,
+                senderId: isAi ? undefined : chat.user.id,
+                virtualRoleId: isAi ? chat.virtualRole.id : undefined,
+                ctxRole: isAi ? "assistant" : "user",
+                text: text,
+                timestamp: now++,
+                topicId: topicId,
+                cloudTopicId: topic.cloudTopicId,
+                cloudMsgId: cloudId,
+              });
+            },
+            lastMsgCloudId: oldTs,
+            topicCloudId: topic.cloudTopicId,
+            config: {
+              channel_id: chat.config.cloudChannelId,
+              ...chat.gptConfig,
+              user: "user",
+            },
+          });
+          reloadTopic(result.topicId);
         }
-        await aiService.history({
-          async onMessage(text, isAi, cloudId, err) {
-            if (!topic) return;
-            await chat.pushMessage({
-              id: "",
-              groupId: chat.group.id,
-              senderId: isAi ? undefined : chat.user.id,
-              virtualRoleId: isAi ? chat.virtualRole.id : undefined,
-              ctxRole: isAi ? "assistant" : "user",
-              text: text,
-              timestamp: now++,
-              topicId: topicId,
-              cloudTopicId: topic.cloudTopicId,
-              cloudMsgId: cloudId,
-            });
-          },
-          lastMsgCloudId: oldTs,
-          topicCloudId: topic.cloudTopicId,
-          config: {
-            channel_id: chat.config.cloudChannelId,
-            ...chat.gptConfig,
-            user: "user",
-          },
-        });
-        reloadTopic(result.topicId);
+      } finally {
+        delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
       }
-    } finally {
-      delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
-    }
 
-    if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
-      reloadNav(topic);
-    setTimeout(() => {
-      setLoading((v) => --v);
-      if (msg.topicId == chat.config.activityTopicId)
-        scrollToBotton(result.id, true);
-    }, 500);
-  };
+      if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
+        reloadNav(topic);
+      setTimeout(() => {
+        setLoading((v) => --v);
+        if (msg.topicId == chat.config.activityTopicId)
+          scrollToBotton(result.id, true);
+      }, 500);
+    },
+    [chat, inputText, loadingMsgs, reloadNav, setActivityTopic, setLockEnd]
+  );
 
   const onTextareaTab = (
     start: number,
