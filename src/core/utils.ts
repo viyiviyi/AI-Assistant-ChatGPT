@@ -51,7 +51,7 @@ export function downloadJson(jsonData: string, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-let toEndCache = { id: "", await: false, animation: 0 as any };
+let toEndCache = { id: "", await: false, animation: 0 as any, to_top_id: "" };
 export function scrollToBotton(id?: string, isAnm: boolean = true) {
   toEndCache.id = id || "";
   if (toEndCache.await) return;
@@ -68,6 +68,23 @@ export function scrollToBotton(id?: string, isAnm: boolean = true) {
         wrap,
         wrap.scrollTop,
         offsetTop + offsetHeight - wrap.offsetHeight - 56,
+        700
+      );
+    }
+  }, 500);
+}
+export function scrollToTop(id?: string) {
+  toEndCache.to_top_id = id || "";
+  setTimeout(() => {
+    if (window) {
+      const target = document.getElementById(toEndCache.to_top_id);
+      const wrap = document.getElementById("content");
+      if (!target || !wrap) return;
+      const offsetTop = target.offsetTop;
+      smoothScroll(
+        wrap,
+        wrap.scrollTop,
+        offsetTop - 56,
         700
       );
     }

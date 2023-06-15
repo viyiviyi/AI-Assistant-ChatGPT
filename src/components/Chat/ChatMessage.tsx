@@ -3,7 +3,7 @@ import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
   DeleteOutlined,
-  DownloadOutlined
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { Collapse, Popconfirm, theme, Typography } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
@@ -74,6 +74,7 @@ export const ChatMessage = () => {
     >
       {chat.topics.map((v) => (
         <Panel
+          id={v.id}
           header={
             <MemoTopicTitle
               topic={v}
@@ -114,7 +115,6 @@ function TopicTitle({
   return (
     <div style={{ display: "flex", width: "100%", maxWidth: "100%" }}>
       <Typography.Title
-        id={topic.id}
         editable={{
           onChange: (e) => {
             chat.saveTopic(topic.id, e);

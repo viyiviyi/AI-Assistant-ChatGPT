@@ -1,7 +1,7 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useLockScroll, useScreenSize } from "@/core/hooks";
-import { scrollToBotton } from "@/core/utils";
+import { scrollToBotton, scrollToTop } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
@@ -320,8 +320,9 @@ export function InputUtil() {
                 icon={<VerticalAlignTopOutlined />}
                 onClick={() => {
                   setLockEnd(false);
-                  if (chat.topics.length == 0) return;
-                  scrollToBotton(chat.topics[0].id, true);
+                  if (!activityTopic) return;
+                  setLockEnd(true);
+                  scrollToTop(activityTopic.id);
                 }}
               />
             )}
