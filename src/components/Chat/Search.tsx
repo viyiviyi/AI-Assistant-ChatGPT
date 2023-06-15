@@ -7,10 +7,12 @@ import React, { useContext, useState } from "react";
 import { reloadTopic } from "./MessageList";
 const SearchWrap = () => {
   const { setActivityTopic, chat } = useContext(ChatContext);
+  const [searchText, setSearchText] = useState("");
   const [result, setResult] = useState<TopicMessage[]>([]);
   const [checkedId, setCheckedId] = useState("");
   const onSearch = (fileText: string) => {
     const res: TopicMessage[] = [];
+    setSearchText(fileText);
     if (!fileText) return setResult(res);
     chat.topics.forEach((t) => {
       let t_s_idx = t.name.indexOf(fileText);
@@ -18,7 +20,7 @@ const SearchWrap = () => {
       if (t_s_idx != -1) {
         // 往查询结果前移动5个字符开始
         t_text = t.name.substring(
-          Math.min(0, t_s_idx - 5),
+          Math.max(0, t_s_idx - 10),
           Math.min(t.name.length, t_s_idx + 50)
         );
       }
@@ -31,7 +33,7 @@ const SearchWrap = () => {
             msgId: m.id,
             index: idx,
             title: m.text.substring(
-              Math.min(0, m_s_idx - 5),
+              Math.max(0, m_s_idx - 10),
               Math.min(m.text.length, m_s_idx + 50)
             ),
           });
@@ -52,6 +54,19 @@ const SearchWrap = () => {
     });
   };
   const { token } = theme.useToken();
+  function getChild(text: string, highlight: string) {
+    let texts = text.split(highlight);
+    return texts.map((v, idx) => {
+      return (
+        <>
+          <>{v}</>
+          {idx < texts.length - 1 && (
+            <span style={{ color: token.colorPrimary }}>{highlight}</span>
+          )}
+        </>
+      );
+    });
+  }
   return (
     <div style={{ padding: "0 1em 1em", maxWidth: "100%" }} key={"search_nav"}>
       <Input.Search
@@ -86,7 +101,7 @@ const SearchWrap = () => {
                 }}
                 ellipsis={true}
               >
-                {t.name}
+                {getChild(t.name, searchText)}
               </Typography.Text>
             </p>
             {...t.titleTree.map((m) => (
@@ -118,7 +133,7 @@ const SearchWrap = () => {
                   }}
                   ellipsis={true}
                 >
-                  {m.title}
+                  {getChild(m.title, searchText)}
                 </Typography.Text>
               </p>
             ))}

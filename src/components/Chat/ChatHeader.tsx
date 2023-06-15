@@ -60,6 +60,7 @@ export const ChatHeader = () => {
       <Drawer
         placement={"right"}
         closable={false}
+        width={'min(500px ,100vw - 100px)'}
         key={"search_nav_drawer"}
         bodyStyle={{ padding: "1em 0" }}
         open={openSearch}
