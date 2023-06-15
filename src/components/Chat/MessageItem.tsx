@@ -306,30 +306,6 @@ export const MessageItem = ({
                 />
               ) : (
                 <MemoMarkdownView
-                  menu={{
-                    onClick: (e) => {
-                      switch (e.key) {
-                        case "1":
-                          if (copy(messageText)) {
-                            message.success("已复制");
-                          }
-                          break;
-                        case "2":
-                          onCite(msg);
-                          break;
-                      }
-                    },
-                    items: [
-                      {
-                        label: "复制",
-                        key: "1",
-                      },
-                      {
-                        label: "引用",
-                        key: "2",
-                      },
-                    ],
-                  }}
                   markdown={
                     chat.config.disableStrikethrough
                       ? msg.text.replaceAll("~", "～")

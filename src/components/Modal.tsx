@@ -1,14 +1,13 @@
 import { theme } from "antd";
-import { ReactElement } from "react";
 
 export const Modal = ({
   isShow = false,
   onCancel = () => {},
-  children,
+  items,
   maxHight,
 }: {
   isShow: boolean;
-  children: ReactElement<any, any>;
+  items: React.ReactNode;
   onCancel?: () => void;
   maxHight?: string;
 }) => {
@@ -48,7 +47,7 @@ export const Modal = ({
           overflow: "auto",
         }}
       >
-        {children}
+        {items}
       </div>
     </div>
   );

@@ -60,7 +60,7 @@ export const ChatHeader = () => {
       <Drawer
         placement={"right"}
         closable={false}
-        width={'min(500px ,100vw - 100px)'}
+        width={"min(500px ,100vw - 100px)"}
         key={"search_nav_drawer"}
         bodyStyle={{ padding: "1em 0" }}
         open={openSearch}
@@ -100,48 +100,51 @@ export const ChatHeader = () => {
         onCancel={() => {
           setRoleConfigShow(false);
         }}
-      >
-        <VirtualRoleConfig
-          onCancel={() => {
-            setRoleConfigShow(false);
-          }}
-          onSaved={() => {
-            setRoleConfigShow(false);
-            if (activityTopic) reloadTopic(activityTopic.id);
-          }}
-          chatMgt={chat}
-        ></VirtualRoleConfig>
-      </Modal>
+        items={
+          <VirtualRoleConfig
+            onCancel={() => {
+              setRoleConfigShow(false);
+            }}
+            onSaved={() => {
+              setRoleConfigShow(false);
+              if (activityTopic) reloadTopic(activityTopic.id);
+            }}
+            chatMgt={chat}
+          ></VirtualRoleConfig>
+        }
+      ></Modal>
       <Modal
         isShow={settingIsShow}
         maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
           setSettingShow(false);
         }}
-      >
-        <Setting
-          onCancel={() => {
-            setSettingShow(false);
-          }}
-          onSaved={() => {
-            setSettingShow(false);
-          }}
-          chatMgt={chat}
-        ></Setting>
-      </Modal>
+        items={
+          <Setting
+            onCancel={() => {
+              setSettingShow(false);
+            }}
+            onSaved={() => {
+              setSettingShow(false);
+            }}
+            chatMgt={chat}
+          ></Setting>
+        }
+      ></Modal>
       <Modal
         isShow={listIsShow}
         maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
           setlistIsShow(false);
         }}
-      >
-        <ChatList
-          onCacle={() => {
-            setlistIsShow(false);
-          }}
-        ></ChatList>
-      </Modal>
+        items={
+          <ChatList
+            onCacle={() => {
+              setlistIsShow(false);
+            }}
+          ></ChatList>
+        }
+      ></Modal>
     </Layout.Header>
   );
 };
