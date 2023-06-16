@@ -24,7 +24,7 @@ export class SlackClaude implements IAiService {
   async sendMessage({
     msg,
     onMessage,
-    config
+    config,
   }: {
     msg: Message;
     context: ChatCompletionRequestMessage[];
@@ -52,12 +52,17 @@ export class SlackClaude implements IAiService {
         end: true,
       });
     onMessage({
-      error: true,
-      text: "",
+      error: false,
+      text: "发送中...",
       end: false,
     });
 
-    await this.send_message_to_channel(config.channel_id, msg.text, onMessage,msg.cloudTopicId);
+    await this.send_message_to_channel(
+      config.channel_id,
+      msg.text,
+      onMessage,
+      msg.cloudTopicId
+    );
   }
   history = async ({
     lastMsgCloudId,
@@ -124,7 +129,14 @@ export class SlackClaude implements IAiService {
       let isStop = false;
       // 如果响应以_Typing…_结尾，则继续等待响应
       while (!isStop && response.trim().endsWith("_Typing…_")) {
-        if (reties > this.max_retries) return;
+        if (reties > this.max_retries) {
+          onMessage({
+            error: true,
+            end: true,
+            text: "连续多次未获取到消息，已结束请求。",
+          });
+          return;
+        }
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const replies = await this.receive_message(channel_id, thread_ts, ts);
         // 如果没有响应，直接报错，结束等待
@@ -136,6 +148,9 @@ export class SlackClaude implements IAiService {
             error: false,
             end: false,
             text: "被限速了，稍等一会",
+            stop: () => {
+              isStop = true;
+            },
           });
           reties += 1;
           await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -144,6 +159,7 @@ export class SlackClaude implements IAiService {
         const messages = replies["messages"] as Array<any>;
         if (messages.length <= 1) {
           reties += 1;
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           continue;
         }
         const message = messages.find(
