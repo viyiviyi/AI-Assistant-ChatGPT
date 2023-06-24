@@ -36,8 +36,11 @@ export default function Page() {
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       // 如果不在本地保存一份，编辑是会出错的
-      if (chats.findIndex((f) => f.group.id == chatMgt.group.id) == -1) {
+      let idx = chats.findIndex((f) => f.group.id == chatMgt.group.id);
+      if (idx == -1) {
         await ChatManagement.createGroup(chatMgt.group);
+      } else {
+        chats.push(...chats.splice(idx, 1));
       }
       await chatMgt.fromJson(chatMgt);
     });

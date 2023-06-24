@@ -1,6 +1,5 @@
 import { MemoBackgroundImage } from "@/components/BackgroundImage";
 import { Chat } from "@/components/Chat/Chat";
-import { ChatList } from "@/components/ChatList";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
@@ -14,7 +13,6 @@ import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 
 const MemoChat = React.memo(Chat);
-const MemoChatList = React.memo(ChatList);
 
 export default function Page() {
   const router = useRouter();
@@ -48,12 +46,14 @@ export default function Page() {
         });
       reloadService(selectChat, KeyValueData.instance());
       if (chatMgt.group.id == groupId) return;
-      const newChatMgt = new ChatManagement(selectChat);
       if (!selectChat.topics.length)
         await ChatManagement.loadTopics(selectChat);
+      const newChatMgt = new ChatManagement(selectChat);
+      setChatMgt(newChatMgt);
+
       const activityTopic = newChatMgt.getActivityTopic();
       setActivityTopic(activityTopic);
-      setChatMgt(newChatMgt);
+
       setTimeout(() => {
         // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
         scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || "");
