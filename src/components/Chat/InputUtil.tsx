@@ -115,7 +115,10 @@ export function InputUtil() {
         const aiService = aiServices.current;
         if (isBot || skipRequest || !aiService) {
           setInputText("");
-          return await rendAndScrollView(msg);
+          await rendAndScrollView(msg);
+          if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
+            reloadNav(topic);
+          return;
         }
         // 接收消息的方法
         const onMessage = async (res: {
@@ -247,7 +250,6 @@ export function InputUtil() {
       } finally {
         delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
       }
-
       if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
         reloadNav(topic);
       setTimeout(() => {

@@ -16,7 +16,7 @@ const MemoTopicTitle = React.memo(TopicTitle);
 const MemoMessageList = React.memo(MessageList);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
-  const { chat, setActivityTopic, activityTopic } = useContext(ChatContext);
+  const { chat, setActivityTopic, activityTopic,reloadNav } = useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([
     chat.config.activityTopicId,
   ]);
@@ -90,6 +90,7 @@ export const ChatMessage = () => {
                     !activityKey.includes(activityTopic?.id || "")
                   )
                     setActivityKey((k) => [activityTopic.id, ...k]);
+                  reloadNav(t);
                   setNone([]);
                 });
               }}

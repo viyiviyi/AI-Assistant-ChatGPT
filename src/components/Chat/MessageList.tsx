@@ -34,7 +34,7 @@ export function MessageList({
     Math.max(0, topic.messages.length - 20),
     topic.messages.length,
   ]);
-  const { loadingMsgs ,setActivityTopic} = useContext(ChatContext);
+  const { loadingMsgs, reloadNav } = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
   const rBak = useCallback(
     (v: Message) => {
@@ -59,9 +59,10 @@ export function MessageList({
       chat.removeMessage(msg)?.then(() => {
         delete renderMessage[msg.id];
         steMessages([...topic.messages]);
+        reloadNav(topic);
       });
     },
-    [renderMessage, steMessages, topic, chat]
+    [renderMessage, steMessages, topic, chat, reloadNav]
   );
   // 整理idx之后的message的timestamp的值, 并获取一个可以使用的值，因为这个值用于排序用，如果前后顺序相同时，需要将后一个+0.01 并且需要递归只到最后一个或者与下一个不一样为止
 

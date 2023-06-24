@@ -1,59 +1,107 @@
-import { Groups } from "@/components/Groups";
-import { ChatManagement, IChat } from "@/core/ChatManagement";
+import { MemoBackgroundImage } from "@/components/BackgroundImage";
+import { Chat } from "@/components/Chat/Chat";
+import { ChatList } from "@/components/ChatList";
+import { useService } from "@/core/AiService/ServiceProvider";
+import { BgConfig } from "@/core/BgImageStore";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
+import { KeyValueData } from "@/core/KeyValueData";
+import { TopicMessage } from "@/Models/Topic";
 import { Layout, theme } from "antd";
 import Head from "next/head";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import NoSSR from "react-no-ssr";
+import React, { useContext, useEffect, useState } from "react";
+import chatConfig from "../../public/使用示例.json";
 
-export default function Home() {
-  const router = useRouter();
-  const { token } = theme.useToken();
+const MemoChat = React.memo(Chat);
+const MemoChatList = React.memo(ChatList);
+
+export default function Page() {
   const screenSize = useScreenSize();
+  const { token } = theme.useToken();
+  const { bgConfig, loadingMsgs } = useContext(ChatContext);
+  const [navList, setNavList] = useState([]);
+  const [chatMgt, setChatMgt] = useState<ChatManagement>(
+    new ChatManagement(chatConfig as any)
+  );
+  const [listIsShow, setlistIsShow] = useState(false);
+  const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
+  const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
+    chatMgt.getActivityTopic()
+  );
+  chatMgt.virtualRole.avatar = "/logo.png";
+  chatMgt.user.avatar = "/logo.png";
+  const { reloadService } = useService();
   useEffect(() => {
-    if (screenSize.width * 1.5 > screenSize.height) {
-      router.replace("/chat");
-    }
-  }, [router, screenSize]);
+    reloadService(chatMgt, KeyValueData.instance());
+    ChatManagement.load().then(async () => {
+      let chats = ChatManagement.getGroups();
+      // 如果不在本地保存一份，编辑是会出错的
+      if (chats.findIndex((f) => f.group.id == chatMgt.group.id) == -1) {
+        await ChatManagement.createGroup(chatMgt.group);
+      }
+      await chatMgt.fromJson(chatMgt);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadService]);
 
   return (
-    <Layout
-      style={{
-        display: "flex",
-        height: "100%",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        maxHeight: "100%",
-        flexWrap: "nowrap",
-        position: "relative",
-        color: token.colorTextBase,
-        backgroundColor: token.colorBgContainer,
+    <ChatContext.Provider
+      value={{
+        chat: chatMgt,
+        setChat: setChatMgt,
+        activityTopic,
+        loadingMsgs,
+        setActivityTopic: (topic?: TopicMessage) => {
+          if (topic) {
+            setActivityTopic(topic);
+            chatMgt.config.activityTopicId = topic.id;
+            chatMgt.saveConfig();
+          } else {
+            setActivityTopic(undefined);
+            chatMgt.config.activityTopicId = "";
+          }
+        },
+        bgConfig: bgImg,
+        setBgConfig(image) {
+          setBgImg((v) => {
+            if (v.backgroundImage == `url(${image})`) return v;
+            v.backgroundImage = `url(${image})`;
+            return { ...v };
+          });
+        },
+        navList,
+        reloadNav: (topic: TopicMessage) => {
+          ChatManagement.loadTitleTree(topic).then(() => setNavList([]));
+        },
       }}
     >
-      <Head>
-        <title>Chat助理</title>
-      </Head>
-      <div
+      <Layout
         style={{
-          padding: "1em 12px",
-          overflow: "auto",
+          display: "flex",
+          height: "100%",
+          flexDirection: "row",
           maxHeight: "100%",
-          width: "min(460px , 100%)",
-          margin: "0 auto",
+          flexWrap: "nowrap",
+          position: "relative",
+          color: token.colorTextBase,
+          backgroundColor: token.colorBgContainer,
         }}
       >
-        <NoSSR>
-          <Groups
-            onClick={(chat: IChat) => {
-              ChatManagement.toFirst(chat.group).then(() => {
-                router.push("/chat?id=" + chat.group.id);
-              });
+        <MemoBackgroundImage />
+        <Head>
+          <title>Chat助理</title>
+        </Head>
+        <MemoChat />
+        {screenSize.width > 1420 && listIsShow ? (
+          <MemoChatList
+            onCacle={() => {
+              setlistIsShow(false);
             }}
-          ></Groups>
-        </NoSSR>
-      </div>
-    </Layout>
+          ></MemoChatList>
+        ) : (
+          <></>
+        )}
+      </Layout>
+    </ChatContext.Provider>
   );
 }

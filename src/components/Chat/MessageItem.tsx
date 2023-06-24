@@ -49,7 +49,6 @@ export const MessageItem = ({
   const { chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const { aiService } = useService();
   const { token } = theme.useToken();
-  const [text, setText] = useState(msg.text);
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState("");
   const [none, setNone] = useState([]);
@@ -62,14 +61,13 @@ export const MessageItem = ({
     };
   }, [renderMessage, msg]);
   const saveMsg = useCallback(async () => {
-    const isReloadNav = /^#{1,5}\s/.test(text) || /^#{1,5}\s/.test(messageText);
+    const isReloadNav = /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
     msg.text = messageText;
-    setText(msg.text);
     await chat.pushMessage(msg);
     var topic = chat.topics.find((f) => f.id === msg.topicId);
     if (topic && isReloadNav) reloadNav(topic);
     setEdit(false);
-  }, [chat, setEdit, setText, reloadNav, messageText, text, msg]);
+  }, [chat, setEdit, reloadNav, messageText, msg]);
   const utilsEle = (
     <>
       <Checkbox
@@ -103,7 +101,7 @@ export const MessageItem = ({
       <EditOutlined
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
-          if (!edit) setMessage(text);
+          if (!edit) setMessage(msg.text);
           setEdit(!edit);
         }}
       />
@@ -111,7 +109,7 @@ export const MessageItem = ({
       <CopyOutlined
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
-          if (copy(text.toString())) {
+          if (copy(msg.text.toString())) {
             message.success("已复制");
           }
         }}
@@ -191,18 +189,19 @@ export const MessageItem = ({
               onChange={(e) => {
                 setMessage(e.target.value);
               }}
-              onKeyDown={(e) => e.preventDefault()}
-              onKeyUp={(e) => {
-                e.preventDefault();
-                e.key === "s" && e.ctrlKey && saveMsg();
+              onKeyDown={(e) => {
+                if (e.key === "s" && e.ctrlKey) {
+                  e.preventDefault();
+                  saveMsg();
+                }
               }}
             />
           ) : (
             <MemoMarkdownView
               markdown={
                 chat.config.disableStrikethrough
-                  ? ("系统：" + text).replaceAll("~", "～")
-                  : "系统：" + text
+                  ? ("系统：" + msg.text).replaceAll("~", "～")
+                  : "系统：" + msg.text
               }
             />
           )}
@@ -313,18 +312,19 @@ export const MessageItem = ({
                   onChange={(e) => {
                     setMessage(e.target.value);
                   }}
-                  onKeyDown={(e) => e.preventDefault()}
-                  onKeyUp={(e) => {
-                    e.preventDefault();
-                    e.key === "s" && e.ctrlKey && saveMsg();
+                  onKeyDown={(e) => {
+                    if (e.key === "s" && e.ctrlKey) {
+                      e.preventDefault();
+                      saveMsg();
+                    }
                   }}
                 />
               ) : (
                 <MemoMarkdownView
                   markdown={
                     chat.config.disableStrikethrough
-                      ? text.replaceAll("~", "～")
-                      : text
+                      ? msg.text.replaceAll("~", "～")
+                      : msg.text
                   }
                 />
               )}
