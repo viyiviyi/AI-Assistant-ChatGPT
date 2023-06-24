@@ -52,7 +52,7 @@ export function downloadJson(jsonData: string, filename: string) {
 }
 
 let toEndCache = { id: "", await: false, animation: 0 as any, to_top_id: "" };
-export function scrollToBotton(id?: string, isAnm: boolean = true) {
+export function scrollToBotton(id?: string) {
   toEndCache.id = id || "";
   if (toEndCache.await) return;
   toEndCache.await = true;
@@ -75,24 +75,21 @@ export function scrollToBotton(id?: string, isAnm: boolean = true) {
 }
 export function scrollToTop(id?: string) {
   toEndCache.to_top_id = id || "";
+  if (!scrollStatus.enableTop) return;
   setTimeout(() => {
     if (window) {
       const target = document.getElementById(toEndCache.to_top_id);
       const wrap = document.getElementById("content");
       if (!target || !wrap) return;
       const offsetTop = target.offsetTop;
-      smoothScroll(
-        wrap,
-        wrap.scrollTop,
-        offsetTop - 56,
-        700
-      );
+      smoothScroll(wrap, wrap.scrollTop, offsetTop - 56, 700);
     }
   }, 500);
 }
-export const scrollStatus = { enable: false };
+export const scrollStatus = { enable: true, enableTop: true };
 export function stopScroll() {
   scrollStatus.enable = false;
+  scrollStatus.enableTop = false;
   clearInterval(toEndCache.animation);
 }
 
@@ -103,7 +100,7 @@ const smoothScroll = (
   duration: number
 ) => {
   clearInterval(toEndCache.animation);
-  if (!scrollStatus.enable) return;
+  if (!scrollStatus.enable && !scrollStatus.enableTop) return;
   const distance = targetPosition - startPosition;
   const pixelsPerSecond = distance / (duration / 1000);
   let currentTime = 0;

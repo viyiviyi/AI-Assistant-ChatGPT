@@ -3,7 +3,7 @@ import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
   DeleteOutlined,
-  DownloadOutlined,
+  DownloadOutlined
 } from "@ant-design/icons";
 import { Collapse, Popconfirm, theme, Typography } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
@@ -80,8 +80,18 @@ export const ChatMessage = () => {
               topic={v}
               onClick={() => onClickTopicTitle(v)}
               onRemove={(t) => {
-                chat.removeTopic(t);
-                setNone([]);
+                chat.removeTopic(t).then((v) => {
+                  setActivityTopic(
+                    activityTopic == t ? undefined : activityTopic
+                  );
+                  if (
+                    activityTopic &&
+                    activityTopic != t &&
+                    !activityKey.includes(activityTopic?.id || "")
+                  )
+                    setActivityKey((k) => [activityTopic.id, ...k]);
+                  setNone([]);
+                });
               }}
             ></MemoTopicTitle>
           }
@@ -139,7 +149,11 @@ function TopicTitle({
         {title}
       </Typography.Title>
       <span style={{ marginLeft: "20px", flex: 1 }}></span>
-      <Typography.Title level={5} style={{ opacity: 0.5 }}>
+      <Typography.Title
+        level={5}
+        style={{ opacity: 0.5 }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <Popconfirm title="确定删除？" onConfirm={() => onRemove(topic)}>
           <DeleteOutlined
             style={{ color: "#ff8d8f", padding: "0 5px" }}
@@ -147,7 +161,11 @@ function TopicTitle({
         </Popconfirm>
       </Typography.Title>
       <span style={{ marginLeft: "20px" }}></span>
-      <Typography.Title level={5} style={{ opacity: 0.5, padding: "0 5px" }}>
+      <Typography.Title
+        level={5}
+        style={{ opacity: 0.5, padding: "0 5px" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <Popconfirm
           title="请选择内容格式。"
           description="当选择对话时，将会给每条消息前加上助理或用户的名字。"

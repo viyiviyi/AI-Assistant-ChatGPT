@@ -34,7 +34,7 @@ export function MessageList({
     Math.max(0, topic.messages.length - 20),
     topic.messages.length,
   ]);
-  const { loadingMsgs } = useContext(ChatContext);
+  const { loadingMsgs ,setActivityTopic} = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
   const rBak = useCallback(
     (v: Message) => {

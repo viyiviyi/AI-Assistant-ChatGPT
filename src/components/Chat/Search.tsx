@@ -91,7 +91,7 @@ const SearchWrap = () => {
                 setActivityTopic(t);
                 reloadTopic(t.id, t.messages.length - 1);
                 scrollStatus.enable = true;
-                scrollToBotton(t.messages.slice(-1)[0]?.id || t.id, true);
+                scrollToBotton(t.messages.slice(-1)[0]?.id || t.id);
               }}
             >
               <Typography.Text
@@ -120,7 +120,7 @@ const SearchWrap = () => {
                   reloadTopic(t.id, m.index);
                   scrollStatus.enable = true;
                   setTimeout(() => {
-                    scrollToBotton(m.msgId, true);
+                    scrollToBotton(m.msgId);
                   }, 500);
                 }}
               >

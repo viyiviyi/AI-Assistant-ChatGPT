@@ -368,7 +368,11 @@ export class ChatManagement implements IChat {
         tableName: "Topic",
         value: t.id,
         handle: (r) => {
-          return Object.assign(r, t);
+          return Object.assign(r, t, {
+            messages: [],
+            messageMap: {},
+            titleTree: [],
+          });
         },
       });
     }
@@ -605,9 +609,6 @@ export class ChatManagement implements IChat {
         value: topic.id,
       });
     }
-    if (this.topics.length && this.config.activityTopicId == topic.id)
-      this.config.activityTopicId = this.topics.slice(-1)[0]?.id;
-    else this.config.activityTopicId = "";
   }
   static async saveSort() {
     this.chatList.forEach((chat, idx) => {
@@ -782,7 +783,7 @@ let context = {
   chat: noneChat,
   setChat: (chat: ChatManagement) => {},
   activityTopic: obj.topic as TopicMessage | undefined,
-  setActivityTopic: (topic: TopicMessage) => {
+  setActivityTopic: (topic?: TopicMessage) => {
     obj.topic = topic;
   },
   bgConfig: {

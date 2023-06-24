@@ -1,7 +1,12 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useLockScroll, useScreenSize } from "@/core/hooks";
-import { scrollToBotton, scrollToTop } from "@/core/utils";
+import { useScreenSize } from "@/core/hooks";
+import {
+  scrollStatus,
+  scrollToBotton,
+  scrollToTop,
+  stopScroll
+} from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
@@ -10,7 +15,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -38,7 +43,7 @@ export function InputUtil() {
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
-  const { setLockEnd } = useLockScroll();
+  // const { setLockEnd } = useLockScroll();
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
   objs.setInput = setInputText;
@@ -97,7 +102,7 @@ export function InputUtil() {
         return;
       loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
 
-      setLockEnd(true);
+      scrollStatus.enable = true;
       try {
         // 渲染并滚动到最新内容
         const rendAndScrollView = async (_msg?: Message, _result?: Message) => {
@@ -105,7 +110,7 @@ export function InputUtil() {
           if (_result) result = await chat.pushMessage(_result);
           reloadTopic(result.topicId);
           if (msg.topicId == chat.config.activityTopicId)
-            scrollToBotton(result.id || msg.id, true);
+            scrollToBotton(result.id || msg.id);
         };
         const aiService = aiServices.current;
         if (isBot || skipRequest || !aiService) {
@@ -248,10 +253,10 @@ export function InputUtil() {
       setTimeout(() => {
         setLoading((v) => --v);
         if (msg.topicId == chat.config.activityTopicId)
-          scrollToBotton(result.id, true);
+          scrollToBotton(result.id);
       }, 500);
     },
-    [chat, inputText, loadingMsgs, reloadNav, setActivityTopic, setLockEnd]
+    [chat, inputText, loadingMsgs, reloadNav, setActivityTopic]
   );
 
   const onTextareaTab = (
@@ -319,9 +324,9 @@ export function InputUtil() {
                 size="large"
                 icon={<VerticalAlignTopOutlined />}
                 onClick={() => {
-                  setLockEnd(false);
+                  stopScroll();
                   if (!activityTopic) return;
-                  setLockEnd(true);
+                  scrollStatus.enableTop = true;
                   scrollToTop(activityTopic.id);
                 }}
               />
@@ -332,12 +337,10 @@ export function InputUtil() {
               // type={lockEnd ? "primary" : undefined}
               icon={<VerticalAlignBottomOutlined />}
               onClick={() => {
+                stopScroll();
                 if (!activityTopic) return;
-                scrollToBotton(
-                  activityTopic.messages.slice(-1)[0]?.id || activityTopic.id,
-                  true
-                );
-                setLockEnd(true);
+                scrollStatus.enable = true;
+                scrollToBotton(activityTopic.id);
               }}
             />
           </Space>
@@ -422,6 +425,12 @@ export function InputUtil() {
             autoSize={{ maxRows: 10 }}
             allowClear
             ref={inputRef}
+            onFocus={(e) =>
+              e.target.scrollIntoView({
+                behavior: "smooth",
+                block: "end",
+              })
+            }
             autoFocus={false}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}

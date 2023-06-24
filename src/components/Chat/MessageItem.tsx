@@ -25,7 +25,7 @@ import {
   theme
 } from "antd";
 import copy from "copy-to-clipboard";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MarkdownView } from "./MarkdownView";
 
 const MemoMarkdownView = React.memo(MarkdownView);
@@ -49,6 +49,7 @@ export const MessageItem = ({
   const { chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const { aiService } = useService();
   const { token } = theme.useToken();
+  const [text, setText] = useState(msg.text);
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState("");
   const [none, setNone] = useState([]);
@@ -60,6 +61,15 @@ export const MessageItem = ({
       delete renderMessage[msg.id];
     };
   }, [renderMessage, msg]);
+  const saveMsg = useCallback(async () => {
+    const isReloadNav = /^#{1,5}\s/.test(text) || /^#{1,5}\s/.test(messageText);
+    msg.text = messageText;
+    setText(msg.text);
+    await chat.pushMessage(msg);
+    var topic = chat.topics.find((f) => f.id === msg.topicId);
+    if (topic && isReloadNav) reloadNav(topic);
+    setEdit(false);
+  }, [chat, setEdit, setText, reloadNav, messageText, text, msg]);
   const utilsEle = (
     <>
       <Checkbox
@@ -83,15 +93,7 @@ export const MessageItem = ({
       {edit ? (
         <SaveOutlined
           onMouseDown={(e) => e.preventDefault()}
-          onClick={async () => {
-            const isReloadNav =
-              /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
-            msg.text = messageText;
-            await chat.pushMessage(msg);
-            var topic = chat.topics.find((f) => f.id === msg.topicId);
-            if (topic && isReloadNav) reloadNav(topic);
-            setEdit(false);
-          }}
+          onClick={saveMsg}
           style={{ marginLeft: "16px" }}
         />
       ) : (
@@ -101,7 +103,7 @@ export const MessageItem = ({
       <EditOutlined
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
-          if (!edit) setMessage(msg.text);
+          if (!edit) setMessage(text);
           setEdit(!edit);
         }}
       />
@@ -109,7 +111,7 @@ export const MessageItem = ({
       <CopyOutlined
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
-          if (copy(msg.text.toString())) {
+          if (copy(text.toString())) {
             message.success("已复制");
           }
         }}
@@ -189,18 +191,20 @@ export const MessageItem = ({
               onChange={(e) => {
                 setMessage(e.target.value);
               }}
+              onKeyDown={(e) => e.preventDefault()}
+              onKeyUp={(e) => {
+                e.preventDefault();
+                e.key === "s" && e.ctrlKey && saveMsg();
+              }}
             />
           ) : (
             <MemoMarkdownView
               markdown={
                 chat.config.disableStrikethrough
-                  ? ("系统：" + msg.text).replaceAll("~", "～")
-                  : "系统：" + msg.text
+                  ? ("系统：" + text).replaceAll("~", "～")
+                  : "系统：" + text
               }
             />
-            // <Typography.Text type="secondary">
-            //   {"系统：" + msg.text}
-            // </Typography.Text>
           )}
         </div>
         <div
@@ -223,7 +227,7 @@ export const MessageItem = ({
       className={style.message_box}
       style={{
         display: "flex",
-        justifyContent: msg.virtualRoleId ? "flex-start" : "flex-end",
+        justifyContent: msg.ctxRole == "assistant" ? "flex-start" : "flex-end",
         position: "relative",
         flexDirection: "column",
       }}
@@ -233,11 +237,15 @@ export const MessageItem = ({
         style={{
           flex: 1,
           display: "flex",
-          flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
+          flexDirection: msg.ctxRole == "assistant" ? "row" : "row-reverse",
         }}
       >
         <Avatar
-          src={msg.virtualRoleId ? chat.virtualRole.avatar : chat.user.avatar}
+          src={
+            msg.ctxRole == "assistant"
+              ? chat.virtualRole.avatar
+              : chat.user.avatar
+          }
           size={54}
           // style={{ minWidth: "42px", minHeight: "42px" }}
           icon={<UserOutlined />}
@@ -257,11 +265,13 @@ export const MessageItem = ({
               flex: 1,
               display: "flex",
               padding: "0 5px",
-              flexDirection: msg.virtualRoleId ? "row" : "row-reverse",
+              flexDirection: msg.ctxRole == "assistant" ? "row" : "row-reverse",
             }}
           >
             <span>
-              {msg.virtualRoleId ? chat.virtualRole.name : chat.user?.name}
+              {msg.ctxRole == "assistant"
+                ? chat.virtualRole.name
+                : chat.user?.name}
             </span>
             <span style={{ marginLeft: "30px" }}></span>
             {loadingMsgs[msg.id] ? (
@@ -303,13 +313,18 @@ export const MessageItem = ({
                   onChange={(e) => {
                     setMessage(e.target.value);
                   }}
+                  onKeyDown={(e) => e.preventDefault()}
+                  onKeyUp={(e) => {
+                    e.preventDefault();
+                    e.key === "s" && e.ctrlKey && saveMsg();
+                  }}
                 />
               ) : (
                 <MemoMarkdownView
                   markdown={
                     chat.config.disableStrikethrough
-                      ? msg.text.replaceAll("~", "～")
-                      : msg.text
+                      ? text.replaceAll("~", "～")
+                      : text
                   }
                 />
               )}

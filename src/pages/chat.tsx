@@ -24,14 +24,14 @@ export default function Page() {
   const { bgConfig, loadingMsgs } = useContext(ChatContext);
   const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
-  const [listIsShow, setlistIsShow] = useState(false);
+  // const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
   const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
     chatMgt.getActivityTopic()
   );
   const { reloadService } = useService();
   useEffect(() => {
-    if(typeof window == 'undefined') return
+    if (typeof window == "undefined") return;
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return;
@@ -48,19 +48,15 @@ export default function Page() {
         });
       reloadService(selectChat, KeyValueData.instance());
       if (chatMgt.group.id == groupId) return;
+      const newChatMgt = new ChatManagement(selectChat);
       if (!selectChat.topics.length)
         await ChatManagement.loadTopics(selectChat);
-      const newChatMgt = new ChatManagement(selectChat);
-      setChatMgt(newChatMgt);
-      if (screenSize.width <= 1420) {
-        setlistIsShow(false);
-      }
-
       const activityTopic = newChatMgt.getActivityTopic();
       setActivityTopic(activityTopic);
+      setChatMgt(newChatMgt);
       setTimeout(() => {
         // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
-        scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || "", true);
+        scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || "");
       }, 500);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -73,14 +69,17 @@ export default function Page() {
         setChat: setChatMgt,
         activityTopic,
         loadingMsgs,
-        setActivityTopic: (topic: TopicMessage) => {
-          setActivityTopic(topic);
-          chatMgt.config.activityTopicId = topic.id;
-          chatMgt.saveConfig();
+        setActivityTopic: (topic?: TopicMessage) => {
+          if (topic) {
+            setActivityTopic(topic);
+            chatMgt.config.activityTopicId = topic.id;
+            chatMgt.saveConfig();
+          } else {
+            setActivityTopic(undefined);
+            chatMgt.config.activityTopicId = "";
+          }
         },
         bgConfig: bgImg,
-        // aiService,
-        // resetService,
         setBgConfig(image) {
           setBgImg((v) => {
             if (v.backgroundImage == `url(${image})`) return v;
@@ -111,15 +110,6 @@ export default function Page() {
           <title>Chat助理</title>
         </Head>
         <MemoChat />
-        {screenSize.width > 1420 && listIsShow ? (
-          <MemoChatList
-            onCacle={() => {
-              setlistIsShow(false);
-            }}
-          ></MemoChatList>
-        ) : (
-          <></>
-        )}
       </Layout>
     </ChatContext.Provider>
   );

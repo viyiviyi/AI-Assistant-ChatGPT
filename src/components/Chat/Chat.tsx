@@ -1,5 +1,6 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
-import { useLockScroll, useScreenSize } from "@/core/hooks";
+import { useScreenSize } from "@/core/hooks";
+import { stopScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { Layout, message, theme } from "antd";
 import React, { useState } from "react";
@@ -26,7 +27,6 @@ export const Chat = () => {
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
   const screenSize = useScreenSize();
-  const { setLockEnd } = useLockScroll();
 
   return (
     <MessageContext.Provider
@@ -84,10 +84,10 @@ export const Chat = () => {
                 screenSize.width >= 1200 ? "clamp(5px,100vw - 1200px,50px)" : 0,
             }}
             onTouchMove={() => {
-              setLockEnd(false);
+              stopScroll();
             }}
             onWheel={() => {
-              setLockEnd(false);
+              stopScroll();
             }}
           >
             <MemoChatMessage />

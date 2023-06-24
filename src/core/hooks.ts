@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { scrollStatus, stopScroll } from "./utils";
+import { useEffect, useRef, useState } from "react";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{ width: number; height: number }>({
@@ -50,20 +49,4 @@ export function useEnv() {
     setObj("prod");
   }, []);
   return obj;
-}
-
-export function useLockScroll() {
-  let [lockEnd, setLockEnd] = useState(false);
-  const reloadLockEnd = useCallback(
-    (isLock: boolean) => {
-      if (!isLock) stopScroll();
-      else scrollStatus.enable = true;
-      setLockEnd(isLock);
-    },
-    [setLockEnd]
-  );
-  return {
-    lockEnd,
-    setLockEnd: reloadLockEnd,
-  };
 }
