@@ -3,7 +3,6 @@ import { Chat } from "@/components/Chat/Chat";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
 import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
@@ -16,13 +15,11 @@ const MemoChat = React.memo(Chat);
 
 export default function Page() {
   const router = useRouter();
-  const screenSize = useScreenSize();
   const { id: groupId } = router.query;
   const { token } = theme.useToken();
   const { bgConfig, loadingMsgs } = useContext(ChatContext);
   const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
-  // const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
   const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
     chatMgt.getActivityTopic()
@@ -53,6 +50,10 @@ export default function Page() {
 
       const activityTopic = newChatMgt.getActivityTopic();
       setActivityTopic(activityTopic);
+
+      newChatMgt.loadMessages().then(() => {
+        setNavList([]);
+      });
 
       setTimeout(() => {
         // 有可能滚动无效，但是去获取渲染完成的事件更麻烦

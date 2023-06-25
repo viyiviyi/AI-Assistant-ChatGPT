@@ -37,12 +37,11 @@ export default function Page() {
       let chats = ChatManagement.getGroups();
       // 如果不在本地保存一份，编辑是会出错的
       let idx = chats.findIndex((f) => f.group.id == chatMgt.group.id);
+      chatMgt.group.index = chats.length;
       if (idx == -1) {
         await ChatManagement.createGroup(chatMgt.group);
-      } else {
-        chats.push(...chats.splice(idx, 1));
       }
-      await chatMgt.fromJson(chatMgt);
+      await chatMgt.fromJson(chatMgt, false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadService]);

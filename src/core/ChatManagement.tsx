@@ -160,7 +160,12 @@ export class ChatManagement implements IChat {
     for (let i = 0; i < topics.length; i++) {
       if (topics[i].id == chat.config.activityTopicId)
         await this.loadMessage(topics[i], true);
-      else this.loadMessage(topics[i], true);
+      // else this.loadMessage(topics[i], true);
+    }
+  }
+  async loadMessages() {
+    for (let i = 0; i < this.topics.length; i++) {
+      await ChatManagement.loadMessage(this.topics[i], true);
     }
   }
   static async loadMessage(topic: TopicMessage, onlyTitle = false) {
@@ -679,7 +684,7 @@ export class ChatManagement implements IChat {
     });
     return chat;
   }
-  async fromJson(json: IChat) {
+  async fromJson(json: IChat, isToFirst = true) {
     if (!json.group.createTime) json.gptConfig.role = "user";
     let gid = this.group.id;
     const _this: IChat = JSON.parse(JSON.stringify(this.toJson()));
@@ -773,7 +778,7 @@ export class ChatManagement implements IChat {
     });
     await Promise.all(proT);
     await Promise.all(proM);
-    ChatManagement.toFirst(_this.group);
+    if (isToFirst) ChatManagement.toFirst(_this.group);
     return _this;
   }
 }
