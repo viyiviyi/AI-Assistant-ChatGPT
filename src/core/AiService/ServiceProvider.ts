@@ -1,9 +1,11 @@
 import { ChatGPT } from "@/core/AiService/ChatGPT";
 import { KeyValueData } from "./../KeyValueData";
+import { ChatGLM_API } from "./ChatGLM_API";
 
 import { useCallback, useState } from "react";
 import { useEnv } from "../hooks";
 import { IChat } from "./../ChatManagement";
+import { ChatGLM_GPT } from "./ChatGLM_GPT";
 import { IAiService } from "./IAiService";
 import { SlackClaude } from "./SlackClaude";
 export interface ServiceTokens {
@@ -32,7 +34,13 @@ export const DevBaseUrl: BaseUrlScheam = {
   slackClaude: "http://slack.yiyiooo.com",
 };
 
-export type aiServiceType = "None" | "ChatGPT" | "Slack" | "GPTFree";
+export type aiServiceType =
+  | "None"
+  | "ChatGPT"
+  | "Slack"
+  | "GPTFree"
+  | "ChatGLM"
+  | "ChatGLM(官方)";
 export const aiServerList: { key: aiServiceType; name: string }[] = [
   {
     key: "None",
@@ -49,6 +57,14 @@ export const aiServerList: { key: aiServiceType; name: string }[] = [
   {
     key: "GPTFree",
     name: "ChatGPT(免费)",
+  },
+  {
+    key: "ChatGLM",
+    name: "ChatGLM(Kaggle)",
+  },
+  {
+    key: "ChatGLM(官方)",
+    name: "ChatGLM(官方)",
   },
 ];
 
@@ -88,6 +104,12 @@ export function useService() {
             chat.config.baseUrl || baseUrl.chatGPT,
             tokens
           );
+          break;
+        case "ChatGLM":
+          _service = new ChatGLM_GPT(chat.config.userServerUrl || "", tokens);
+          break;
+        case "ChatGLM(官方)":
+          _service = new ChatGLM_API(chat.config.userServerUrl || "", tokens);
       }
       setService(_service);
       aiServices.current = _service;

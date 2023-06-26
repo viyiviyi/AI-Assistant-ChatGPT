@@ -9,7 +9,8 @@ import { KeyValueData } from "@/core/KeyValueData";
 import { downloadJson } from "@/core/utils";
 import {
   CaretRightOutlined,
-  DownloadOutlined, GithubOutlined,
+  DownloadOutlined,
+  GithubOutlined,
   UploadOutlined
 } from "@ant-design/icons";
 import {
@@ -49,7 +50,6 @@ export const Setting = ({
   const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
   const [models, setModels] = useState<string[]>(chatGptModels);
-  // const [nextChat, setNextChat] = useState<ChatManagement>();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
@@ -70,6 +70,7 @@ export const Setting = ({
     setting_baseurl: string;
     config_bot_type: "None" | "ChatGPT" | "Slack";
     config_channel_id: string;
+    setting_user_server_url: string;
     slack_claude_id: string;
     group_name: string;
     setting_slack_proxy_url: string;
@@ -100,6 +101,7 @@ export const Setting = ({
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
     chatMgt.config.botType = values.config_bot_type;
     chatMgt.config.cloudChannelId = values.config_channel_id;
+    chatMgt.config.userServerUrl = values.setting_user_server_url;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -147,6 +149,9 @@ export const Setting = ({
           config_saveKey: true,
           config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
           setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ""),
+          setting_user_server_url: chatMgt?.config.userServerUrl
+            ?.trim()
+            .replace(/\/$/, ""),
           config_bot_type: chatMgt?.config.botType,
           config_channel_id: chatMgt?.config.cloudChannelId?.trim(),
           slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
@@ -345,10 +350,10 @@ export const Setting = ({
             <Collapse.Panel
               forceRender={true}
               key={"GPT"}
-              header={"GPT配置"}
+              header={"Chat配置"}
               style={{ padding: "0 8px" }}
             >
-              <Form.Item label="模型名称" name={"GptConfig_model"}>
+              <Form.Item label="ChatGPT模型名称" name={"GptConfig_model"}>
                 <Select options={models.map((v) => ({ value: v, label: v }))} />
               </Form.Item>
               <Form.Item
@@ -362,9 +367,10 @@ export const Setting = ({
             <Collapse.Panel
               forceRender={true}
               key={"GPT_Args"}
-              header={"GPT参数配置"}
+              header={"参数配置"}
               style={{ padding: "0 8px" }}
             >
+              <Form.Item extra="ChatGLM与ChatGPT共用了部分参数"></Form.Item>
               <Form.Item
                 name="GptConfig_role"
                 label="ChatGPT参数： role"
@@ -379,7 +385,7 @@ export const Setting = ({
               <Form.Item
                 name="GptConfig_max_tokens"
                 label="ChatGPT参数： max_tokens"
-                extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K"
+                extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K；在ChatGPT是返回的内容的token限制，在ChatGLM是总内容的token限制，为方便，在ChatGLM会对这个值乘以10。"
               >
                 <InputNumber step="50" min={0} autoComplete="off" />
               </Form.Item>
@@ -476,6 +482,17 @@ export const Setting = ({
                 name="setting_slack_proxy_url"
                 label="Slack配置： 接口访问地址 (全局生效)"
                 extra="api代理地址 (反向代理了 https://slack.com 的地址)"
+              >
+                <Input
+                  type="text"
+                  placeholder="https://xxxx.xx.xx"
+                  autoComplete="off"
+                />
+              </Form.Item>
+              <Form.Item
+                name="setting_user_server_url"
+                label="自定义服务地址"
+                extra="用于访问自建AI服务的地址，比如ChatGLM"
               >
                 <Input
                   type="text"
