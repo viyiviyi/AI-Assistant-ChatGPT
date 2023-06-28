@@ -16,7 +16,6 @@ import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
 import { MemoMessageItem } from "./MessageItem";
 
-
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
 const topicRender: { [key: string]: (messageId?: string | number) => void } =
   {};
@@ -215,7 +214,7 @@ export function MessageList({
   useEffect(() => {
     topicRender[topic.id] = (messageId?: string | number) => {
       if (typeof messageId == "number") {
-        rangeMessage(Math.ceil(messageId / pageSize));
+        rangeMessage(Math.ceil(messageId + 1 / pageSize));
         return;
       }
       if (messageId) {
