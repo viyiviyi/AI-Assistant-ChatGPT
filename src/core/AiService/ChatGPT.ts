@@ -40,17 +40,21 @@ export class ChatGPT implements IAiService {
       stop?: (() => void) | undefined;
     }) => void;
     config: InputConfig;
-    }): Promise<void> {
+  }): Promise<void> {
     if (context.length == 0) {
-      return onMessage({error:true,end:true,text:'请勿发送空内容。'})
+      return onMessage({ error: true, end: true, text: "请勿发送空内容。" });
     }
     if (!this.tokens) {
-      return onMessage({error:true,end:true,text:'请填写API key后继续使用。'})
+      return onMessage({
+        error: true,
+        end: true,
+        text: "请填写API key后继续使用。",
+      });
     }
     onMessage({
       end: false,
       error: false,
-      text: '',
+      text: "",
     });
     if (config.model.startsWith("gpt-3")) {
       await this.generateChatStream(context, config, onMessage);
@@ -156,12 +160,17 @@ export class ChatGPT implements IAiService {
                 break;
               }
               try {
-                const data = JSON.parse(line.substring(6));
+                let data;
+                try {
+                  data = JSON.parse(line.substring(6));
+                } catch (error) {
+                  continue;
+                }
                 const choices = data.choices;
                 if (!choices) {
                   continue;
                 }
-                const delta = choices[0].delta;
+                const delta = choices[0]?.delta;
                 if (!delta) {
                   continue;
                 }

@@ -1,6 +1,12 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { scrollToBotton } from "@/core/utils";
+import {
+  pagesUtil,
+  scrollStatus,
+  scrollToBotton,
+  scrollToTop,
+  stopScroll,
+} from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
@@ -9,6 +15,7 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
 import { MemoMessageItem } from "./MessageItem";
+
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
 const topicRender: { [key: string]: (messageId?: string | number) => void } =
@@ -25,17 +32,43 @@ export function MessageList({
   topic: TopicMessage;
   chat: ChatManagement;
 }) {
-  const { inputRef, setInput } = useInput();
-  const [messages, steMessages] = useState(topic.messages);
-  const [insertIndex, setInsertIndex] = useState(-1);
-  const [total, setTotal] = useState(topic.messages.length);
-  const [renderMessage] = useState<{ [key: string]: () => void }>({});
-  const [range, setRange] = useState([
-    Math.max(0, topic.messages.length - 20),
-    topic.messages.length,
-  ]);
   const { loadingMsgs, reloadNav } = useContext(ChatContext);
-  const { setCite } = useContext(MessageContext);
+  const { setCite, onlyOne } = useContext(MessageContext);
+  const { inputRef, setInput } = useInput();
+  const [pageSize, setPageSize] = useState(onlyOne ? 50 : 20);
+  const [repect] = useState(10);
+  const [pageCount, setPageCount] = useState(
+    Math.ceil(topic.messages.length / pageSize)
+  );
+  const [pageNumber, setPageNumber] = useState(pageCount);
+  const [insertIndex, setInsertIndex] = useState(-1);
+  const [renderMessage] = useState<{ [key: string]: () => void }>({});
+  const [messages, steMessages] = useState<Message[]>([]);
+  const [msgIdIdxMap] = useState(new Map<string, number>());
+  const rangeMessage = useCallback(
+    (pageNumber: number) => {
+      const { range, totalPages, pageIndex } = pagesUtil(
+        topic.messages,
+        pageNumber,
+        pageSize,
+        repect
+      );
+      setPageCount(totalPages);
+      steMessages(range);
+      setPageNumber(pageIndex);
+      topic.messages.forEach((m, idx) => {
+        msgIdIdxMap.set(m.id, idx);
+      });
+      return range;
+    },
+    [topic, pageSize, repect, msgIdIdxMap]
+  );
+  useEffect(() => {
+    rangeMessage(999999999999); // 为了省事，直接写了一个几乎不可能存在的页数，会自动转换成最后一页的
+  }, [pageSize, rangeMessage]);
+  useEffect(() => {
+    setPageSize(onlyOne ? 50 : 20);
+  }, [onlyOne]);
   const rBak = useCallback(
     (v: Message) => {
       setInput(
@@ -58,11 +91,11 @@ export function MessageList({
     (msg: Message) => {
       chat.removeMessage(msg)?.then(() => {
         delete renderMessage[msg.id];
-        steMessages([...topic.messages]);
+        rangeMessage(pageNumber);
         reloadNav(topic);
       });
     },
-    [renderMessage, steMessages, topic, chat, reloadNav]
+    [renderMessage, rangeMessage, topic, chat, reloadNav, pageNumber]
   );
   // 整理idx之后的message的timestamp的值, 并获取一个可以使用的值，因为这个值用于排序用，如果前后顺序相同时，需要将后一个+0.01 并且需要递归只到最后一个或者与下一个不一样为止
 
@@ -114,7 +147,7 @@ export function MessageList({
             result = r;
             if (res.end) {
               delete loadingMsgs[r.id];
-              steMessages([...topic.messages]);
+              rangeMessage(Math.ceil(idx + 1 / pageSize));
               scrollToBotton(result.id);
             } else {
               loadingMsgs[r.id] = {
@@ -129,10 +162,7 @@ export function MessageList({
             }
             if (isFirst) {
               reloadIndex(topic, idx + 1);
-              steMessages([...topic.messages]);
-              if (range[1] - range[0] < 20) {
-                setRange([range[0], ++range[1]]);
-              }
+              rangeMessage(Math.ceil(idx + 1 / pageSize));
               scrollToBotton(result.id);
             }
             renderMessage[result.id] && renderMessage[result.id]();
@@ -145,7 +175,15 @@ export function MessageList({
         },
       });
     },
-    [range, chat, reloadIndex, topic, loadingMsgs, renderMessage]
+    [
+      chat,
+      reloadIndex,
+      topic,
+      loadingMsgs,
+      renderMessage,
+      rangeMessage,
+      pageSize,
+    ]
   );
   const onSubmit = async function (text: string, idx: number) {
     text = text.trim();
@@ -165,10 +203,9 @@ export function MessageList({
       cloudTopicId: topic.cloudTopicId,
     };
     await chat.pushMessage(msg, idx);
-    reloadIndex(topic, idx + (msg.id ? 1 : 0));
-    steMessages([...topic.messages]);
-    if (range[1] - range[0] < 20) {
-      setRange([range[0], ++range[1]]);
+    if (msg.id) {
+      reloadIndex(topic, idx + 1);
+      rangeMessage(Math.ceil(idx + 1 / pageSize));
     }
     setInsertIndex(-1);
     if (isBot || isSys || skipRequest) return;
@@ -178,48 +215,27 @@ export function MessageList({
   useEffect(() => {
     topicRender[topic.id] = (messageId?: string | number) => {
       if (typeof messageId == "number") {
-        if (messageId < range[0] || messageId >= range[1]) {
-          setRange([
-            Math.max(
-              messageId -
-                Math.max(10, 20 - (topic.messages.length - messageId)),
-              0
-            ),
-            Math.min(
-              topic.messages.length,
-              messageId + Math.max(10, 20 - messageId)
-            ),
-          ]);
-        }
+        rangeMessage(Math.ceil(messageId / pageSize));
         return;
       }
       if (messageId) {
         return renderMessage[messageId] && renderMessage[messageId]();
       }
-      steMessages([...topic.messages]);
-      setTotal(topic.messages.length);
-      setRange([
-        Math.max(0, topic.messages.length - 20),
-        topic.messages.length,
-      ]);
+      rangeMessage(pageCount);
     };
     return () => {
       delete topicRender[topic.id];
     };
-  }, [renderMessage, topic, range]);
+  }, [rangeMessage, renderMessage, topic, pageCount, pageSize]);
   return (
     <>
-      {range[0] > 0 ? (
+      {pageNumber > 1 ? (
         <Button.Group style={{ width: "100%" }}>
           <Button
             block
             type="text"
             onClick={() => {
-              setRange([
-                Math.max(0, range[0] - 10),
-                Math.min(total, Math.max(range[1] - 10, 20)),
-              ]);
-              scrollToBotton(messages.slice(range[0], range[1])[0]?.id);
+              rangeMessage(pageNumber - 1);
             }}
           >
             上一页
@@ -228,7 +244,7 @@ export function MessageList({
             block
             type="text"
             onClick={() => {
-              setRange([0, Math.min(total, 20)]);
+              rangeMessage(1);
             }}
           >
             顶部
@@ -237,7 +253,8 @@ export function MessageList({
       ) : (
         <></>
       )}
-      {messages.slice(range[0], range[1]).map((v, idx) => {
+      {messages.map((v) => {
+        let idx = msgIdIdxMap.get(v.id) || topic.messages.length - 1;
         return (
           <div key={v.id}>
             <MemoMessageItem
@@ -268,17 +285,13 @@ export function MessageList({
         );
       })}
 
-      {range[1] < total ? (
+      {pageNumber < pageCount ? (
         <Button.Group style={{ width: "100%", marginTop: "2em" }}>
           <Button
             block
             type="text"
             onClick={() => {
-              setRange([
-                Math.min(Math.max(0, total - 20), range[0] + 10),
-                Math.min(total, range[1] + 10),
-              ]);
-              scrollToBotton(messages.slice(range[1], range[1] + 1)[0]?.id);
+              rangeMessage(pageNumber + 1);
             }}
           >
             下一页
@@ -287,11 +300,7 @@ export function MessageList({
             block
             type="text"
             onClick={() => {
-              setRange([
-                Math.max(0, topic.messages.length - 20),
-                topic.messages.length,
-              ]);
-              scrollToBotton(messages.slice(-1)[0]?.id);
+              rangeMessage(pageCount);
             }}
           >
             底部

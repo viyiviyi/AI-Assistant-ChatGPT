@@ -5,7 +5,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -15,7 +15,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -320,19 +320,19 @@ export function InputUtil() {
               opacity: 0.5,
             }}
           >
-            {!onlyOne && (
-              <Button
-                shape={"circle"}
-                size="large"
-                icon={<VerticalAlignTopOutlined />}
-                onClick={() => {
-                  stopScroll();
-                  if (!activityTopic) return;
-                  scrollStatus.enableTop = true;
-                  scrollToTop(activityTopic.id);
-                }}
-              />
-            )}
+            <Button
+              shape={"circle"}
+              size="large"
+              icon={<VerticalAlignTopOutlined />}
+              onClick={() => {
+                stopScroll();
+                if (!activityTopic) return;
+                scrollStatus.enableTop = true;
+                if (onlyOne) {
+                  scrollToTop();
+                } else scrollToTop(activityTopic.id);
+              }}
+            />
             <Button
               shape={"circle"}
               size="large"
@@ -342,6 +342,9 @@ export function InputUtil() {
                 stopScroll();
                 if (!activityTopic) return;
                 scrollStatus.enable = true;
+                if (onlyOne) {
+                  scrollToBotton();
+                }
                 scrollToBotton(activityTopic.id);
               }}
             />

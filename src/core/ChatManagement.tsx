@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -245,10 +245,7 @@ export class ChatManagement implements IChat {
             });
           });
         // 表示这中间省略了很多内容
-        let lastMsg = messages
-          .slice(0, messages.length - this.gptConfig.msgCount)
-          .slice(-1)[0];
-        if (!lastMsg.checked) {
+        if (ctx.length) {
           ctx.push({
             role: "system",
             content: "...",
@@ -256,7 +253,7 @@ export class ChatManagement implements IChat {
           });
         }
       }
-      // 勾选的消息
+      // 记忆范围内的消息
       messages.slice(-this.gptConfig.msgCount).forEach((v) => {
         let virtualRole = this.virtualRoles[v.virtualRoleId || ""];
         ctx.push({
@@ -284,7 +281,7 @@ export class ChatManagement implements IChat {
           ? [
               {
                 role: "system" as any,
-                content: `对方是: ${this.user.name}\n简介：${this.user.bio}`,
+                content: `${this.user.enName || "user"}: ${this.user.name}\n简介：${this.user.bio}`,
                 name: this.user.enName || "user",
               },
             ]

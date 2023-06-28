@@ -39,6 +39,29 @@ export function getUuid() {
   });
 }
 
+export function pagesUtil<T>(
+  arr: T[],
+  pageNumber: number,
+  pageSize = 20,
+  repect = 10
+): { range: T[]; totalPages: number; pageIndex: number } {
+  if (arr.length <= 0) return { range: [], totalPages: 0, pageIndex: 1 };
+  if (arr.length < pageSize + repect)
+    return { range: [...arr], totalPages: 1, pageIndex: 1 };
+  if (pageSize <= 0) pageSize = 20;
+  const total = Math.ceil(arr.length / pageSize) || 1;
+  if (pageNumber > total) pageNumber = total;
+  if (pageNumber < 1) pageNumber = 1;
+  let end = Math.min(arr.length, pageNumber * pageSize);
+  let start = Math.max(0, end - (pageSize + repect));
+  if (pageNumber == 1) end = Math.min(end + repect, arr.length);
+  return {
+    range: arr.slice(start, end),
+    totalPages: total,
+    pageIndex: pageNumber,
+  };
+}
+
 export function downloadJson(jsonData: string, filename: string) {
   const blob = new Blob([jsonData], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -61,9 +84,9 @@ export function scrollToBotton(id?: string) {
     if (window) {
       const target = document.getElementById(toEndCache.id);
       const wrap = document.getElementById("content");
-      if (!target || !wrap) return;
-      const offsetTop = target.offsetTop;
-      const offsetHeight = target.offsetHeight;
+      if (!wrap) return;
+      const offsetTop = target?.offsetTop || wrap.scrollHeight;
+      const offsetHeight = target?.offsetHeight || 56;
       smoothScroll(
         wrap,
         wrap.scrollTop,
@@ -80,8 +103,8 @@ export function scrollToTop(id?: string) {
     if (window) {
       const target = document.getElementById(toEndCache.to_top_id);
       const wrap = document.getElementById("content");
-      if (!target || !wrap) return;
-      const offsetTop = target.offsetTop;
+      if (!wrap) return;
+      const offsetTop = target?.offsetTop || 56;
       smoothScroll(wrap, wrap.scrollTop, offsetTop - 56, 700);
     }
   }, 500);
