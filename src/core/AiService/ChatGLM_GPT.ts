@@ -5,19 +5,11 @@ import { ServiceTokens } from "./ServiceProvider";
 export class ChatGLM_GPT implements IAiService {
   customContext = true;
   history = undefined;
-  client: OpenAIApi;
   baseUrl: string;
   tokens: ServiceTokens;
   constructor(baseUrl: string, tokens: ServiceTokens) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
-    this.client = new OpenAIApi({
-      basePath: baseUrl + "/v1",
-      apiKey: "sk-123",
-      isJsonMime: (mime: string) => {
-        return true;
-      },
-    });
   }
   async sendMessage({
     context,
@@ -41,7 +33,7 @@ export class ChatGLM_GPT implements IAiService {
       return onMessage({
         error: true,
         end: true,
-        text: "请使用ChatGLM官方项 [https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle](https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle) 部署后把部署的地址填入 设置 > 网络配置 > 自定义服务地址",
+        text: "请使用项目 [https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle](https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle) 部署后把部署的地址填入 设置 > 网络配置 > 自定义服务地址\n\n 或使用ChatGLM官方项目[https://github.com/THUDM/ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B) 并使用openai_api.py启动部署后把部署的地址填入 设置 > 网络配置 > 自定义服务地址",
       });
     }
     onMessage({
@@ -49,25 +41,126 @@ export class ChatGLM_GPT implements IAiService {
       error: false,
       text: "",
     });
-    await this.client
-      .createChatCompletion({
-        messages: context,
-        ...config,
-        max_tokens: (config.max_tokens || 2048) * 10,
+    await this.generateChatStream(context, config, onMessage);
+  }
+  async generateChatStream(
+    context: ChatCompletionRequestMessage[],
+    config: InputConfig,
+    onMessage?: (msg: {
+      error: boolean;
+      text: string;
+      end: boolean;
+      stop?: () => void;
+    }) => void
+  ) {
+    let full_response = "";
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    const data = {
+      model: config.model,
+      messages: context,
+      stream: true,
+      max_tokens: config.max_tokens,
+      temperature: config.temperature,
+      top_p: config.top_p,
+      n: config.n,
+      user: config.user,
+    };
+    const controller = new AbortController();
+    await fetch(`${this.baseUrl}/v1/chat/completions`, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+      mode: "cors",
+      cache: "no-cache",
+      credentials: "same-origin",
+      redirect: "follow",
+      referrerPolicy: "no-referrer",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          onMessage &&
+            onMessage({ error: true, end: true, text: await response.text() });
+          return;
+        }
+        const reader = response.body?.getReader();
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              onMessage &&
+                onMessage({ error: false, end: true, text: full_response });
+              break;
+            }
+            const decodedValue = new TextDecoder("utf-8").decode(value);
+            const lines = decodedValue.split("\n");
+            for (const line of lines) {
+              if (line.trim() === "") {
+                continue;
+              }
+              if (line.trim() === "data: [DONE]") {
+                onMessage &&
+                  onMessage({ error: false, end: true, text: full_response });
+                break;
+              }
+              try {
+                let data;
+                try {
+                  data = JSON.parse(line.substring(6));
+                } catch (error) {
+                  continue;
+                }
+                const choices = data.choices;
+                if (!choices) {
+                  continue;
+                }
+                const delta = choices[0]?.delta;
+                if (!delta) {
+                  continue;
+                }
+                if ("content" in delta) {
+                  const content = delta.content;
+                  full_response += content;
+                  onMessage &&
+                    onMessage({
+                      error: false,
+                      end: false,
+                      text: full_response,
+                      stop: () => {
+                        try {
+                          controller.abort();
+                        } catch (error) {}
+                      },
+                    });
+                }
+              } catch (error) {
+                console.error(error);
+                console.log("出错的内容：", line);
+                continue;
+              }
+            }
+          }
+          return full_response;
+        }
       })
-      .then((res) => {
-        onMessage({
-          end: true,
-          error: false,
-          text: res.data.choices[0].message?.content || "",
-        });
-      })
-      .catch((err) => {
-        return onMessage({
-          error: true,
-          end: true,
-          text: "出错了\n" + err,
-        });
+      .catch((error) => {
+        if (error.name === "AbortError") {
+          onMessage &&
+            onMessage({
+              error: true,
+              end: true,
+              text: full_response + "\n\n 请求已终止。",
+            });
+        } else {
+          onMessage &&
+            onMessage({
+              error: true,
+              end: true,
+              text: full_response + "\n\n 请求发生错误。\n\n" + error,
+            });
+        }
       });
   }
 }

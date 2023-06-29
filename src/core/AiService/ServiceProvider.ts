@@ -40,7 +40,7 @@ export type aiServiceType =
   | "Slack"
   | "GPTFree"
   | "ChatGLM"
-  | "ChatGLM(官方)";
+  | "Oauther";
 export const aiServerList: { key: aiServiceType; name: string }[] = [
   {
     key: "None",
@@ -60,11 +60,7 @@ export const aiServerList: { key: aiServiceType; name: string }[] = [
   },
   {
     key: "ChatGLM",
-    name: "ChatGLM(Kaggle)",
-  },
-  {
-    key: "ChatGLM(官方)",
-    name: "ChatGLM(官方)",
+    name: "ChatGLM",
   },
 ];
 
@@ -108,7 +104,7 @@ export function useService() {
         case "ChatGLM":
           _service = new ChatGLM_GPT(chat.config.userServerUrl || "", tokens);
           break;
-        case "ChatGLM(官方)":
+        case "Oauther":
           _service = new ChatGLM_API(chat.config.userServerUrl || "", tokens);
       }
       setService(_service);

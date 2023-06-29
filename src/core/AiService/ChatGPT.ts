@@ -203,14 +203,14 @@ export class ChatGPT implements IAiService {
         if (error.name === "AbortError") {
           onMessage &&
             onMessage({
-              error: false,
+              error: true,
               end: true,
               text: full_response + "\n\n 请求已终止。",
             });
         } else {
           onMessage &&
             onMessage({
-              error: false,
+              error: true,
               end: true,
               text: full_response + "\n\n 请求发生错误。\n\n" + error,
             });

@@ -50,7 +50,7 @@ export class ChatGLM_API implements IAiService {
       return onMessage({
         error: true,
         end: true,
-        text: "请使用ChatGLM官方项 [https://github.com/THUDM/ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B) 部署后把部署的地址填入 设置 > 网络配置 > 自定义服务地址",
+        text: "请使用ChatGLM官方项目 [https://github.com/THUDM/ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B) 部署后把部署的地址填入 设置 > 网络配置 > 自定义服务地址",
       });
     }
     onMessage({
