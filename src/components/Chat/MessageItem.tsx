@@ -11,7 +11,7 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined
+  UserOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -22,7 +22,7 @@ import {
   message,
   Popconfirm,
   Space,
-  theme
+  theme,
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, { useCallback, useContext, useEffect, useState } from "react";
@@ -61,7 +61,8 @@ export const MessageItem = ({
     };
   }, [renderMessage, msg]);
   const saveMsg = useCallback(async () => {
-    const isReloadNav = /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
+    const isReloadNav =
+      /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
     msg.text = messageText;
     await chat.pushMessage(msg);
     var topic = chat.topics.find((f) => f.id === msg.topicId);
@@ -223,7 +224,9 @@ export const MessageItem = ({
   }
   return (
     <div
-      className={style.message_box}
+      className={
+        style.message_box + (chat.config.limitPreHeight ? " limt-hight" : "")
+      }
       style={{
         display: "flex",
         justifyContent: msg.ctxRole == "assistant" ? "flex-start" : "flex-end",

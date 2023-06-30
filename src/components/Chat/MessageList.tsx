@@ -34,8 +34,12 @@ export function MessageList({
   const { loadingMsgs, reloadNav } = useContext(ChatContext);
   const { setCite, onlyOne } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
-  const [pageSize, setPageSize] = useState(onlyOne ? 50 : 20);
-  const [repect] = useState(10);
+  const [pageSize, setPageSize] = useState(
+    Math.max(0, chat.config.pageSize || 0) || 20
+  );
+  const [repect, setRepect] = useState(
+    Math.max(0, chat.config.pageRepect || 0) || 10
+  );
   const [pageCount, setPageCount] = useState(
     Math.ceil(topic.messages.length / pageSize)
   );
@@ -65,6 +69,10 @@ export function MessageList({
   useEffect(() => {
     rangeMessage(999999999999); // 为了省事，直接写了一个几乎不可能存在的页数，会自动转换成最后一页的
   }, [pageSize, rangeMessage]);
+  useEffect(() => {
+    setPageSize(Math.max(0, chat.config.pageSize || 0) || 20);
+    setRepect(Math.max(0, chat.config.pageRepect || 0) || 10);
+  }, [chat]);
   useEffect(() => {
     setPageSize(onlyOne ? 50 : 20);
   }, [onlyOne]);
@@ -220,7 +228,7 @@ export function MessageList({
       if (messageId) {
         return renderMessage[messageId] && renderMessage[messageId]();
       }
-      rangeMessage(pageCount+1);
+      rangeMessage(pageCount + 1);
     };
     return () => {
       delete topicRender[topic.id];

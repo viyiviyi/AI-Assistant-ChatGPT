@@ -33,6 +33,9 @@ export interface GroupConfig {
   disableStrikethrough?: boolean; // 禁用删除线
   botType: aiServiceType;
   cloudChannelId?: string;
+  limitPreHeight?: boolean; // 限制代码块高度 50vh
+  pageSize?: number;
+  pageRepect?: number;
 }
 
 // 聊天消息表

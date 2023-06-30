@@ -7,6 +7,11 @@ pre > code.hljs {
   padding: 1em 2em 1em 0.5em;
   margin: 0;
 }
+.limt-hight pre > code,
+.limt-hight pre > code.hljs {
+  max-height: 50vh;
+  overflow-y: auto;
+}
 .code-copy {
   display: none;
   position: absolute;
