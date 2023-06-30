@@ -220,7 +220,7 @@ export function MessageList({
       if (messageId) {
         return renderMessage[messageId] && renderMessage[messageId]();
       }
-      rangeMessage(pageCount);
+      rangeMessage(pageCount+1);
     };
     return () => {
       delete topicRender[topic.id];

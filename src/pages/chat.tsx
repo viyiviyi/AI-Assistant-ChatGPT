@@ -6,7 +6,7 @@ import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
-import { Layout, theme } from "antd";
+import { Layout, Spin, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
@@ -18,6 +18,7 @@ export default function Page() {
   const { id: groupId } = router.query;
   const { token } = theme.useToken();
   const { bgConfig, loadingMsgs } = useContext(ChatContext);
+  const [loading, setLoading] = useState(false);
   const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
@@ -27,9 +28,10 @@ export default function Page() {
   const { reloadService } = useService();
   useEffect(() => {
     if (typeof window == "undefined") return;
+    setLoading(true);
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
-      if (chats.length == 0) return;
+      if (chats.length == 0) return setLoading(false);
       let selectChat = chats[0];
       if (groupId)
         selectChat = chats.find((f) => f.group.id == groupId) || selectChat;
@@ -42,7 +44,7 @@ export default function Page() {
           });
         });
       reloadService(selectChat, KeyValueData.instance());
-      if (chatMgt.group.id == groupId) return;
+      if (chatMgt.group.id == groupId) return setLoading(false);
       if (!selectChat.topics.length)
         await ChatManagement.loadTopics(selectChat);
       const newChatMgt = new ChatManagement(selectChat);
@@ -58,6 +60,7 @@ export default function Page() {
       setTimeout(() => {
         // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
         scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || "");
+        setLoading(false);
       }, 500);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,8 +111,17 @@ export default function Page() {
       >
         <MemoBackgroundImage />
         <Head>
-          <title>Chat助理</title>
+          <title>Chat助理 {chatMgt.group.name}</title>
         </Head>
+        <Spin
+          style={{
+            margin: "50% auto",
+            zIndex: 99,
+            position: "absolute",
+            width: "100%",
+          }}
+          spinning={loading}
+        ></Spin>
         <MemoChat />
       </Layout>
     </ChatContext.Provider>
