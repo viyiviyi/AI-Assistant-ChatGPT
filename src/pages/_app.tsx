@@ -10,6 +10,7 @@ import "antd/dist/reset.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { useEffect, useState } from "react";
+import zhCN from 'antd/locale/zh_CN';
 import "../styles/atom-one-dark.css";
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -24,6 +25,7 @@ export default function App({ Component, pageProps }: AppProps) {
       transformers={[legacyLogicalPropertiesTransformer]}
     >
       <ConfigProvider
+        locale={zhCN}
         theme={{
           token: {
             colorPrimary: "#00b96b",
