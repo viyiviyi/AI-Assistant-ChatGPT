@@ -1,7 +1,9 @@
+pre {
+  position: relative;
+}
 pre > code,
 pre > code.hljs {
   display: block;
-  position: relative;
   padding: 1em 2em 1em 0.5em;
   margin: 0;
 }
