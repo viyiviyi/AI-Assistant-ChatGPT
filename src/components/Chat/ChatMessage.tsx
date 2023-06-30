@@ -3,9 +3,9 @@ import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
   DeleteOutlined,
-  DownloadOutlined
+  DownloadOutlined,
 } from "@ant-design/icons";
-import { Collapse, Popconfirm, theme, Typography } from "antd";
+import { Collapse, Popconfirm, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { MessageList, reloadTopic } from "./MessageList";
@@ -16,7 +16,8 @@ const MemoTopicTitle = React.memo(TopicTitle);
 const MemoMessageList = React.memo(MessageList);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
-  const { chat, setActivityTopic, activityTopic,reloadNav } = useContext(ChatContext);
+  const { chat, setActivityTopic, activityTopic, reloadNav } =
+    useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([
     chat.config.activityTopicId,
   ]);
@@ -79,21 +80,6 @@ export const ChatMessage = () => {
             <MemoTopicTitle
               topic={v}
               onClick={() => onClickTopicTitle(v)}
-              onRemove={(t) => {
-                chat.removeTopic(t).then((v) => {
-                  setActivityTopic(
-                    activityTopic == t ? undefined : activityTopic
-                  );
-                  if (
-                    activityTopic &&
-                    activityTopic != t &&
-                    !activityKey.includes(activityTopic?.id || "")
-                  )
-                    setActivityKey((k) => [activityTopic.id, ...k]);
-                  reloadNav(t);
-                  setNone([]);
-                });
-              }}
             ></MemoTopicTitle>
           }
           key={v.id}
@@ -101,6 +87,58 @@ export const ChatMessage = () => {
             border: "none",
             padding: "0 8px",
           }}
+          extra={
+            <Space size={10}>
+              <Typography.Title
+                level={5}
+                style={{ opacity: 0.5 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Popconfirm
+                  title="确定删除？"
+                  onConfirm={() => {
+                    chat.removeTopic(v).then(() => {
+                      setActivityTopic(
+                        activityTopic == v ? undefined : activityTopic
+                      );
+                      if (
+                        activityTopic &&
+                        activityTopic != v &&
+                        !activityKey.includes(activityTopic?.id || "")
+                      )
+                        setActivityKey((k) => [activityTopic.id, ...k]);
+                      reloadNav(v);
+                      setNone([]);
+                    });
+                  }}
+                >
+                  <DeleteOutlined
+                    style={{ color: "#ff8d8f", padding: "0 5px" }}
+                  ></DeleteOutlined>
+                </Popconfirm>
+              </Typography.Title>
+              <Typography.Title
+                level={5}
+                style={{ opacity: 0.5, padding: "0 5px" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Popconfirm
+                  title="请选择内容格式。"
+                  description="当选择对话时，将会给每条消息前加上助理或用户的名字。"
+                  onConfirm={() => {
+                    downloadTopic(v, false, chat);
+                  }}
+                  onCancel={() => {
+                    downloadTopic(v, true, chat);
+                  }}
+                  okText="文档"
+                  cancelText="对话"
+                >
+                  <DownloadOutlined></DownloadOutlined>
+                </Popconfirm>
+              </Typography.Title>
+            </Space>
+          }
         >
           {activityKey.includes(v.id) && (
             <MemoMessageList chat={chat} topic={v}></MemoMessageList>
@@ -114,11 +152,9 @@ export const ChatMessage = () => {
 function TopicTitle({
   topic,
   onClick,
-  onRemove,
 }: {
   topic: TopicMessage;
   onClick: () => void;
-  onRemove: (topic: TopicMessage) => void;
 }) {
   const { token } = theme.useToken();
   const { chat } = useContext(ChatContext);
@@ -148,39 +184,6 @@ function TopicTitle({
         }}
       >
         {title}
-      </Typography.Title>
-      <span style={{ marginLeft: "20px", flex: 1 }}></span>
-      <Typography.Title
-        level={5}
-        style={{ opacity: 0.5 }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Popconfirm title="确定删除？" onConfirm={() => onRemove(topic)}>
-          <DeleteOutlined
-            style={{ color: "#ff8d8f", padding: "0 5px" }}
-          ></DeleteOutlined>
-        </Popconfirm>
-      </Typography.Title>
-      <span style={{ marginLeft: "20px" }}></span>
-      <Typography.Title
-        level={5}
-        style={{ opacity: 0.5, padding: "0 5px" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Popconfirm
-          title="请选择内容格式。"
-          description="当选择对话时，将会给每条消息前加上助理或用户的名字。"
-          onConfirm={() => {
-            downloadTopic(topic, false, chat);
-          }}
-          onCancel={() => {
-            downloadTopic(topic, true, chat);
-          }}
-          okText="文档"
-          cancelText="对话"
-        >
-          <DownloadOutlined></DownloadOutlined>
-        </Popconfirm>
       </Typography.Title>
     </div>
   );
