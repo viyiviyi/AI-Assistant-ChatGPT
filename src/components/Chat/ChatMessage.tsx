@@ -4,9 +4,18 @@ import {
   CaretRightOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  EditOutlined,
   PlusOutlined
 } from "@ant-design/icons";
-import { Button, Collapse, Popconfirm, Space, theme, Typography } from "antd";
+import {
+  Button,
+  Collapse,
+  Input,
+  Popconfirm,
+  Space,
+  theme,
+  Typography
+} from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { insertInputRef, MemoInsertInput } from "./InsertInput";
@@ -44,16 +53,22 @@ export const ChatMessage = () => {
     },
     [activityKey, closeAll, setCloasAll, setActivityTopic]
   );
+  const resetActivity = useCallback(
+    (activityTopic?: TopicMessage) => {
+      if (!activityTopic) return setNone([]);
+      if (closeAll) {
+        setCloasAll(false);
+        setActivityKey([activityTopic.id]);
+      } else if (!activityKey.includes(activityTopic.id)) {
+        setActivityKey((v) => [...v, activityTopic.id]);
+      }
+      if (onlyOne) reloadTopic(activityTopic.id);
+    },
+    [activityKey, closeAll, onlyOne, setCloasAll]
+  );
   useEffect(() => {
-    if (!activityTopic) return setNone([]);
-    if (closeAll) {
-      setCloasAll(false);
-      setActivityKey([activityTopic.id]);
-    } else if (!activityKey.includes(activityTopic.id)) {
-      setActivityKey((v) => [...v, activityTopic.id]);
-    }
-    if (onlyOne) reloadTopic(activityTopic.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    resetActivity(activityTopic);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
 
   if (onlyOne) {
@@ -89,6 +104,8 @@ export const ChatMessage = () => {
           style={{
             border: "none",
             padding: "0 8px",
+            width: "100%",
+            position: "relative",
           }}
         >
           <div
@@ -97,7 +114,7 @@ export const ChatMessage = () => {
               width: "100%",
               display: "flex",
               marginBottom: 5,
-              marginTop: -20,
+              marginTop: -10,
             }}
           >
             <Button
@@ -194,33 +211,57 @@ function TopicTitle({
   const { token } = theme.useToken();
   const { chat } = useContext(ChatContext);
   const [title, setTitle] = useState(topic.name);
+  const [edit, setEdit] = useState(false);
   return (
-    <div style={{ display: "flex", width: "100%", maxWidth: "100%" }}>
-      <Typography.Title
-        editable={{
-          onChange: (e) => {
-            chat.saveTopic(topic.id, e);
-            setTitle(e);
-          },
-        }}
-        ellipsis={{ rows: 1 }}
-        level={5}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick();
-        }}
-        style={{
-          color:
-            chat.config.activityTopicId == topic.id
-              ? token.colorPrimary
-              : undefined,
-          flex: 1,
-          maxWidth: "min(100vw - 140px, 800px)",
-        }}
-      >
-        {title}
-      </Typography.Title>
-    </div>
+    <>
+      {edit ? (
+        <Input.TextArea
+          placeholder={topic.name}
+          autoSize={{ maxRows: 10 }}
+          allowClear
+          ref={insertInputRef}
+          autoFocus={true}
+          value={title}
+          onKeyUp={(e) => {
+            if ((e.key === "s" && e.altKey) || e.key == "Enter") {
+              chat.saveTopic(topic.id, title);
+              setEdit(false);
+            }
+          }}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      ) : (
+        <>
+          <Typography.Title
+            ellipsis={{ rows: 1 }}
+            level={5}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
+            style={{
+              color:
+                chat.config.activityTopicId == topic.id
+                  ? token.colorPrimary
+                  : undefined,
+              width: "calc(100% - 70px)",
+              position: "absolute",
+              left: 30,
+            }}
+          >
+            {title}
+          </Typography.Title>
+          <Button
+            style={{ position: "absolute", right: 0 }}
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEdit((v) => !v);
+            }}
+          ></Button>
+        </>
+      )}
+    </>
   );
 }
 
