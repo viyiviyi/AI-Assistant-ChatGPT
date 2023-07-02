@@ -68,14 +68,96 @@ export const ChatMessage = () => {
   );
   useEffect(() => {
     resetActivity(activityTopic);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityTopic]);
+
+  const topUtil = useCallback(
+    (v: TopicMessage) => {
+      return (
+        <div
+          style={{
+            borderBottom: "1px solid #ccc5",
+            width: "100%",
+            display: "flex",
+            marginBottom: 5,
+            marginTop: 0,
+          }}
+        >
+          <Button
+            shape="circle"
+            type="text"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              reloadTopic(v.id, 0);
+              setShowInsert0((v) => !v);
+              setTimeout(() => {
+                insertInputRef.current?.focus();
+              }, 200);
+            }}
+          ></Button>
+          <span style={{ flex: 1 }}></span>
+          <Space size={10}>
+            <Typography.Title
+              level={5}
+              style={{ opacity: 0.5 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Popconfirm
+                title="确定删除？"
+                onConfirm={() => {
+                  chat.removeTopic(v).then(() => {
+                    setActivityTopic(
+                      activityTopic == v ? undefined : activityTopic
+                    );
+                    if (
+                      activityTopic &&
+                      activityTopic != v &&
+                      !activityKey.includes(activityTopic?.id || "")
+                    )
+                      setActivityKey((k) => [activityTopic.id, ...k]);
+                    reloadNav(v);
+                    setNone([]);
+                  });
+                }}
+              >
+                <DeleteOutlined
+                  style={{ color: "#ff8d8f", padding: "0 5px" }}
+                ></DeleteOutlined>
+              </Popconfirm>
+            </Typography.Title>
+            <Typography.Title
+              level={5}
+              style={{ opacity: 0.5, padding: "0 5px" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Popconfirm
+                title="请选择内容格式。"
+                description="当选择对话时，将会给每条消息前加上助理或用户的名字。"
+                onConfirm={() => {
+                  downloadTopic(v, false, chat);
+                }}
+                onCancel={() => {
+                  downloadTopic(v, true, chat);
+                }}
+                okText="文档"
+                cancelText="对话"
+              >
+                <DownloadOutlined></DownloadOutlined>
+              </Popconfirm>
+            </Typography.Title>
+          </Space>
+        </div>
+      );
+    },
+    [activityKey, activityTopic, chat, reloadNav, setActivityTopic]
+  );
 
   if (onlyOne) {
     let topic = activityTopic;
     if (topic) {
       return (
         <div style={{ padding: token.paddingContentVerticalSM }}>
+          {topUtil(topic)}
           <MemoMessageList chat={chat} topic={topic}></MemoMessageList>
         </div>
       );
@@ -108,79 +190,7 @@ export const ChatMessage = () => {
             position: "relative",
           }}
         >
-          <div
-            style={{
-              borderBottom: "1px solid #ccc5",
-              width: "100%",
-              display: "flex",
-              marginBottom: 5,
-              marginTop: -10,
-            }}
-          >
-            <Button
-              shape="circle"
-              type="text"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                reloadTopic(v.id, 0);
-                setShowInsert0((v) => !v);
-                setTimeout(() => {
-                  insertInputRef.current?.focus();
-                }, 200);
-              }}
-            ></Button>
-            <span style={{ flex: 1 }}></span>
-            <Space size={10}>
-              <Typography.Title
-                level={5}
-                style={{ opacity: 0.5 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Popconfirm
-                  title="确定删除？"
-                  onConfirm={() => {
-                    chat.removeTopic(v).then(() => {
-                      setActivityTopic(
-                        activityTopic == v ? undefined : activityTopic
-                      );
-                      if (
-                        activityTopic &&
-                        activityTopic != v &&
-                        !activityKey.includes(activityTopic?.id || "")
-                      )
-                        setActivityKey((k) => [activityTopic.id, ...k]);
-                      reloadNav(v);
-                      setNone([]);
-                    });
-                  }}
-                >
-                  <DeleteOutlined
-                    style={{ color: "#ff8d8f", padding: "0 5px" }}
-                  ></DeleteOutlined>
-                </Popconfirm>
-              </Typography.Title>
-              <Typography.Title
-                level={5}
-                style={{ opacity: 0.5, padding: "0 5px" }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Popconfirm
-                  title="请选择内容格式。"
-                  description="当选择对话时，将会给每条消息前加上助理或用户的名字。"
-                  onConfirm={() => {
-                    downloadTopic(v, false, chat);
-                  }}
-                  onCancel={() => {
-                    downloadTopic(v, true, chat);
-                  }}
-                  okText="文档"
-                  cancelText="对话"
-                >
-                  <DownloadOutlined></DownloadOutlined>
-                </Popconfirm>
-              </Typography.Title>
-            </Space>
-          </div>
+          {topUtil(v)}
           {activityKey.includes(v.id) && (
             <>
               {showInsert0 && (
