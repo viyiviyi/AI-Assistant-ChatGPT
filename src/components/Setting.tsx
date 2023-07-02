@@ -1,7 +1,8 @@
 import {
   aiServerList,
+  aiServiceType,
   chatGptModels,
-  useService,
+  useService
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -11,7 +12,7 @@ import {
   CaretRightOutlined,
   DownloadOutlined,
   GithubOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -24,7 +25,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload,
+  Upload
 } from "antd";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -45,7 +46,7 @@ export const Setting = ({
   onCancel: () => void;
 }) => {
   const [modal, contextHolder] = Modal.useModal();
-  const [activityKey, setActivityKey] = useState<string[]>(["GPT", "UI"]);
+  const [activityKey, setActivityKey] = useState<string[]>(["UI"]);
   const router = useRouter();
   const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
@@ -68,7 +69,7 @@ export const Setting = ({
     config_saveKey: boolean;
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
-    config_bot_type: "None" | "ChatGPT" | "Slack";
+    config_bot_type: aiServiceType;
     config_channel_id: string;
     config_page_size: number;
     config_page_repect: number;
@@ -81,6 +82,34 @@ export const Setting = ({
   }>();
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
+    form.setFieldsValue({
+      setting_apitoken: KeyValueData.instance().getApiKey(),
+      GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
+      GptConfig_role: chatMgt?.gptConfig.role,
+      GptConfig_max_tokens: chatMgt?.gptConfig.max_tokens,
+      GptConfig_top_p: chatMgt?.gptConfig.top_p,
+      GptConfig_temperature: chatMgt?.gptConfig.temperature,
+      GptConfig_n: chatMgt?.gptConfig.n,
+      GptConfig_model: chatMgt?.gptConfig.model,
+      config_saveKey: true,
+      config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
+      setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ""),
+      setting_user_server_url: chatMgt?.config.userServerUrl
+        ?.trim()
+        .replace(/\/$/, ""),
+      config_bot_type: chatMgt?.config.botType,
+      config_channel_id: chatMgt?.config.cloudChannelId?.trim(),
+      config_page_size: chatMgt?.config.pageSize || 20,
+      config_page_repect: chatMgt?.config.pageRepect || 10,
+      config_limit_pre_height: chatMgt?.config.limitPreHeight,
+      slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
+      slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
+      setting_slack_proxy_url: KeyValueData.instance()
+        .getSlackProxyUrl()
+        .trim()
+        ?.replace(/\/$/, ""),
+      group_name: chatMgt?.group.name,
+    });
     // ApiClient.getModelList(
     //   form.getFieldValue("setting_apitoken") ||
     //     KeyValueData.instance().getApiKey(),
@@ -141,39 +170,7 @@ export const Setting = ({
   }
   return (
     <>
-      <Form
-        form={form}
-        layout="vertical"
-        autoComplete="off"
-        initialValues={{
-          setting_apitoken: KeyValueData.instance().getApiKey(),
-          GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
-          GptConfig_role: chatMgt?.gptConfig.role,
-          GptConfig_max_tokens: chatMgt?.gptConfig.max_tokens,
-          GptConfig_top_p: chatMgt?.gptConfig.top_p,
-          GptConfig_temperature: chatMgt?.gptConfig.temperature,
-          GptConfig_n: chatMgt?.gptConfig.n,
-          GptConfig_model: chatMgt?.gptConfig.model,
-          config_saveKey: true,
-          config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
-          setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ""),
-          setting_user_server_url: chatMgt?.config.userServerUrl
-            ?.trim()
-            .replace(/\/$/, ""),
-          config_bot_type: chatMgt?.config.botType,
-          config_channel_id: chatMgt?.config.cloudChannelId?.trim(),
-          config_page_size: chatMgt?.config.pageSize || 20,
-          config_page_repect: chatMgt?.config.pageRepect || 10,
-          config_limit_pre_height: chatMgt?.config.limitPreHeight,
-          slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
-          slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
-          setting_slack_proxy_url: KeyValueData.instance()
-            .getSlackProxyUrl()
-            .trim()
-            ?.replace(/\/$/, ""),
-          group_name: chatMgt?.group.name,
-        }}
-      >
+      <Form form={form} layout="vertical" autoComplete="off">
         <div
           style={{
             maxHeight: "70vh",
@@ -338,12 +335,14 @@ export const Setting = ({
               ))}
             </Select>
           </Form.Item>
+          <Form.Item label="ChatGPT模型名称" name={"GptConfig_model"}>
+            <Select options={models.map((v) => ({ value: v, label: v }))} />
+          </Form.Item>
           <Collapse
             // ghost
             bordered={false}
             activeKey={activityKey}
             onChange={(keys) => setActivityKey(keys as string[])}
-            defaultActiveKey={"UI"}
             expandIcon={({ isActive }) => (
               <CaretRightOutlined rotate={isActive ? 90 : 0} />
             )}
@@ -354,25 +353,10 @@ export const Setting = ({
               header={"界面配置"}
               style={{ padding: "0 8px" }}
             >
-              {" "}
               <Form.Item
-                style={{ flex: "1" }}
-                name="config_page_size"
-                label="分页大小"
-                extra="消息列表的分页大小"
-              >
-                <InputNumber
-                  style={{ width: "100%" }}
-                  step="1"
-                  min={0}
-                  autoComplete="off"
-                />
-              </Form.Item>{" "}
-              <Form.Item
-                style={{ flex: "1" }}
-                name="config_page_repect"
-                label="分页重复"
-                extra="在当前页额外显示前一页的几条内容，便于阅读时查看上下文"
+                name="GptConfig_msgCount"
+                label="上下文数量"
+                extra="表示最近的几条消息会被当成上下文发送给AI，模拟聊天时建议10以上，当做辅助工具时建议1  "
               >
                 <InputNumber
                   style={{ width: "100%" }}
@@ -381,6 +365,32 @@ export const Setting = ({
                   autoComplete="off"
                 />
               </Form.Item>
+              <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+                <Form.Item
+                  style={{ flex: "1" }}
+                  name="config_page_size"
+                  label="单页显示条数"
+                >
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    step="1"
+                    min={0}
+                    autoComplete="off"
+                  />
+                </Form.Item>
+                <Form.Item
+                  style={{ flex: "1" }}
+                  name="config_page_repect"
+                  label="重复显示条数"
+                >
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    step="1"
+                    min={0}
+                    autoComplete="off"
+                  />
+                </Form.Item>
+              </div>
               <div style={{ width: "100%", display: "flex", gap: "10px" }}>
                 <Form.Item
                   style={{ flex: "1" }}
@@ -399,23 +409,6 @@ export const Setting = ({
                   <Switch />
                 </Form.Item>
               </div>
-            </Collapse.Panel>
-            <Collapse.Panel
-              forceRender={true}
-              key={"GPT"}
-              header={"Chat配置"}
-              style={{ padding: "0 8px" }}
-            >
-              <Form.Item label="ChatGPT模型名称" name={"GptConfig_model"}>
-                <Select options={models.map((v) => ({ value: v, label: v }))} />
-              </Form.Item>
-              <Form.Item
-                name="GptConfig_msgCount"
-                label="上下文数量"
-                extra="对话模式下发送的最大前文数量，0表示全部，用于减少token消耗，搭配追加设定可以实现超长对话。每条消息也可以被单独勾选，可以不受此设置限制作为对话上下文发送。"
-              >
-                <Input.TextArea autoSize autoComplete="off" />
-              </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
               forceRender={true}

@@ -4,10 +4,12 @@ import {
   CaretRightOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
-import { Collapse, Popconfirm, Space, theme, Typography } from "antd";
+import { Button, Collapse, Popconfirm, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
+import { insertInputRef, MemoInsertInput } from "./InsertInput";
 import { MessageList, reloadTopic } from "./MessageList";
 
 const { Panel } = Collapse;
@@ -23,6 +25,7 @@ export const ChatMessage = () => {
   ]);
   const { onlyOne, closeAll, setCloasAll } = useContext(MessageContext);
   const [none, setNone] = useState([]);
+  const [showInsert0, setShowInsert0] = useState(false);
   const onClickTopicTitle = useCallback(
     async (topic: TopicMessage) => {
       let v = [...activityKey];
@@ -87,7 +90,29 @@ export const ChatMessage = () => {
             border: "none",
             padding: "0 8px",
           }}
-          extra={
+        >
+          <div
+            style={{
+              borderBottom: "1px solid #ccc5",
+              width: "100%",
+              display: "flex",
+              marginBottom: 5,
+              marginTop: -20,
+            }}
+          >
+            <Button
+              shape="circle"
+              type="text"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                reloadTopic(v.id, 0);
+                setShowInsert0((v) => !v);
+                setTimeout(() => {
+                  insertInputRef.current?.focus();
+                }, 200);
+              }}
+            ></Button>
+            <span style={{ flex: 1 }}></span>
             <Space size={10}>
               <Typography.Title
                 level={5}
@@ -138,10 +163,20 @@ export const ChatMessage = () => {
                 </Popconfirm>
               </Typography.Title>
             </Space>
-          }
-        >
+          </div>
           {activityKey.includes(v.id) && (
-            <MemoMessageList chat={chat} topic={v}></MemoMessageList>
+            <>
+              {showInsert0 && (
+                <MemoInsertInput
+                  key={"insert0_input"}
+                  insertIndex={0}
+                  topic={v}
+                  chat={chat}
+                  onHidden={() => setShowInsert0(false)}
+                />
+              )}
+              <MemoMessageList chat={chat} topic={v}></MemoMessageList>
+            </>
           )}
         </Panel>
       ))}

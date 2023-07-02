@@ -7,7 +7,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole,
+  VirtualRole
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -227,7 +227,7 @@ export class ChatManagement implements IChat {
     }> = [];
     if (topic) {
       let messages = topic.messages;
-      if (index > -1) messages = messages.slice(0, index + 1);
+      if (index > -1) messages = messages.slice(0, index);
       if (
         this.gptConfig.msgCount > 0 &&
         messages.length > this.gptConfig.msgCount
@@ -281,7 +281,9 @@ export class ChatManagement implements IChat {
           ? [
               {
                 role: "system" as any,
-                content: `${this.user.enName || "user"}: ${this.user.name}\n简介：${this.user.bio}`,
+                content: `${this.user.enName || "user"}: ${
+                  this.user.name
+                }\n简介：${this.user.bio}`,
                 name: this.user.enName || "user",
               },
             ]
@@ -462,7 +464,7 @@ export class ChatManagement implements IChat {
     const data: User = user || {
       id: getUuid(),
       groupId,
-      name: "user",
+      name: "用户",
     };
     await getInstance().insert<User>({ tableName: "User", data });
     return data;
@@ -486,7 +488,7 @@ export class ChatManagement implements IChat {
       id: getUuid(),
       name: "助理",
       groupId,
-      bio: `接下来，你需要以私人助理的语气和行为输出内容，尽可能的详细与严谨。`,
+      bio: `接下来，请输出多方面验证后可行或正确的内容，尽可能输出最好的内容，请专业、客观的输出内容。`,
       settings: [],
     };
     await getInstance().insert<VirtualRole>({ tableName: "VirtualRole", data });
@@ -561,7 +563,7 @@ export class ChatManagement implements IChat {
       let msg = topic.messages.find((f) => f.id == message.id);
       if (!msg) {
         if (insertIndex !== -1)
-          topic.messages.splice(insertIndex, 1, ...[previousMessage!, message]);
+          topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
         else topic.messages.push(message);
         topic.messageMap[message.id] = message;
         await ChatManagement.createMessage(message);
@@ -579,7 +581,7 @@ export class ChatManagement implements IChat {
     } else {
       message.id = getUuid();
       if (insertIndex !== -1)
-        topic.messages.splice(insertIndex, 1, ...[previousMessage!, message]);
+        topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
       else topic.messages.push(message);
       topic.messageMap[message.id] = message;
       await ChatManagement.createMessage(message);

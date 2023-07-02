@@ -58,7 +58,7 @@ export function pagesUtil<T>(
   return {
     range: arr.slice(start, end),
     totalPages: total,
-    pageIndex: pageNumber,
+    pageIndex: pageNumber,  
   };
 }
 

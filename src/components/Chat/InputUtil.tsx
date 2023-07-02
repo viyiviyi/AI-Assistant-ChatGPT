@@ -5,7 +5,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -15,9 +15,9 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
-import { Button, Drawer, Input, Space, theme, Typography } from "antd";
+import { Button, Drawer, Input, Space, theme, Tooltip, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
 import { MemoBackgroundImage } from "../BackgroundImage";
 import { MessageContext } from "./Chat";
@@ -43,7 +43,6 @@ export function InputUtil() {
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
-  // const { setLockEnd } = useLockScroll();
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
   objs.setInput = setInputText;
@@ -310,6 +309,68 @@ export function InputUtil() {
             position: "relative",
           }}
         >
+          {inputText && (
+            <Space
+              size={10}
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: 0,
+                opacity: 0.5,
+                borderRadius: token.borderRadius,
+                backgroundColor: token.colorFillContent,
+              }}
+            >
+              <Tooltip title={"作为AI消息"}>
+                <Button
+                  type="text"
+                  size="large"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setInputText((v) => "/" + ChatManagement.parseText(v));
+                  }}
+                >
+                  /
+                </Button>
+              </Tooltip>
+              <Tooltip title={"作为用户消息，不访问AI"}>
+                <Button
+                  type="text"
+                  size="large"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setInputText((v) => "\\" + ChatManagement.parseText(v));
+                  }}
+                >
+                  \
+                </Button>
+              </Tooltip>
+              <Tooltip title={"作为系统消息"}>
+                <Button
+                  type="text"
+                  size="large"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setInputText((v) => "::" + ChatManagement.parseText(v));
+                  }}
+                >
+                  ::
+                </Button>
+              </Tooltip>
+              <Tooltip title={"作为系统消息，不访问AI"}>
+                <Button
+                  type="text"
+                  size="large"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setInputText((v) => "/::" + ChatManagement.parseText(v));
+                  }}
+                >
+                  /::
+                </Button>
+              </Tooltip>
+            </Space>
+          )}
           <Space
             size={10}
             direction="vertical"
@@ -426,7 +487,7 @@ export function InputUtil() {
         </div>
         <div style={{ width: "100%" }}>
           <Input.TextArea
-            placeholder="/开头代替AI发言 ::开头发出系统内容"
+            placeholder="Ctrl + S 发送    Ctrl + Enter 创建话题"
             autoSize={{ maxRows: 10 }}
             allowClear
             ref={inputRef}
