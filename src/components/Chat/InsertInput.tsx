@@ -1,3 +1,4 @@
+import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatManagement } from "@/core/ChatManagement";
 import { usePushMessage } from "@/core/hooks";
 import { TopicMessage } from "@/Models/Topic";
@@ -22,6 +23,11 @@ function InsertInput({
   const { token } = theme.useToken();
 
   const onSubmit = (text: string, idx: number) => {
+    if (!aiServices.current?.customContext) {
+      if (!text.startsWith("/") && !text.startsWith("\\")) {
+        text = "\\" + text;
+      }
+    }
     pushMessage(text, idx, topic, () => {
       onHidden();
       setInsertText("");
