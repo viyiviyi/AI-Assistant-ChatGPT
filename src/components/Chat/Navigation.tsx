@@ -11,7 +11,13 @@ const Navigation = () => {
   const [showCheckeds, setShowCheckeds] = useState(false);
   return (
     <div style={{ padding: "0 1em 1em", maxWidth: "100%" }} key={"nav"}>
-      <div style={{ display: "flex", padding: '10px 0', justifyContent: "flex-end" }}>
+      <div
+        style={{
+          display: "flex",
+          padding: "10px 0",
+          justifyContent: "flex-end",
+        }}
+      >
         <Tooltip title={"显示已勾选的上下文"}>
           <Switch
             onChange={setShowCheckeds}
@@ -36,7 +42,9 @@ const Navigation = () => {
                 setActivityTopic(t);
                 reloadTopic(t.id, t.messages.length - 1);
                 scrollStatus.enable = true;
-                scrollToBotton(t.messages.slice(-1)[0]?.id || t.id);
+                setTimeout(() => {
+                  scrollToBotton(t.messages.slice(-1)[0]?.id || t.id);
+                }, 200);
               }}
             >
               <Typography.Text
