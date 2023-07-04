@@ -165,7 +165,10 @@ export const ChatMessage = () => {
     if (topic) {
       return (
         <div style={{ padding: token.paddingContentVerticalSM }}>
-          <TopUtil topic={topic} />
+          <MemoTopicTitle topic={topic} onClick={() => {}}></MemoTopicTitle>
+          <div style={{ marginTop: "15px" }}>
+            <TopUtil topic={topic} />
+          </div>
           <MemoMessageList chat={chat} topic={topic}></MemoMessageList>
         </div>
       );
@@ -220,8 +223,18 @@ function TopicTitle({
   const { chat } = useContext(ChatContext);
   const [title, setTitle] = useState(topic.name);
   const [edit, setEdit] = useState(false);
+  const cancelEdit = useCallback(() => {
+    setEdit(false);
+  }, []);
+  useEffect(() => {
+    document.removeEventListener("click", cancelEdit);
+    document.addEventListener("click", cancelEdit);
+    return () => {
+      document.removeEventListener("click", cancelEdit);
+    };
+  }, [cancelEdit]);
   return (
-    <>
+    <div style={{ position: "relative", height: "24px" }}>
       {edit ? (
         <Input.TextArea
           placeholder={topic.name}
@@ -252,9 +265,8 @@ function TopicTitle({
                 chat.config.activityTopicId == topic.id
                   ? token.colorPrimary
                   : undefined,
-              width: "calc(100% - 70px)",
+              width: "calc(100% - 40px)",
               position: "absolute",
-              left: 30,
             }}
           >
             {title}
@@ -263,13 +275,14 @@ function TopicTitle({
             style={{ position: "absolute", right: 0 }}
             type="text"
             icon={<EditOutlined />}
-            onClick={() => {
+              onClick={(e) => {
+              e.stopPropagation()
               setEdit((v) => !v);
             }}
           ></Button>
         </>
       )}
-    </>
+    </div>
   );
 }
 
