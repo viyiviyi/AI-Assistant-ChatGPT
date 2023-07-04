@@ -5,7 +5,7 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
-  PlusOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -14,7 +14,7 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";

@@ -160,7 +160,7 @@ export function MessageList({
                 onPush(idx!);
               }}
               onSned={() => {
-                sendMessage(idx! + 1, topic);
+                sendMessage(idx!, topic);
               }}
             ></MemoMessageItem>
             {idx === insertIndex && (

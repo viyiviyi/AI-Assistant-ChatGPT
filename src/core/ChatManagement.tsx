@@ -227,7 +227,7 @@ export class ChatManagement implements IChat {
     }> = [];
     if (topic) {
       let messages = topic.messages;
-      if (index > -1) messages = messages.slice(0, index);
+      if (index > -1) messages = messages.slice(0, index + 1);
       if (
         this.gptConfig.msgCount > 0 &&
         messages.length > this.gptConfig.msgCount
@@ -557,7 +557,7 @@ export class ChatManagement implements IChat {
     message.topicId = topic.id;
     message.groupId = this.group.id;
     let previousMessage: Message;
-    // let insertIndex = -1;
+    if (insertIndex >= topic.messages.length) insertIndex = -1;
     if (insertIndex !== -1) previousMessage = topic.messages[insertIndex];
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);

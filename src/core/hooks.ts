@@ -61,7 +61,7 @@ export function useEnv() {
 export function useReloadIndex(chat: ChatManagement) {
   const reloadIndex = useCallback(
     (topic: TopicMessage, idx: number) => {
-      if (topic.messages.length <= idx + 1) return;
+      if (idx + 1 >= topic.messages.length) return;
       if (topic.messages[idx].timestamp != topic.messages[idx + 1].timestamp)
         return;
       topic.messages[idx + 1].timestamp += 0.001;
@@ -82,13 +82,19 @@ export function useSendMessage(chat: ChatManagement) {
     async (idx: number, topic: TopicMessage) => {
       const aiService = aiServices.current;
       if (!aiService) return;
+      if (idx > topic.messages.length) return;
+      let time = Date.now();
+      if (idx == 0 && idx < topic.messages.length)
+        time = topic.messages[idx].timestamp - 1;
+      if (idx >= 0 && idx < topic.messages.length)
+        time = topic.messages[idx-1].timestamp + 0.001;
       let result: Message = {
         id: "",
         groupId: chat.group.id,
         virtualRoleId: chat.virtualRole.id,
         ctxRole: "assistant",
         text: "loading...",
-        timestamp: topic.messages[idx].timestamp + 0.001,
+        timestamp: time,
         topicId: topic.id,
       };
 
@@ -105,7 +111,7 @@ export function useSendMessage(chat: ChatManagement) {
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           let isFirst = !result.id;
-          chat.pushMessage(result, idx).then((r) => {
+          chat.pushMessage(result, idx + 1).then((r) => {
             result = r;
             if (res.end) {
               delete loadingMsgs[r.id];
@@ -151,11 +157,17 @@ export function usePushMessage(chat: ChatManagement) {
       topic: TopicMessage,
       pushCallback: (msg: Message) => void
     ) {
+      if (idx < 0) return;
       text = text.trim();
       const isBot = text.startsWith("/");
       const isSys = text.startsWith("/::") || text.startsWith("::");
       const skipRequest = text.startsWith("\\");
       text = ChatManagement.parseText(text);
+      let time = Date.now();
+      if (idx == 0 && idx + 1 < topic.messages.length)
+        time = topic.messages[idx + 1].timestamp - 1;
+      if (idx > 0 && idx < topic.messages.length)
+        time = topic.messages[idx - 1].timestamp + 0.001;
       let msg: Message = {
         id: "",
         groupId: chat.group.id,
@@ -163,7 +175,7 @@ export function usePushMessage(chat: ChatManagement) {
         virtualRoleId: isBot ? chat.virtualRole.id : undefined,
         ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
         text: text,
-        timestamp: topic.messages[idx].timestamp + 0.001,
+        timestamp: time,
         topicId: topic.id,
         cloudTopicId: topic.cloudTopicId,
       };
@@ -174,7 +186,7 @@ export function usePushMessage(chat: ChatManagement) {
       }
       pushCallback(msg);
       if (isBot || isSys || skipRequest) return;
-      sendMessage(idx + 1, topic);
+      sendMessage(idx, topic);
     },
     [chat, reloadIndex, sendMessage]
   );
