@@ -185,7 +185,7 @@ export const MessageItem = ({
           {edit ? (
             <Input.TextArea
               value={messageText}
-              autoSize
+              autoSize={{ maxRows: 15 }}
               style={{ marginBottom: "4px" }}
               onChange={(e) => {
                 setMessage(e.target.value);
@@ -204,6 +204,10 @@ export const MessageItem = ({
                   ? ("系统：" + msg.text).replaceAll("~", "～")
                   : "系统：" + msg.text
               }
+              doubleClick={() => {
+                setMessage(msg.text);
+                setEdit(true);
+              }}
             />
           )}
         </div>
@@ -310,7 +314,7 @@ export const MessageItem = ({
               {edit ? (
                 <Input.TextArea
                   value={messageText}
-                  autoSize
+                  autoSize={{ maxRows: 15 }}
                   style={{ marginBottom: "4px" }}
                   onChange={(e) => {
                     setMessage(e.target.value);
@@ -329,6 +333,10 @@ export const MessageItem = ({
                       ? msg.text.replaceAll("~", "～")
                       : msg.text
                   }
+                  doubleClick={() => {
+                    setMessage(msg.text);
+                    setEdit(true);
+                  }}
                 />
               )}
             </div>
