@@ -62,9 +62,10 @@ export function useReloadIndex(chat: ChatManagement) {
   const reloadIndex = useCallback(
     (topic: TopicMessage, idx: number) => {
       if (idx + 1 >= topic.messages.length) return;
-      if (topic.messages[idx].timestamp != topic.messages[idx + 1].timestamp)
+      if (idx < 0) return;
+      if (topic.messages[idx].timestamp > topic.messages[idx + 1].timestamp)
         return;
-      topic.messages[idx + 1].timestamp += 0.001;
+      topic.messages[idx + 1].timestamp = topic.messages[idx].timestamp + 0.001;
       chat.pushMessage(topic.messages[idx + 1]);
       reloadIndex(topic, idx + 1);
     },
@@ -84,10 +85,10 @@ export function useSendMessage(chat: ChatManagement) {
       if (!aiService) return;
       if (idx > topic.messages.length) return;
       let time = Date.now();
-      if (idx == 0 && idx < topic.messages.length)
-        time = topic.messages[idx].timestamp - 1;
+      if (idx < 0 && idx < topic.messages.length)
+        time = topic.messages[0].timestamp - 1;
       if (idx >= 0 && idx < topic.messages.length)
-        time = topic.messages[idx-1].timestamp + 0.001;
+        time = topic.messages[idx].timestamp + 0.001;
       let result: Message = {
         id: "",
         groupId: chat.group.id,

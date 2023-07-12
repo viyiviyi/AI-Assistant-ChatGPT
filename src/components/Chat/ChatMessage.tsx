@@ -5,7 +5,8 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
-  PlusOutlined
+  MessageOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -14,12 +15,13 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { insertInputRef, MemoInsertInput } from "./InsertInput";
 import { MessageList, reloadTopic } from "./MessageList";
+import { useSendMessage } from "@/core/hooks";
 
 const { Panel } = Collapse;
 
@@ -72,6 +74,7 @@ export const ChatMessage = () => {
 
   const TopUtil = ({ topic: v }: { topic: TopicMessage }) => {
     const [showInsert0, setShowInsert0] = useState(false);
+    const { sendMessage } = useSendMessage(chat);
     return (
       <>
         <div
@@ -93,6 +96,14 @@ export const ChatMessage = () => {
               setTimeout(() => {
                 insertInputRef.current?.focus();
               }, 200);
+            }}
+          ></Button>
+          <Button
+            shape="circle"
+            type="text"
+            icon={<MessageOutlined />}
+            onClick={() => {
+              sendMessage(-1, v);
             }}
           ></Button>
           <span style={{ flex: 1 }}></span>
@@ -275,8 +286,8 @@ function TopicTitle({
             style={{ position: "absolute", right: 0 }}
             type="text"
             icon={<EditOutlined />}
-              onClick={(e) => {
-              e.stopPropagation()
+            onClick={(e) => {
+              e.stopPropagation();
               setEdit((v) => !v);
             }}
           ></Button>
