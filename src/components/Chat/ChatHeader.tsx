@@ -98,7 +98,7 @@ export const ChatHeader = () => {
         isShow={roleConfigShow}
         maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
-          setRoleConfigShow(false);
+          // setRoleConfigShow(false);
         }}
         items={
           <VirtualRoleConfig
@@ -117,7 +117,7 @@ export const ChatHeader = () => {
         isShow={settingIsShow}
         maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
-          setSettingShow(false);
+          // setSettingShow(false);
         }}
         items={
           <Setting

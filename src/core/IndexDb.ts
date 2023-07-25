@@ -2,7 +2,7 @@ import { init } from "ts-indexdb";
 import { DbTable } from "ts-indexdb/dist/TsIndexDb";
 const TABLE_NAME = "litechat";
 export class IndexedDB {
-  static version = 6;
+  static version = 7;
   private static getTableConfig(tableName: string): DbTable {
     return {
       tableName: tableName, // 表名
@@ -30,7 +30,12 @@ export class IndexedDB {
         this.getTableConfig("VirtualRole"),
         this.getTableConfig("GptConfig"),
         this.getTableConfig("Background"),
+        this.getTableConfig("GlobalTokens"),
       ],
     });
   }
 }
+export type KeyValue = {
+  id: string;
+  data: any;
+};

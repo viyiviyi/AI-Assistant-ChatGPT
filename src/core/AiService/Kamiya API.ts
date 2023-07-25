@@ -1,46 +1,19 @@
-import { getToken, nextToken } from "@/core/tokens";
 import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage, OpenAIApi } from "openai";
+import { ChatCompletionRequestMessage } from "openai";
+import { getToken, nextToken } from "../tokens";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
-export class ChatGPT implements IAiService {
+export class Kamiya implements IAiService {
   customContext = true;
   history = undefined;
-  client: OpenAIApi;
   baseUrl: string;
   tokens: ServiceTokens;
   constructor(baseUrl: string, tokens: ServiceTokens) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
-    this.client = new OpenAIApi({
-      basePath: baseUrl + "/v1",
-      apiKey: tokens.openai?.apiKey,
-      isJsonMime: (mime: string) => {
-        return true;
-      },
-      baseOptions: {
-        headers: {
-          Authorization: "Bearer " + tokens.openai?.apiKey,
-          "ngrok-skip-browser-warning": 0,
-        },
-        timeout: 1000 * 60 * 5,
-      },
-    });
   }
-  serverType: aiServiceType = "ChatGPT";
-  models = async () => [
-    "gpt-3.5-turbo",
-    "gpt-3.5-turbo-0301",
-    "gpt-3.5-turbo-16k",
-    "gpt-3.5-turbo-0613",
-    "gpt-3.5-turbo-16k-0613",
-    "gpt-4",
-    "gpt-4-0314",
-    "gpt-4-32k",
-    "gpt-4-32k-0314",
-    "text-davinci-003",
-    "text-davinci-002	",
-  ];
+  serverType: aiServiceType = "Kamiya";
+  models = async () => [];
   async sendMessage({
     context,
     onMessage,
@@ -74,60 +47,9 @@ export class ChatGPT implements IAiService {
     });
     this.tokens.openai!.apiKey = token.current;
     nextToken(token);
-    if (config.model.startsWith("gpt-3")) {
-      await this.generateChatStream(context, config, onMessage);
-    } else if (config.model.startsWith("gpt-4")) {
-      await this.generateChatStream(context, config, onMessage);
-    } else {
-      this.client = new OpenAIApi({
-        basePath: this.baseUrl + "/v1",
-        apiKey: this.tokens.openai?.apiKey,
-        isJsonMime: (mime: string) => {
-          return true;
-        },
-        baseOptions: {
-          headers: {
-            Authorization: "Bearer " + this.tokens.openai?.apiKey,
-            "ngrok-skip-browser-warning": 0,
-          },
-          timeout: 1000 * 60 * 5,
-        },
-      });
-      await this.client
-        .createCompletion({
-          model: config.model,
-          prompt: context.map((v) => v.content).join("\n"),
-          stream: false,
-          temperature: config.temperature,
-          top_p: config.top_p,
-          max_tokens: config.max_tokens,
-          n: config.n,
-          user: config.user,
-        })
-        .then((res) => {
-          onMessage &&
-            onMessage({
-              end: true,
-              error: false,
-              text: res.data.choices[0].text || "",
-            });
-          return res.data.choices[0].text || "";
-        })
-        .catch((error) => {
-          onMessage &&
-            onMessage({
-              end: true,
-              error: true,
-              text:
-                error.response && error.response.data
-                  ? "```json\n" +
-                    JSON.stringify(error.response.data, null, 4) +
-                    "\n```"
-                  : error.message || error,
-            });
-        });
-    }
+    await this.generateChatStream(context, config, onMessage);
   }
+
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
@@ -144,7 +66,7 @@ export class ChatGPT implements IAiService {
       "Content-Type": "application/json",
     };
     const data = {
-      model: config.model,
+      model: "openai:gpt-3.5-turbo",
       messages: context,
       stream: true,
       max_tokens: config.max_tokens,
@@ -154,7 +76,7 @@ export class ChatGPT implements IAiService {
       user: config.user,
     };
     const controller = new AbortController();
-    await fetch(`${this.baseUrl}/v1/chat/completions`, {
+    await fetch(`${this.baseUrl}/api/openai/chat/completions`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(data),

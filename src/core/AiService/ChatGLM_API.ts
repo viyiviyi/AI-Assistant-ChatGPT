@@ -2,7 +2,7 @@ import { Message } from "@/Models/DataBase";
 import axios from "axios";
 import { ChatCompletionRequestMessage } from "openai";
 import { IAiService, InputConfig } from "./IAiService";
-import { ServiceTokens } from "./ServiceProvider";
+import { aiServiceType, ServiceTokens } from "./ServiceProvider";
 
 interface ChatRequest {
   prompt: string;
@@ -23,10 +23,13 @@ export class ChatGLM_API implements IAiService {
   history = undefined;
   baseUrl: string;
   tokens: ServiceTokens;
+  serverType: aiServiceType = 'Oauther';
   constructor(baseUrl: string, tokens: ServiceTokens) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
   }
+  models = async () => [];
+
   async sendMessage({
     msg,
     context,

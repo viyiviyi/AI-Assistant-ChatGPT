@@ -1,8 +1,6 @@
 import { getInstance } from "ts-indexdb";
-type KeyValue = {
-  id: string;
-  data: any;
-};
+import { KeyValue } from "./IndexDb";
+
 export class BgImageStore {
   setBgImage = (bg: string) => {
     getInstance().insert<KeyValue>({

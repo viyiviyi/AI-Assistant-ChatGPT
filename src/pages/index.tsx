@@ -6,6 +6,7 @@ import { BgConfig } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
+import { initTokenStore } from "@/core/tokens";
 import { TopicMessage } from "@/Models/Topic";
 import { Layout, theme } from "antd";
 import Head from "next/head";
@@ -31,8 +32,11 @@ export default function Page() {
   chatMgt.virtualRole.avatar = "/logo.png";
   chatMgt.user.avatar = "/logo.png";
   const { reloadService } = useService();
+
   useEffect(() => {
-    reloadService(chatMgt, KeyValueData.instance());
+    initTokenStore().then(() => {
+      reloadService(chatMgt, KeyValueData.instance());
+    });
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       // 如果不在本地保存一份，编辑是会出错的

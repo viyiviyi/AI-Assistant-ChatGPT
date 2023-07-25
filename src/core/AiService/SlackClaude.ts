@@ -3,7 +3,7 @@ import { WebAPICallResult } from "@slack/web-api";
 import axios, { AxiosInstance } from "axios";
 import { ChatCompletionRequestMessage } from "openai";
 import { IAiService, InputConfig } from "./IAiService";
-import { ServiceTokens } from "./ServiceProvider";
+import { aiServiceType, ServiceTokens } from "./ServiceProvider";
 export class SlackClaude implements IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
@@ -21,6 +21,9 @@ export class SlackClaude implements IAiService {
       },
     });
   }
+  serverType: aiServiceType = "Slack";
+
+  models = async () => [];
   async sendMessage({
     msg,
     onMessage,

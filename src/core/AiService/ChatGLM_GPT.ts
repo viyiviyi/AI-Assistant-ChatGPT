@@ -1,7 +1,7 @@
 import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage, OpenAIApi } from "openai";
+import { ChatCompletionRequestMessage } from "openai";
 import { IAiService, InputConfig } from "./IAiService";
-import { ServiceTokens } from "./ServiceProvider";
+import { aiServiceType, ServiceTokens } from "./ServiceProvider";
 export class ChatGLM_GPT implements IAiService {
   customContext = true;
   history = undefined;
@@ -11,6 +11,8 @@ export class ChatGLM_GPT implements IAiService {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
   }
+  serverType: aiServiceType='ChatGLM';
+  models = async () => [];
   async sendMessage({
     context,
     onMessage,

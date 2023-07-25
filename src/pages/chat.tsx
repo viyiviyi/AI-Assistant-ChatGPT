@@ -4,6 +4,7 @@ import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
+import { initTokenStore } from "@/core/tokens";
 import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
 import { Layout, Spin, theme } from "antd";
@@ -43,7 +44,9 @@ export default function Page() {
             return { ...v };
           });
         });
-      reloadService(selectChat, KeyValueData.instance());
+      initTokenStore().then(() => {
+        reloadService(selectChat, KeyValueData.instance());
+      });
       if (chatMgt.group.id == groupId) return setLoading(false);
       if (!selectChat.topics.length)
         await ChatManagement.loadTopics(selectChat);

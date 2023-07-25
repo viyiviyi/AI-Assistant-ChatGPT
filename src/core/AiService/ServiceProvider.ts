@@ -1,9 +1,11 @@
 import { ChatGPT } from "@/core/AiService/ChatGPT";
 import { KeyValueData } from "./../KeyValueData";
 import { ChatGLM_API } from "./ChatGLM_API";
+import { Kamiya } from "./Kamiya API";
 
 import { useCallback, useState } from "react";
-import { useEnv } from "../hooks";
+import { env } from "../hooks";
+import { getToken } from "../tokens";
 import { IChat } from "./../ChatManagement";
 import { ChatGLM_GPT } from "./ChatGLM_GPT";
 import { IAiService } from "./IAiService";
@@ -19,19 +21,23 @@ export interface ServiceTokens {
 export type BaseUrlScheam = {
   chatGPT: string;
   slackClaude: string;
+  Kamiya: string;
 };
 
 export const DefaultBaseUrl: BaseUrlScheam = {
   chatGPT: "https://api.openai.com",
   slackClaude: "https://slack.com",
+  Kamiya: "https://p0.kamiya.dev",
 };
 export const ProxyBaseUrl: BaseUrlScheam = {
   chatGPT: "https://chat.22733.site",
   slackClaude: "https://slack.22733.site",
+  Kamiya: "https://p0.kamiya.dev",
 };
 export const DevBaseUrl: BaseUrlScheam = {
   chatGPT: ProxyBaseUrl.chatGPT,
   slackClaude: "http://slack.yiyiooo.com",
+  Kamiya: ProxyBaseUrl.Kamiya,
 };
 
 export type aiServiceType =
@@ -39,6 +45,7 @@ export type aiServiceType =
   | "ChatGPT"
   | "Slack"
   | "GPTFree"
+  | "Kamiya"
   | "ChatGLM"
   | "Oauther";
 export const aiServerList: { key: aiServiceType; name: string }[] = [
@@ -55,9 +62,13 @@ export const aiServerList: { key: aiServiceType; name: string }[] = [
     name: "Slack(Claude)",
   },
   {
-    key: "GPTFree",
-    name: "ChatGPT(免费)",
+    key: "Kamiya",
+    name: "众神之谷",
   },
+  // {
+  //   key: "GPTFree",
+  //   name: "ChatGPT(免费)",
+  // },
   {
     key: "ChatGLM",
     name: "ChatGLM",
@@ -67,65 +78,50 @@ export const aiServerList: { key: aiServiceType; name: string }[] = [
 export const aiServices: {
   current?: IAiService;
 } = {};
+export function getServiceInstance(botType: aiServiceType, chat: IChat) {
+  let tokenStore = getToken(botType);
+  let tokens: ServiceTokens = {
+    openai: { apiKey: tokenStore.current },
+    slack: {
+      slack_user_token: tokenStore.current,
+      claude_id: chat.config.cloudChannelId || "",
+    },
+  };
+  let baseUrl: BaseUrlScheam = env == "prod" ? ProxyBaseUrl : DevBaseUrl;
+  switch (botType) {
+    case "Slack":
+      return new SlackClaude(
+        KeyValueData.instance().getSlackProxyUrl() || baseUrl.slackClaude,
+        tokens
+      );
+    case "GPTFree":
+      return new ChatGPT("https://chat-free.22733.site", {
+        openai: { apiKey: "123" },
+      });
+    case "ChatGPT":
+      return new ChatGPT(chat.config.baseUrl || baseUrl.chatGPT, tokens);
+    case "Kamiya":
+      return new Kamiya(baseUrl.Kamiya, tokens);
+    case "ChatGLM":
+      return new ChatGLM_GPT(chat.config.userServerUrl || "", tokens);
+    case "Oauther":
+      return new ChatGLM_API(chat.config.userServerUrl || "", tokens);
+    case "None":
+      return undefined;
+  }
+}
 
 export function useService() {
-  const env = useEnv();
   const [_, setService] = useState(aiServices.current);
-  let reloadService = useCallback(
-    (chat: IChat, data: KeyValueData) => {
-      let baseUrl: BaseUrlScheam = env == "dev" ? DevBaseUrl : ProxyBaseUrl;
-      if (!data) return;
-      let tokens: ServiceTokens = {
-        openai: { apiKey: KeyValueData.instance().getApiKey() },
-        slack: {
-          slack_user_token: KeyValueData.instance().getSlackUserToken(),
-          claude_id: KeyValueData.instance().getSlackClaudeId(),
-        },
-      };
-      let _service: IAiService | undefined = undefined;
-      switch (chat.config.botType) {
-        case "Slack":
-          _service = new SlackClaude(
-            KeyValueData.instance().getSlackProxyUrl() || baseUrl.slackClaude,
-            tokens
-          );
-          break;
-        case "GPTFree":
-          _service = new ChatGPT("https://chat-free.22733.site", {
-            openai: { apiKey: "123" },
-          });
-          break;
-        case "ChatGPT":
-          _service = new ChatGPT(
-            chat.config.baseUrl || baseUrl.chatGPT,
-            tokens
-          );
-          break;
-        case "ChatGLM":
-          _service = new ChatGLM_GPT(chat.config.userServerUrl || "", tokens);
-          break;
-        case "Oauther":
-          _service = new ChatGLM_API(chat.config.userServerUrl || "", tokens);
-      }
-      setService(_service);
-      aiServices.current = _service;
-    },
-    [env]
-  );
+  let reloadService = useCallback((chat: IChat, data: KeyValueData) => {
+    if (!data) return;
+    let _service: IAiService | undefined = getServiceInstance(
+      chat.config.botType,
+      chat
+    );
+    setService(_service);
+    aiServices.current = _service;
+  }, []);
 
   return { reloadService, aiService: aiServices.current };
 }
-
-export const chatGptModels = [
-  "gpt-3.5-turbo",
-  "gpt-3.5-turbo-0301",
-  "gpt-3.5-turbo-16k",
-  "gpt-3.5-turbo-0613",
-  "gpt-3.5-turbo-16k-0613",
-  "gpt-4",
-  "gpt-4-0314",
-  "gpt-4-32k",
-  "gpt-4-32k-0314",
-  "text-davinci-003",
-  "text-davinci-002	",
-];

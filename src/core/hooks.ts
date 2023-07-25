@@ -46,16 +46,8 @@ export function useDark() {
   return obj;
 }
 
-export function useEnv() {
-  const [obj, setObj] = useState<"dev" | "prod">("prod");
-  const retrieved = useRef(false);
-  useEffect(() => {
-    if (retrieved.current) return;
-    retrieved.current = true;
-    setObj("prod");
-  }, []);
-  return obj;
-}
+export const env: "dev" | "prod" =
+  process.env.NEXT_PUBLIC_DOMAIN_ENV === "production" ? "prod" : "dev";
 
 // 整理idx之后的message的timestamp的值, 并获取一个可以使用的值，因为这个值用于排序用，如果前后顺序相同时，需要将后一个+0.01 并且需要递归只到最后一个或者与下一个不一样为止
 export function useReloadIndex(chat: ChatManagement) {
@@ -87,7 +79,7 @@ export function useSendMessage(chat: ChatManagement) {
       if (idx == 0 && idx < topic.messages.length)
         time = topic.messages[idx].timestamp - 1;
       if (idx >= 0 && idx < topic.messages.length)
-        time = topic.messages[idx-1].timestamp + 0.001;
+        time = topic.messages[idx - 1].timestamp + 0.001;
       let result: Message = {
         id: "",
         groupId: chat.group.id,

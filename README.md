@@ -110,7 +110,8 @@
 ## cloudflare反向代理
 
 ```javascript
-const TELEGRAPH_URL = 'https://slack.com';
+
+const TELEGRAPH_URL = 'https://api.openai.com';
 
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
@@ -119,11 +120,16 @@ addEventListener('fetch', event => {
 async function handleRequest(request) {
   const url = new URL(request.url);
   url.host = TELEGRAPH_URL.replace(/^https?:\/\//, '');
-
-  let new_request_headers = new Headers(request.headers);
-  new_request_headers.set('Host', 'https://slack.com');
-  new_request_headers.set('Orgin', 'https://slack.com');
-  new_request_headers.set('Referer', url.href);
+  let old_request_headers = new Headers(request.headers);
+  let new_request_headers = new Headers();
+  new_request_headers.set('Host', 'https://api.openai.com');
+  new_request_headers.set('Orgin', 'https://api.openai.com');
+  new_request_headers.set('Referer', '');
+  new_request_headers.set('user-agent', '');
+  new_request_headers.set('Authorization', old_request_headers.get('Authorization'));
+  new_request_headers.set('Accept-Language', old_request_headers.get('Accept-Language'));
+  new_request_headers.set('Accept-Encoding', old_request_headers.get('Accept-Encoding'));
+  new_request_headers.set('Content-Type', old_request_headers.get('Content-Type'));
 
   const modifiedRequest = new Request(url.toString(), {
     headers: new_request_headers,
@@ -136,12 +142,8 @@ async function handleRequest(request) {
 
   const modifiedResponse = new Response(response.body, response);
   // 添加允许跨域访问的响应头
-  if (request.Origin == 'litechat.22733.site')
-    modifiedResponse.headers.set('Access-Control-Allow-Origin', 'https://litechat.22733.site');
-  if (request.Origin == '22733.site')
-    modifiedResponse.headers.set('Access-Control-Allow-Origin', 'https://22733.site');
-  // modifiedResponse.headers.set('Access-Control-Allow-Origin', '*');
-  modifiedResponse.headers.set('cache-control' ,'public, max-age=14400')
+  modifiedResponse.headers.set('Access-Control-Allow-Origin', "*");
+  modifiedResponse.headers.set('cache-control', 'public, max-age=14400')
   modifiedResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   modifiedResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type,Content-Length, Authorization, Accept,X-Requested-With');
   modifiedResponse.headers.set('access-control-allow-credentials', 'true');
@@ -150,6 +152,7 @@ async function handleRequest(request) {
   modifiedResponse.headers.delete('clear-site-data');
   return modifiedResponse;
 }
+
 ```
 
 ## nginx反向代理

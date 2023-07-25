@@ -1,17 +1,20 @@
 import {
   aiServerList,
+  aiServices,
   aiServiceType,
-  chatGptModels,
+  getServiceInstance,
   useService
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
+import { getToken, saveToken } from "@/core/tokens";
 import { downloadJson } from "@/core/utils";
 import {
   CaretRightOutlined,
   DownloadOutlined,
   GithubOutlined,
+  PlusOutlined,
   UploadOutlined
 } from "@ant-design/icons";
 import {
@@ -50,7 +53,7 @@ export const Setting = ({
   const router = useRouter();
   const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
-  const [models, setModels] = useState<string[]>(chatGptModels);
+  const [models, setModels] = useState<string[]>([]);
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
@@ -82,7 +85,7 @@ export const Setting = ({
   }>();
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
-    form.setFieldsValue({
+    let vals: { [key: string]: any } = {
       setting_apitoken: KeyValueData.instance().getApiKey(),
       GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
       GptConfig_role: chatMgt?.gptConfig.role,
@@ -109,12 +112,19 @@ export const Setting = ({
         .trim()
         ?.replace(/\/$/, ""),
       group_name: chatMgt?.group.name,
+    };
+    aiServices.current?.models().then((res) => {
+      setModels(res);
+      if (!res.includes(chatMgt?.gptConfig.model || "") && res.length) {
+        vals.GptConfig_model = res[0];
+        form.setFieldsValue(vals);
+      }
     });
-    // ApiClient.getModelList(
-    //   form.getFieldValue("setting_apitoken") ||
-    //     KeyValueData.instance().getApiKey(),
-    //   form.getFieldValue("setting_baseurl") || chatMgt?.config.baseUrl
-    // ).then((res) => {});
+    aiServerList.forEach((v) => {
+      let t = getToken(v.key);
+      vals["global_tokens_" + v.key] = t.tokens;
+    });
+    form.setFieldsValue(vals);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   async function onSave() {
@@ -148,10 +158,7 @@ export const Setting = ({
     BgImageStore.getInstance().setBgImage(background || "");
     setBgConfig(group_background || background);
 
-    KeyValueData.instance().setApiKey(
-      values.setting_apitoken,
-      values.config_saveKey
-    );
+    KeyValueData.instance().setApiKey("", false);
     KeyValueData.instance().setSlackClaudeId(
       values.slack_claude_id,
       values.config_saveKey
@@ -164,6 +171,15 @@ export const Setting = ({
       values.setting_slack_proxy_url?.trim()?.replace(/\/$/, ""),
       values.config_saveKey
     );
+    aiServerList.forEach((v) => {
+      let t = getToken(v.key);
+      t.tokens =
+        ((values as any)["global_tokens_" + v.key] as Array<string>)?.filter(
+          (v) => v
+        ) || [];
+      if (!t.tokens.includes(t.current)) t.current = t.tokens[0];
+      saveToken(v.key, t);
+    });
     reloadService(chatMgt, KeyValueData.instance());
     setChat(new ChatManagement(chatMgt));
     onSaved();
@@ -322,12 +338,23 @@ export const Setting = ({
               </Button>
             </Button.Group>
           </Form.Item>
-          <Form.Item
-            name="config_bot_type"
-            label="Ai类型"
-            extra="包含了一个临时开放且每天全局限制请求次数免费的GPT服务"
-          >
-            <Select style={{ width: "100%" }}>
+          <Form.Item name="config_bot_type" label="Ai类型">
+            <Select
+              style={{ width: "100%" }}
+              onChange={(value, o) => {
+                let server = getServiceInstance(value, chatMgt!);
+                if (!server) setModels([]);
+                server?.models().then((res) => {
+                  setModels(res);
+                  if (
+                    res.length &&
+                    !res.includes(form.getFieldValue("GptConfig_model"))
+                  ) {
+                    form.setFieldValue("GptConfig_model", res[0]);
+                  }
+                });
+              }}
+            >
               {aiServerList.map((v) => (
                 <Select.Option key={"ai_type" + v.key} value={v.key}>
                   {v.name}
@@ -335,9 +362,11 @@ export const Setting = ({
               ))}
             </Select>
           </Form.Item>
-          <Form.Item label="ChatGPT模型名称" name={"GptConfig_model"}>
-            <Select options={models.map((v) => ({ value: v, label: v }))} />
-          </Form.Item>
+          {models.length && (
+            <Form.Item label="ChatGPT模型名称" name={"GptConfig_model"}>
+              <Select options={models.map((v) => ({ value: v, label: v }))} />
+            </Form.Item>
+          )}
           <Collapse
             // ghost
             bordered={false}
@@ -477,6 +506,13 @@ export const Setting = ({
               >
                 <Input type="text" autoComplete="off" />
               </Form.Item>
+              <Form.Item
+                name="slack_user_token"
+                label="Slack配置：用户token (user-token) (全局生效)"
+                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+              >
+                <Input.Password autoComplete="off" />
+              </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
               forceRender={true}
@@ -492,20 +528,53 @@ export const Setting = ({
               >
                 <Switch />
               </Form.Item>
-              <Form.Item
+              {aiServerList
+                .filter((s) => ["Kamiya", "ChatGPT"].includes(s.key))
+                .map((s) => {
+                  return (
+                    <Form.Item
+                      key={"global_tokens_" + s.key}
+                      label={s.name + " token (全局生效)"}
+                    >
+                      <Form.List name={"global_tokens_" + s.key}>
+                        {(fields, { add, remove }, { errors }) => {
+                          return (
+                            <div style={{ overflow: "auto" }}>
+                              {fields.map((field, index) => {
+                                return (
+                                  <Form.Item {...field}>
+                                    <Input.Password autoComplete="off" />
+                                  </Form.Item>
+                                );
+                              })}
+                              <Form.Item extra="当存在多个token时，每次请求后都会切换到下一个token">
+                                <Button
+                                  type="dashed"
+                                  onClick={() => {
+                                    add();
+                                  }}
+                                  block
+                                  icon={<PlusOutlined />}
+                                >
+                                  增加 token
+                                </Button>
+                                <Form.ErrorList errors={errors} />
+                              </Form.Item>
+                            </div>
+                          );
+                        }}
+                      </Form.List>
+                    </Form.Item>
+                  );
+                })}
+              {/* <Form.Item
                 name="setting_apitoken"
                 label="OpenApi Key (全局生效)"
                 extra={<span>请填写自己的key，没有key将不能使用。</span>}
               >
                 <Input.Password autoComplete="off" />
               </Form.Item>
-              <Form.Item
-                name="slack_user_token"
-                label="Slack配置：用户token (user-token) (全局生效)"
-                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-              >
-                <Input.Password autoComplete="off" />
-              </Form.Item>
+              */}
             </Collapse.Panel>
             <Collapse.Panel
               forceRender={true}
