@@ -13,7 +13,25 @@ export class Kamiya implements IAiService {
     this.tokens = tokens;
   }
   serverType: aiServiceType = "Kamiya";
-  models = async () => [];
+  models = async () => [
+    "openai:gpt-3.5-turbo",
+    "openai:gpt-3.5-turbo-16k",
+    "openai:gpt-3.5-enhanced-for-role-play",
+    "openai:gpt-4",
+    "cohere:command",
+    "cohere:command-nightly",
+    "cohere:command-light",
+    "cohere:command-light-nightly",
+    "anthropic:claude-1",
+    "anthropic:claude-1.2",
+    "anthropic:claude-1.3",
+    "anthropic:claude-1-100k",
+    "anthropic:claude-1.3-100k",
+    "anthropic:claude-2",
+    "anthropic:claude-instant-1",
+    "anthropic:claude-instant-1.1",
+    "anthropic:claude-instant-1-100k",
+  ];
   async sendMessage({
     context,
     onMessage,
@@ -66,7 +84,7 @@ export class Kamiya implements IAiService {
       "Content-Type": "application/json",
     };
     const data = {
-      model: "openai:gpt-3.5-turbo",
+      model: config.model,
       messages: context,
       stream: true,
       max_tokens: config.max_tokens,
