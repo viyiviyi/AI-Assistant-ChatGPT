@@ -10,7 +10,7 @@ export type TokenStore = {
 };
 
 const cache: { [key in aiServiceType]?: TokenStore } = {};
-
+let isInit = false;
 export async function initTokenStore() {
   const tokens = await getInstance().queryAll<KeyValue>({
     tableName: "GlobalTokens",
@@ -34,6 +34,7 @@ export async function initTokenStore() {
       saveToken("Slack", cache[s.key]!);
     }
   });
+  isInit = true;
 }
 export function getTokens() {
   return Object.values(cache);
@@ -57,6 +58,7 @@ export function nextToken(token: TokenStore): TokenStore {
   return token;
 }
 export function saveToken(botType: aiServiceType, token: TokenStore) {
+  if (!isInit) return;
   let tokensCache = getToken(botType);
   Object.assign(tokensCache, token);
   getInstance().insert<KeyValue>({

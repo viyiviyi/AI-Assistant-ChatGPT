@@ -34,10 +34,10 @@ export default function Page() {
   const { reloadService } = useService();
 
   useEffect(() => {
-    initTokenStore().then(() => {
-      reloadService(chatMgt, KeyValueData.instance());
-    });
     ChatManagement.load().then(async () => {
+      initTokenStore().then(() => {
+        reloadService(chatMgt, KeyValueData.instance());
+      });
       let chats = ChatManagement.getGroups();
       // 如果不在本地保存一份，编辑是会出错的
       let idx = chats.findIndex((f) => f.group.id == chatMgt.group.id);
