@@ -1,5 +1,8 @@
 import { aiServiceType } from "@/core/AiService/ServiceProvider";
-import { ChatCompletionRequestMessage } from "openai";
+import {
+  ChatCompletionRequestMessage,
+  CreateChatCompletionRequest
+} from "openai";
 import { Message } from "../../Models/DataBase";
 import { ServiceTokens } from "./ServiceProvider";
 export interface IAiService {
@@ -43,7 +46,7 @@ type chatGPTConfig = {
   user?: "assistant" | "system" | "user";
   n?: number;
   temperature?: number;
-};
+} & CreateChatCompletionRequest;
 
 type slackConfig = {
   channel_id?: string;

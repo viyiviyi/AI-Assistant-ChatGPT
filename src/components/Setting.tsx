@@ -69,6 +69,8 @@ export const Setting = ({
     GptConfig_temperature: number;
     GptConfig_n: number;
     GptConfig_model: string;
+    GptConfig_frequency_penalty: number;
+    GptConfig_presence_penalty: number;
     config_saveKey: boolean;
     config_disable_strikethrough: boolean;
     setting_baseurl: string;
@@ -94,6 +96,8 @@ export const Setting = ({
       GptConfig_temperature: chatMgt?.gptConfig.temperature,
       GptConfig_n: chatMgt?.gptConfig.n,
       GptConfig_model: chatMgt?.gptConfig.model,
+      GptConfig_frequency_penalty: chatMgt?.gptConfig.frequency_penalty || 0,
+      GptConfig_presence_penalty: chatMgt?.gptConfig.presence_penalty || 0,
       config_saveKey: true,
       config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
       setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ""),
@@ -137,6 +141,8 @@ export const Setting = ({
     chatMgt.gptConfig.msgCount = values.GptConfig_msgCount;
     chatMgt.gptConfig.temperature = values.GptConfig_temperature;
     chatMgt.gptConfig.top_p = values.GptConfig_top_p;
+    chatMgt.gptConfig.presence_penalty = values.GptConfig_presence_penalty;
+    chatMgt.gptConfig.frequency_penalty = values.GptConfig_frequency_penalty;
     chatMgt.saveGptConfig();
 
     chatMgt.config.baseUrl = values.setting_baseurl?.trim()?.replace(/\/$/, "");
@@ -484,6 +490,20 @@ export const Setting = ({
                 extra={"较高的值会产生更多样化的文本"}
               >
                 <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
+              </Form.Item>
+              <Form.Item
+                name="GptConfig_presence_penalty"
+                label="ChatGPT参数： presence_penalty"
+                extra={"较高的值会增加模型谈论新话题的可能性"}
+              >
+                <InputNumber step="0.01" min={-2} max={2} autoComplete="off" />
+              </Form.Item>
+              <Form.Item
+                name="GptConfig_frequency_penalty"
+                label="ChatGPT参数： frequency_penalty"
+                extra={"较高的值会降低模型直接重复相同语句的可能性"}
+              >
+                <InputNumber step="0.05" min={-2} max={2} autoComplete="off" />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel

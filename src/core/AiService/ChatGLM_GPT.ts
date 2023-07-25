@@ -68,6 +68,8 @@ export class ChatGLM_GPT implements IAiService {
       top_p: config.top_p,
       n: config.n,
       user: config.user,
+      frequency_penalty: config.frequency_penalty || 0,
+      presence_penalty: config.presence_penalty || 0,
     };
     const controller = new AbortController();
     await fetch(`${this.baseUrl}/v1/chat/completions`, {

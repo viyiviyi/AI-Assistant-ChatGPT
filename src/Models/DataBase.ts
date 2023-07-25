@@ -84,4 +84,6 @@ export interface GptConfig {
   temperature?: number; // 0-1
   n: number;
   msgCount: number; // >=0
+  presence_penalty?: number;
+  frequency_penalty?: number;
 }

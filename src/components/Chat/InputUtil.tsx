@@ -189,6 +189,7 @@ export function InputUtil() {
               channel_id: chat.config.cloudChannelId,
               ...chat.gptConfig,
               user: "user",
+              messages: [],
             },
           });
           setLoading((v) => --v);
@@ -206,6 +207,7 @@ export function InputUtil() {
               channel_id: chat.config.cloudChannelId,
               ...chat.gptConfig,
               user: "user",
+              messages: [],
             },
           });
         } else if (aiService.history && topic.cloudTopicId) {
@@ -242,6 +244,7 @@ export function InputUtil() {
               channel_id: chat.config.cloudChannelId,
               ...chat.gptConfig,
               user: "user",
+              messages: [],
             },
           });
           reloadTopic(result.topicId);

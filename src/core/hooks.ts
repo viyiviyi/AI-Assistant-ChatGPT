@@ -132,6 +132,7 @@ export function useSendMessage(chat: ChatManagement) {
           channel_id: chat.config.cloudChannelId,
           ...chat.gptConfig,
           user: "user",
+          messages: [],
         },
       });
     },
