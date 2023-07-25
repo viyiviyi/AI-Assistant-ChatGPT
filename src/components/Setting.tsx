@@ -489,7 +489,7 @@ export const Setting = ({
                 label="ChatGPT参数： temperature"
                 extra={"较高的值会产生更多样化的文本"}
               >
-                <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
+                <InputNumber step="0.05" min={0} max={2} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_presence_penalty"

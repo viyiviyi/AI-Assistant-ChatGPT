@@ -503,11 +503,13 @@ export class ChatManagement implements IChat {
       groupId,
       role: "user",
       model: "gpt-3.5-turbo",
-      max_tokens: 1000,
-      top_p: 0.7,
+      max_tokens: 1024,
+      top_p: 0.9,
       temperature: 0.5,
       n: 1,
-      msgCount: 10,
+      msgCount: 11,
+      presence_penalty: 0,
+      frequency_penalty: 2,
     };
     await getInstance().insert<GptConfig>({ tableName: "GptConfig", data });
     return data;
