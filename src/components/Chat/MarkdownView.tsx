@@ -96,13 +96,15 @@ let processor = unified()
 export const MarkdownView = ({
   markdown,
   menu,
+  doubleClick,
 }: {
   markdown: string;
   menu?: MenuProps;
+  doubleClick?: React.MouseEventHandler<HTMLDivElement>;
 }) => {
   const renderedMarkdown = processor.processSync(markdown).result;
   return (
-    <div>{renderedMarkdown}</div>
+    <div onDoubleClick={doubleClick}>{renderedMarkdown}</div>
     // <Dropdown menu={menu}  trigger={["contextMenu"]}>
 
     // </Dropdown>
