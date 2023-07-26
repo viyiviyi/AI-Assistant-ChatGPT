@@ -1,5 +1,6 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
+import { scrollToBotton } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
@@ -11,7 +12,7 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -22,7 +23,7 @@ import {
   message,
   Popconfirm,
   Space,
-  theme,
+  theme
 } from "antd";
 import copy from "copy-to-clipboard";
 import React, {
@@ -30,7 +31,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useState
 } from "react";
 import { MarkdownView } from "./MarkdownView";
 
@@ -215,6 +216,7 @@ export const MessageItem = ({
               doubleClick={() => {
                 setMessage(msg.text);
                 setEdit(true);
+                scrollToBotton(msg.id);
               }}
             />
           )}
@@ -344,6 +346,7 @@ export const MessageItem = ({
                   doubleClick={() => {
                     setMessage(msg.text);
                     setEdit(true);
+                    scrollToBotton(msg.id);
                   }}
                 />
               )}
