@@ -1,7 +1,7 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
-import style from "@/styles/index.module.css";
+import styleCss from "@/styles/index.module.css";
 import {
   CopyOutlined,
   DeleteOutlined,
@@ -25,7 +25,13 @@ import {
   theme,
 } from "antd";
 import copy from "copy-to-clipboard";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  CSSProperties,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { MarkdownView } from "./MarkdownView";
 
 const MemoMarkdownView = React.memo(MarkdownView);
@@ -37,6 +43,7 @@ export const MessageItem = ({
   onCite,
   onPush,
   onSned,
+  style,
 }: {
   msg: Message;
   renderMessage: { [key: string]: () => void };
@@ -45,6 +52,7 @@ export const MessageItem = ({
   onCite: (message: Message) => void;
   onPush: () => void;
   onSned: () => void;
+  style?: CSSProperties | undefined;
 }) => {
   const { chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const { aiService } = useService();
@@ -150,7 +158,7 @@ export const MessageItem = ({
     </>
   );
   const Extend = (
-    <div className={style.message_extend_but}>
+    <div className={styleCss.message_extend_but} style={{ ...style }}>
       <Divider style={{ margin: 0 }}>
         <Space size={6}>
           {aiService?.customContext && (
@@ -179,7 +187,7 @@ export const MessageItem = ({
           textAlign: "center",
         }}
         id={msg.id}
-        className={style.message_box}
+        className={styleCss.message_box}
       >
         <div>
           {edit ? (
@@ -229,7 +237,7 @@ export const MessageItem = ({
   return (
     <div
       className={
-        style.message_box + (chat.config.limitPreHeight ? " limt-hight" : "")
+        styleCss.message_box + (chat.config.limitPreHeight ? " limt-hight" : "")
       }
       style={{
         display: "flex",
@@ -258,7 +266,7 @@ export const MessageItem = ({
         />
         {/* {min(calc(max(1200px, 100vw) - calc(250px + max(min(50px,100vw - 1195px),5px))), calc(100vw - 100px))} */}
         <div
-          className={style.message_item}
+          className={styleCss.message_item}
           style={{
             display: "flex",
             flex: edit ? 1 : undefined,

@@ -145,7 +145,7 @@ export function MessageList({
       ) : (
         <></>
       )}
-      {messages.map((v) => {
+      {messages.map((v, i) => {
         let idx = msgIdIdxMap.get(v.id);
         if (idx === undefined) idx = messages.length - 1;
         return (
@@ -156,6 +156,9 @@ export function MessageList({
               onDel={onDel}
               rBak={rBak}
               onCite={setCite}
+              style={{
+                marginBottom: i + 1 == messages.length ? "20px" : undefined,
+              }}
               onPush={() => {
                 onPush(idx!);
               }}
