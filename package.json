@@ -48,6 +48,7 @@
     "unified": "^10.1.2"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^1.4.0",
     "@types/react-avatar-editor": "^13.0.0",
     "@types/react-copy-to-clipboard": "^5.0.4",
     "next-on-pages-vercel-cli": "^29.3.0-next-on-pages-fix-3"
