@@ -46,8 +46,8 @@
         "digestAlgorithm": "sha256",
         "timestampUrl": "",
         "wix": {
-					"language": "zh-CN"
-				}
+          "language": "zh-CN"
+        }
       }
     },
     "security": {
