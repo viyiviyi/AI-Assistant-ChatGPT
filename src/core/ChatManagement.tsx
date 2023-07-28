@@ -504,12 +504,12 @@ export class ChatManagement implements IChat {
       role: "user",
       model: "gpt-3.5-turbo",
       max_tokens: 1024,
-      top_p: 0.9,
-      temperature: 0.5,
+      top_p: 0.5,
+      temperature: 1,
       n: 1,
       msgCount: 11,
       presence_penalty: 0,
-      frequency_penalty: 2,
+      frequency_penalty: 1,
     };
     await getInstance().insert<GptConfig>({ tableName: "GptConfig", data });
     return data;
