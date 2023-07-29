@@ -1,6 +1,7 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatManagement } from "@/core/ChatManagement";
 import { usePushMessage } from "@/core/hooks";
+import { onTextareaTab } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";
 import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
 import { Button, Input, theme, Tooltip } from "antd";
@@ -33,17 +34,7 @@ function InsertInput({
       setInsertText("");
     });
   };
-  const onTextareaTab = (
-    start: number,
-    end: number,
-    textarea: EventTarget & HTMLTextAreaElement
-  ) => {
-    setInsertText((v) => v.substring(0, start) + "    " + v.substring(start));
-    setTimeout(() => {
-      textarea.selectionStart = start + 4;
-      textarea.selectionEnd = end + 4;
-    }, 0);
-  };
+
   return (
     <>
       <div
@@ -141,10 +132,14 @@ function InsertInput({
           onKeyDown={(e) =>
             e.key === "Tab" &&
             (e.preventDefault(),
-            onTextareaTab(
-              e.currentTarget?.selectionStart,
-              e.currentTarget?.selectionEnd,
-              e.currentTarget
+            setInsertText((v) =>
+              onTextareaTab(
+                v,
+                e.currentTarget?.selectionStart,
+                e.currentTarget?.selectionEnd,
+                e.currentTarget,
+                e.shiftKey
+              )
             ))
           }
         />

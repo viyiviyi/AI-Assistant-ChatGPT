@@ -58,7 +58,7 @@ export function pagesUtil<T>(
   return {
     range: arr.slice(start, end),
     totalPages: total,
-    pageIndex: pageNumber,  
+    pageIndex: pageNumber,
   };
 }
 
@@ -73,6 +73,44 @@ export function downloadJson(jsonData: string, filename: string) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+export const onTextareaTab = (
+  inputText: string,
+  start: number,
+  end: number,
+  textarea: EventTarget & HTMLTextAreaElement,
+  shift?: boolean
+) => {
+  let result = inputText;
+  if (inputText.slice(start, end).includes("\n") || shift) {
+    let end_is_enter = false;
+    if (inputText[start] == "\n") end_is_enter = true;
+    let n_start = inputText.lastIndexOf("\n", start - (end_is_enter ? 1 : 0));
+    let select = inputText.slice(n_start, end);
+    let new_select = select;
+    if (shift) {
+      new_select = select.replace(/\n\s{1,4}/g, "\n");
+    } else {
+      new_select = select.replace(/\n/g, "\n    ");
+    }
+    result =
+      inputText.substring(0, n_start) + new_select + inputText.substring(end);
+    setTimeout(() => {
+      textarea.selectionStart =
+        start +
+        (shift ? -Math.max(0, Math.min(4, select.search(/\S/) - 1)) : 4);
+      textarea.selectionEnd = n_start + new_select.length;
+    }, 0);
+  } else {
+    result =
+      inputText.substring(0, start) + "    " + inputText.substring(start);
+    setTimeout(() => {
+      textarea.selectionStart = start + 4;
+      textarea.selectionEnd = end + 4;
+    }, 0);
+  }
+  return result;
+};
 
 let toEndCache = { id: "", await: false, animation: 0 as any, to_top_id: "" };
 export function scrollToBotton(id?: string) {

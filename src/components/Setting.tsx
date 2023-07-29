@@ -19,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import {
   Button,
+  Checkbox,
   Collapse,
   Form,
   Input,
@@ -55,6 +56,11 @@ export const Setting = ({
   const { reloadService } = useService();
   const [models, setModels] = useState<string[]>([]);
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
+  const [selectRoles, setSelectRoles] = useState({
+    assistant: true,
+    system: true,
+    user: true,
+  });
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
   );
@@ -274,14 +280,60 @@ export const Setting = ({
                 onClick={() => {
                   modal.confirm({
                     title: "可选择导出的文件类型",
-                    content:
-                      "Markdown格式是分开导出所有的话题，且不支持用于还原",
+                    content: (
+                      <>
+                        <p>
+                          Markdown格式是分开导出所有的话题，且不支持用于还原,
+                        </p>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          <span>指定身份，仅对md文档生效</span>
+                          <Checkbox
+                            checked={selectRoles.user}
+                            onChange={(e) => {
+                              setSelectRoles((v) => ({
+                                ...v,
+                                user: e.target.checked,
+                              }));
+                            }}
+                          >
+                            用户
+                          </Checkbox>
+                          <Checkbox
+                            checked={selectRoles.assistant}
+                            onChange={(e) => {
+                              setSelectRoles((v) => ({
+                                ...v,
+                                assistant: e.target.checked,
+                              }));
+                            }}
+                          >
+                            助理
+                          </Checkbox>
+                          <Checkbox
+                            checked={selectRoles.system}
+                            onChange={(e) => {
+                              setSelectRoles((v) => ({
+                                ...v,
+                                system: e.target.checked,
+                              }));
+                            }}
+                          >
+                            系统
+                          </Checkbox>
+                        </div>
+                      </>
+                    ),
                     okText: "JSON",
                     cancelText: "Markdown",
                     onCancel: () => {
                       chatMgt?.topics.forEach((v) => {
                         ChatManagement.loadMessage(v).then((t) => {
-                          downloadTopic(v, false, chatMgt);
+                          downloadTopic(v, false, chatMgt, selectRoles);
                         });
                       });
                     },

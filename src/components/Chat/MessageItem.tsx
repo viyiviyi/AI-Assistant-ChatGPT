@@ -1,6 +1,10 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
-import { scrollToBotton } from "@/core/utils";
+import {
+  onTextareaTab,
+  scrollStatus, scrollToTop,
+  stopScroll
+} from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
@@ -25,8 +29,10 @@ import {
   Space,
   theme
 } from "antd";
+import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
 import React, {
+  createRef,
   CSSProperties,
   useCallback,
   useContext,
@@ -60,6 +66,7 @@ export const MessageItem = ({
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState("");
+  const [inputRef] = useState(createRef<TextAreaRef>());
   const [none, setNone] = useState([]);
   useEffect(() => {
     renderMessage[msg.id] = () => {
@@ -113,6 +120,9 @@ export const MessageItem = ({
         onClick={() => {
           if (!edit) setMessage(msg.text);
           setEdit(!edit);
+          stopScroll();
+          scrollStatus.enableTop = true;
+          scrollToTop(msg.id);
         }}
       />
       <span style={{ marginLeft: "16px" }}></span>
@@ -204,7 +214,25 @@ export const MessageItem = ({
                   e.preventDefault();
                   saveMsg();
                 }
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  setMessage((v) =>
+                    onTextareaTab(
+                      v,
+                      e.currentTarget?.selectionStart,
+                      e.currentTarget?.selectionEnd,
+                      e.currentTarget,
+                      e.shiftKey
+                    )
+                  );
+                }
               }}
+              onFocus={(e) => {
+                e.target.selectionStart = msg.text.length;
+                e.target.selectionEnd = msg.text.length;
+              }}
+              ref={inputRef}
+              autoFocus={true}
             />
           ) : (
             <MemoMarkdownView
@@ -216,7 +244,9 @@ export const MessageItem = ({
               doubleClick={() => {
                 setMessage(msg.text);
                 setEdit(true);
-                scrollToBotton(msg.id);
+                stopScroll();
+                scrollStatus.enableTop = true;
+                scrollToTop(msg.id);
               }}
             />
           )}
@@ -334,7 +364,24 @@ export const MessageItem = ({
                       e.preventDefault();
                       saveMsg();
                     }
+                    if (e.key === "Tab") {
+                      e.preventDefault();
+                      setMessage((v) =>
+                        onTextareaTab(
+                          v,
+                          e.currentTarget?.selectionStart,
+                          e.currentTarget?.selectionEnd,
+                          e.currentTarget,
+                          e.shiftKey
+                        )
+                      );
+                    }
                   }}
+                  onFocus={(e) => {
+                    e.target.selectionStart = msg.text.length;
+                    e.target.selectionEnd = msg.text.length;
+                  }}
+                  autoFocus={true}
                 />
               ) : (
                 <MemoMarkdownView
@@ -346,7 +393,9 @@ export const MessageItem = ({
                   doubleClick={() => {
                     setMessage(msg.text);
                     setEdit(true);
-                    scrollToBotton(msg.id);
+                    stopScroll();
+                    scrollStatus.enableTop = true;
+                    scrollToTop(msg.id);
                   }}
                 />
               )}

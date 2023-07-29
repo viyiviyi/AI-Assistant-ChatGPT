@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import {
   Button,
+  Checkbox,
   Collapse,
   Input,
   Popconfirm,
@@ -150,6 +151,11 @@ function TopUtil({
   const [showInsert0, setShowInsert0] = useState(false);
   const { chat } = useContext(ChatContext);
   const { sendMessage } = useSendMessage(chat);
+  const [selectRoles, setSelectRoles] = useState({
+    assistant: true,
+    system: true,
+    user: true,
+  });
   return (
     <>
       <div
@@ -206,12 +212,52 @@ function TopUtil({
           >
             <Popconfirm
               title="请选择内容格式。"
-              description="当选择对话时，将会给每条消息前加上助理或用户的名字。"
+              description={
+                <>
+                  <p>当选择对话时，将会给每条消息前加上助理或用户的名字。</p>
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <span>指定身份，仅对md文档生效</span>
+                    <Checkbox
+                      checked={selectRoles.user}
+                      onChange={(e) => {
+                        setSelectRoles((v) => ({
+                          ...v,
+                          user: e.target.checked,
+                        }));
+                      }}
+                    >
+                      用户
+                    </Checkbox>
+                    <Checkbox
+                      checked={selectRoles.assistant}
+                      onChange={(e) => {
+                        setSelectRoles((v) => ({
+                          ...v,
+                          assistant: e.target.checked,
+                        }));
+                      }}
+                    >
+                      助理
+                    </Checkbox>
+                    <Checkbox
+                      checked={selectRoles.system}
+                      onChange={(e) => {
+                        setSelectRoles((v) => ({
+                          ...v,
+                          system: e.target.checked,
+                        }));
+                      }}
+                    >
+                      系统
+                    </Checkbox>
+                  </div>
+                </>
+              }
               onConfirm={() => {
-                downloadTopic(v, false, chat);
+                downloadTopic(v, false, chat, selectRoles);
               }}
               onCancel={() => {
-                downloadTopic(v, true, chat);
+                downloadTopic(v, true, chat, selectRoles);
               }}
               okText="文档"
               cancelText="对话"
@@ -313,7 +359,12 @@ function TopicTitle({
 export function downloadTopic(
   topic: TopicMessage,
   useRole: boolean,
-  chat: IChat
+  chat: IChat,
+  role: {
+    assistant: boolean;
+    system: boolean;
+    user: boolean;
+  }
 ) {
   let str =
     "#" +
@@ -327,10 +378,16 @@ export function downloadTopic(
     if (v.virtualRoleId != chat.virtualRole.id) {
       virtualRole = chat.virtualRoles[v.virtualRoleId || ""] || virtualRole;
     }
-    if (useRole && v.ctxRole === "system") str += "系统：\n";
-    else if (useRole && v.virtualRoleId) str += virtualRole.name + ":\n";
-    else if (useRole && v.senderId) str += chat.user.name + ":\n";
-    str += v.text + "\n\n";
+    if (v.ctxRole === "system" && role.system) {
+      if (useRole) str += "系统：\n";
+      str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
+    } else if (v.virtualRoleId && role.assistant) {
+      if (useRole) str += virtualRole.name + ":\n";
+      str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
+    } else if (v.senderId && role.system) {
+      if (useRole) str += chat.user.name + ":\n";
+      str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
+    }
   });
   downloadText(str, topic.name + ".md");
 }

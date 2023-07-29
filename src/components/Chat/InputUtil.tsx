@@ -2,6 +2,7 @@ import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import {
+  onTextareaTab,
   scrollStatus,
   scrollToBotton,
   scrollToTop,
@@ -263,18 +264,6 @@ export function InputUtil() {
     [chat, inputText, loadingMsgs, reloadNav, setActivityTopic]
   );
 
-  const onTextareaTab = (
-    start: number,
-    end: number,
-    textarea: EventTarget & HTMLTextAreaElement
-  ) => {
-    setInputText((v) => v.substring(0, start) + "    " + v.substring(start));
-    setTimeout(() => {
-      textarea.selectionStart = start + 4;
-      textarea.selectionEnd = end + 4;
-    }, 0);
-  };
-
   return (
     <>
       <div className={style.loading}>
@@ -510,10 +499,14 @@ export function InputUtil() {
             onKeyDown={(e) =>
               e.key === "Tab" &&
               (e.preventDefault(),
-              onTextareaTab(
-                e.currentTarget?.selectionStart,
-                e.currentTarget?.selectionEnd,
-                e.currentTarget
+              setInputText((v) =>
+                onTextareaTab(
+                  v,
+                  e.currentTarget?.selectionStart,
+                  e.currentTarget?.selectionEnd,
+                  e.currentTarget,
+                  e.shiftKey
+                )
               ))
             }
           />
