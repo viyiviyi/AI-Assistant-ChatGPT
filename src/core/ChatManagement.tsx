@@ -244,14 +244,14 @@ export class ChatManagement implements IChat {
               name: this.getNameByRole(v.ctxRole, virtualRole),
             });
           });
-        // 表示这中间省略了很多内容
-        if (ctx.length) {
-          ctx.push({
-            role: "system",
-            content: "...",
-            name: "system",
-          });
-        }
+        // 表示这中间省略了很多内容 影响上下文了
+        // if (ctx.length) {
+        //   ctx.push({
+        //     role: "system",
+        //     content: "...",
+        //     name: "system",
+        //   });
+        // }
       }
       // 记忆范围内的消息
       messages.slice(-this.gptConfig.msgCount).forEach((v) => {
