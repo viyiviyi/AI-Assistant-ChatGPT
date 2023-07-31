@@ -141,19 +141,10 @@ export function InputUtil() {
           }
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
-          if (res.end) {
-            delete loadingMsgs[result.id];
-            reloadTopic(topicId);
-            scrollToBotton(result.id);
-          }
-          if (isFirst) {
-            isFirst = false;
-            loadingMsgs[result.id] = {
-              stop: res.stop,
-            };
-            reloadTopic(topicId);
-          }
           reloadTopic(topicId, result.id);
+          loadingMsgs[result.id] = {
+            stop: res.stop,
+          };
           if (
             topic &&
             topic.id == activityTopic?.id &&
@@ -162,7 +153,16 @@ export function InputUtil() {
             scrollToBotton(result.id);
           await chat.pushMessage(result).then((r) => {
             result = r;
+            if (isFirst) {
+              isFirst = false;
+              reloadTopic(topicId);
+            }
           });
+          if (res.end) {
+            delete loadingMsgs[result.id];
+            reloadTopic(topicId);
+            scrollToBotton(result.id);
+          }
         };
         // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
         if (

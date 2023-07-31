@@ -2,8 +2,9 @@ import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import {
   onTextareaTab,
-  scrollStatus, scrollToTop,
-  stopScroll
+  scrollStatus,
+  scrollToTop,
+  stopScroll,
 } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -16,7 +17,7 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined
+  UserOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -27,7 +28,7 @@ import {
   message,
   Popconfirm,
   Space,
-  theme
+  theme,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -37,7 +38,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
 } from "react";
 import { MarkdownView } from "./MarkdownView";
 
@@ -147,7 +148,8 @@ export const MessageItem = ({
         <Popconfirm
           title="确定停止？"
           onConfirm={() => {
-            loadingMsgs[msg.id]?.stop();
+            if (typeof loadingMsgs[msg.id]?.stop == "function")
+              loadingMsgs[msg.id]?.stop();
           }}
           okText="确定"
           cancelText="取消"
@@ -324,7 +326,8 @@ export const MessageItem = ({
               <Popconfirm
                 title="确定停止？"
                 onConfirm={() => {
-                  loadingMsgs[msg.id]?.stop();
+                  if (typeof loadingMsgs[msg.id]?.stop == "function")
+                    loadingMsgs[msg.id]?.stop();
                 }}
                 okText="确定"
                 cancelText="取消"

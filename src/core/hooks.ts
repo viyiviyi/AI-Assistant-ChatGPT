@@ -111,24 +111,24 @@ export function useSendMessage(chat: ChatManagement) {
           }
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
+          reloadTopic(topic.id, result.id);
+          loadingMsgs[result.id] = {
+            stop: res.stop,
+          };
+          chat.pushMessage(result, idx + 1).then((r) => {
+            result = r;
+            if (isFirst) {
+              isFirst = true;
+              reloadIndex(topic, idx);
+              reloadTopic(topic.id, idx + 1);
+              scrollToBotton(result.id);
+            }
+          });
           if (res.end) {
             delete loadingMsgs[result.id];
             delete loadingMessages[result.id];
             scrollToBotton(result.id);
           }
-          if (isFirst) {
-            isFirst = true;
-            reloadIndex(topic, idx);
-            reloadTopic(topic.id, idx + 1);
-            scrollToBotton(result.id);
-            loadingMsgs[result.id] = {
-              stop: res.stop,
-            };
-          }
-          reloadTopic(topic.id, result.id);
-          chat.pushMessage(result, idx + 1).then((r) => {
-            result = r;
-          });
         },
         config: {
           channel_id: chat.config.cloudChannelId,
