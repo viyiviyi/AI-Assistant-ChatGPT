@@ -1,6 +1,6 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
-import { VirtualRole } from "@/Models/DataBase";
+import { VirtualRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { useContext } from "react";
 import {
   MenuOutlined,
@@ -31,11 +31,10 @@ export const VirtualRoleConfig = ({
   const [form] = Form.useForm<{
     virtualRole_name: string;
     virtualRole_bio: string;
-    virtualRole_settings: string[];
+    virtualRole_settings: VirtualRoleSetting[];
     virtualRole_enable: boolean;
     virtualRole_en_name: string;
     user_name: string;
-    user_bio: string;
     user_en_name: string;
   }>();
 
@@ -44,9 +43,12 @@ export const VirtualRoleConfig = ({
     if (!chatMgt) return;
     chatMgt.virtualRole.name = values.virtualRole_name;
     chatMgt.virtualRole.bio = values.virtualRole_bio;
-    chatMgt.virtualRole.settings = values.virtualRole_settings
-      .map((v) => v?.trim())
-      .filter((f) => f);
+    values.virtualRole_settings.forEach((v) =>
+      v.ctx.forEach((c) => (c.content = c.content?.trim()))
+    );
+    chatMgt.virtualRole.settings = values.virtualRole_settings.filter(
+      (f) => f && f.ctx.filter((f) => f.content).length
+    );
     chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
     chatMgt.virtualRole.enName = values.virtualRole_en_name;
     chatMgt.saveVirtualRoleBio();
@@ -55,7 +57,6 @@ export const VirtualRoleConfig = ({
     chatMgt.saveConfig();
 
     chatMgt.user.name = values.user_name;
-    chatMgt.user.bio = values.user_bio;
     chatMgt.user.enName = values.user_en_name;
     chatMgt.user.avatar = user_Avatar || "";
     chatMgt.saveUser();
@@ -76,7 +77,6 @@ export const VirtualRoleConfig = ({
           virtualRole_enable: chatMgt?.config.enableVirtualRole,
           virtualRole_en_name: chatMgt?.virtualRole.enName,
           user_name: chatMgt?.user.name,
-          user_bio: chatMgt?.user.bio,
           user_en_name: chatMgt?.user.enName,
         }}
       >
@@ -123,34 +123,61 @@ export const VirtualRoleConfig = ({
               </Button.Group>
             </Form.Item>
           </Space>
-          <Form.Item>
-            <AvatarUpload
-              avatar={virtualRole_Avatar || undefined}
-              onSave={setVirtualRole_Avatar}
-            />
-          </Form.Item>
           <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-            <Form.Item
-              style={{ flex: 1 }}
-              name="virtualRole_name"
-              label="助理名称"
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              style={{ flex: 1 }}
-              name="virtualRole_en_name"
-              label="英文名称;用于区分角色"
-              rules={[
-                {
-                  type: "string",
-                  pattern: /^[a-zA-Z0-9]+$/,
-                  message: "只能使用大小写字母和数字",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
+            <div>
+              <Form.Item>
+                <AvatarUpload
+                  avatar={virtualRole_Avatar || undefined}
+                  onSave={setVirtualRole_Avatar}
+                />
+              </Form.Item>
+              <Form.Item
+                style={{ flex: 1 }}
+                name="virtualRole_name"
+                label="助理名称"
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                style={{ flex: 1 }}
+                name="virtualRole_en_name"
+                label="英文名称;用于区分角色"
+                rules={[
+                  {
+                    type: "string",
+                    pattern: /^[a-zA-Z0-9]+$/,
+                    message: "只能使用大小写字母和数字",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </div>
+            <div>
+              <Form.Item>
+                <AvatarUpload
+                  avatar={user_Avatar || undefined}
+                  onSave={setUser_Avatar}
+                />
+              </Form.Item>
+              <Form.Item style={{ flex: 1 }} name="user_name" label="用户名称">
+                <Input />
+              </Form.Item>
+              <Form.Item
+                style={{ flex: 1 }}
+                name="user_en_name"
+                label="英文名称;用于区分角色"
+                rules={[
+                  {
+                    type: "string",
+                    pattern: /^[a-zA-Z0-9]+$/,
+                    message: "只能使用大小写字母和数字",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </div>
           </div>
           <Form.Item
             name="virtualRole_bio"
@@ -252,38 +279,6 @@ export const VirtualRoleConfig = ({
               );
             }}
           </Form.List>
-          <Form.Item>
-            <AvatarUpload
-              avatar={user_Avatar || undefined}
-              onSave={setUser_Avatar}
-            />
-          </Form.Item>
-          <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-            <Form.Item style={{ flex: 1 }} name="user_name" label="用户名称">
-              <Input />
-            </Form.Item>
-            <Form.Item
-              style={{ flex: 1 }}
-              name="user_en_name"
-              label="英文名称;用于区分角色"
-              rules={[
-                {
-                  type: "string",
-                  pattern: /^[a-zA-Z0-9]+$/,
-                  message: "只能使用大小写字母和数字",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-          </div>
-          <Form.Item
-            name="user_bio"
-            label="用户简介"
-            extra="当简介不为空时，会在设定后面追加用户设定，可能导致助理设定异常"
-          >
-            <Input.TextArea autoSize />
-          </Form.Item>
         </div>
         <Button.Group style={{ width: "100%" }}>
           <Button

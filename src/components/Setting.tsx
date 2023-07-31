@@ -3,7 +3,7 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService
+  useService,
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -15,7 +15,7 @@ import {
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -29,7 +29,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload
+  Upload,
 } from "antd";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -39,6 +39,7 @@ import zfb from "../../public/images/支付宝收款码.jpg";
 import AvatarUpload from "./AvatarUpload";
 import { downloadTopic } from "./Chat/ChatMessage";
 import { MarkdownView } from "./Chat/MarkdownView";
+import { CtxRole } from "@/Models/DataBase";
 
 export const Setting = ({
   chatMgt,
@@ -69,7 +70,7 @@ export const Setting = ({
   const [form] = Form.useForm<{
     setting_apitoken: string;
     GptConfig_msgCount: number;
-    GptConfig_role: "assistant" | "system" | "user";
+    GptConfig_role: CtxRole;
     GptConfig_max_tokens: number;
     GptConfig_top_p: number;
     GptConfig_temperature: number;

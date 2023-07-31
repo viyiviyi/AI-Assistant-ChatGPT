@@ -3,7 +3,7 @@ import {
   ChatCompletionRequestMessage,
   CreateChatCompletionRequest
 } from "openai";
-import { Message } from "../../Models/DataBase";
+import { CtxRole, Message } from "../../Models/DataBase";
 import { ServiceTokens } from "./ServiceProvider";
 export interface IAiService {
   baseUrl: string;
@@ -43,7 +43,7 @@ type chatGPTConfig = {
   model: string;
   max_tokens?: number;
   top_p?: number;
-  user?: "assistant" | "system" | "user";
+  user?: CtxRole;
   n?: number;
   temperature?: number;
 } & CreateChatCompletionRequest;
