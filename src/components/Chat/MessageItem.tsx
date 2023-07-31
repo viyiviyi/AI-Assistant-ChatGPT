@@ -4,9 +4,9 @@ import {
   onTextareaTab,
   scrollStatus,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
-import { Message } from "@/Models/DataBase";
+import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
   CopyOutlined,
@@ -17,7 +17,7 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -27,8 +27,9 @@ import {
   Input,
   message,
   Popconfirm,
+  Segmented,
   Space,
-  theme,
+  theme
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -38,7 +39,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useState
 } from "react";
 import { MarkdownView } from "./MarkdownView";
 
@@ -69,6 +70,7 @@ export const MessageItem = ({
   const [messageText, setMessage] = useState("");
   const [inputRef] = useState(createRef<TextAreaRef>());
   const [none, setNone] = useState([]);
+  const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   useEffect(() => {
     renderMessage[msg.id] = () => {
       setNone([]);
@@ -81,11 +83,12 @@ export const MessageItem = ({
     const isReloadNav =
       /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
     msg.text = messageText;
+    msg.ctxRole = ctxRole;
     await chat.pushMessage(msg);
     var topic = chat.topics.find((f) => f.id === msg.topicId);
     if (topic && isReloadNav) reloadNav(topic);
     setEdit(false);
-  }, [chat, setEdit, reloadNav, messageText, msg]);
+  }, [chat, setEdit, reloadNav, messageText, msg, ctxRole]);
   const utilsEle = (
     <>
       <Checkbox
@@ -204,44 +207,58 @@ export const MessageItem = ({
       >
         <div>
           {edit ? (
-            <Input.TextArea
-              value={messageText}
-              autoSize={{ maxRows: 15 }}
-              style={{ marginBottom: "4px" }}
-              onChange={(e) => {
-                setMessage(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "s" && e.ctrlKey) {
-                  e.preventDefault();
-                  saveMsg();
-                }
-                if (e.key === "Tab") {
-                  e.preventDefault();
-                  setMessage((v) =>
-                    onTextareaTab(
-                      v,
-                      e.currentTarget?.selectionStart,
-                      e.currentTarget?.selectionEnd,
-                      e.currentTarget,
-                      e.shiftKey
-                    )
-                  );
-                }
-              }}
-              onFocus={(e) => {
-                e.target.selectionStart = msg.text.length;
-                e.target.selectionEnd = msg.text.length;
-              }}
-              ref={inputRef}
-              autoFocus={true}
-            />
+            <>
+              <Segmented
+                value={ctxRole}
+                style={{ marginBottom: 5 }}
+                onChange={(val) => {
+                  setCtxRole(val as CtxRole);
+                }}
+                options={[
+                  { label: "助理", value: "assistant" },
+                  { label: "系统", value: "system" },
+                  { label: "用户", value: "user" },
+                ]}
+              />
+              <Input.TextArea
+                value={messageText}
+                autoSize={{ maxRows: 15 }}
+                style={{ marginBottom: "4px" }}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "s" && e.ctrlKey) {
+                    e.preventDefault();
+                    saveMsg();
+                  }
+                  if (e.key === "Tab") {
+                    e.preventDefault();
+                    setMessage((v) =>
+                      onTextareaTab(
+                        v,
+                        e.currentTarget?.selectionStart,
+                        e.currentTarget?.selectionEnd,
+                        e.currentTarget,
+                        e.shiftKey
+                      )
+                    );
+                  }
+                }}
+                onFocus={(e) => {
+                  e.target.selectionStart = msg.text.length;
+                  e.target.selectionEnd = msg.text.length;
+                }}
+                ref={inputRef}
+                autoFocus={true}
+              />
+            </>
           ) : (
             <MemoMarkdownView
               markdown={
                 chat.config.disableStrikethrough
-                  ? ("系统：" + msg.text).replaceAll("~", "～")
-                  : "系统：" + msg.text
+                  ? msg.text.replaceAll("~", "～")
+                  : msg.text
               }
               doubleClick={() => {
                 setMessage(msg.text);
@@ -355,37 +372,51 @@ export const MessageItem = ({
           >
             <div>
               {edit ? (
-                <Input.TextArea
-                  value={messageText}
-                  autoSize={{ maxRows: 15 }}
-                  style={{ marginBottom: "4px" }}
-                  onChange={(e) => {
-                    setMessage(e.target.value);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "s" && e.ctrlKey) {
-                      e.preventDefault();
-                      saveMsg();
-                    }
-                    if (e.key === "Tab") {
-                      e.preventDefault();
-                      setMessage((v) =>
-                        onTextareaTab(
-                          v,
-                          e.currentTarget?.selectionStart,
-                          e.currentTarget?.selectionEnd,
-                          e.currentTarget,
-                          e.shiftKey
-                        )
-                      );
-                    }
-                  }}
-                  onFocus={(e) => {
-                    e.target.selectionStart = msg.text.length;
-                    e.target.selectionEnd = msg.text.length;
-                  }}
-                  autoFocus={true}
-                />
+                <>
+                  <Segmented
+                    value={ctxRole}
+                    style={{ marginBottom: 5 }}
+                    onChange={(val) => {
+                      setCtxRole(val as CtxRole);
+                    }}
+                    options={[
+                      { label: "助理", value: "assistant" },
+                      { label: "系统", value: "system" },
+                      { label: "用户", value: "user" },
+                    ]}
+                  />
+                  <Input.TextArea
+                    value={messageText}
+                    autoSize={{ maxRows: 15 }}
+                    style={{ marginBottom: "4px" }}
+                    onChange={(e) => {
+                      setMessage(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "s" && e.ctrlKey) {
+                        e.preventDefault();
+                        saveMsg();
+                      }
+                      if (e.key === "Tab") {
+                        e.preventDefault();
+                        setMessage((v) =>
+                          onTextareaTab(
+                            v,
+                            e.currentTarget?.selectionStart,
+                            e.currentTarget?.selectionEnd,
+                            e.currentTarget,
+                            e.shiftKey
+                          )
+                        );
+                      }
+                    }}
+                    onFocus={(e) => {
+                      e.target.selectionStart = msg.text.length;
+                      e.target.selectionEnd = msg.text.length;
+                    }}
+                    autoFocus={true}
+                  />
+                </>
               ) : (
                 <MemoMarkdownView
                   markdown={

@@ -7,7 +7,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -17,7 +17,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Tooltip, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -148,7 +148,7 @@ export function InputUtil() {
           if (
             topic &&
             topic.id == activityTopic?.id &&
-            topic.messages.slice(-1)[0].id == result.id
+            topic.messages.slice(-1)[0]?.id == result.id
           )
             scrollToBotton(result.id);
           await chat.pushMessage(result).then((r) => {
@@ -250,7 +250,7 @@ export function InputUtil() {
           scrollToBotton(result.id);
       }, 500);
     },
-    [chat, inputText, loadingMsgs, reloadNav, setActivityTopic]
+    [chat, inputText, loadingMsgs, reloadNav, activityTopic, setActivityTopic]
   );
 
   return (

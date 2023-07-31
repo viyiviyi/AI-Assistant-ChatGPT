@@ -6,7 +6,7 @@ import {
   arrayMove,
   SortableContext,
   useSortable,
-  verticalListSortingStrategy,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React, { useEffect, useState } from "react";
@@ -15,10 +15,12 @@ export function DragList<T>({
   data,
   itemDom,
   onChange,
+  style,
 }: {
   data: Array<T & { key: string }>;
-  itemDom: (item: T) => React.ReactElement;
+  itemDom: (item: T) => React.ReactElement | undefined;
   onChange: (data: T[]) => void;
+  style?: React.CSSProperties;
 }) {
   const [dataSource, setDataSource] =
     useState<Array<T & { key: string }>>(data);
@@ -40,14 +42,15 @@ export function DragList<T>({
   return (
     <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
       <SortableContext
-        // rowKey array
         items={dataSource.map((i) => i.key)}
         strategy={verticalListSortingStrategy}
       >
         {dataSource.map((v) => {
+          let dom = itemDom(v);
+          if (!dom) return undefined;
           return (
-            <Row key={v.key} data-row-key={v.key}>
-              {itemDom(v)}
+            <Row style={style} key={v.key} data-row-key={v.key}>
+              {dom}
             </Row>
           );
         })}
@@ -77,7 +80,6 @@ function Row({ children, ...props }: RowProps) {
     transition,
     ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
   };
-
   return (
     <div
       {...props}
@@ -85,7 +87,7 @@ function Row({ children, ...props }: RowProps) {
       style={{ ...style, width: "100%" }}
       {...attributes}
     >
-      <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+      <div style={{ display: "flex", width: "100%" }}>
         <MenuOutlined
           ref={setActivatorNodeRef}
           style={{ touchAction: "none", cursor: "move" }}

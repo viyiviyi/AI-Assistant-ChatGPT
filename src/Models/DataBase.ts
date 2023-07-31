@@ -70,8 +70,10 @@ export interface Topic {
 }
 
 export type VirtualRoleSetting = {
+  extensionId?: string;
   title?: string;
   checked: boolean;
+  tags: string[];
   ctx: { role: CtxRole; content: string }[];
 };
 

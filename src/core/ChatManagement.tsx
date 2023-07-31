@@ -9,7 +9,7 @@ import {
   Topic,
   User,
   VirtualRole,
-  VirtualRoleSetting,
+  VirtualRoleSetting
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -111,6 +111,7 @@ export class ChatManagement implements IChat {
           if (typeof v == "string") {
             return {
               checked: true,
+              tags:[],
               ctx: [
                 {
                   role: this.parseTextToRole(v),
