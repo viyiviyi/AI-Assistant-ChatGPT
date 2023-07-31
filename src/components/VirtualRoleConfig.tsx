@@ -239,10 +239,11 @@ export const VirtualRoleConfig = ({
                             ).length ? (
                             <div
                               style={{
+                                flex: 1,
                                 marginLeft: 10,
                                 marginBottom: 8,
                                 display: "flex",
-                                width: "100%",
+                                width: 0,
                                 cursor: "pointer",
                               }}
                             >
@@ -269,46 +270,65 @@ export const VirtualRoleConfig = ({
                                   setVirtualRole_settings((v) => [...v]);
                                 }}
                               >
-                                <div
-                                  style={{ borderBottom: "1px solid #ccc2" }}
+                                {item.title ? (
+                                  <div
+                                    style={{ borderBottom: "1px solid #ccc2" }}
+                                  >
+                                    <Typography.Text ellipsis>
+                                      {item.title}
+                                    </Typography.Text>
+                                  </div>
+                                ) : (
+                                  <></>
+                                )}
+                                <Typography.Text
+                                  style={{ width: "min(100vw - 150px, 400px)" }}
+                                  type="secondary"
+                                  ellipsis={true}
                                 >
-                                  <Typography.Text>
-                                    {item.title ||
-                                      (item.ctx.length
-                                        ? item.ctx[0].content
-                                        : "") ||
-                                      "点击编辑"}
-                                  </Typography.Text>
-                                </div>
-                                <Typography.Text type="secondary">
                                   {item.ctx.length
                                     ? item.ctx[0].content
                                     : "没有内容"}
                                 </Typography.Text>
+                                {!item.title && item.ctx.length > 1 ? (
+                                  <Typography.Text
+                                    style={{
+                                      width: "min(100vw - 150px, 400px)",
+                                    }}
+                                    type="secondary"
+                                    ellipsis={true}
+                                  >
+                                    {item.ctx[1].content}
+                                  </Typography.Text>
+                                ) : (
+                                  <></>
+                                )}
                               </div>
-                              <Space direction="vertical">
-                                <Checkbox
-                                  checked={item.checked}
-                                  onChange={(e) => {
-                                    item.checked = e.target.checked;
-                                    setVirtualRole_settings((v) => [...v]);
-                                  }}
-                                ></Checkbox>
-                                <Popconfirm
-                                  title="确定删除？"
-                                  onConfirm={() => {
-                                    setVirtualRole_settings((v) =>
-                                      v.filter((f) => f != item)
-                                    );
-                                  }}
-                                  okText="确定"
-                                  cancelText="取消"
-                                >
-                                  <DeleteOutlined
-                                    style={{ color: "#ff8d8f" }}
-                                  ></DeleteOutlined>
-                                </Popconfirm>
-                              </Space>
+                              <div style={{ width: 30 }}>
+                                <Space direction="vertical">
+                                  <Checkbox
+                                    checked={item.checked}
+                                    onChange={(e) => {
+                                      item.checked = e.target.checked;
+                                      setVirtualRole_settings((v) => [...v]);
+                                    }}
+                                  ></Checkbox>
+                                  <Popconfirm
+                                    title="确定删除？"
+                                    onConfirm={() => {
+                                      setVirtualRole_settings((v) =>
+                                        v.filter((f) => f != item)
+                                      );
+                                    }}
+                                    okText="确定"
+                                    cancelText="取消"
+                                  >
+                                    <DeleteOutlined
+                                      style={{ color: "#ff8d8f" }}
+                                    ></DeleteOutlined>
+                                  </Popconfirm>
+                                </Space>
+                              </div>
                             </div>
                           ) : undefined;
                         }}
