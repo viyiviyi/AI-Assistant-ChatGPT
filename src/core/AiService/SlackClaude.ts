@@ -130,6 +130,11 @@ export class SlackClaude implements IAiService {
       // 记录响应开始时间,重试次数
       let reties = 1;
       let isStop = false;
+      const stop = () => {
+        try {
+          isStop = true;
+        } catch (error) {}
+      };
       // 如果响应以_Typing…_结尾，则继续等待响应
       while (!isStop && response.trim().endsWith("_Typing…_")) {
         if (reties > this.max_retries) {
@@ -151,9 +156,7 @@ export class SlackClaude implements IAiService {
             error: false,
             end: false,
             text: "被限速了，稍等一会",
-            stop: () => {
-              isStop = true;
-            },
+            stop: stop,
           });
           reties += 1;
           await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -180,9 +183,7 @@ export class SlackClaude implements IAiService {
           end: false,
           text: response.replace(/[\s\n]*_Typing…_$/, ""),
           cloud_result_id: message.ts,
-          stop: () => {
-            isStop = true;
-          },
+          stop: stop,
         });
       }
       onMessage({

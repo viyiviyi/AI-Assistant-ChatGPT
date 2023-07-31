@@ -543,33 +543,27 @@ export class ChatManagement implements IChat {
     if (insertIndex !== -1) previousMessage = topic.messages[insertIndex];
     if (message.id) {
       let msg = topic.messages.find((f) => f.id == message.id);
-      if (!msg) {
-        if (insertIndex !== -1)
-          topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
-        else topic.messages.push(message);
-        topic.messageMap[message.id] = message;
-        await ChatManagement.createMessage(message);
-        return message;
+      if (msg) {
+        await getInstance().update_by_primaryKey<Message>({
+          tableName: "Message",
+          value: msg.id,
+          handle: (r) => {
+            message.updateTime = Date.now();
+            r = Object.assign(r, message);
+            return r;
+          },
+        });
+        return msg;
       }
-      await getInstance().update_by_primaryKey<Message>({
-        tableName: "Message",
-        value: msg.id,
-        handle: (r) => {
-          message.updateTime = Date.now();
-          r = Object.assign(r, message);
-          return r;
-        },
-      });
-      return msg;
     } else {
       message.id = getUuid();
-      if (insertIndex !== -1)
-        topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
-      else topic.messages.push(message);
-      topic.messageMap[message.id] = message;
-      await ChatManagement.createMessage(message);
-      return message;
     }
+    if (insertIndex !== -1)
+      topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
+    else topic.messages.push(message);
+    topic.messageMap[message.id] = message;
+    await ChatManagement.createMessage(message);
+    return message;
   }
   removeMessage(message: Message) {
     let topic = this.topics.find((f) => f.id == message.topicId);

@@ -11,7 +11,7 @@ export class ChatGLM_GPT implements IAiService {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
   }
-  serverType: aiServiceType='ChatGLM';
+  serverType: aiServiceType = "ChatGLM";
   models = async () => [];
   async sendMessage({
     context,
@@ -90,6 +90,11 @@ export class ChatGLM_GPT implements IAiService {
           return;
         }
         const reader = response.body?.getReader();
+        const stop = () => {
+          try {
+            controller.abort();
+          } catch (error) {}
+        };
         if (reader) {
           while (true) {
             const { done, value } = await reader.read();
@@ -132,11 +137,7 @@ export class ChatGLM_GPT implements IAiService {
                       error: false,
                       end: false,
                       text: full_response,
-                      stop: () => {
-                        try {
-                          controller.abort();
-                        } catch (error) {}
-                      },
+                      stop: stop,
                     });
                 }
               } catch (error) {

@@ -78,7 +78,7 @@ export function MessageList({
           (!m
             ? v.ctxRole == "system"
               ? "/::"
-              : v.virtualRoleId
+              : v.ctxRole == "assistant"
               ? "/"
               : ""
             : "") +

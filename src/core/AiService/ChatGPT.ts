@@ -176,6 +176,11 @@ export class ChatGPT implements IAiService {
           return;
         }
         const reader = response.body?.getReader();
+        const stop = () => {
+          try {
+            controller.abort();
+          } catch (error) {}
+        };
         if (reader) {
           while (true) {
             const { done, value } = await reader.read();
@@ -218,11 +223,7 @@ export class ChatGPT implements IAiService {
                       error: false,
                       end: false,
                       text: full_response,
-                      stop: () => {
-                        try {
-                          controller.abort();
-                        } catch (error) {}
-                      },
+                      stop: stop,
                     });
                 }
               } catch (error) {

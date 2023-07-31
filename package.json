@@ -13,6 +13,9 @@
   "dependencies": {
     "@ant-design/cssinjs": "^1.9.1",
     "@ant-design/icons": "^5.0.1",
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/modifiers": "^6.0.1",
+    "@dnd-kit/sortable": "^7.0.2",
     "@slack/web-api": "^6.8.1",
     "@types/node": "18.14.6",
     "@types/react": "18.0.28",

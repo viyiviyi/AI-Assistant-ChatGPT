@@ -1,7 +1,7 @@
 import { aiServiceType } from "@/core/AiService/ServiceProvider";
 import {
   ChatCompletionRequestMessage,
-  CreateChatCompletionRequest
+  CreateChatCompletionRequest,
 } from "openai";
 import { CtxRole, Message } from "../../Models/DataBase";
 import { ServiceTokens } from "./ServiceProvider";
@@ -22,7 +22,7 @@ export interface IAiService {
       cloud_topic_id?: string;
       cloud_send_id?: string;
       cloud_result_id?: string;
-      stop?: () => void;
+      stop: () => void;
     }) => void;
     config: InputConfig;
   }): Promise<void>;

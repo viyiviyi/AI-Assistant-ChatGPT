@@ -1,4 +1,4 @@
-import { ChatContext, IChat } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
 import { useSendMessage } from "@/core/hooks";
 import { TopicMessage } from "@/Models/Topic";
 import {
@@ -7,7 +7,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   MessageOutlined,
-  PlusOutlined
+  PlusOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,7 +17,7 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
@@ -366,25 +366,17 @@ export function downloadTopic(
     user: boolean;
   }
 ) {
-  let str =
-    "#" +
-    topic.name
-      .replace(/^\\/, "")
-      .replace(/^\/:?:?/, "")
-      .substring(0, 32);
+  let str = "#" + ChatManagement.parseText(topic.name).substring(0, 64);
   str += "\n---\n";
   topic.messages.forEach((v) => {
     let virtualRole = chat.virtualRole;
-    if (v.virtualRoleId != chat.virtualRole.id) {
-      virtualRole = chat.virtualRoles[v.virtualRoleId || ""] || virtualRole;
-    }
     if (v.ctxRole === "system" && role.system) {
       if (useRole) str += "系统：\n";
       str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
-    } else if (v.virtualRoleId && role.assistant) {
+    } else if (v.ctxRole === "assistant" && role.assistant) {
       if (useRole) str += virtualRole.name + ":\n";
       str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
-    } else if (v.senderId && role.system) {
+    } else if (v.ctxRole === "user" && role.system) {
       if (useRole) str += chat.user.name + ":\n";
       str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
     }

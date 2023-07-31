@@ -1,12 +1,13 @@
 import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
+import { loadingMessages, useScreenSize } from "@/core/hooks";
 import {
+  getUuid,
   onTextareaTab,
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -16,7 +17,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Tooltip, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -35,7 +36,6 @@ export function useInput() {
     },
   };
 }
-const loadingTopic: { [key: string]: boolean } = {};
 export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
@@ -76,8 +76,6 @@ export function InputUtil() {
       let msg: Message = {
         id: "",
         groupId: chat.group.id,
-        senderId: isBot ? undefined : chat.user.id,
-        virtualRoleId: isBot ? chat.virtualRole.id : undefined,
         ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
         text: text,
         timestamp: now++,
@@ -85,9 +83,8 @@ export function InputUtil() {
         cloudTopicId: topic.cloudTopicId,
       };
       let result: Message = {
-        id: "",
+        id: getUuid(),
         groupId: chat.group.id,
-        virtualRoleId: chat.virtualRole.id,
         ctxRole: "assistant",
         text: "loading...",
         timestamp: now++,
@@ -95,12 +92,12 @@ export function InputUtil() {
       };
       // 防止使用为完成的上下文发起提问
       if (
-        (text ? chat.gptConfig.msgCount != 1 : true) &&
-        chat.config.enableVirtualRole &&
-        loadingTopic[result.topicId + "_" + result.virtualRoleId]
+        topic.messages
+          .slice(-chat.gptConfig.msgCount)
+          .findIndex((f) => loadingMessages[f.id]) != -1
       )
         return;
-      loadingTopic[result.topicId + "_" + result.virtualRoleId] = true;
+      loadingMessages[result.id] = true;
 
       scrollStatus.enable = true;
       try {
@@ -121,6 +118,7 @@ export function InputUtil() {
           return;
         }
         // 接收消息的方法
+        let isFirst = true;
         const onMessage = async (res: {
           error: boolean;
           text: string;
@@ -128,7 +126,7 @@ export function InputUtil() {
           cloud_topic_id?: string;
           cloud_send_id?: string;
           cloud_result_id?: string;
-          stop?: () => void;
+          stop: () => void;
         }) => {
           if (!topic) return;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
@@ -143,32 +141,27 @@ export function InputUtil() {
           }
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
-          let isFirst = !result.id;
-          chat.pushMessage(result).then((r) => {
+          if (res.end) {
+            delete loadingMsgs[result.id];
+            reloadTopic(topicId);
+            scrollToBotton(result.id);
+          }
+          if (isFirst) {
+            isFirst = false;
+            loadingMsgs[result.id] = {
+              stop: res.stop,
+            };
+            reloadTopic(topicId);
+          }
+          reloadTopic(topicId, result.id);
+          if (
+            topic &&
+            topic.id == activityTopic?.id &&
+            topic.messages.slice(-1)[0].id == result.id
+          )
+            scrollToBotton(result.id);
+          await chat.pushMessage(result).then((r) => {
             result = r;
-            if (res.end) {
-              delete loadingMsgs[r.id];
-              reloadTopic(topicId);
-              scrollToBotton(r.id);
-            } else {
-              loadingMsgs[r.id] = {
-                stop: () => {
-                  try {
-                    res.stop && res.stop();
-                  } finally {
-                    delete loadingMsgs[r.id];
-                  }
-                },
-              };
-            }
-            reloadTopic(topicId, r.id);
-            if (isFirst) reloadTopic(topicId);
-            if (
-              topic &&
-              topic.id == chat.config.activityTopicId &&
-              topic.messages.slice(-1)[0].id == r.id
-            )
-              scrollToBotton(r.id);
           });
         };
         // Claude模式时，新建话题的逻辑。当开启了助理模式时，先把助理设定发送给Claude
@@ -179,8 +172,6 @@ export function InputUtil() {
         ) {
           setLoading((v) => ++v);
           msg.text = ChatManagement.parseText(chat.virtualRole.bio);
-          msg.virtualRoleId = undefined;
-          msg.senderId = chat.user.id;
           await rendAndScrollView(msg);
           await aiService.sendMessage({
             msg,
@@ -229,8 +220,6 @@ export function InputUtil() {
               await chat.pushMessage({
                 id: "",
                 groupId: chat.group.id,
-                senderId: isAi ? undefined : chat.user.id,
-                virtualRoleId: isAi ? chat.virtualRole.id : undefined,
                 ctxRole: isAi ? "assistant" : "user",
                 text: text,
                 timestamp: now++,
@@ -251,7 +240,7 @@ export function InputUtil() {
           reloadTopic(result.topicId);
         }
       } finally {
-        delete loadingTopic[result.topicId + "_" + result.virtualRoleId];
+        delete loadingMessages[result.id];
       }
       if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
         reloadNav(topic);

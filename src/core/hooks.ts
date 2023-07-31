@@ -4,7 +4,7 @@ import { Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "./../Models/Topic";
 import { aiServices } from "./AiService/ServiceProvider";
-import { scrollToBotton } from "./utils";
+import { getUuid, scrollToBotton } from "./utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{ width: number; height: number }>({
@@ -68,6 +68,7 @@ export function useReloadIndex(chat: ChatManagement) {
   };
 }
 
+export const loadingMessages: { [key: string]: boolean } = {};
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
@@ -82,15 +83,22 @@ export function useSendMessage(chat: ChatManagement) {
       if (idx >= 0 && idx < topic.messages.length)
         time = topic.messages[idx].timestamp + 0.001;
       let result: Message = {
-        id: "",
+        id: getUuid(),
         groupId: chat.group.id,
-        virtualRoleId: chat.virtualRole.id,
         ctxRole: "assistant",
         text: "loading...",
         timestamp: time,
         topicId: topic.id,
       };
+      if (
+        topic.messages
+          .slice(-chat.gptConfig.msgCount)
+          .findIndex((f) => loadingMessages[f.id]) != -1
+      )
+        return;
+      loadingMessages[result.id] = true;
 
+      let isFirst = false;
       aiService.sendMessage({
         msg: topic.messages[idx],
         context: chat.getAskContext(topic, idx),
@@ -103,29 +111,23 @@ export function useSendMessage(chat: ChatManagement) {
           }
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
-          let isFirst = !result.id;
+          if (res.end) {
+            delete loadingMsgs[result.id];
+            delete loadingMessages[result.id];
+            scrollToBotton(result.id);
+          }
+          if (isFirst) {
+            isFirst = true;
+            reloadIndex(topic, idx);
+            reloadTopic(topic.id, idx + 1);
+            scrollToBotton(result.id);
+            loadingMsgs[result.id] = {
+              stop: res.stop,
+            };
+          }
+          reloadTopic(topic.id, result.id);
           chat.pushMessage(result, idx + 1).then((r) => {
             result = r;
-            if (res.end) {
-              delete loadingMsgs[r.id];
-              scrollToBotton(result.id);
-            } else {
-              loadingMsgs[r.id] = {
-                stop: () => {
-                  try {
-                    res.stop && res.stop();
-                  } finally {
-                    delete loadingMsgs[r.id];
-                  }
-                },
-              };
-            }
-            if (isFirst) {
-              reloadIndex(topic, idx);
-              reloadTopic(topic.id, idx + 1);
-              scrollToBotton(result.id);
-            }
-            reloadTopic(topic.id, result.id);
           });
         },
         config: {
@@ -165,8 +167,6 @@ export function usePushMessage(chat: ChatManagement) {
       let msg: Message = {
         id: "",
         groupId: chat.group.id,
-        senderId: isBot ? undefined : chat.user.id,
-        virtualRoleId: isBot ? chat.virtualRole.id : undefined,
         ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
         text: text,
         timestamp: time,
