@@ -92,13 +92,13 @@ export function useSendMessage(chat: ChatManagement) {
       };
       if (
         topic.messages
-          .slice(-chat.gptConfig.msgCount)
+          .slice(Math.max(0, idx - chat.gptConfig.msgCount), idx)
           .findIndex((f) => loadingMessages[f.id]) != -1
       )
         return;
       loadingMessages[result.id] = true;
 
-      let isFirst = false;
+      let isFirst = true;
       aiService.sendMessage({
         msg: topic.messages[idx],
         context: chat.getAskContext(topic, idx),
@@ -118,7 +118,7 @@ export function useSendMessage(chat: ChatManagement) {
           chat.pushMessage(result, idx + 1).then((r) => {
             result = r;
             if (isFirst) {
-              isFirst = true;
+              isFirst = false;
               reloadIndex(topic, idx);
               reloadTopic(topic.id, idx + 1);
               scrollToBotton(result.id);
