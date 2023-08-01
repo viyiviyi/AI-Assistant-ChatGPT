@@ -3,19 +3,20 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService,
+  useService
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { getToken, saveToken } from "@/core/tokens";
 import { downloadJson } from "@/core/utils";
+import { CtxRole } from "@/Models/DataBase";
 import {
   CaretRightOutlined,
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -29,17 +30,13 @@ import {
   Select,
   Switch,
   theme,
-  Upload,
+  Upload
 } from "antd";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
-import wx from "../../public/images/微信收款码.png";
-import zfb from "../../public/images/支付宝收款码.jpg";
 import AvatarUpload from "./AvatarUpload";
 import { downloadTopic } from "./Chat/ChatMessage";
 import { MarkdownView } from "./Chat/MarkdownView";
-import { CtxRole } from "@/Models/DataBase";
 
 export const Setting = ({
   chatMgt,
@@ -640,14 +637,6 @@ export const Setting = ({
                     </Form.Item>
                   );
                 })}
-              {/* <Form.Item
-                name="setting_apitoken"
-                label="OpenApi Key (全局生效)"
-                extra={<span>请填写自己的key，没有key将不能使用。</span>}
-              >
-                <Input.Password autoComplete="off" />
-              </Form.Item>
-              */}
             </Collapse.Panel>
             <Collapse.Panel
               forceRender={true}
@@ -801,25 +790,13 @@ export const Setting = ({
 - [一个有很多助理设定的网站 (为什么我没有早点发现Orz)](https://ai.usesless.com/scene)
 - [一个购买key的商店（询问过卖家可以挂上来）,一个5刀的key就可以用半个月了。](https://gptnb.net)
 - [ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api) 
-- [一个赞助入口 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎](./%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E6%B2%A1%E4%BA%BA%E4%BC%9A%E7%82%B9%E5%BC%80%E7%9A%84%E5%90%A7.md)
 
 
-**最后两个收款码，～(￣▽￣～)~**
+**最后两个收款码，可以给我点个星星吗 [点击传送～(￣▽￣～)~](https://github.com/viyiviyi/AI-Assistant-ChatGPT)**
 
-**项目现在是部署在cloudfire上面，使用的免费额度，功能需求也只是我自己的需求，四舍五入就是0成本，所以...这个赞助码 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎**
 
 `}
               ></MarkdownView>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                <Image src={zfb} alt="支付宝收款码" width={300}></Image>
-                <Image src={wx} alt="微信收款码" width={300}></Image>
-              </div>
             </Collapse.Panel>
           </Collapse>
           <Form.Item></Form.Item>

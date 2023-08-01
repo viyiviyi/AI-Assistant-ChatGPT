@@ -359,11 +359,6 @@ export const VirtualRoleConfig = ({
                 ),
               },
               {
-                label: `启用列表`,
-                key: "extensions",
-                children: <div>功能未完成，占个地</div>,
-              },
-              {
                 label: `插件列表`,
                 key: "extensions_cloud",
                 children: <div>功能未完成，占个地</div>,
