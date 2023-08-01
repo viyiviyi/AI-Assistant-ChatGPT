@@ -100,7 +100,7 @@ export const MessageItem = ({
           setNone([]);
         }}
       >
-        <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
+        <span>{new Date(msg.updateTime||msg.timestamp).toLocaleTimeString()}</span>
       </Checkbox>
       <span
         onMouseDown={(e) => e.preventDefault()}

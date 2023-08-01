@@ -54,7 +54,7 @@ export function pagesUtil<T>(
   if (pageNumber > total) pageNumber = total;
   if (pageNumber < 1) pageNumber = 1;
   let end = Math.min(arr.length, pageNumber * pageSize);
-  if (end < arr.length && repectInEnd) Math.min(arr.length, end + repect);
+  if (repectInEnd) end = Math.min(arr.length, end + repect);
   let start = Math.max(0, end - pageSize - repect);
   if (start == 0) end = Math.min(pageSize + repect, arr.length);
   if (end == arr.length) start = Math.max(0, end - pageSize - repect);

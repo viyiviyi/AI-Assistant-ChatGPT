@@ -563,6 +563,7 @@ export class ChatManagement implements IChat {
       topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
     else topic.messages.push(message);
     topic.messageMap[message.id] = message;
+    message.updateTime = Date.now()
     await ChatManagement.createMessage(message);
     return message;
   }

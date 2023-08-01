@@ -68,9 +68,7 @@ export function MessageList({
     setPageSize(Math.max(0, chat.config.pageSize || 0) || 20);
     setRepect(Math.max(0, chat.config.pageRepect || 0) || 10);
   }, [chat]);
-  useEffect(() => {
-    setPageSize(onlyOne ? 50 : 20);
-  }, [onlyOne]);
+
   const rBak = useCallback(
     (v: Message) => {
       setInput(
@@ -117,9 +115,10 @@ export function MessageList({
   useEffect(() => {
     topicRender[topic.id] = (messageId?: string | number) => {
       if (typeof messageId == "number") {
+        console.log(messageId,topic.messages.length,Math.ceil((messageId + 1) / pageSize),messageId % pageSize >= pageSize / 2,pageSize)
         rangeMessage(
           Math.ceil((messageId + 1) / pageSize),
-          messageId % pageSize >= pageSize / 2
+          (messageId % pageSize) >= (pageSize / 2)
         );
         return;
       }
