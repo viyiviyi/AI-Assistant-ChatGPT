@@ -43,12 +43,13 @@ export function MessageList({
   const [msgIdIdxMap] = useState(new Map<string, number>());
   const { sendMessage } = useSendMessage(chat);
   const rangeMessage = useCallback(
-    (pageNumber: number) => {
+    (pageNumber: number, isEnd = true) => {
       const { range, totalPages, pageIndex } = pagesUtil(
         topic.messages,
         pageNumber,
         pageSize,
-        repect
+        repect,
+        isEnd
       );
       setPageCount(totalPages);
       steMessages(range);
@@ -91,12 +92,21 @@ export function MessageList({
   const onDel = useCallback(
     (msg: Message) => {
       chat.removeMessage(msg)?.then(() => {
+        let idx = msgIdIdxMap.get(msg.id);
         delete renderMessage[msg.id];
-        rangeMessage(pageNumber);
+        rangeMessage(idx !== undefined ? idx : pageNumber);
         reloadNav(topic);
       });
     },
-    [renderMessage, rangeMessage, topic, chat, reloadNav, pageNumber]
+    [
+      renderMessage,
+      rangeMessage,
+      topic,
+      chat,
+      reloadNav,
+      pageNumber,
+      msgIdIdxMap,
+    ]
   );
   const onPush = useCallback(async (idx: number) => {
     setInsertIndex(idx);
@@ -107,7 +117,10 @@ export function MessageList({
   useEffect(() => {
     topicRender[topic.id] = (messageId?: string | number) => {
       if (typeof messageId == "number") {
-        rangeMessage(Math.ceil((messageId + 1) / pageSize));
+        rangeMessage(
+          Math.ceil((messageId + 1) / pageSize),
+          messageId % pageSize >= pageSize / 2
+        );
         return;
       }
       if (messageId) {
@@ -188,7 +201,7 @@ export function MessageList({
             block
             type="text"
             onClick={() => {
-              rangeMessage(pageNumber + 1);
+              rangeMessage(pageNumber + 1, false);
             }}
           >
             下一页

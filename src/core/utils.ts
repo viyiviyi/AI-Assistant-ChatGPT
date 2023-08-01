@@ -43,7 +43,8 @@ export function pagesUtil<T>(
   arr: T[],
   pageNumber: number,
   pageSize = 20,
-  repect = 10
+  repect = 10,
+  repectInEnd = true
 ): { range: T[]; totalPages: number; pageIndex: number } {
   if (arr.length <= 0) return { range: [], totalPages: 0, pageIndex: 1 };
   if (arr.length < pageSize + repect)
@@ -53,8 +54,10 @@ export function pagesUtil<T>(
   if (pageNumber > total) pageNumber = total;
   if (pageNumber < 1) pageNumber = 1;
   let end = Math.min(arr.length, pageNumber * pageSize);
-  let start = Math.max(0, end - (pageSize + repect));
-  if (pageNumber == 1) end = Math.min(end + repect, arr.length);
+  if (end < arr.length && repectInEnd) Math.min(arr.length, end + repect);
+  let start = Math.max(0, end - pageSize - repect);
+  if (start == 0) end = Math.min(pageSize + repect, arr.length);
+  if (end == arr.length) start = Math.max(0, end - pageSize - repect);
   return {
     range: arr.slice(start, end),
     totalPages: total,
