@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat
 RUN apk add --no-cache make g++ py3-pip python3 gcc
 WORKDIR /app
 COPY package.json yarn.lock ./
-# RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM node:alpine AS builder
