@@ -7,7 +7,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -17,7 +17,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -91,12 +91,25 @@ export function InputUtil() {
         topicId: topicId,
       };
       // 防止使用为完成的上下文发起提问
-      if (
-        topic.messages
-          .slice(-chat.gptConfig.msgCount)
-          .findIndex((f) => loadingMessages[f.id]) != -1
-      )
-        return;
+      if (text) {
+        if (chat.gptConfig.msgCount > 1) {
+          if (
+            topic.messages
+              .slice(-chat.gptConfig.msgCount + 1)
+              .findIndex((f) => loadingMessages[f.id]) != -1
+          ) {
+            return;
+          }
+        }
+      } else {
+        if (
+          topic.messages
+            .slice(-chat.gptConfig.msgCount)
+            .findIndex((f) => loadingMessages[f.id]) != -1
+        ) {
+          return;
+        }
+      }
       loadingMessages[result.id] = true;
 
       scrollStatus.enable = true;
