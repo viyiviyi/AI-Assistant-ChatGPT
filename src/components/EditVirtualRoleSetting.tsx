@@ -1,7 +1,15 @@
 import { getUuid } from "@/core/utils";
 import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Modal, Popconfirm, Segmented } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Segmented,
+  Select
+} from "antd";
 import { useState } from "react";
 import { DragList } from "./DragList";
 
@@ -10,13 +18,16 @@ export function EditVirtualRoleSetting({
   onSave,
   visible,
   onCancel,
+  allTags,
 }: {
   item: VirtualRoleSetting & { key: string; edit: boolean };
   visible: boolean;
   onSave: (item: VirtualRoleSetting & { key: string; edit: boolean }) => void;
   onCancel: () => void;
+  allTags: string[];
 }) {
   const [form] = Form.useForm();
+  const [tags, setTags] = useState<string[]>(item.tags);
   const [ctx, setCtx] = useState(
     item.ctx.filter((f) => f.content).map((v) => ({ ...v, key: getUuid() }))
   );
@@ -25,7 +36,7 @@ export function EditVirtualRoleSetting({
     <Modal
       open={visible}
       onOk={() => {
-        onSave({ ...item, ctx: ctx.filter((f) => f.content), title: title });
+        onSave({ ...item,tags, ctx: ctx.filter((f) => f.content), title: title });
       }}
       onCancel={onCancel}
     >
@@ -48,6 +59,18 @@ export function EditVirtualRoleSetting({
               paddingRight: "1em",
               paddingLeft: "1em",
             }}
+          />
+        </Form.Item>
+        <Form.Item validateTrigger={["onChange", "onBlur"]}>
+          <Select
+            mode="tags"
+            style={{ width: "100%" }}
+            value={tags}
+            onChange={(vals) => {
+              setTags(vals);
+            }}
+            tokenSeparators={[","]}
+            options={allTags.map((v) => ({ label: v, value: v }))}
           />
         </Form.Item>
         <div style={{ overflow: "auto" }}>

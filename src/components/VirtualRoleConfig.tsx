@@ -1,7 +1,7 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { getUuid } from "@/core/utils";
-import { VirtualRole } from "@/Models/DataBase";
+import { CtxRole, VirtualRole } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -12,10 +12,11 @@ import {
   Space,
   Switch,
   Tabs,
+  Tag,
   theme,
   Typography
 } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import AvatarUpload from "./AvatarUpload";
 import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
@@ -38,6 +39,8 @@ export const VirtualRoleConfig = ({
   const [settingFilterText, setSettingFilterText] = useState("");
   const { token } = theme.useToken();
   const { setChat } = useContext(ChatContext);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [virtualRole_settings, setVirtualRole_settings] = useState(
     chatMgt?.virtualRole.settings?.map((v, i) => ({
       ...v,
@@ -45,6 +48,20 @@ export const VirtualRoleConfig = ({
       edit: false,
     })) || []
   );
+  useEffect(() => {
+    let tags: string[] = [];
+    let tagsmap = new Map<string, number>();
+    virtualRole_settings.forEach((v) => {
+      v.tags.forEach((tag) => {
+        if (tagsmap.has(tag)) tagsmap.set(tag, tagsmap.get(tag)! + 1);
+        else tagsmap.set(tag, 1);
+      });
+    });
+    tags = Array.from(tagsmap.keys()).sort(
+      (l, n) => tagsmap.get(n)! - tagsmap.get(l)!
+    );
+    setTags(tags);
+  }, [chatMgt, virtualRole_settings]);
   const [form] = Form.useForm<{
     virtualRole_name: string;
     virtualRole_bio: string;
@@ -53,7 +70,12 @@ export const VirtualRoleConfig = ({
     user_name: string;
     user_en_name: string;
   }>();
-
+  const handleChange = (tag: string, checked: boolean) => {
+    const nextSelectedTags = checked
+      ? [...selectedTags, tag]
+      : selectedTags.filter((t) => t !== tag);
+    setSelectedTags(nextSelectedTags);
+  };
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
@@ -78,6 +100,30 @@ export const VirtualRoleConfig = ({
     chatMgt.saveUser();
     setChat(new ChatManagement(chatMgt));
     onSaved();
+  }
+  function isShow(item: {
+    key: string;
+    edit: boolean;
+    extensionId?: string | undefined;
+    title?: string | undefined;
+    checked: boolean;
+    tags: string[];
+    ctx: {
+      role: CtxRole;
+      content: string;
+    }[];
+  }): boolean {
+    let show = true;
+    if (settingFilterText) {
+      show =
+        item.title?.includes(settingFilterText) ||
+        item.tags.filter((f) => f.includes(settingFilterText)).length > 0;
+    }
+    if (selectedTags.length > 0) {
+      show =
+        show && item.tags.filter((f) => selectedTags.includes(f)).length > 0;
+    }
+    return show;
   }
   return (
     <>
@@ -138,86 +184,98 @@ export const VirtualRoleConfig = ({
               </Button.Group>
             </Form.Item>
           </Space>
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              gap: "10px",
-              justifyContent: "space-between",
-            }}
-          >
-            <div>
-              <Form.Item>
-                <AvatarUpload
-                  avatar={virtualRole_Avatar || undefined}
-                  onSave={setVirtualRole_Avatar}
-                />
-              </Form.Item>
-              <Form.Item
-                style={{ flex: 1 }}
-                name="virtualRole_name"
-                label="助理名称"
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                style={{ flex: 1 }}
-                name="virtualRole_en_name"
-                label="英文名称;用于区分角色"
-                rules={[
-                  {
-                    type: "string",
-                    pattern: /^[a-zA-Z0-9]+$/,
-                    message: "只能使用大小写字母和数字",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </div>
-            <div>
-              <Form.Item>
-                <AvatarUpload
-                  avatar={user_Avatar || undefined}
-                  onSave={setUser_Avatar}
-                />
-              </Form.Item>
-              <Form.Item style={{ flex: 1 }} name="user_name" label="用户名称">
-                <Input />
-              </Form.Item>
-              <Form.Item
-                style={{ flex: 1 }}
-                name="user_en_name"
-                label="英文名称;用于区分角色"
-                rules={[
-                  {
-                    type: "string",
-                    pattern: /^[a-zA-Z0-9]+$/,
-                    message: "只能使用大小写字母和数字",
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </div>
-          </div>
-          <Form.Item
-            name="virtualRole_bio"
-            label="助理设定"
-            extra="当助理模式开启时，所有发送的内容都将以此内容开头"
-          >
-            <Input.TextArea autoSize />
-          </Form.Item>
           <Tabs
             type="card"
-            style={{ minHeight: "60vh", maxHeight: "60vh", overflow: "auto" }}
+            style={{ minHeight: "calc(70vh - 118px)" }}
             items={[
+              {
+                label: `助理设定`,
+                key: "virtualRole",
+                children: (
+                  <div>
+                    <div
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        gap: "10px",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div>
+                        <Form.Item>
+                          <AvatarUpload
+                            avatar={virtualRole_Avatar || undefined}
+                            onSave={setVirtualRole_Avatar}
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          style={{ flex: 1 }}
+                          name="virtualRole_name"
+                          label="助理名称"
+                        >
+                          <Input />
+                        </Form.Item>
+                        <Form.Item
+                          style={{ flex: 1 }}
+                          name="virtualRole_en_name"
+                          label="英文名称;用于区分角色"
+                          rules={[
+                            {
+                              type: "string",
+                              pattern: /^[a-zA-Z0-9]+$/,
+                              message: "只能使用大小写字母和数字",
+                            },
+                          ]}
+                        >
+                          <Input />
+                        </Form.Item>
+                      </div>
+                      <div>
+                        <Form.Item>
+                          <AvatarUpload
+                            avatar={user_Avatar || undefined}
+                            onSave={setUser_Avatar}
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          style={{ flex: 1 }}
+                          name="user_name"
+                          label="用户名称"
+                        >
+                          <Input />
+                        </Form.Item>
+                        <Form.Item
+                          style={{ flex: 1 }}
+                          name="user_en_name"
+                          label="英文名称;用于区分角色"
+                          rules={[
+                            {
+                              type: "string",
+                              pattern: /^[a-zA-Z0-9]+$/,
+                              message: "只能使用大小写字母和数字",
+                            },
+                          ]}
+                        >
+                          <Input />
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <Form.Item
+                      name="virtualRole_bio"
+                      label="助理设定"
+                      extra="当助理模式开启时，所有发送的内容都将以此内容开头"
+                    >
+                      <Input.TextArea autoSize />
+                    </Form.Item>
+                  </div>
+                ),
+              },
               {
                 label: `设定列表`,
                 key: "settings",
                 children: (
                   <>
-                    <Form.Item label="搜索配置">
+                    <Form.Item label="搜索配置" noStyle>
                       <Input.Search
                         onSearch={(val) => {
                           setSettingFilterText(val);
@@ -226,17 +284,26 @@ export const VirtualRoleConfig = ({
                       />
                     </Form.Item>
                     <Form.Item>
+                      <Space size={[0, 8]} wrap style={{ overflow: "auto" }}>
+                        {tags.slice(0, Math.min(50, tags.length)).map((tag) => (
+                          <Tag.CheckableTag
+                            key={tag}
+                            checked={selectedTags.includes(tag)}
+                            onChange={(checked) => handleChange(tag, checked)}
+                          >
+                            {tag}
+                          </Tag.CheckableTag>
+                        ))}
+                      </Space>
+                    </Form.Item>
+                    <Form.Item>
                       <DragList
                         data={virtualRole_settings}
                         onChange={(data) => {
                           setVirtualRole_settings(data);
                         }}
                         itemDom={(item) => {
-                          return !settingFilterText ||
-                            item.title?.includes(settingFilterText) ||
-                            item.tags.filter((f) =>
-                              f.includes(settingFilterText)
-                            ).length ? (
+                          return isShow(item) ? (
                             <div
                               style={{
                                 flex: 1,
@@ -249,6 +316,7 @@ export const VirtualRoleConfig = ({
                             >
                               <EditVirtualRoleSetting
                                 item={item}
+                                allTags={tags}
                                 visible={item.edit}
                                 onCancel={() => {
                                   item.edit = false;
@@ -275,6 +343,16 @@ export const VirtualRoleConfig = ({
                                     style={{ borderBottom: "1px solid #ccc2" }}
                                   >
                                     <Typography.Text ellipsis>
+                                      {item.tags
+                                        .slice(0, Math.min(item.tags.length, 3))
+                                        .map((v) => (
+                                          <Tag
+                                            key={"setting_tag_" + v}
+                                            color="green"
+                                          >
+                                            {v}
+                                          </Tag>
+                                        ))}{" "}
                                       {item.title}
                                     </Typography.Text>
                                   </div>
