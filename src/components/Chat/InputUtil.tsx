@@ -9,7 +9,7 @@ import {
   scrollToTop,
   stopScroll
 } from "@/core/utils";
-import { Message } from "@/Models/DataBase";
+import { CtxRole, Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
 import {
   AlignLeftOutlined,
@@ -19,10 +19,11 @@ import {
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
 } from "@ant-design/icons";
-import { Button, Drawer, Input, Space, theme, Tooltip, Typography } from "antd";
+import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
 import { MemoBackgroundImage } from "../BackgroundImage";
 import { MessageContext } from "./Chat";
+import { CtxRoleButton } from "./CtxRoleButton";
 import { reloadTopic } from "./MessageList";
 import { MemoNavigation } from "./Navigation";
 
@@ -45,6 +46,7 @@ export function InputUtil() {
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
   const { token } = theme.useToken();
+  const [role,setRole] = useState<[CtxRole, boolean]>(['user',true])
   const screenSize = useScreenSize();
   objs.setInput = setInputText;
   /**
@@ -55,9 +57,7 @@ export function InputUtil() {
   const onSubmit = useCallback(
     async function (isNewTopic: boolean) {
       let text = inputText.trim();
-      const isBot = text.startsWith("/");
-      const isSys = text.startsWith("/::") || text.startsWith("::");
-      const skipRequest = text.startsWith("\\");
+      const skipRequest = !role[1];
       text = ChatManagement.parseText(text);
       let topic = chat.getActivityTopic();
       if (!chat.config.activityTopicId) isNewTopic = true;
@@ -76,7 +76,7 @@ export function InputUtil() {
       let msg: Message = {
         id: "",
         groupId: chat.group.id,
-        ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
+        ctxRole: role[0],
         text: text,
         timestamp: now++,
         topicId: topicId,
@@ -110,7 +110,7 @@ export function InputUtil() {
             scrollToBotton(result.id || msg.id);
         };
         const aiService = aiServices.current;
-        if (isBot || skipRequest || !aiService) {
+        if (skipRequest || !aiService) {
           setInputText("");
           await rendAndScrollView(msg);
           if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
@@ -250,7 +250,7 @@ export function InputUtil() {
           scrollToBotton(result.id);
       }, 500);
     },
-    [chat, inputText, loadingMsgs, reloadNav, activityTopic, setActivityTopic]
+    [chat, inputText, loadingMsgs,role, reloadNav, activityTopic, setActivityTopic]
   );
 
   return (
@@ -291,8 +291,9 @@ export function InputUtil() {
           }}
         >
           {inputText && (
-            <Space
-              size={10}
+            <CtxRoleButton
+              value={role}
+              onChange={setRole}
               style={{
                 position: "absolute",
                 bottom: "100%",
@@ -301,56 +302,7 @@ export function InputUtil() {
                 borderRadius: token.borderRadius,
                 backgroundColor: token.colorFillContent,
               }}
-            >
-              <Tooltip title={"作为AI消息"}>
-                <Button
-                  type="text"
-                  size="large"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setInputText((v) => "/" + ChatManagement.parseText(v));
-                  }}
-                >
-                  /
-                </Button>
-              </Tooltip>
-              <Tooltip title={"作为用户消息，不访问AI"}>
-                <Button
-                  type="text"
-                  size="large"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setInputText((v) => "\\" + ChatManagement.parseText(v));
-                  }}
-                >
-                  \
-                </Button>
-              </Tooltip>
-              <Tooltip title={"作为系统消息"}>
-                <Button
-                  type="text"
-                  size="large"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setInputText((v) => "::" + ChatManagement.parseText(v));
-                  }}
-                >
-                  ::
-                </Button>
-              </Tooltip>
-              <Tooltip title={"作为系统消息，不访问AI"}>
-                <Button
-                  type="text"
-                  size="large"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setInputText((v) => "/::" + ChatManagement.parseText(v));
-                  }}
-                >
-                  /::
-                </Button>
-              </Tooltip>
-            </Space>
+            />
           )}
           <Space
             size={10}

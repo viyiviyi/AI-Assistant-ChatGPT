@@ -1,6 +1,6 @@
 import { reloadTopic } from "@/components/Chat/MessageList";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { Message } from "@/Models/DataBase";
+import { CtxRole, Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "./../Models/Topic";
 import { aiServices } from "./AiService/ServiceProvider";
@@ -151,13 +151,12 @@ export function usePushMessage(chat: ChatManagement) {
       text: string,
       idx: number,
       topic: TopicMessage,
+      role: [CtxRole, boolean],
       pushCallback: (msg: Message) => void
     ) {
       if (idx < 0) return;
       text = text.trim();
-      const isBot = text.startsWith("/");
-      const isSys = text.startsWith("/::") || text.startsWith("::");
-      const skipRequest = text.startsWith("\\");
+      const skipRequest = !role[1];
       text = ChatManagement.parseText(text);
       let time = Date.now();
       if (idx == 0 && idx + 1 < topic.messages.length)
@@ -167,7 +166,7 @@ export function usePushMessage(chat: ChatManagement) {
       let msg: Message = {
         id: "",
         groupId: chat.group.id,
-        ctxRole: isSys ? "system" : isBot ? "assistant" : "user",
+        ctxRole: role[0],
         text: text,
         timestamp: time,
         topicId: topic.id,
@@ -179,7 +178,7 @@ export function usePushMessage(chat: ChatManagement) {
         reloadTopic(topic.id, idx);
       }
       pushCallback(msg);
-      if (isBot || isSys || skipRequest) return;
+      if (skipRequest) return;
       sendMessage(idx, topic);
     },
     [chat, reloadIndex, sendMessage]

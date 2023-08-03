@@ -1,11 +1,12 @@
-import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatManagement } from "@/core/ChatManagement";
 import { usePushMessage } from "@/core/hooks";
 import { onTextareaTab } from "@/core/utils";
+import { CtxRole } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
-import { Button, Input, theme, Tooltip } from "antd";
+import { Button, Input, theme } from "antd";
 import React, { useState } from "react";
+import { CtxRoleButton } from "./CtxRoleButton";
 
 export const insertInputRef = React.createRef<HTMLInputElement>();
 function InsertInput({
@@ -22,14 +23,10 @@ function InsertInput({
   const [insertText, setInsertText] = useState("");
   const { pushMessage } = usePushMessage(chat);
   const { token } = theme.useToken();
+  const [role,setRole] = useState<[CtxRole, boolean]>(['user',true])
 
   const onSubmit = (text: string, idx: number) => {
-    if (!aiServices.current?.customContext) {
-      if (!text.startsWith("/") && !text.startsWith("\\")) {
-        text = "\\" + text;
-      }
-    }
-    pushMessage(text, idx, topic, () => {
+    pushMessage(text, idx, topic,role, () => {
       onHidden();
       setInsertText("");
     });
@@ -46,54 +43,10 @@ function InsertInput({
         }}
       >
         <div style={{ display: "flex", marginBottom: 5 }}>
-          <Tooltip title={"作为AI消息"}>
-            <Button
-              type="text"
-              size="large"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                setInsertText((v) => "/" + ChatManagement.parseText(v));
-              }}
-            >
-              /
-            </Button>
-          </Tooltip>
-          <Tooltip title={"作为用户消息，不访问AI"}>
-            <Button
-              type="text"
-              size="large"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                setInsertText((v) => "\\" + ChatManagement.parseText(v));
-              }}
-            >
-              \
-            </Button>
-          </Tooltip>
-          <Tooltip title={"作为系统消息"}>
-            <Button
-              type="text"
-              size="large"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                setInsertText((v) => "::" + ChatManagement.parseText(v));
-              }}
-            >
-              ::
-            </Button>
-          </Tooltip>
-          <Tooltip title={"作为系统消息，不访问AI"}>
-            <Button
-              type="text"
-              size="large"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                setInsertText((v) => "/::" + ChatManagement.parseText(v));
-              }}
-            >
-              /::
-            </Button>
-          </Tooltip>
+          <CtxRoleButton
+              value={role}
+              onChange={setRole}
+            />
           <span style={{ flex: 1 }}></span>
           <Button
             shape="circle"

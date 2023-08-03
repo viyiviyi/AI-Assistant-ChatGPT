@@ -1,7 +1,7 @@
 import { aiServiceType } from "@/core/AiService/ServiceProvider";
 import {
   ChatCompletionRequestMessage,
-  CreateChatCompletionRequest,
+  CreateChatCompletionRequest
 } from "openai";
 import { CtxRole, Message } from "../../Models/DataBase";
 import { ServiceTokens } from "./ServiceProvider";
@@ -9,7 +9,9 @@ export interface IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
   serverType: aiServiceType;
-  // 是否支持自定义上下文 如果不支持，表示上下文存在服务器
+  /**
+   * 是否支持自定义上下文 如果不支持，表示上下文存在服务器
+   */
   customContext: boolean;
   models: () => Promise<Array<string>>;
   sendMessage(input: {
