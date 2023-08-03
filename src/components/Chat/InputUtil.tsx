@@ -46,7 +46,7 @@ export function InputUtil() {
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
   const { token } = theme.useToken();
-  const [role,setRole] = useState<[CtxRole, boolean]>(['user',true])
+  const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
   const screenSize = useScreenSize();
   objs.setInput = setInputText;
   /**
@@ -125,6 +125,7 @@ export function InputUtil() {
         const aiService = aiServices.current;
         if (skipRequest || !aiService) {
           setInputText("");
+          setRole(["user", true]);
           await rendAndScrollView(msg);
           if (/^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(result.text))
             reloadNav(topic);
@@ -201,6 +202,7 @@ export function InputUtil() {
           return;
         }
         setInputText("");
+        setRole(["user", true]);
         setLoading((v) => ++v);
         if (msg.text || aiService.customContext) {
           await rendAndScrollView(msg);
@@ -263,7 +265,15 @@ export function InputUtil() {
           scrollToBotton(result.id);
       }, 500);
     },
-    [chat, inputText, loadingMsgs,role, reloadNav, activityTopic, setActivityTopic]
+    [
+      chat,
+      inputText,
+      loadingMsgs,
+      role,
+      reloadNav,
+      activityTopic,
+      setActivityTopic,
+    ]
   );
 
   return (
@@ -287,7 +297,6 @@ export function InputUtil() {
         style={{
           width: "100%",
           padding: "0px 10px 10px",
-          marginBottom: "15px",
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
         }}
@@ -307,6 +316,7 @@ export function InputUtil() {
             <CtxRoleButton
               value={role}
               onChange={setRole}
+              inputRef={inputRef}
               style={{
                 position: "absolute",
                 bottom: "100%",

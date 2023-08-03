@@ -8,7 +8,7 @@ import { Button, Input, theme } from "antd";
 import React, { useState } from "react";
 import { CtxRoleButton } from "./CtxRoleButton";
 
-export const insertInputRef = React.createRef<HTMLInputElement>();
+// export const insertInputRef = React.createRef<HTMLInputElement>();
 function InsertInput({
   topic,
   chat,
@@ -23,10 +23,11 @@ function InsertInput({
   const [insertText, setInsertText] = useState("");
   const { pushMessage } = usePushMessage(chat);
   const { token } = theme.useToken();
-  const [role,setRole] = useState<[CtxRole, boolean]>(['user',true])
+  const [insertInputRef] = useState(React.createRef<HTMLInputElement>());
+  const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
 
   const onSubmit = (text: string, idx: number) => {
-    pushMessage(text, idx, topic,role, () => {
+    pushMessage(text, idx, topic, role, () => {
       onHidden();
       setInsertText("");
     });
@@ -40,14 +41,15 @@ function InsertInput({
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
           padding: "2px",
-          marginTop:'20px'
+          marginTop: "20px",
         }}
       >
         <div style={{ display: "flex", marginBottom: 5 }}>
           <CtxRoleButton
-              value={role}
-              onChange={setRole}
-            />
+            value={role}
+            onChange={setRole}
+            inputRef={insertInputRef}
+          />
           <span style={{ flex: 1 }}></span>
           <Button
             shape="circle"
@@ -74,7 +76,7 @@ function InsertInput({
           autoSize={{ maxRows: 10 }}
           allowClear
           ref={insertInputRef}
-          autoFocus={false}
+          autoFocus={true}
           value={insertText}
           onKeyUp={(e) =>
             (e.key === "s" && e.altKey && onSubmit(insertText, insertIndex)) ||

@@ -7,7 +7,7 @@ import { Button } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
-import { insertInputRef, MemoInsertInput } from "./InsertInput";
+import { MemoInsertInput } from "./InsertInput";
 import { MemoMessageItem } from "./MessageItem";
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
@@ -108,9 +108,6 @@ export function MessageList({
   );
   const onPush = useCallback(async (idx: number) => {
     setInsertIndex(idx);
-    setTimeout(() => {
-      insertInputRef.current?.focus();
-    }, 500);
   }, []);
   useEffect(() => {
     topicRender[topic.id] = (messageId?: string | number) => {

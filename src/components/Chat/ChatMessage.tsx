@@ -7,7 +7,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   MessageOutlined,
-  PlusOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,11 +17,11 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
-import { insertInputRef, MemoInsertInput } from "./InsertInput";
+import { MemoInsertInput } from "./InsertInput";
 import { MessageList, reloadTopic } from "./MessageList";
 
 const { Panel } = Collapse;
@@ -174,9 +174,6 @@ function TopUtil({
           onClick={() => {
             reloadTopic(v.id, 0);
             setShowInsert0((v) => !v);
-            setTimeout(() => {
-              insertInputRef.current?.focus();
-            }, 200);
           }}
         ></Button>
         <Button
@@ -310,7 +307,6 @@ function TopicTitle({
           placeholder={topic.name}
           autoSize={{ maxRows: 10 }}
           allowClear
-          ref={insertInputRef}
           autoFocus={true}
           value={title}
           onKeyUp={(e) => {
