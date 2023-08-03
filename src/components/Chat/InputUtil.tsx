@@ -7,7 +7,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -17,7 +17,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -311,7 +311,6 @@ export function InputUtil() {
                 position: "absolute",
                 bottom: "100%",
                 left: 0,
-                opacity: 0.5,
                 borderRadius: token.borderRadius,
                 backgroundColor: token.colorFillContent,
               }}
@@ -410,7 +409,7 @@ export function InputUtil() {
             <CommentOutlined />
             <VerticalAlignMiddleOutlined />
           </Button>
-          <span style={{ marginLeft: 16 }}></span>
+          <span style={{ marginLeft: 10 }}></span>
           <Button
             shape="circle"
             size="large"
@@ -420,7 +419,7 @@ export function InputUtil() {
               onSubmit(true);
             }}
           ></Button>
-          <span style={{ marginLeft: 16 }}></span>
+          <span style={{ marginLeft: 10 }}></span>
           <Button
             shape="circle"
             size="large"
