@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "type": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["assistant", "system", "user"]
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prompts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "boolean"
+          },
+          "ctx": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": ["assistant", "system", "user"]
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": ["role", "content"]
+            }
+          }
+        },
+        "required": ["checked", "ctx"]
+      }
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "explain": {
+            "type": "string"
+          },
+          "val_type": {
+            "type": "string",
+            "enum": ["number", "string", "boolean", "enum"]
+          },
+          "enum": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "val": {
+                  "type": ["string", "number"]
+                }
+              },
+              "required": ["name", ""]
+            }
+          }
+        },
+        "required": ["name", "key", "explain", "val_type"]
+      }
+    }
+  },
+  "required": ["id", "name", "tags", "type", "permissions", "prompts", "args"]
+}
