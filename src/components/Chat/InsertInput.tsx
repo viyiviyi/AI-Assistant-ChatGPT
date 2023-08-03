@@ -40,6 +40,7 @@ function InsertInput({
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
           padding: "2px",
+          marginTop:'20px'
         }}
       >
         <div style={{ display: "flex", marginBottom: 5 }}>
