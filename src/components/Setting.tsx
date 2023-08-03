@@ -7,6 +7,7 @@ import {
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
 import { getToken, saveToken } from "@/core/tokens";
 import { downloadJson } from "@/core/utils";
@@ -34,7 +35,7 @@ import {
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
-import AvatarUpload from "./AvatarUpload";
+import ImageUpload from "./AvatarUpload";
 import { downloadTopic } from "./Chat/ChatMessage";
 import { MarkdownView } from "./Chat/MarkdownView";
 
@@ -53,6 +54,7 @@ export const Setting = ({
   const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
   const [models, setModels] = useState<string[]>([]);
+  const screenSize = useScreenSize();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
   const [selectRoles, setSelectRoles] = useState({
     assistant: true,
@@ -221,7 +223,7 @@ export const Setting = ({
             </a>
           </div>
           <Form.Item label={"会话头像"}>
-            <AvatarUpload
+            <ImageUpload
               avatar={group_Avatar || undefined}
               onSave={setGroup_Avatar}
             />
@@ -240,7 +242,17 @@ export const Setting = ({
           </Form.Item>
           <Form.Item label={"会话背景图片"}>
             <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-              <Upload
+              <ImageUpload
+                onSave={setGroup_background}
+                width={screenSize.width}
+                height={screenSize.height}
+                trigger={
+                  <Button block style={{ width: "min(220px, 40vw)" }}>
+                    设置
+                  </Button>
+                }
+              ></ImageUpload>
+              {/* <Upload
                 accept=".png,.jpg,.gif"
                 {...{
                   beforeUpload(file, FileList) {
@@ -260,7 +272,7 @@ export const Setting = ({
                 <Button block style={{ width: "min(220px, 40vw)" }}>
                   设置
                 </Button>
-              </Upload>
+              </Upload> */}
               <Button
                 style={{ flex: 1 }}
                 onClick={() => {
@@ -692,7 +704,17 @@ export const Setting = ({
                     gap: "10px",
                   }}
                 >
-                  <Upload
+                  <ImageUpload
+                    onSave={setBackground}
+                    width={screenSize.width}
+                    height={screenSize.height}
+                    trigger={
+                      <Button block style={{ width: "min(220px, 40vw)" }}>
+                        设置
+                      </Button>
+                    }
+                  ></ImageUpload>
+                  {/* <Upload
                     accept=".png,.jpg,.gif"
                     {...{
                       beforeUpload(file, FileList) {
@@ -709,10 +731,8 @@ export const Setting = ({
                       showUploadList: false,
                     }}
                   >
-                    <Button block style={{ width: "min(220px, 40vw)" }}>
-                      设置
-                    </Button>
-                  </Upload>
+                   
+                  </Upload> */}
                   <Button
                     style={{ flex: "1" }}
                     onClick={() => {

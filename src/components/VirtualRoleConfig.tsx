@@ -4,20 +4,20 @@ import { getUuid } from "@/core/utils";
 import { CtxRole, VirtualRole } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  Popconfirm,
-  Space,
-  Switch,
-  Tabs,
-  Tag,
-  theme,
-  Typography
+    Button,
+    Checkbox,
+    Form,
+    Input,
+    Popconfirm,
+    Space,
+    Switch,
+    Tabs,
+    Tag,
+    theme,
+    Typography
 } from "antd";
 import { useContext, useEffect, useState } from "react";
-import AvatarUpload from "./AvatarUpload";
+import ImageUpload from "./AvatarUpload";
 import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 
@@ -203,7 +203,7 @@ export const VirtualRoleConfig = ({
                     >
                       <div>
                         <Form.Item>
-                          <AvatarUpload
+                          <ImageUpload
                             avatar={virtualRole_Avatar || undefined}
                             onSave={setVirtualRole_Avatar}
                           />
@@ -232,7 +232,7 @@ export const VirtualRoleConfig = ({
                       </div>
                       <div>
                         <Form.Item>
-                          <AvatarUpload
+                          <ImageUpload
                             avatar={user_Avatar || undefined}
                             onSave={setUser_Avatar}
                           />
