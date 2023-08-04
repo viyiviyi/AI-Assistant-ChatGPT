@@ -111,7 +111,7 @@ export class ChatManagement implements IChat {
           if (typeof v == "string") {
             return {
               checked: true,
-              tags:[],
+              tags: [],
               ctx: [
                 {
                   role: this.parseTextToRole(v),
@@ -270,20 +270,8 @@ export class ChatManagement implements IChat {
             settings.push(c);
           });
         });
+
       ctx = [
-        {
-          role: ChatManagement.parseTextToRole(virtualRole.bio, "system"),
-          content: ChatManagement.parseText(virtualRole.bio),
-          name: this.getNameByRole(
-            ChatManagement.parseTextToRole(virtualRole.bio, "system"),
-            virtualRole
-          ),
-        },
-        {
-          role: "system",
-          content: `current time is: ${new Date().toLocaleString()}`,
-          name: "system",
-        },
         ...settings.map((v) => ({
           role: v.role,
           content: v.content,
@@ -291,6 +279,19 @@ export class ChatManagement implements IChat {
         })),
         ...ctx,
       ];
+      if (virtualRole.bio) {
+        ctx = [
+          {
+            role: ChatManagement.parseTextToRole(virtualRole.bio, "system"),
+            content: ChatManagement.parseText(virtualRole.bio),
+            name: this.getNameByRole(
+              ChatManagement.parseTextToRole(virtualRole.bio, "system"),
+              virtualRole
+            ),
+          },
+          ...ctx,
+        ];
+      }
     }
     return ctx;
   }
@@ -563,7 +564,7 @@ export class ChatManagement implements IChat {
       topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
     else topic.messages.push(message);
     topic.messageMap[message.id] = message;
-    message.updateTime = Date.now()
+    message.updateTime = Date.now();
     await ChatManagement.createMessage(message);
     return message;
   }
