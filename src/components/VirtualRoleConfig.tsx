@@ -14,7 +14,7 @@ import {
   Tabs,
   Tag,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import { useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
