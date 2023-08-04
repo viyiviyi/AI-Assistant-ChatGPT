@@ -4,17 +4,17 @@ import { getUuid } from "@/core/utils";
 import { CtxRole, VirtualRole } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
-    Button,
-    Checkbox,
-    Form,
-    Input,
-    Popconfirm,
-    Space,
-    Switch,
-    Tabs,
-    Tag,
-    theme,
-    Typography
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Popconfirm,
+  Space,
+  Switch,
+  Tabs,
+  Tag,
+  theme,
+  Typography,
 } from "antd";
 import { useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
@@ -173,9 +173,13 @@ export const VirtualRoleConfig = ({
                   onClick={() => {
                     form.setFieldValue("virtualRole_name", copyRoleVal?.name);
                     form.setFieldValue("virtualRole_bio", copyRoleVal?.bio);
-                    form.setFieldValue(
-                      "virtualRole_settings",
-                      copyRoleVal?.settings
+                    setVirtualRole_Avatar(copyRoleVal?.avatar)
+                    setVirtualRole_settings(
+                      copyRoleVal?.settings?.map((v, i) => ({
+                        ...v,
+                        key: getUuid(),
+                        edit: false,
+                      })) || []
                     );
                   }}
                 >

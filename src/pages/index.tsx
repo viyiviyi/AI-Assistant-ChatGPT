@@ -95,7 +95,7 @@ export default function Page() {
       >
         <MemoBackgroundImage />
         <Head>
-          <title>Chat助理</title>
+          <title>Chat助理 灵活简洁美观的ChatGPT客户端</title>
         </Head>
         <MemoChat />
         {screenSize.width > 1420 && listIsShow ? (
