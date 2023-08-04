@@ -149,7 +149,16 @@ export const VirtualRoleConfig = ({
             padding: token.paddingContentHorizontalSM + "px",
           }}
         >
-          <div style={{width:'100%',height:'54px',position:'fixed',left:'0',top:'0'}} onClick={onCancel}></div>
+          <div
+            style={{
+              width: "100%",
+              height: "54px",
+              position: "fixed",
+              left: "0",
+              top: "0",
+            }}
+            onClick={onCancel}
+          ></div>
           <Space size={32}>
             <Form.Item
               name="virtualRole_enable"
@@ -174,7 +183,7 @@ export const VirtualRoleConfig = ({
                   onClick={() => {
                     form.setFieldValue("virtualRole_name", copyRoleVal?.name);
                     form.setFieldValue("virtualRole_bio", copyRoleVal?.bio);
-                    setVirtualRole_Avatar(copyRoleVal?.avatar)
+                    setVirtualRole_Avatar(copyRoleVal?.avatar);
                     setVirtualRole_settings(
                       copyRoleVal?.settings?.map((v, i) => ({
                         ...v,
@@ -281,8 +290,9 @@ export const VirtualRoleConfig = ({
                 key: "settings",
                 children: (
                   <>
-                    <Form.Item label="搜索配置" noStyle>
+                    <Form.Item label="搜索配置" noStyle style={{marginBottom:10}}>
                       <Input.Search
+                        placeholder={"搜索关键字"}
                         onSearch={(val) => {
                           setSettingFilterText(val);
                           setVirtualRole_settings((v) => [...v]);
@@ -290,20 +300,35 @@ export const VirtualRoleConfig = ({
                       />
                     </Form.Item>
                     <Form.Item>
-                      <Space size={[0, 8]} wrap style={{ overflow: "auto" }}>
-                        {tags.slice(0, Math.min(50, tags.length)).map((tag) => (
-                          <Tag.CheckableTag
-                            key={tag}
-                            checked={selectedTags.includes(tag)}
-                            onChange={(checked) => handleChange(tag, checked)}
-                          >
-                            {tag}
-                          </Tag.CheckableTag>
-                        ))}
-                      </Space>
+                      {tags.length > 0 ? (
+                        <Space size={[0, 8]} wrap style={{ overflow: "auto" }}>
+                          {tags
+                            .slice(0, Math.min(50, tags.length))
+                            .map((tag) => (
+                              <Tag.CheckableTag
+                                key={tag}
+                                checked={selectedTags.includes(tag)}
+                                onChange={(checked) =>
+                                  handleChange(tag, checked)
+                                }
+                              >
+                                {tag}
+                              </Tag.CheckableTag>
+                            ))}
+                        </Space>
+                      ) : (
+                        <span style={{opacity:.4}}>{"没有tag"}</span>
+                      )}
                     </Form.Item>
                     <Form.Item>
                       <DragList
+                        style={{
+                          borderRadius: 8,
+                          border: "1px solid " + token.colorBorder,
+                          padding: 5,
+                          marginBottom: 8,
+                          backgroundColor: token.colorBgMask,
+                        }}
                         data={virtualRole_settings}
                         onChange={(data) => {
                           setVirtualRole_settings(data);
@@ -314,7 +339,6 @@ export const VirtualRoleConfig = ({
                               style={{
                                 flex: 1,
                                 marginLeft: 10,
-                                marginBottom: 8,
                                 display: "flex",
                                 width: 0,
                                 cursor: "pointer",
@@ -388,7 +412,13 @@ export const VirtualRoleConfig = ({
                                   <></>
                                 )}
                               </div>
-                              <div style={{ width: 30 }}>
+                              <div
+                                style={{
+                                  width: 30,
+                                  display: "flex",
+                                  justifyContent: "flex-end",
+                                }}
+                              >
                                 <Space direction="vertical">
                                   <Checkbox
                                     checked={item.checked}

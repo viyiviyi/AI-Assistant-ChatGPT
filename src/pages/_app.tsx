@@ -31,6 +31,7 @@ export default function App({ Component, pageProps }: AppProps) {
             colorPrimary: "#00b96b",
             colorInfoBg: isDark ? "#444a" : "#ddda",
             colorTextBase: isDark ? "#ddd" : "#333",
+            colorBgElevated:isDark ? "#222" : "#eee",
           },
           components:{Segmented:{itemHoverColor:isDark ? "#00b96b" : "#00b96b"}},
           algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,

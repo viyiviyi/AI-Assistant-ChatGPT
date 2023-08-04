@@ -8,7 +8,8 @@ import {
   Modal,
   Popconfirm,
   Segmented,
-  Select
+  Select,
+  theme,
 } from "antd";
 import { useState } from "react";
 import { DragList } from "./DragList";
@@ -28,6 +29,7 @@ export function EditVirtualRoleSetting({
 }) {
   const [form] = Form.useForm();
   const [tags, setTags] = useState<string[]>(item.tags);
+  const { token } = theme.useToken();
   const [ctx, setCtx] = useState(
     item.ctx.filter((f) => f.content).map((v) => ({ ...v, key: getUuid() }))
   );
@@ -36,7 +38,12 @@ export function EditVirtualRoleSetting({
     <Modal
       open={visible}
       onOk={() => {
-        onSave({ ...item,tags, ctx: ctx.filter((f) => f.content), title: title });
+        onSave({
+          ...item,
+          tags,
+          ctx: ctx.filter((f) => f.content),
+          title: title,
+        });
       }}
       onCancel={onCancel}
     >
@@ -61,8 +68,9 @@ export function EditVirtualRoleSetting({
             }}
           />
         </Form.Item>
-        <Form.Item validateTrigger={["onChange", "onBlur"]}>
+        <Form.Item>
           <Select
+            placeholder={'tag 按下Enter新增新tag'}
             mode="tags"
             style={{ width: "100%" }}
             value={tags}
@@ -79,7 +87,13 @@ export function EditVirtualRoleSetting({
             onChange={(data) => {
               setCtx(data);
             }}
-            style={{ marginBottom: 8 }}
+            style={{
+              borderRadius: 8,
+              border: "1px solid " + token.colorBorder,
+              padding: 5,
+              marginBottom: 8,
+              backgroundColor: token.colorBgMask,
+            }}
             itemDom={(item) => {
               return (
                 <Form.Item
