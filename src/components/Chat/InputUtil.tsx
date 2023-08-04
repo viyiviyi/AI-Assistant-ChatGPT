@@ -7,7 +7,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -17,10 +17,10 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MemoBackgroundImage } from "../BackgroundImage";
 import { MessageContext } from "./Chat";
 import { CtxRoleButton } from "./CtxRoleButton";
@@ -48,7 +48,16 @@ export function InputUtil() {
   const { token } = theme.useToken();
   const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
   const screenSize = useScreenSize();
-  objs.setInput = setInputText;
+  objs.setInput = (input: string | ((s: string) => string)) => {
+    let next_input = inputText;
+    if (typeof input == "function") {
+      next_input = input(next_input);
+    } else {
+      next_input = input;
+    }
+    setInputText(ChatManagement.parseText(next_input));
+    setRole([ChatManagement.parseTextToRole(next_input), role[1]]);
+  };
   /**
    * 提交内容
    * @param isNewTopic 是否开启新话题

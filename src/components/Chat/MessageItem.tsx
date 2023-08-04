@@ -4,7 +4,7 @@ import {
   onTextareaTab,
   scrollStatus,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -17,7 +17,7 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined
+  UserOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -29,7 +29,7 @@ import {
   Popconfirm,
   Segmented,
   Space,
-  theme
+  theme,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -39,7 +39,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
 } from "react";
 import { MarkdownView } from "./MarkdownView";
 
@@ -100,7 +100,9 @@ export const MessageItem = ({
           setNone([]);
         }}
       >
-        <span>{new Date(msg.updateTime||msg.timestamp).toLocaleTimeString()}</span>
+        <span>
+          {new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}
+        </span>
       </Checkbox>
       <span
         onMouseDown={(e) => e.preventDefault()}
@@ -195,6 +197,75 @@ export const MessageItem = ({
       </Divider>
     </div>
   );
+  const Content = (
+    <div>
+      {edit ? (
+        <>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <Segmented
+              value={ctxRole}
+              style={{ marginBottom: 5 }}
+              onChange={(val) => {
+                setCtxRole(val as CtxRole);
+              }}
+              options={[
+                { label: "助理", value: "assistant" },
+                { label: "系统", value: "system" },
+                { label: "用户", value: "user" },
+              ]}
+            />
+          </div>
+          <Input.TextArea
+            value={messageText}
+            autoSize={{ maxRows: 10 }}
+            style={{ marginBottom: "4px" }}
+            onChange={(e) => {
+              setMessage(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "s" && e.ctrlKey) {
+                e.preventDefault();
+                saveMsg();
+              }
+              if (e.key === "Tab") {
+                e.preventDefault();
+                setMessage((v) =>
+                  onTextareaTab(
+                    v,
+                    e.currentTarget?.selectionStart,
+                    e.currentTarget?.selectionEnd,
+                    e.currentTarget,
+                    e.shiftKey
+                  )
+                );
+              }
+            }}
+            onFocus={(e) => {
+              e.target.selectionStart = msg.text.length;
+              e.target.selectionEnd = msg.text.length;
+            }}
+            ref={inputRef}
+            autoFocus={true}
+          />
+        </>
+      ) : (
+        <MemoMarkdownView
+          markdown={
+            chat.config.disableStrikethrough
+              ? msg.text.replaceAll("~", "～")
+              : msg.text
+          }
+          doubleClick={() => {
+            setMessage(msg.text);
+            setEdit(true);
+            stopScroll();
+            scrollStatus.enableTop = true;
+            scrollToTop(msg.id);
+          }}
+        />
+      )}
+    </div>
+  );
   if (msg.ctxRole === "system") {
     return (
       <div
@@ -205,71 +276,7 @@ export const MessageItem = ({
         id={msg.id}
         className={styleCss.message_box}
       >
-        <div>
-          {edit ? (
-            <>
-              <Segmented
-                value={ctxRole}
-                style={{ marginBottom: 5 }}
-                onChange={(val) => {
-                  setCtxRole(val as CtxRole);
-                }}
-                options={[
-                  { label: "助理", value: "assistant" },
-                  { label: "系统", value: "system" },
-                  { label: "用户", value: "user" },
-                ]}
-              />
-              <Input.TextArea
-                value={messageText}
-                autoSize={{ maxRows: 15 }}
-                style={{ marginBottom: "4px" }}
-                onChange={(e) => {
-                  setMessage(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "s" && e.ctrlKey) {
-                    e.preventDefault();
-                    saveMsg();
-                  }
-                  if (e.key === "Tab") {
-                    e.preventDefault();
-                    setMessage((v) =>
-                      onTextareaTab(
-                        v,
-                        e.currentTarget?.selectionStart,
-                        e.currentTarget?.selectionEnd,
-                        e.currentTarget,
-                        e.shiftKey
-                      )
-                    );
-                  }
-                }}
-                onFocus={(e) => {
-                  e.target.selectionStart = msg.text.length;
-                  e.target.selectionEnd = msg.text.length;
-                }}
-                ref={inputRef}
-                autoFocus={true}
-              />
-            </>
-          ) : (
-            <MemoMarkdownView
-              markdown={
-                chat.config.disableStrikethrough
-                  ? msg.text.replaceAll("~", "～")
-                  : msg.text
-              }
-              doubleClick={() => {
-                setMessage(msg.text);
-                setEdit(true);
-                stopScroll();
-                scrollStatus.enableTop = true;
-                scrollToTop(msg.id);
-              }}
-            />
-          )}
-        </div>
+        {Content}
         <div
           style={{
             display: "flex",
@@ -312,10 +319,8 @@ export const MessageItem = ({
               : chat.user.avatar
           }
           size={54}
-          // style={{ minWidth: "42px", minHeight: "42px" }}
           icon={<UserOutlined />}
         />
-        {/* {min(calc(max(1200px, 100vw) - calc(250px + max(min(50px,100vw - 1195px),5px))), calc(100vw - 100px))} */}
         <div
           className={styleCss.message_item}
           style={{
@@ -370,70 +375,7 @@ export const MessageItem = ({
               lineHeight: 1.7,
             }}
           >
-            <div>
-              {edit ? (
-                <>
-                  <Segmented
-                    value={ctxRole}
-                    style={{ marginBottom: 5 }}
-                    onChange={(val) => {
-                      setCtxRole(val as CtxRole);
-                    }}
-                    options={[
-                      { label: "助理", value: "assistant" },
-                      { label: "系统", value: "system" },
-                      { label: "用户", value: "user" },
-                    ]}
-                  />
-                  <Input.TextArea
-                    value={messageText}
-                    autoSize={{ maxRows: 15 }}
-                    style={{ marginBottom: "4px" }}
-                    onChange={(e) => {
-                      setMessage(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "s" && e.ctrlKey) {
-                        e.preventDefault();
-                        saveMsg();
-                      }
-                      if (e.key === "Tab") {
-                        e.preventDefault();
-                        setMessage((v) =>
-                          onTextareaTab(
-                            v,
-                            e.currentTarget?.selectionStart,
-                            e.currentTarget?.selectionEnd,
-                            e.currentTarget,
-                            e.shiftKey
-                          )
-                        );
-                      }
-                    }}
-                    onFocus={(e) => {
-                      e.target.selectionStart = msg.text.length;
-                      e.target.selectionEnd = msg.text.length;
-                    }}
-                    autoFocus={true}
-                  />
-                </>
-              ) : (
-                <MemoMarkdownView
-                  markdown={
-                    chat.config.disableStrikethrough
-                      ? msg.text.replaceAll("~", "～")
-                      : msg.text
-                  }
-                  doubleClick={() => {
-                    setMessage(msg.text);
-                    setEdit(true);
-                    stopScroll();
-                    scrollStatus.enableTop = true;
-                    scrollToTop(msg.id);
-                  }}
-                />
-              )}
-            </div>
+            {Content}
             <div
               className=""
               style={{

@@ -92,7 +92,7 @@ export function EditVirtualRoleSetting({
               border: "1px solid " + token.colorBorder,
               padding: 5,
               marginBottom: 8,
-              backgroundColor: token.colorBgMask,
+              backgroundColor: token.colorFillContent,
             }}
             itemDom={(item) => {
               return (

@@ -165,9 +165,6 @@ export function MessageList({
               onDel={onDel}
               rBak={rBak}
               onCite={setCite}
-              style={{
-                marginBottom: i + 1 == messages.length ? "20px" : undefined,
-              }}
               onPush={() => {
                 onPush(idx!);
               }}
@@ -184,7 +181,7 @@ export function MessageList({
                 onHidden={() => setInsertIndex(-1)}
               />
             )}
-            {idx == messages.length - 1 && (
+            {i == messages.length - 1 && (
               <div style={{ marginTop: "2em" }}></div>
             )}
           </div>

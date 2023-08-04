@@ -27,6 +27,7 @@ function InsertInput({
   const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
 
   const onSubmit = (text: string, idx: number) => {
+    if(!text.trim()) return
     pushMessage(text, idx, topic, role, () => {
       onHidden();
       setInsertText("");

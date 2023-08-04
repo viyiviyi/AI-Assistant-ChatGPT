@@ -327,7 +327,7 @@ export const VirtualRoleConfig = ({
                           border: "1px solid " + token.colorBorder,
                           padding: 5,
                           marginBottom: 8,
-                          backgroundColor: token.colorBgMask,
+                          backgroundColor: token.colorFillContent,
                         }}
                         data={virtualRole_settings}
                         onChange={(data) => {
