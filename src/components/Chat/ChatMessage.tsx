@@ -301,7 +301,7 @@ function TopicTitle({
     };
   }, [cancelEdit]);
   return (
-    <div style={{ position: "relative", height: "24px" }}>
+    <div style={{ position: "relative", height: "24px" }} onClick={ e=>e.stopPropagation()}>
       {edit ? (
         <Input.TextArea
           placeholder={topic.name}
