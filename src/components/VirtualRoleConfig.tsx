@@ -125,6 +125,250 @@ export const VirtualRoleConfig = ({
     }
     return show;
   }
+  const VirtualRoleInfo = (
+    <>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          gap: "10px",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>
+          <Form.Item>
+            <ImageUpload
+              avatar={virtualRole_Avatar || undefined}
+              onSave={setVirtualRole_Avatar}
+            />
+          </Form.Item>
+          <Form.Item
+            style={{ flex: 1 }}
+            name="virtualRole_name"
+            label="助理名称"
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            style={{ flex: 1 }}
+            name="virtualRole_en_name"
+            label="英文名称;用于区分角色"
+            rules={[
+              {
+                type: "string",
+                pattern: /^[a-zA-Z0-9]+$/,
+                message: "只能使用大小写字母和数字",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        </div>
+        <div>
+          <Form.Item>
+            <ImageUpload
+              avatar={user_Avatar || undefined}
+              onSave={setUser_Avatar}
+            />
+          </Form.Item>
+          <Form.Item style={{ flex: 1 }} name="user_name" label="用户名称">
+            <Input />
+          </Form.Item>
+          <Form.Item
+            style={{ flex: 1 }}
+            name="user_en_name"
+            label="英文名称;用于区分角色"
+            rules={[
+              {
+                type: "string",
+                pattern: /^[a-zA-Z0-9]+$/,
+                message: "只能使用大小写字母和数字",
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        </div>
+      </div>
+      <Form.Item
+        name="virtualRole_bio"
+        label="助理设定"
+        extra="当助理模式开启时，所有发送的内容都将以此内容开头"
+      >
+        <Input.TextArea autoSize />
+      </Form.Item>
+    </>
+  );
+  const SettingsInfo = (
+    <>
+      <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
+        <Input.Search
+          placeholder={"搜索关键字"}
+          onSearch={(val) => {
+            setSettingFilterText(val);
+            setVirtualRole_settings((v) => [...v]);
+          }}
+        />
+      </Form.Item>
+      <Form.Item>
+        {tags.length > 0 ? (
+          <Space size={[0, 8]} wrap style={{ overflow: "auto" }}>
+            {tags.slice(0, Math.min(50, tags.length)).map((tag) => (
+              <Tag.CheckableTag
+                key={tag}
+                checked={selectedTags.includes(tag)}
+                onChange={(checked) => handleChange(tag, checked)}
+              >
+                {tag}
+              </Tag.CheckableTag>
+            ))}
+          </Space>
+        ) : (
+          <span style={{ opacity: 0.4 }}>{"没有tag"}</span>
+        )}
+      </Form.Item>
+      <Form.Item>
+        <DragList
+          style={{
+            borderRadius: 8,
+            border: "1px solid " + token.colorBorder,
+            padding: 5,
+            marginBottom: 8,
+            backgroundColor: token.colorFillContent,
+          }}
+          data={virtualRole_settings}
+          onChange={(data) => {
+            setVirtualRole_settings(data);
+          }}
+          itemDom={(item) => {
+            return isShow(item) ? (
+              <div
+                style={{
+                  flex: 1,
+                  marginLeft: 10,
+                  display: "flex",
+                  width: 0,
+                  cursor: "pointer",
+                }}
+              >
+                <EditVirtualRoleSetting
+                  item={item}
+                  allTags={tags}
+                  visible={item.edit}
+                  onCancel={() => {
+                    item.edit = false;
+                    setVirtualRole_settings((v) => [...v]);
+                  }}
+                  onSave={(_item) => {
+                    _item.edit = false;
+                    setVirtualRole_settings((v) =>
+                      v.map((a) => (a.key == _item.key ? _item : a))
+                    );
+                  }}
+                />
+                <div
+                  style={{ flex: 1 }}
+                  onClick={() => {
+                    item.edit = true;
+                    setVirtualRole_settings((v) => [...v]);
+                  }}
+                >
+                  {item.title ? (
+                    <div style={{ borderBottom: "1px solid #ccc2" }}>
+                      <Typography.Text ellipsis>
+                        {item.tags
+                          .slice(0, Math.min(item.tags.length, 3))
+                          .map((v) => (
+                            <Tag key={"setting_tag_" + v} color="green">
+                              {v}
+                            </Tag>
+                          ))}{" "}
+                        {item.title}
+                      </Typography.Text>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+                  <Typography.Text
+                    style={{ width: "min(100vw - 150px, 400px)" }}
+                    type="secondary"
+                    ellipsis={true}
+                  >
+                    {item.ctx.length ? item.ctx[0].content : "没有内容"}
+                  </Typography.Text>
+                  {!item.title && item.ctx.length > 1 ? (
+                    <Typography.Text
+                      style={{
+                        width: "min(100vw - 150px, 400px)",
+                      }}
+                      type="secondary"
+                      ellipsis={true}
+                    >
+                      {item.ctx[1].content}
+                    </Typography.Text>
+                  ) : (
+                    <></>
+                  )}
+                </div>
+                <div
+                  style={{
+                    width: 30,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Space direction="vertical">
+                    <Checkbox
+                      checked={item.checked}
+                      onChange={(e) => {
+                        item.checked = e.target.checked;
+                        setVirtualRole_settings((v) => [...v]);
+                      }}
+                    ></Checkbox>
+                    <Popconfirm
+                      title="确定删除？"
+                      onConfirm={() => {
+                        setVirtualRole_settings((v) =>
+                          v.filter((f) => f != item)
+                        );
+                      }}
+                      okText="确定"
+                      cancelText="取消"
+                    >
+                      <DeleteOutlined
+                        style={{ color: "#ff8d8f" }}
+                      ></DeleteOutlined>
+                    </Popconfirm>
+                  </Space>
+                </div>
+              </div>
+            ) : undefined;
+          }}
+        />
+        <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
+          <Button
+            type="dashed"
+            onClick={() => {
+              setVirtualRole_settings((v) => [
+                ...v,
+                {
+                  checked: true,
+                  tags: [],
+                  ctx: [],
+                  key: getUuid(),
+                  edit: false,
+                },
+              ]);
+            }}
+            block
+            icon={<PlusOutlined />}
+          >
+            增加设定
+          </Button>
+        </Form.Item>
+      </Form.Item>
+    </>
+  );
   return (
     <>
       <Form
@@ -206,275 +450,19 @@ export const VirtualRoleConfig = ({
               {
                 label: `助理设定`,
                 key: "virtualRole",
-                children: (
-                  <div>
-                    <div
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        gap: "10px",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <div>
-                        <Form.Item>
-                          <ImageUpload
-                            avatar={virtualRole_Avatar || undefined}
-                            onSave={setVirtualRole_Avatar}
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          style={{ flex: 1 }}
-                          name="virtualRole_name"
-                          label="助理名称"
-                        >
-                          <Input />
-                        </Form.Item>
-                        <Form.Item
-                          style={{ flex: 1 }}
-                          name="virtualRole_en_name"
-                          label="英文名称;用于区分角色"
-                          rules={[
-                            {
-                              type: "string",
-                              pattern: /^[a-zA-Z0-9]+$/,
-                              message: "只能使用大小写字母和数字",
-                            },
-                          ]}
-                        >
-                          <Input />
-                        </Form.Item>
-                      </div>
-                      <div>
-                        <Form.Item>
-                          <ImageUpload
-                            avatar={user_Avatar || undefined}
-                            onSave={setUser_Avatar}
-                          />
-                        </Form.Item>
-                        <Form.Item
-                          style={{ flex: 1 }}
-                          name="user_name"
-                          label="用户名称"
-                        >
-                          <Input />
-                        </Form.Item>
-                        <Form.Item
-                          style={{ flex: 1 }}
-                          name="user_en_name"
-                          label="英文名称;用于区分角色"
-                          rules={[
-                            {
-                              type: "string",
-                              pattern: /^[a-zA-Z0-9]+$/,
-                              message: "只能使用大小写字母和数字",
-                            },
-                          ]}
-                        >
-                          <Input />
-                        </Form.Item>
-                      </div>
-                    </div>
-                    <Form.Item
-                      name="virtualRole_bio"
-                      label="助理设定"
-                      extra="当助理模式开启时，所有发送的内容都将以此内容开头"
-                    >
-                      <Input.TextArea autoSize />
-                    </Form.Item>
-                  </div>
-                ),
+                forceRender: true,
+                children: VirtualRoleInfo,
               },
               {
                 label: `设定列表`,
                 key: "settings",
-                children: (
-                  <>
-                    <Form.Item label="搜索配置" noStyle style={{marginBottom:10}}>
-                      <Input.Search
-                        placeholder={"搜索关键字"}
-                        onSearch={(val) => {
-                          setSettingFilterText(val);
-                          setVirtualRole_settings((v) => [...v]);
-                        }}
-                      />
-                    </Form.Item>
-                    <Form.Item>
-                      {tags.length > 0 ? (
-                        <Space size={[0, 8]} wrap style={{ overflow: "auto" }}>
-                          {tags
-                            .slice(0, Math.min(50, tags.length))
-                            .map((tag) => (
-                              <Tag.CheckableTag
-                                key={tag}
-                                checked={selectedTags.includes(tag)}
-                                onChange={(checked) =>
-                                  handleChange(tag, checked)
-                                }
-                              >
-                                {tag}
-                              </Tag.CheckableTag>
-                            ))}
-                        </Space>
-                      ) : (
-                        <span style={{opacity:.4}}>{"没有tag"}</span>
-                      )}
-                    </Form.Item>
-                    <Form.Item>
-                      <DragList
-                        style={{
-                          borderRadius: 8,
-                          border: "1px solid " + token.colorBorder,
-                          padding: 5,
-                          marginBottom: 8,
-                          backgroundColor: token.colorFillContent,
-                        }}
-                        data={virtualRole_settings}
-                        onChange={(data) => {
-                          setVirtualRole_settings(data);
-                        }}
-                        itemDom={(item) => {
-                          return isShow(item) ? (
-                            <div
-                              style={{
-                                flex: 1,
-                                marginLeft: 10,
-                                display: "flex",
-                                width: 0,
-                                cursor: "pointer",
-                              }}
-                            >
-                              <EditVirtualRoleSetting
-                                item={item}
-                                allTags={tags}
-                                visible={item.edit}
-                                onCancel={() => {
-                                  item.edit = false;
-                                  setVirtualRole_settings((v) => [...v]);
-                                }}
-                                onSave={(_item) => {
-                                  _item.edit = false;
-                                  setVirtualRole_settings((v) =>
-                                    v.map((a) =>
-                                      a.key == _item.key ? _item : a
-                                    )
-                                  );
-                                }}
-                              />
-                              <div
-                                style={{ flex: 1 }}
-                                onClick={() => {
-                                  item.edit = true;
-                                  setVirtualRole_settings((v) => [...v]);
-                                }}
-                              >
-                                {item.title ? (
-                                  <div
-                                    style={{ borderBottom: "1px solid #ccc2" }}
-                                  >
-                                    <Typography.Text ellipsis>
-                                      {item.tags
-                                        .slice(0, Math.min(item.tags.length, 3))
-                                        .map((v) => (
-                                          <Tag
-                                            key={"setting_tag_" + v}
-                                            color="green"
-                                          >
-                                            {v}
-                                          </Tag>
-                                        ))}{" "}
-                                      {item.title}
-                                    </Typography.Text>
-                                  </div>
-                                ) : (
-                                  <></>
-                                )}
-                                <Typography.Text
-                                  style={{ width: "min(100vw - 150px, 400px)" }}
-                                  type="secondary"
-                                  ellipsis={true}
-                                >
-                                  {item.ctx.length
-                                    ? item.ctx[0].content
-                                    : "没有内容"}
-                                </Typography.Text>
-                                {!item.title && item.ctx.length > 1 ? (
-                                  <Typography.Text
-                                    style={{
-                                      width: "min(100vw - 150px, 400px)",
-                                    }}
-                                    type="secondary"
-                                    ellipsis={true}
-                                  >
-                                    {item.ctx[1].content}
-                                  </Typography.Text>
-                                ) : (
-                                  <></>
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  width: 30,
-                                  display: "flex",
-                                  justifyContent: "flex-end",
-                                }}
-                              >
-                                <Space direction="vertical">
-                                  <Checkbox
-                                    checked={item.checked}
-                                    onChange={(e) => {
-                                      item.checked = e.target.checked;
-                                      setVirtualRole_settings((v) => [...v]);
-                                    }}
-                                  ></Checkbox>
-                                  <Popconfirm
-                                    title="确定删除？"
-                                    onConfirm={() => {
-                                      setVirtualRole_settings((v) =>
-                                        v.filter((f) => f != item)
-                                      );
-                                    }}
-                                    okText="确定"
-                                    cancelText="取消"
-                                  >
-                                    <DeleteOutlined
-                                      style={{ color: "#ff8d8f" }}
-                                    ></DeleteOutlined>
-                                  </Popconfirm>
-                                </Space>
-                              </div>
-                            </div>
-                          ) : undefined;
-                        }}
-                      />
-                      <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
-                        <Button
-                          type="dashed"
-                          onClick={() => {
-                            setVirtualRole_settings((v) => [
-                              ...v,
-                              {
-                                checked: true,
-                                tags: [],
-                                ctx: [],
-                                key: getUuid(),
-                                edit: false,
-                              },
-                            ]);
-                          }}
-                          block
-                          icon={<PlusOutlined />}
-                        >
-                          增加设定
-                        </Button>
-                      </Form.Item>
-                    </Form.Item>
-                  </>
-                ),
+                forceRender: true,
+                children: SettingsInfo,
               },
               {
                 label: `插件列表`,
                 key: "extensions_cloud",
+                forceRender: true,
                 children: <div>功能未完成，占个地</div>,
               },
             ]}
