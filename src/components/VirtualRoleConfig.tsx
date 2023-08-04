@@ -149,6 +149,7 @@ export const VirtualRoleConfig = ({
             padding: token.paddingContentHorizontalSM + "px",
           }}
         >
+          <div style={{width:'100%',height:'54px',position:'fixed',left:'0',top:'0'}} onClick={onCancel}></div>
           <Space size={32}>
             <Form.Item
               name="virtualRole_enable"
@@ -190,6 +191,7 @@ export const VirtualRoleConfig = ({
           </Space>
           <Tabs
             type="card"
+            defaultActiveKey="settings"
             style={{ minHeight: "calc(70vh - 118px)" }}
             items={[
               {
