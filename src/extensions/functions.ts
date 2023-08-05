@@ -9,4 +9,7 @@ export const functions = {
   },
   join(input: string, str = "") {},
   split(input: string, str = "\n") {},
+  isActivityTopic(): boolean {
+    return false;
+  },
 };

@@ -31,6 +31,7 @@ export class IndexedDB {
         this.getTableConfig("GptConfig"),
         this.getTableConfig("Background"),
         this.getTableConfig("GlobalTokens"),
+        this.getTableConfig("Extensions"),
       ],
     });
   }

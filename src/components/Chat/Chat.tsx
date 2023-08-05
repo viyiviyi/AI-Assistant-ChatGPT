@@ -27,6 +27,7 @@ export const Chat = () => {
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
   const screenSize = useScreenSize();
+  
 
   return (
     <MessageContext.Provider

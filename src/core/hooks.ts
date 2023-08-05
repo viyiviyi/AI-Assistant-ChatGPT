@@ -146,6 +146,7 @@ export function useSendMessage(chat: ChatManagement) {
 export function usePushMessage(chat: ChatManagement) {
   const { sendMessage } = useSendMessage(chat);
   const { reloadIndex } = useReloadIndex(chat);
+  const { getHistory } = useGetHistory(chat);
   const pushMessage = useCallback(
     async function (
       text: string,
@@ -156,6 +157,11 @@ export function usePushMessage(chat: ChatManagement) {
     ) {
       if (idx < 0) return;
       text = text.trim();
+      const aiService = aiServices.current;
+      if (!text && !aiService?.customContext && aiService?.history) {
+        await getHistory(topic);
+        return;
+      }
       const skipRequest = !role[1];
       text = ChatManagement.parseText(text);
       let time = Date.now();
@@ -181,7 +187,55 @@ export function usePushMessage(chat: ChatManagement) {
       if (skipRequest) return;
       sendMessage(idx, topic);
     },
-    [chat, reloadIndex, sendMessage]
+    [chat, reloadIndex, sendMessage, getHistory]
   );
   return { pushMessage };
+}
+
+export function useGetHistory(chat: ChatManagement) {
+  const getHistory = useCallback(
+    async function (topic: TopicMessage) {
+      const aiService = aiServices.current;
+      let now = Date.now();
+      if (aiService?.history && topic.cloudTopicId) {
+        // 获取历史记录
+        let oldTs: string = "0";
+        if (topic.messages.length) {
+          for (let index = topic.messages.length - 1; index >= 0; index--) {
+            const item = topic.messages[index];
+            if (item.cloudMsgId) {
+              oldTs = item.cloudMsgId;
+              break;
+            }
+          }
+        }
+        await aiService.history({
+          async onMessage(text, isAi, cloudId, err) {
+            if (!topic) return;
+            await chat.pushMessage({
+              id: "",
+              groupId: chat.group.id,
+              ctxRole: isAi ? "assistant" : "user",
+              text: text,
+              timestamp: now++,
+              topicId: topic.id,
+              cloudTopicId: topic.cloudTopicId,
+              cloudMsgId: cloudId,
+            });
+          },
+          lastMsgCloudId: oldTs,
+          topicCloudId: topic.cloudTopicId,
+          config: {
+            channel_id: chat.config.cloudChannelId,
+            ...chat.gptConfig,
+            user: "user",
+            messages: [],
+          },
+        });
+        reloadTopic(topic.id);
+      }
+    },
+    [chat]
+  );
+  return { getHistory };
 }

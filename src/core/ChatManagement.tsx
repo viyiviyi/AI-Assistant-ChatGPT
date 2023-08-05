@@ -1,5 +1,6 @@
 import { isXML } from "@/components/Chat/MarkdownView";
 import { IndexedDB } from "@/core/IndexDb";
+import { Extensions } from "@/extensions/Extensions";
 import {
   CtxRole,
   GptConfig,
@@ -265,6 +266,11 @@ export class ChatManagement implements IChat {
       let settings: VirtualRoleSetting["ctx"] = [];
       virtualRole.settings
         .filter((v) => v.checked)
+        .map((v) => {
+          return v.extensionId
+            ? Extensions.getExtension(v.extensionId)?.getSettings() || v
+            : v;
+        })
         .forEach((v) => {
           v.ctx.forEach((c) => {
             settings.push(c);

@@ -39,6 +39,7 @@ export interface GroupConfig {
   pageRepect?: number;
   updateTime?: number;
   enableSync?: boolean;
+  extensions?: string[];
 }
 
 export type CtxRole = "assistant" | "system" | "user";

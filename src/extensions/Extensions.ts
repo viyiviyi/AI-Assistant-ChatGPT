@@ -1,4 +1,8 @@
+import { IChat } from "@/core/ChatManagement";
+import { IndexedDB } from "@/core/IndexDb";
 import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
+import { useEffect, useState } from "react";
+import { getInstance } from "ts-indexdb";
 import { ArgumentDefine } from "./models/Argument";
 import { ExtensionsDefine } from "./models/ExtensionsDefine";
 import { Interceptor } from "./models/Interceptor";
@@ -48,7 +52,32 @@ export class Extensions implements ExtensionsDefine {
   }
 
   static extensions: Extensions[] = [];
+  static loadAwait: Promise<void>;
+  static async initExtensions() {
+    if (this.loadAwait) return this.loadAwait;
+    this.loadAwait = new Promise(async (res) => {
+      await IndexedDB.init();
+      const extensions = await getInstance().queryAll<ExtensionsDefine>({
+        tableName: "Extensions",
+      });
+      if (Array.isArray(extensions))
+        this.extensions.push(...extensions.map((v) => new Extensions(v)));
+    });
+  }
   static getExtension(id: string): Extensions | undefined {
     return this.extensions.find((f) => f.id == id);
   }
+  static useExtension = useExtension;
+}
+
+function useExtension(chat: IChat) {
+  const [extensions, setExtensions] = useState<Extensions[]>([]);
+  useEffect(() => {
+    setExtensions(
+      Extensions.extensions.filter((f) =>
+        chat.config.extensions?.includes(f.id)
+      )
+    );
+  }, [chat]);
+  return { extensions };
 }
