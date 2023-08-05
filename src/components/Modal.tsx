@@ -39,7 +39,7 @@ export const Modal = ({
           padding: token.paddingSM,
           backgroundColor: token.colorBgElevated,
           borderRadius: token.borderRadiusLG,
-          maxHeight: maxHight ? maxHight : "calc(100% - 40px)",
+          maxHeight: maxHight ? maxHight : "calc(100% - 100px)",
           // borderWidth: 1,
           // borderColor: token.colorBorder,
           // borderStyle: "solid",
