@@ -86,7 +86,16 @@ export class ChatGLM_GPT implements IAiService {
       .then(async (response) => {
         if (!response.ok) {
           onMessage &&
-            onMessage({ error: true, end: true, text: await response.text() });
+            onMessage({
+              error: true,
+              end: true,
+              text:
+                "\n\n 请求发生错误。\n\n" +
+                response.status +' '+
+                response.statusText +
+                "\n\n" +
+                (await response.text()),
+            });
           return;
         }
         const reader = response.body?.getReader();
