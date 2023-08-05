@@ -37,7 +37,6 @@ import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
 import { downloadTopic } from "./Chat/ChatMessage";
-import { MarkdownView } from "./Chat/MarkdownView";
 
 export const Setting = ({
   chatMgt,
@@ -409,10 +408,12 @@ export const Setting = ({
               ))}
             </Select>
           </Form.Item>
-          {models.length && (
+          {models.length ? (
             <Form.Item label="ChatGPT模型名称" name={"GptConfig_model"}>
               <Select options={models.map((v) => ({ value: v, label: v }))} />
             </Form.Item>
+          ) : (
+            <></>
           )}
           <Collapse
             // ghost
