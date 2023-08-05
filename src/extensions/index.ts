@@ -1,26 +1,50 @@
-import { VirtualRoleSetting } from "@/Models/DataBase";
-import { ExtensionsDefinition } from "./model";
+import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
+import { ArgumentDefine } from "./models/Argument";
+import { ExtensionsDefine } from "./models/ExtensionsDefine";
+import { Interceptor } from "./models/Interceptor";
 
-export class Extensions {
-  private id: string;
-  private extension: ExtensionsDefinition;
-  constructor(extension: ExtensionsDefinition) {
+export class Extensions implements ExtensionsDefine {
+  readonly id: string;
+  private extension: ExtensionsDefine;
+  readonly name: string;
+  readonly tags: string[];
+  readonly permissions: string[];
+  readonly prompts: {
+    title?: string | undefined;
+    checked: boolean;
+    ctx: { role: CtxRole; content: string }[];
+  };
+  readonly args: ArgumentDefine[];
+  readonly onSendBefore: Interceptor[];
+  readonly onSend: Interceptor[];
+  readonly onSendAfter: Interceptor[];
+  readonly onRender: Interceptor[];
+  constructor(extension: ExtensionsDefine) {
     this.id = extension.id;
     this.extension = JSON.parse(JSON.stringify(extension));
+    this.name = this.extension.name;
+    this.tags = this.extension.tags;
+    this.permissions = this.extension.permissions;
+    this.prompts = this.extension.prompts;
+    this.args = this.extension.args;
+    this.onSendBefore = this.extension.onSendBefore;
+    this.onSend = this.extension.onSend;
+    this.onSendAfter = this.extension.onSendAfter;
+    this.onRender = this.extension.onRender;
     Extensions.extensions.push(this);
   }
-  
+
   getSettings(): VirtualRoleSetting {
     return {
       checked: true,
-      ctx: this.extension.prompts.ctx.map(v => ({role:v.role,content:v.content})),
-      title:this.extension.prompts.title,
+      ctx: this.prompts.ctx.map((v) => ({
+        role: v.role,
+        content: v.content,
+      })),
+      title: this.prompts.title,
       extensionId: this.id,
       tags: ["插件"],
     };
-  }
-  isExtensionSetting(setting: VirtualRoleSetting): boolean {
-    return false;
   }
 
   static extensions: Extensions[] = [];

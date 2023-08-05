@@ -1,9 +1,8 @@
-import { Variate } from "./model";
+import { GlobalVariate } from "../models/Variate";
 
-export const VariateDefinition: Variate[] = [];
 
 export function useVariate<T extends number | string | boolean | undefined>(
-  define: Variate
+  define: GlobalVariate
 ) {
   let val: T & any = undefined;
 
