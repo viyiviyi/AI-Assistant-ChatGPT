@@ -16,7 +16,7 @@ import {
   theme,
   Typography
 } from "antd";
-import { useContext, useEffect, useState } from "react";
+import { CSSProperties, useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
 import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
@@ -101,6 +101,10 @@ export const VirtualRoleConfig = ({
     setChat(new ChatManagement(chatMgt));
     onSaved();
   }
+  const tabItemStyle: CSSProperties = {
+    maxHeight: "calc(100vh - 300px)",
+    overflow: "auto",
+  };
   function isShow(item: {
     key: string;
     edit: boolean;
@@ -126,7 +130,7 @@ export const VirtualRoleConfig = ({
     return show;
   }
   const VirtualRoleInfo = (
-    <>
+    <div style={{ ...tabItemStyle }}>
       <div
         style={{
           width: "100%",
@@ -197,10 +201,10 @@ export const VirtualRoleConfig = ({
       >
         <Input.TextArea autoSize />
       </Form.Item>
-    </>
+    </div>
   );
   const SettingsInfo = (
-    <>
+    <div style={{ ...tabItemStyle }}>
       <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
         <Input.Search
           placeholder={"搜索关键字"}
@@ -273,8 +277,13 @@ export const VirtualRoleConfig = ({
                     setVirtualRole_settings((v) => [...v]);
                   }}
                 >
-                  {item.title ? (
-                    <div style={{ borderBottom: "1px solid #ccc2" }}>
+                  {item.title || item.tags.length ? (
+                    <div
+                      style={{
+                        borderBottom: "1px solid #ccc2",
+                        paddingBottom: 2,
+                      }}
+                    >
                       <Typography.Text ellipsis>
                         {item.tags
                           .slice(0, Math.min(item.tags.length, 3))
@@ -294,7 +303,7 @@ export const VirtualRoleConfig = ({
                     type="secondary"
                     ellipsis={true}
                   >
-                    {item.ctx.length ? item.ctx[0].content : "没有内容"}
+                    {item.ctx.length ? item.ctx[0].content : "无内容 点击编辑"}
                   </Typography.Text>
                   {!item.title && item.ctx.length > 1 ? (
                     <Typography.Text
@@ -367,7 +376,7 @@ export const VirtualRoleConfig = ({
           </Button>
         </Form.Item>
       </Form.Item>
-    </>
+    </div>
   );
   return (
     <>
@@ -387,7 +396,7 @@ export const VirtualRoleConfig = ({
       >
         <div
           style={{
-            maxHeight: "70vh",
+            // maxHeight: "70vh",
             width: "min(90vw, 500px)",
             overflow: "auto",
             padding: token.paddingContentHorizontalSM + "px",
@@ -471,7 +480,6 @@ export const VirtualRoleConfig = ({
         <Button.Group style={{ width: "100%" }}>
           <Button
             block
-            style={{ marginTop: "20px" }}
             onClick={(e) => {
               onCancel();
             }}
@@ -480,7 +488,6 @@ export const VirtualRoleConfig = ({
           </Button>
           <Button
             block
-            style={{ marginTop: "20px" }}
             onClick={(e) => {
               e.stopPropagation();
               onSave();

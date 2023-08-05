@@ -40,10 +40,10 @@ export const Modal = ({
           backgroundColor: token.colorBgElevated,
           borderRadius: token.borderRadiusLG,
           maxHeight: maxHight ? maxHight : "calc(100% - 40px)",
-          borderWidth: 1,
-          borderColor: token.colorBorder,
-          borderStyle: "solid",
-          height: "100%",
+          // borderWidth: 1,
+          // borderColor: token.colorBorder,
+          // borderStyle: "solid",
+          // height: "100%",
           overflow: "auto",
         }}
       >

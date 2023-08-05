@@ -96,9 +96,7 @@ export const ChatHeader = () => {
       />
       <Modal
         isShow={roleConfigShow}
-        maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
-          // setRoleConfigShow(false);
         }}
         items={
           <VirtualRoleConfig

@@ -1,6 +1,6 @@
 import { getUuid } from "@/core/utils";
 import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Form,
@@ -9,7 +9,7 @@ import {
   Popconfirm,
   Segmented,
   Select,
-  theme,
+  theme
 } from "antd";
 import { useState } from "react";
 import { DragList } from "./DragList";
@@ -46,13 +46,19 @@ export function EditVirtualRoleSetting({
         });
       }}
       onCancel={onCancel}
+      centered={true}
+      title={"编辑设定"}
+      bodyStyle={{
+        maxHeight: "calc(100vh - 200px)",
+        minHeight: "50vh",
+        overflow: "auto",
+      }}
     >
       <Form
         form={form}
         layout="vertical"
         autoComplete="off"
         initialValues={item}
-        style={{ marginTop: 25 }}
       >
         <Form.Item validateTrigger={["onChange", "onBlur"]}>
           <Input.TextArea
@@ -70,7 +76,7 @@ export function EditVirtualRoleSetting({
         </Form.Item>
         <Form.Item>
           <Select
-            placeholder={'tag 按下Enter新增新tag'}
+            placeholder={"tag 按下Enter新增新tag"}
             mode="tags"
             style={{ width: "100%" }}
             value={tags}
@@ -104,7 +110,10 @@ export function EditVirtualRoleSetting({
                     marginLeft: 10,
                     width: "100%",
                   }}
-                  label={
+                >
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between",marginBottom:6 }}
+                  >
                     <Segmented
                       size="small"
                       value={item.role}
@@ -118,8 +127,19 @@ export function EditVirtualRoleSetting({
                         { label: "用户", value: "user" },
                       ]}
                     />
-                  }
-                >
+                    <Popconfirm
+                      title="确定删除？"
+                      placement="topRight"
+                      onConfirm={() => {
+                        setCtx((v) => v.filter((f) => f.key != item.key));
+                      }}
+                      okText="确定"
+                      cancelText="取消"
+                    >
+                     <DeleteOutlined
+                      ></DeleteOutlined>
+                    </Popconfirm>
+                  </div>
                   <Form.Item
                     valuePropName="content"
                     validateTrigger={["onChange", "onBlur"]}
@@ -127,7 +147,7 @@ export function EditVirtualRoleSetting({
                   >
                     <Input.TextArea
                       placeholder="追加内容"
-                      autoSize
+                      autoSize={{ maxRows: 10 }}
                       value={item.content}
                       style={{
                         paddingRight: "1em",
@@ -139,25 +159,6 @@ export function EditVirtualRoleSetting({
                       }}
                     />
                   </Form.Item>
-                  <Popconfirm
-                    title="确定删除？"
-                    placement="topRight"
-                    onConfirm={() => {
-                      setCtx((v) => v.filter((f) => f.key != item.key));
-                    }}
-                    okText="确定"
-                    cancelText="取消"
-                  >
-                    <MinusCircleOutlined
-                      className="dynamic-delete-button"
-                      style={{
-                        padding: ".5em",
-                        position: "absolute",
-                        right: "0",
-                        top: "2px",
-                      }}
-                    />
-                  </Popconfirm>
                 </Form.Item>
               );
             }}

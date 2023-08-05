@@ -7,7 +7,7 @@ import {
 import "@/styles/globals.css";
 import { ConfigProvider, theme } from "antd";
 import "antd/dist/reset.css";
-import zhCN from 'antd/locale/zh_CN';
+import zhCN from "antd/locale/zh_CN";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { useEffect, useState } from "react";
@@ -31,9 +31,11 @@ export default function App({ Component, pageProps }: AppProps) {
             colorPrimary: "#00b96b",
             colorInfoBg: isDark ? "#444a" : "#ddda",
             colorTextBase: isDark ? "#ddd" : "#333",
-            colorBgElevated:isDark ? "#222" : "#eee",
+            colorBgElevated: isDark ? "#222" : "#eee",
           },
-          components:{Segmented:{itemHoverColor:isDark ? "#00b96b" : "#00b96b"}},
+          components: {
+            Segmented: { itemHoverColor: isDark ? "#00b96b" : "#00b96b" },
+          },
           algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,
         }}
       >
