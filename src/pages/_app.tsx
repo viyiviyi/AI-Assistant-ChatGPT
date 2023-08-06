@@ -18,7 +18,13 @@ export default function App({ Component, pageProps }: AppProps) {
   const [orgin, setOrgin] = useState("");
   useEffect(() => {
     setOrgin(location.origin);
+    if (typeof window !== "undefined") {
+      window.onload = () => {
+        document.getElementById("holderStyle")?.remove();
+      };
+    }
   }, []);
+
   return (
     <StyleProvider
       hashPriority="high"
@@ -46,6 +52,18 @@ export default function App({ Component, pageProps }: AppProps) {
           <meta
             name="viewport"
             content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          />
+          <style
+            id="holderStyle"
+            dangerouslySetInnerHTML={{
+              __html: `
+/* https://github.com/ant-design/ant-design/issues/16037#issuecomment-483140458 */
+/* Not only antd, but also any other style if you want to use ssr. */
+*, *::before, *::after {
+  transition: none!important;
+}
+    `,
+            }}
           />
         </Head>
         <Component {...pageProps} />

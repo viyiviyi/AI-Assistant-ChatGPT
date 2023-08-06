@@ -24,8 +24,9 @@ export default function Page() {
   const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
     chatMgt.getActivityTopic()
   );
-  chatMgt.virtualRole.avatar = "/logo.png";
-  chatMgt.user.avatar = "/logo.png";
+
+  chatMgt.virtualRole.avatar = "";
+  chatMgt.user.avatar = "";
   const { reloadService } = useService();
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function Page() {
       }
       await chatMgt.fromJson(chatMgt, false);
     });
-  }, [reloadService,chatMgt]);
+  }, [reloadService, chatMgt]);
 
   return (
     <ChatContext.Provider

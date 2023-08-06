@@ -6,6 +6,7 @@ import {
   UserAddOutlined
 } from "@ant-design/icons";
 import { Avatar, Drawer, Layout, theme, Typography } from "antd";
+import Image from "next/image";
 import React, { useContext, useState } from "react";
 import { MemoBackgroundImage } from "../BackgroundImage";
 import { ChatList } from "../ChatList";
@@ -47,6 +48,7 @@ export const ChatHeader = () => {
         size={32}
         style={{ minWidth: "32px", minHeight: "32px" }}
         src={chat.group.avatar || chat?.virtualRole.avatar || undefined}
+        icon={<Image width={32} height={32} src={"/logo.png"} alt="logo" />}
       ></Avatar>
       <span style={{ marginLeft: 10 }}></span>
       <Typography.Text ellipsis onClick={() => setSettingShow(!settingIsShow)}>
@@ -96,8 +98,7 @@ export const ChatHeader = () => {
       />
       <Modal
         isShow={roleConfigShow}
-        onCancel={() => {
-        }}
+        onCancel={() => {}}
         items={
           <VirtualRoleConfig
             onCancel={() => {

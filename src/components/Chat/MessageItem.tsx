@@ -16,8 +16,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined,
-  UserOutlined
+  SaveOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -33,6 +32,7 @@ import {
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
+import Image from "next/image";
 import React, {
   createRef,
   CSSProperties,
@@ -327,12 +327,12 @@ export const MessageItem = ({
         <Avatar
           src={
             msg.ctxRole == "assistant"
-              ? chat.virtualRole.avatar
-              : chat.user.avatar
+              ? chat.virtualRole.avatar || undefined
+              : chat.user.avatar || undefined
           }
           style={{ width: 54, height: 54 }}
           size={54}
-          icon={<UserOutlined />}
+          icon={<Image width={54} height={54} src={"/logo.png"} alt="logo" />}
         />
         <div
           className={styleCss.message_item}
