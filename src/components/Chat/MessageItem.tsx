@@ -4,7 +4,7 @@ import {
   onTextareaTab,
   scrollStatus,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -17,7 +17,7 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
-  UserOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -29,7 +29,7 @@ import {
   Popconfirm,
   Segmented,
   Space,
-  theme,
+  theme
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -39,7 +39,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useState
 } from "react";
 import { MarkdownView } from "./MarkdownView";
 
@@ -214,6 +214,18 @@ export const MessageItem = ({
                 { label: "用户", value: "user" },
               ]}
             />
+            <Button.Group>
+              <Button onClick={saveMsg}>保存</Button>
+              <Button
+                onClick={() =>
+                  saveMsg().then(() => {
+                    onSned();
+                  })
+                }
+              >
+                保存并提交
+              </Button>
+            </Button.Group>
           </div>
           <Input.TextArea
             value={messageText}
@@ -350,6 +362,7 @@ export const MessageItem = ({
                 onConfirm={() => {
                   if (typeof loadingMsgs[msg.id]?.stop == "function")
                     loadingMsgs[msg.id]?.stop();
+                  else delete loadingMsgs[msg.id];
                 }}
                 okText="确定"
                 cancelText="取消"
