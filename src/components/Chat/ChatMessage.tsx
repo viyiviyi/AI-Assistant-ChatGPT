@@ -31,7 +31,7 @@ const MemoMessageList = React.memo(MessageList);
 const MemoTopUtil = React.memo(TopUtil);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
-  const { chat, setActivityTopic, activityTopic, reloadNav } =
+  const { chat, setActivityTopic, activityTopic, reloadNav,forceRender } =
     useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([
     chat.config.activityTopicId,
@@ -118,6 +118,7 @@ export const ChatMessage = () => {
       {chat.topics.map((v) => (
         <Panel
           id={v.id}
+          forceRender={forceRender}
           header={
             <MemoTopicTitle
               topic={v}
@@ -310,8 +311,8 @@ function TopicTitle({
           autoFocus={true}
           value={title}
           onKeyUp={(e) => {
-            if ((e.key === "s" && e.altKey) || e.key == "Enter") {
-              chat.saveTopic(topic.id, title);
+            if ((e.key === "s" && e.ctrlKey) || e.key == "Enter") {
+              chat.saveTopic(topic.id, title.trim());
               setEdit(false);
             }
           }}

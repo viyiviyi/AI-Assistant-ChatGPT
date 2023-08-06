@@ -134,7 +134,7 @@ export function EditVirtualRoleSetting({
                         { label: "系统", value: "system" },
                         { label: "用户", value: "user" },
                         ...(idx > 0
-                          ? [{ label: "合并到前一项", value: "" }]
+                          ? [{ label: "向上合并", value: "" }]
                           : []),
                       ]}
                     />
@@ -150,7 +150,7 @@ export function EditVirtualRoleSetting({
                       >
                         <DeleteOutlined></DeleteOutlined>
                       </Popconfirm>
-                      <span style={{ marginLeft: "20px" }}></span>
+                      <span style={{ marginLeft: "15px" }}></span>
                       <Checkbox
                         checked={item.checked}
                         onChange={(e) => {

@@ -119,6 +119,10 @@ export class ChatManagement implements IChat {
                 },
               ],
             };
+          } else {
+            v.ctx.forEach(
+              (i) => (i.checked = i.checked === undefined ? true : i.checked)
+            );
           }
           return v;
         });
@@ -272,8 +276,8 @@ export class ChatManagement implements IChat {
             role: CtxRole;
             content: string;
             checked?: boolean;
-        } = undefined;
-      console.log( virtualRole.settings)
+          } = undefined;
+      console.log(virtualRole.settings);
       virtualRole.settings
         .filter((v) => v.checked)
         .map((v) => {
@@ -791,5 +795,6 @@ let context = {
   loadingMsgs: {} as { [key: string]: { stop: () => void } },
   navList: [],
   reloadNav: (topic: TopicMessage) => {},
+  forceRender: false,
 };
 export const ChatContext = React.createContext(context);
