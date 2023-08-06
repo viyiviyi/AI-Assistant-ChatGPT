@@ -102,7 +102,7 @@ export const VirtualRoleConfig = ({
     onSaved();
   }
   const tabItemStyle: CSSProperties = {
-    maxHeight: "calc(100vh - 300px)",
+    maxHeight: "calc(100vh - 350px)",
     overflow: "auto",
   };
   function isShow(item: {
