@@ -311,19 +311,6 @@ export const VirtualRoleConfig = ({
                           .join("")
                       : "无内容 点击编辑"}
                   </Typography.Text>
-                  {!item.title && item.ctx.length > 1 ? (
-                    <Typography.Text
-                      style={{
-                        width: "min(100vw - 150px, 400px)",
-                      }}
-                      type="secondary"
-                      ellipsis={true}
-                    >
-                      {item.ctx[1].content}
-                    </Typography.Text>
-                  ) : (
-                    <></>
-                  )}
                 </div>
                 <div
                   style={{
