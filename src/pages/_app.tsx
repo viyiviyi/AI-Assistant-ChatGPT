@@ -32,6 +32,9 @@ export default function App({ Component, pageProps }: AppProps) {
             colorInfoBg: isDark ? "#444a" : "#ddda",
             colorTextBase: isDark ? "#ddd" : "#333",
             colorBgElevated: isDark ? "#222" : "#eee",
+            colorLink: "#59ccccd5",
+            colorLinkActive: "#41CECED5",
+            colorLinkHover: "#66E6E6D5",
           },
           components: {
             Segmented: { itemHoverColor: isDark ? "#00b96b" : "#00b96b" },

@@ -211,15 +211,37 @@ export const Setting = ({
               display: "flex",
               justifyContent: "center",
               fontSize: "32px",
+              alignItems: "center",
+              flexDirection: "column",
             }}
           >
-            <a
-              href="https://github.com/viyiviyi/AI-Assistant-ChatGPT"
-              rel="noopener noreferrer"
-              target={"_blank"}
-            >
-              <GithubOutlined size={64} />
-            </a>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <a
+                href="https://github.com/viyiviyi/AI-Assistant-ChatGPT"
+                rel="noopener noreferrer"
+                target={"_blank"}
+              >
+                <GithubOutlined size={64} />
+              </a>
+              <a
+                href="https://gitee.com/yiyiooo/AI-Assistant-ChatGPT"
+                rel="noopener noreferrer"
+                target={"_blank"}
+              >
+                {/* <div style={{ width: 32, height: 64, overflow: "hidden" ,marginLeft:10}} >
+                  <Image
+                    style={{marginTop:-5}}
+                    width={100}
+                    height={32}
+                    src={
+                      "https://gitee.com/static/images/logo-black.svg?t=158106664"
+                    }
+                    alt="项目地址 https://gitee.com/yiyiooo/AI-Assistant-ChatGPT"
+                  />
+                </div> */}
+              </a>
+            </div>
+            <div style={{ fontSize: 16 }}>QQ群 816545732</div>
           </div>
           <Form.Item label={"会话头像"}>
             <ImageUpload
