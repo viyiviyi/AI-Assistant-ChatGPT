@@ -98,6 +98,7 @@ export default function Page() {
         reloadNav: (topic: TopicMessage) => {
           ChatManagement.loadTitleTree(topic).then(() => setNavList([]));
         },
+        forceRender: false,
       }}
     >
       <Layout

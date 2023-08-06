@@ -330,6 +330,7 @@ export const MessageItem = ({
               ? chat.virtualRole.avatar
               : chat.user.avatar
           }
+          style={{ width: 54, height: 54 }}
           size={54}
           icon={<UserOutlined />}
         />
