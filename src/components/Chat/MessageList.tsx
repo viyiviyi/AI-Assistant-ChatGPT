@@ -24,8 +24,8 @@ export function MessageList({
   topic: TopicMessage;
   chat: ChatManagement;
 }) {
-  const { reloadNav } = useContext(ChatContext);
-  const { setCite, onlyOne } = useContext(MessageContext);
+  const { reloadNav, forceRender } = useContext(ChatContext);
+  const { setCite } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
   const [pageSize, setPageSize] = useState(
     Math.max(0, chat.config.pageSize || 0) || 20
@@ -39,7 +39,11 @@ export function MessageList({
   const [pageNumber, setPageNumber] = useState(pageCount);
   const [insertIndex, setInsertIndex] = useState(-1);
   const [renderMessage] = useState<{ [key: string]: () => void }>({});
-  const [messages, steMessages] = useState<Message[]>([]);
+  const [messages, steMessages] = useState<Message[]>([
+    ...(forceRender
+      ? topic.messages
+      : topic.messages.slice(Math.max(-topic.messages.length, -pageSize))),
+  ]);
   const [msgIdIdxMap] = useState(new Map<string, number>());
   const { sendMessage } = useSendMessage(chat);
   const rangeMessage = useCallback(
@@ -114,7 +118,7 @@ export function MessageList({
       if (typeof messageId == "number") {
         rangeMessage(
           Math.ceil((messageId + 1) / pageSize),
-          (messageId % pageSize) >= (pageSize / 2)
+          messageId % pageSize >= pageSize / 2
         );
         return;
       }

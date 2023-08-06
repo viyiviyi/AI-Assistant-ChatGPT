@@ -795,6 +795,9 @@ let context = {
   loadingMsgs: {} as { [key: string]: { stop: () => void } },
   navList: [],
   reloadNav: (topic: TopicMessage) => {},
+  /**
+  这个参数是用来让首页正常渲染的，请不要随便将值设置为 true , 因为会导致渲染全部的消息（包括隐藏的）
+  */
   forceRender: false,
 };
 export const ChatContext = React.createContext(context);
