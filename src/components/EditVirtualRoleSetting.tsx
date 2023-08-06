@@ -3,6 +3,7 @@ import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
+  Checkbox,
   Form,
   Input,
   Modal,
@@ -91,6 +92,9 @@ export function EditVirtualRoleSetting({
           <DragList
             data={ctx}
             onChange={(data) => {
+              data.forEach((item, idx) => {
+                if (idx == 0 && !item.role) item.role = "system";
+              });
               setCtx(data);
             }}
             style={{
@@ -100,7 +104,7 @@ export function EditVirtualRoleSetting({
               marginBottom: 8,
               backgroundColor: token.colorFillContent,
             }}
-            itemDom={(item) => {
+            itemDom={(item, idx) => {
               return (
                 <Form.Item
                   required={false}
@@ -112,11 +116,15 @@ export function EditVirtualRoleSetting({
                   }}
                 >
                   <div
-                    style={{ display: "flex", justifyContent: "space-between",marginBottom:6 }}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: 6,
+                    }}
                   >
                     <Segmented
                       size="small"
-                      value={item.role}
+                      value={item.role || ""}
                       onChange={(val) => {
                         item.role = val as CtxRole;
                         setCtx((v) => [...v]);
@@ -125,20 +133,32 @@ export function EditVirtualRoleSetting({
                         { label: "助理", value: "assistant" },
                         { label: "系统", value: "system" },
                         { label: "用户", value: "user" },
+                        ...(idx > 0
+                          ? [{ label: "合并到前一项", value: "" }]
+                          : []),
                       ]}
                     />
-                    <Popconfirm
-                      title="确定删除？"
-                      placement="topRight"
-                      onConfirm={() => {
-                        setCtx((v) => v.filter((f) => f.key != item.key));
-                      }}
-                      okText="确定"
-                      cancelText="取消"
-                    >
-                     <DeleteOutlined
-                      ></DeleteOutlined>
-                    </Popconfirm>
+                    <span>
+                      <Popconfirm
+                        title="确定删除？"
+                        placement="topRight"
+                        onConfirm={() => {
+                          setCtx((v) => v.filter((f) => f.key != item.key));
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <DeleteOutlined></DeleteOutlined>
+                      </Popconfirm>
+                      <span style={{ marginLeft: "20px" }}></span>
+                      <Checkbox
+                        checked={item.checked}
+                        onChange={(e) => {
+                          item.checked = e.target.checked;
+                          setCtx((v) => [...v]);
+                        }}
+                      ></Checkbox>
+                    </span>
                   </div>
                   <Form.Item
                     valuePropName="content"
@@ -169,7 +189,12 @@ export function EditVirtualRoleSetting({
               onClick={() => {
                 setCtx((v) => [
                   ...v,
-                  { content: "", role: "system", key: getUuid() },
+                  {
+                    content: "",
+                    role: v.length == 0 ? "system" : undefined,
+                    key: getUuid(),
+                    checked: true,
+                  },
                 ]);
               }}
               block

@@ -18,7 +18,7 @@ export function DragList<T>({
   style,
 }: {
   data: Array<T & { key: string }>;
-  itemDom: (item: T) => React.ReactElement | undefined;
+  itemDom: (item: T, index: number) => React.ReactElement | undefined;
   onChange: (data: T[]) => void;
   style?: React.CSSProperties;
 }) {
@@ -45,8 +45,8 @@ export function DragList<T>({
         items={dataSource.map((i) => i.key)}
         strategy={verticalListSortingStrategy}
       >
-        {dataSource.map((v) => {
-          let dom = itemDom(v);
+        {dataSource.map((v, idx) => {
+          let dom = itemDom(v, idx);
           if (!dom) return undefined;
           return (
             <Row style={style} key={v.key} data-row-key={v.key}>

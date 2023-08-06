@@ -112,7 +112,6 @@ export function MessageList({
   useEffect(() => {
     topicRender[topic.id] = (messageId?: string | number) => {
       if (typeof messageId == "number") {
-        console.log(messageId,topic.messages.length,Math.ceil((messageId + 1) / pageSize),messageId % pageSize >= pageSize / 2,pageSize)
         rangeMessage(
           Math.ceil((messageId + 1) / pageSize),
           (messageId % pageSize) >= (pageSize / 2)

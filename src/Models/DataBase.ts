@@ -75,7 +75,7 @@ export type VirtualRoleSetting = {
   title?: string;
   checked: boolean;
   tags: string[];
-  ctx: { role: CtxRole; content: string }[];
+  ctx: { role?: CtxRole; content: string; checked?: boolean }[];
 };
 
 // 虚拟角色表

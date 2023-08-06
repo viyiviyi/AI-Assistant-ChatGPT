@@ -9,8 +9,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole,
-  VirtualRoleSetting
+  VirtualRole
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -263,7 +262,18 @@ export class ChatManagement implements IChat {
     // 置顶助理全局配置
     if (this.config.enableVirtualRole) {
       let virtualRole = this.virtualRole;
-      let settings: VirtualRoleSetting["ctx"] = [];
+      let settings: {
+        role: CtxRole;
+        content: string;
+      }[] = [];
+      let lastSettint:
+        | undefined
+        | {
+            role: CtxRole;
+            content: string;
+            checked?: boolean;
+        } = undefined;
+      console.log( virtualRole.settings)
       virtualRole.settings
         .filter((v) => v.checked)
         .map((v) => {
@@ -273,10 +283,20 @@ export class ChatManagement implements IChat {
         })
         .forEach((v) => {
           v.ctx.forEach((c) => {
-            settings.push(c);
+            if (c.role) {
+              if (lastSettint && lastSettint.checked) {
+                settings.push(lastSettint);
+              }
+              lastSettint = { ...c, role: c.role! };
+            } else {
+              if (c.checked && lastSettint) {
+                lastSettint.content += "\n" + c.content;
+              }
+            }
           });
         });
-
+      if (lastSettint && (lastSettint as any).checked)
+        settings.push(lastSettint);
       ctx = [
         ...settings.map((v) => ({
           role: v.role,

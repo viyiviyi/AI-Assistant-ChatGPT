@@ -113,8 +113,9 @@ export const VirtualRoleConfig = ({
     checked: boolean;
     tags: string[];
     ctx: {
-      role: CtxRole;
+      role?: CtxRole;
       content: string;
+      checked?: boolean;
     }[];
   }): boolean {
     let show = true;
