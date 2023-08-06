@@ -106,8 +106,7 @@ export function EditVirtualRoleSetting({
             }}
             itemDom={(item, idx) => {
               return (
-                <Form.Item
-                  required={false}
+                <div
                   style={{
                     position: "relative",
                     marginBottom: 0,
@@ -122,22 +121,25 @@ export function EditVirtualRoleSetting({
                       marginBottom: 6,
                     }}
                   >
-                    <Segmented
-                      size="small"
-                      value={item.role || ""}
-                      onChange={(val) => {
-                        item.role = val as CtxRole;
-                        setCtx((v) => [...v]);
-                      }}
-                      options={[
-                        { label: "助理", value: "assistant" },
-                        { label: "系统", value: "system" },
-                        { label: "用户", value: "user" },
-                        ...(idx > 0
-                          ? [{ label: "向上合并", value: "" }]
-                          : []),
-                      ]}
-                    />
+                    <Form.Item noStyle>
+                      <Segmented
+                        size="small"
+                        value={item.role ? item.role : "null"}
+                        onChange={(val) => {
+                          item.role =
+                            val != "null" ? (val as CtxRole) : undefined;
+                          setCtx((v) => [...v]);
+                        }}
+                        options={[
+                          { label: "助理", value: "assistant" },
+                          { label: "系统", value: "system" },
+                          { label: "用户", value: "user" },
+                          ...(idx > 0
+                            ? [{ label: "向上合并", value: "null" }]
+                            : []),
+                        ]}
+                      />
+                    </Form.Item>
                     <span>
                       <Popconfirm
                         title="确定删除？"
@@ -151,13 +153,15 @@ export function EditVirtualRoleSetting({
                         <DeleteOutlined></DeleteOutlined>
                       </Popconfirm>
                       <span style={{ marginLeft: "15px" }}></span>
-                      <Checkbox
-                        checked={item.checked}
-                        onChange={(e) => {
-                          item.checked = e.target.checked;
-                          setCtx((v) => [...v]);
-                        }}
-                      ></Checkbox>
+                      <Form.Item noStyle>
+                        <Checkbox
+                          checked={item.checked}
+                          onChange={(e) => {
+                            item.checked = e.target.checked;
+                            setCtx((v) => [...v]);
+                          }}
+                        ></Checkbox>
+                      </Form.Item>
                     </span>
                   </div>
                   <Form.Item
@@ -179,7 +183,7 @@ export function EditVirtualRoleSetting({
                       }}
                     />
                   </Form.Item>
-                </Form.Item>
+                </div>
               );
             }}
           ></DragList>

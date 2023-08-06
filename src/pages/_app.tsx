@@ -15,16 +15,10 @@ import "../styles/atom-one-dark.css";
 
 export default function App({ Component, pageProps }: AppProps) {
   const isDark = useDark();
-  const [orgin, setOrgin] = useState("");
+  const [holderStyle, setHolderStyle] = useState(true);
   useEffect(() => {
-    setOrgin(location.origin);
-    if (typeof window !== "undefined") {
-      window.onload = () => {
-        document.getElementById("holderStyle")?.remove();
-      };
-    }
+    setHolderStyle(false);
   }, []);
-
   return (
     <StyleProvider
       hashPriority="high"
@@ -43,7 +37,9 @@ export default function App({ Component, pageProps }: AppProps) {
             colorLinkHover: "#66E6E6D5",
           },
           components: {
-            Segmented: { itemHoverColor: isDark ? "#00b96b" : "#00b96b" },
+            Segmented: {
+              itemHoverColor: isDark ? "#00b96b" : "#00b96b",
+            },
           },
           algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,
         }}
@@ -53,18 +49,20 @@ export default function App({ Component, pageProps }: AppProps) {
             name="viewport"
             content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
           />
-          <style
-            id="holderStyle"
-            dangerouslySetInnerHTML={{
-              __html: `
+          {holderStyle ? (
+            <style
+              id="holderStyle"
+              dangerouslySetInnerHTML={{
+                __html: `
 /* https://github.com/ant-design/ant-design/issues/16037#issuecomment-483140458 */
 /* Not only antd, but also any other style if you want to use ssr. */
 *, *::before, *::after {
   transition: none!important;
 }
     `,
-            }}
-          />
+              }}
+            />
+          ) : undefined}
         </Head>
         <Component {...pageProps} />
       </ConfigProvider>

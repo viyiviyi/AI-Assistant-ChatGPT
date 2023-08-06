@@ -27,6 +27,7 @@ export default function Page() {
     chatMgt.getActivityTopic()
   );
   const { reloadService } = useService();
+
   useEffect(() => {
     if (typeof window == "undefined") return;
     setLoading(true);
