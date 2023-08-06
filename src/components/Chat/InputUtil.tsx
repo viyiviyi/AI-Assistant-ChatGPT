@@ -79,8 +79,8 @@ export function InputUtil() {
       setLoading((v) => ++v);
       pushMessage(
         text,
-        activityTopic?.messages.length || 0,
-        activityTopic!,
+        topic.messages.length || 0,
+        topic,
         role,
         () => {
           setInputText("");
@@ -98,7 +98,6 @@ export function InputUtil() {
       inputText,
       role,
       reloadNav,
-      activityTopic,
       setActivityTopic,
       pushMessage,
     ]
