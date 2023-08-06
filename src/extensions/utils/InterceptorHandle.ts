@@ -5,8 +5,18 @@ import { Message } from "@/Models/DataBase";
 import { ChatCompletionRequestMessage } from "openai";
 import { useContext } from "react";
 import { Interceptor } from "../models/Interceptor";
+import { CtxRole } from "./../../Models/DataBase";
 
-export type InterceptorExecData = {};
+export type InterceptorExecData = {
+  data: { msg?: { content: string, index:number } };
+  funcs: {
+    onPushMsg?: (role: CtxRole, content: string,index?:number) => void;
+    onRemoveCtx?: (removeIndex: number[]) => void
+    onChangeMsg?: (nextRole: CtxRole, nextContent: string) => void
+    onPushResult?: (role: CtxRole, content: string, id:string,index?: number) => void
+    onChangeResult?:(resultId:number,role:CtxRole,content:string)=>void
+  };
+};
 
 export async function useInterceptorExec(
   interceptor: Interceptor,
