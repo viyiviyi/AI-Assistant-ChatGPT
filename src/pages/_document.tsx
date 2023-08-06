@@ -3,7 +3,7 @@ import type { DocumentContext } from "next/document";
 import Document, { Head, Html, Main, NextScript } from "next/document";
 
 const MyDocument = () => (
-  <Html lang="en">
+  <Html lang="zh-cn">
     <Head>
       <link rel="icon" href="/favicon.ico" />
       <meta

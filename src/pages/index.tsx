@@ -1,10 +1,8 @@
 import { MemoBackgroundImage } from "@/components/BackgroundImage";
 import { Chat } from "@/components/Chat/Chat";
-import { ChatList } from "@/components/ChatList";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
 import { TopicMessage } from "@/Models/Topic";
@@ -14,17 +12,14 @@ import React, { useContext, useEffect, useState } from "react";
 import chatConfig from "../../public/使用示例.json";
 
 const MemoChat = React.memo(Chat);
-const MemoChatList = React.memo(ChatList);
 
 export default function Page() {
-  const screenSize = useScreenSize();
   const { token } = theme.useToken();
   const { bgConfig, loadingMsgs } = useContext(ChatContext);
   const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(
     new ChatManagement(chatConfig as any)
   );
-  const [listIsShow, setlistIsShow] = useState(false);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
   const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
     chatMgt.getActivityTopic()
@@ -48,8 +43,7 @@ export default function Page() {
       }
       await chatMgt.fromJson(chatMgt, false);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reloadService]);
+  }, [reloadService,chatMgt]);
 
   return (
     <ChatContext.Provider
@@ -100,15 +94,6 @@ export default function Page() {
           <title>Chat助理 灵活简洁美观的ChatGPT客户端</title>
         </Head>
         <MemoChat />
-        {screenSize.width > 1420 && listIsShow ? (
-          <MemoChatList
-            onCacle={() => {
-              setlistIsShow(false);
-            }}
-          ></MemoChatList>
-        ) : (
-          <></>
-        )}
       </Layout>
     </ChatContext.Provider>
   );
