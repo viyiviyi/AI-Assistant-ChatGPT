@@ -304,7 +304,12 @@ export const VirtualRoleConfig = ({
                     type="secondary"
                     ellipsis={true}
                   >
-                    {item.ctx.length ? item.ctx[0].content : "无内容 点击编辑"}
+                    {item.ctx.length
+                      ? item.ctx
+                          .filter((v) => v.checked)
+                          .map((v) => v.content)
+                          .join("")
+                      : "无内容 点击编辑"}
                   </Typography.Text>
                   {!item.title && item.ctx.length > 1 ? (
                     <Typography.Text
