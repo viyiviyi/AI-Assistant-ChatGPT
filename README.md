@@ -24,7 +24,7 @@
 - 可以访问 [https://litechat.22733.site](https://litechat.22733.site) 或 [https://22733.site](https://22733.site) 直接使用（可能被墙了）。
 - 如果你需要自己部署，请看[这里](#独立部署)
 - 如果要使用ChatGLM作为机器人，可以看这个项目：[ChatGLM-6B_Api_kaggle](https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle) 并将得到的地址填到ChatGPT的代理地址里就可以使用ChatGLM作为免费的AI助理。
-- [一个有很多助理设定的网站 (为什么我没有早点发现Orz)](https://ai.usesless.com/scene)
+- 一个有很多助理设定的网站[https://ai.usesless.com/scene](https://zl.aizj.cc/) [https://xn--o0uq09burn.com/](https://xn--o0uq09burn.com/) 
 - [一个购买key的商店（询问过卖家可以挂上来）,一个5刀的key就可以用半个月了。](https://gptnb.net)
 - [ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api) 
 - [一个赞助入口 ₍₍ ◟(∗˙ ꒵ ˙∗)◞ ₎₎](./%E8%BF%99%E4%B8%AA%E6%96%87%E4%BB%B6%E6%B2%A1%E4%BA%BA%E4%BC%9A%E7%82%B9%E5%BC%80%E7%9A%84%E5%90%A7.md)
