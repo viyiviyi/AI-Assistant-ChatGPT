@@ -4,7 +4,7 @@ import {
   onTextareaTab,
   scrollStatus,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -16,7 +16,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -28,7 +28,7 @@ import {
   Popconfirm,
   Segmented,
   Space,
-  theme
+  theme,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -39,7 +39,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
 } from "react";
 import { MarkdownView } from "./MarkdownView";
 import { SkipExport } from "../SkipExport";
@@ -113,66 +113,80 @@ export const MessageItem = ({
         style={{ flex: 1 }}
       ></span>
       {edit ? (
-        <SkipExport><SaveOutlined
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={saveMsg}
-          style={{ marginLeft: "16px" }}
-        /></SkipExport>
+        <SkipExport>
+          <SaveOutlined
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={saveMsg}
+            style={{ marginLeft: "16px" }}
+          />
+        </SkipExport>
       ) : (
         <></>
       )}
       <span style={{ marginLeft: "16px" }}></span>
-      <SkipExport><EditOutlined
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => {
-          if (!edit) setMessage(msg.text);
-          setEdit(!edit);
-          stopScroll();
-          scrollStatus.enableTop = true;
-          scrollToTop(msg.id);
-        }}
-      /></SkipExport>
+      <SkipExport>
+        <EditOutlined
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            if (!edit) setMessage(msg.text);
+            setEdit(!edit);
+            stopScroll();
+            scrollStatus.enableTop = true;
+            scrollToTop(msg.id);
+          }}
+        />
+      </SkipExport>
       <span style={{ marginLeft: "16px" }}></span>
-      <SkipExport><CopyOutlined
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => {
-          if (copy(msg.text.toString())) {
-            message.success("已复制");
-          }
-        }}
-      /></SkipExport>
+      <SkipExport>
+        <CopyOutlined
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            if (copy(msg.text.toString())) {
+              message.success("已复制");
+            }
+          }}
+        />
+      </SkipExport>
       <span style={{ marginLeft: "16px" }}></span>
-      <SkipExport> <RollbackOutlined
-        onMouseDown={(e) => e.preventDefault()}
-        style={{ cursor: "pointer" }}
-        onClick={() => {
-          rBak(msg);
-        }}
-      /></SkipExport>
+      <SkipExport>
+        {" "}
+        <RollbackOutlined
+          onMouseDown={(e) => e.preventDefault()}
+          style={{ cursor: "pointer" }}
+          onClick={() => {
+            rBak(msg);
+          }}
+        />
+      </SkipExport>
       <span style={{ marginLeft: "30px" }}></span>
       {loadingMsgs[msg.id] ? (
-        <Popconfirm
-          title="确定停止？"
-          onConfirm={() => {
-            if (typeof loadingMsgs[msg.id]?.stop == "function")
-              loadingMsgs[msg.id]?.stop();
-          }}
-          okText="确定"
-          cancelText="取消"
-        >
-         <SkipExport> <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined></SkipExport>
-        </Popconfirm>
+        <SkipExport>
+          {" "}
+          <Popconfirm
+            title="确定停止？"
+            onConfirm={() => {
+              if (typeof loadingMsgs[msg.id]?.stop == "function")
+                loadingMsgs[msg.id]?.stop();
+            }}
+            okText="确定"
+            cancelText="取消"
+          >
+            <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+          </Popconfirm>
+        </SkipExport>
       ) : (
-        <Popconfirm
-          title="确定删除？"
-          onConfirm={() => {
-            onDel(msg);
-          }}
-          okText="确定"
-          cancelText="取消"
-        >
-          <SkipExport><DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined></SkipExport>
-        </Popconfirm>
+        <SkipExport>
+          <Popconfirm
+            title="确定删除？"
+            onConfirm={() => {
+              onDel(msg);
+            }}
+            okText="确定"
+            cancelText="取消"
+          >
+            <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
+          </Popconfirm>
+        </SkipExport>
       )}
     </>
   );
@@ -184,14 +198,22 @@ export const MessageItem = ({
             <Button
               shape="circle"
               type="text"
-              icon={<SkipExport><MessageOutlined /></SkipExport>}
+              icon={
+                <SkipExport>
+                  <MessageOutlined />
+                </SkipExport>
+              }
               onClick={onSned}
             ></Button>
           )}
           <Button
             shape="circle"
             type="text"
-            icon={<SkipExport><PlusOutlined /></SkipExport>}
+            icon={
+              <SkipExport>
+                <PlusOutlined />
+              </SkipExport>
+            }
             onClick={onPush}
           ></Button>
         </Space>
@@ -359,18 +381,20 @@ export const MessageItem = ({
             </span>
             <span style={{ marginLeft: "30px" }}></span>
             {loadingMsgs[msg.id] ? (
-              <Popconfirm
-                title="确定停止？"
-                onConfirm={() => {
-                  if (typeof loadingMsgs[msg.id]?.stop == "function")
-                    loadingMsgs[msg.id]?.stop();
-                  else delete loadingMsgs[msg.id];
-                }}
-                okText="确定"
-                cancelText="取消"
-              >
-                <SkipExport><PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined></SkipExport>
-              </Popconfirm>
+              <SkipExport>
+                <Popconfirm
+                  title="确定停止？"
+                  onConfirm={() => {
+                    if (typeof loadingMsgs[msg.id]?.stop == "function")
+                      loadingMsgs[msg.id]?.stop();
+                    else delete loadingMsgs[msg.id];
+                  }}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+                </Popconfirm>
+              </SkipExport>
             ) : (
               <></>
             )}

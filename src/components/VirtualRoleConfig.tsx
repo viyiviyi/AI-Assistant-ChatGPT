@@ -14,7 +14,7 @@ import {
   Tabs,
   Tag,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
@@ -328,20 +328,22 @@ export const VirtualRoleConfig = ({
                         setVirtualRole_settings((v) => [...v]);
                       }}
                     ></Checkbox>
-                    <Popconfirm
-                      title="确定删除？"
-                      onConfirm={() => {
-                        setVirtualRole_settings((v) =>
-                          v.filter((f) => f != item)
-                        );
-                      }}
-                      okText="确定"
-                      cancelText="取消"
-                    >
-                      <SkipExport><DeleteOutlined
-                        style={{ color: "#ff8d8f" }}
-                      ></DeleteOutlined></SkipExport>
-                    </Popconfirm>
+                    <SkipExport>
+                      <Popconfirm
+                        title="确定删除？"
+                        onConfirm={() => {
+                          setVirtualRole_settings((v) =>
+                            v.filter((f) => f != item)
+                          );
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <DeleteOutlined
+                          style={{ color: "#ff8d8f" }}
+                        ></DeleteOutlined>
+                      </Popconfirm>
+                    </SkipExport>
                   </Space>
                 </div>
               </div>
@@ -364,7 +366,11 @@ export const VirtualRoleConfig = ({
               ]);
             }}
             block
-            icon={<SkipExport><PlusOutlined /></SkipExport>}
+            icon={
+              <SkipExport>
+                <PlusOutlined />
+              </SkipExport>
+            }
           >
             增加设定
           </Button>

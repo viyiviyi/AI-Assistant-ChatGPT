@@ -7,7 +7,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   MessageOutlined,
-  PlusOutlined
+  PlusOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,7 +17,7 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
@@ -32,7 +32,7 @@ const MemoMessageList = React.memo(MessageList);
 const MemoTopUtil = React.memo(TopUtil);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
-  const { chat, setActivityTopic, activityTopic, reloadNav,forceRender } =
+  const { chat, setActivityTopic, activityTopic, reloadNav, forceRender } =
     useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([
     chat.config.activityTopicId,
@@ -113,7 +113,9 @@ export const ChatMessage = () => {
       bordered={false}
       activeKey={closeAll ? [] : activityKey}
       expandIcon={({ isActive }) => (
-        <SkipExport><CaretRightOutlined rotate={isActive ? 90 : 0} /></SkipExport>
+        <SkipExport>
+          <CaretRightOutlined rotate={isActive ? 90 : 0} />
+        </SkipExport>
       )}
     >
       {chat.topics.map((v) => (
@@ -172,7 +174,11 @@ function TopUtil({
         <Button
           shape="circle"
           type="text"
-          icon={<SkipExport><PlusOutlined /></SkipExport>}
+          icon={
+            <SkipExport>
+              <PlusOutlined />
+            </SkipExport>
+          }
           onClick={() => {
             reloadTopic(v.id, 0);
             setShowInsert0((v) => !v);
@@ -181,7 +187,11 @@ function TopUtil({
         <Button
           shape="circle"
           type="text"
-          icon={<SkipExport><MessageOutlined /></SkipExport>}
+          icon={
+            <SkipExport>
+              <MessageOutlined />
+            </SkipExport>
+          }
           onClick={() => {
             sendMessage(-1, v);
           }}
@@ -193,76 +203,82 @@ function TopUtil({
             style={{ opacity: 0.5 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <Popconfirm
-              title="确定删除？"
-              onConfirm={() => {
-                onDle(v);
-              }}
-            >
-              <SkipExport><DeleteOutlined
-                style={{ color: "#ff8d8f", padding: "0 5px" }}
-              ></DeleteOutlined></SkipExport>
-            </Popconfirm>
+            <SkipExport>
+              <Popconfirm
+                title="确定删除？"
+                onConfirm={() => {
+                  onDle(v);
+                }}
+              >
+                <DeleteOutlined
+                  style={{ color: "#ff8d8f", padding: "0 5px" }}
+                ></DeleteOutlined>
+              </Popconfirm>
+            </SkipExport>
           </Typography.Title>
           <Typography.Title
             level={5}
             style={{ opacity: 0.5, padding: "0 5px" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <Popconfirm
-              title="请选择内容格式。"
-              description={
-                <>
-                  <p>当选择对话时，将会给每条消息前加上助理或用户的名字。</p>
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <span>指定身份，仅对md文档生效</span>
-                    <Checkbox
-                      checked={selectRoles.user}
-                      onChange={(e) => {
-                        setSelectRoles((v) => ({
-                          ...v,
-                          user: e.target.checked,
-                        }));
-                      }}
+            <SkipExport>
+              <Popconfirm
+                title="请选择内容格式。"
+                description={
+                  <>
+                    <p>当选择对话时，将会给每条消息前加上助理或用户的名字。</p>
+                    <div
+                      style={{ display: "flex", justifyContent: "flex-end" }}
                     >
-                      用户
-                    </Checkbox>
-                    <Checkbox
-                      checked={selectRoles.assistant}
-                      onChange={(e) => {
-                        setSelectRoles((v) => ({
-                          ...v,
-                          assistant: e.target.checked,
-                        }));
-                      }}
-                    >
-                      助理
-                    </Checkbox>
-                    <Checkbox
-                      checked={selectRoles.system}
-                      onChange={(e) => {
-                        setSelectRoles((v) => ({
-                          ...v,
-                          system: e.target.checked,
-                        }));
-                      }}
-                    >
-                      系统
-                    </Checkbox>
-                  </div>
-                </>
-              }
-              onConfirm={() => {
-                downloadTopic(v, false, chat, selectRoles);
-              }}
-              onCancel={() => {
-                downloadTopic(v, true, chat, selectRoles);
-              }}
-              okText="文档"
-              cancelText="对话"
-            >
-              <SkipExport><DownloadOutlined></DownloadOutlined></SkipExport>
-            </Popconfirm>
+                      <span>指定身份，仅对md文档生效</span>
+                      <Checkbox
+                        checked={selectRoles.user}
+                        onChange={(e) => {
+                          setSelectRoles((v) => ({
+                            ...v,
+                            user: e.target.checked,
+                          }));
+                        }}
+                      >
+                        用户
+                      </Checkbox>
+                      <Checkbox
+                        checked={selectRoles.assistant}
+                        onChange={(e) => {
+                          setSelectRoles((v) => ({
+                            ...v,
+                            assistant: e.target.checked,
+                          }));
+                        }}
+                      >
+                        助理
+                      </Checkbox>
+                      <Checkbox
+                        checked={selectRoles.system}
+                        onChange={(e) => {
+                          setSelectRoles((v) => ({
+                            ...v,
+                            system: e.target.checked,
+                          }));
+                        }}
+                      >
+                        系统
+                      </Checkbox>
+                    </div>
+                  </>
+                }
+                onConfirm={() => {
+                  downloadTopic(v, false, chat, selectRoles);
+                }}
+                onCancel={() => {
+                  downloadTopic(v, true, chat, selectRoles);
+                }}
+                okText="文档"
+                cancelText="对话"
+              >
+                <DownloadOutlined></DownloadOutlined>
+              </Popconfirm>
+            </SkipExport>
           </Typography.Title>
         </Space>
       </div>
@@ -303,7 +319,10 @@ function TopicTitle({
     };
   }, [cancelEdit]);
   return (
-    <div style={{ position: "relative", height: "24px" }} onClick={ e=>e.stopPropagation()}>
+    <div
+      style={{ position: "relative", height: "24px" }}
+      onClick={(e) => e.stopPropagation()}
+    >
       {edit ? (
         <Input.TextArea
           placeholder={topic.name}
@@ -342,7 +361,11 @@ function TopicTitle({
           <Button
             style={{ position: "absolute", right: 0 }}
             type="text"
-            icon={<SkipExport><EditOutlined /></SkipExport>}
+            icon={
+              <SkipExport>
+                <EditOutlined />
+              </SkipExport>
+            }
             onClick={(e) => {
               e.stopPropagation();
               setEdit((v) => !v);
