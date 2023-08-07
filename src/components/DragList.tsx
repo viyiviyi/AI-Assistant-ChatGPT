@@ -6,10 +6,11 @@ import {
   arrayMove,
   SortableContext,
   useSortable,
-  verticalListSortingStrategy
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React, { useEffect, useState } from "react";
+import { SkipExport } from "./SkipExport";
 
 export function DragList<T>({
   data,
@@ -88,11 +89,13 @@ function Row({ children, ...props }: RowProps) {
       {...attributes}
     >
       <div style={{ display: "flex", width: "100%" }}>
-        <MenuOutlined
-          ref={setActivatorNodeRef}
-          style={{ touchAction: "none", cursor: "move" }}
-          {...listeners}
-        />
+        <SkipExport>
+          <MenuOutlined
+            ref={setActivatorNodeRef}
+            style={{ touchAction: "none", cursor: "move" }}
+            {...listeners}
+          />
+        </SkipExport>
         {children}
       </div>
     </div>

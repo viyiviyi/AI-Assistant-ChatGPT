@@ -7,6 +7,7 @@ import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
 import { Button, Input, theme } from "antd";
 import React, { useState } from "react";
 import { CtxRoleButton } from "./CtxRoleButton";
+import { SkipExport } from "../SkipExport";
 
 // export const insertInputRef = React.createRef<HTMLInputElement>();
 function InsertInput({
@@ -56,7 +57,7 @@ function InsertInput({
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<CloseOutlined />}
+            icon={<SkipExport><CloseOutlined /></SkipExport>}
             onClick={() => {
               onHidden && onHidden();
             }}
@@ -66,7 +67,7 @@ function InsertInput({
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<MessageOutlined />}
+            icon={<SkipExport><MessageOutlined /></SkipExport>}
             onClick={() => {
               onSubmit(insertText, insertIndex);
             }}

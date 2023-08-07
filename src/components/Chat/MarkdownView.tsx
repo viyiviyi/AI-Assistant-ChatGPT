@@ -25,6 +25,7 @@ import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
+import { SkipExport } from "../SkipExport";
 
 function toTxt(node: React.ReactNode): string {
   let str = "";
@@ -91,14 +92,14 @@ let processor = unified()
         const { className, children } = props;
         return (
           <code className={className}>
-            <CopyOutlined
+           <SkipExport> <CopyOutlined
               onClick={() => {
                 if (copy(toTxt(children))) {
                   message.success("已复制");
                 }
               }}
               className="code-copy"
-            />
+            /></SkipExport>
             {children}
           </code>
         );

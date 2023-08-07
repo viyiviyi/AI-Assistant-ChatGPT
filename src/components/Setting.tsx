@@ -37,6 +37,7 @@ import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
 import { downloadTopic } from "./Chat/ChatMessage";
+import { SkipExport } from "./SkipExport";
 
 export const Setting = ({
   chatMgt,
@@ -221,7 +222,7 @@ export const Setting = ({
                 rel="noopener noreferrer"
                 target={"_blank"}
               >
-                <GithubOutlined size={64} />
+                <SkipExport><GithubOutlined size={64} /></SkipExport>
               </a>
               <a
                 href="https://gitee.com/yiyiooo/AI-Assistant-ChatGPT"
@@ -355,7 +356,7 @@ export const Setting = ({
                   });
                 }}
               >
-                <DownloadOutlined key="download" />
+                <SkipExport><DownloadOutlined key="download" /></SkipExport>
                 备份会话
               </Button>
               <Button block>
@@ -381,7 +382,7 @@ export const Setting = ({
                     showUploadList: false,
                   }}
                 >
-                  <UploadOutlined key="upload" />
+                  <SkipExport><UploadOutlined key="upload" /></SkipExport>
                   还原会话
                 </Upload>
               </Button>
@@ -443,7 +444,7 @@ export const Setting = ({
             activeKey={activityKey}
             onChange={(keys) => setActivityKey(keys as string[])}
             expandIcon={({ isActive }) => (
-              <CaretRightOutlined rotate={isActive ? 90 : 0} />
+              <SkipExport> <CaretRightOutlined rotate={isActive ? 90 : 0} /></SkipExport>
             )}
           >
             <Collapse.Panel
@@ -638,7 +639,7 @@ export const Setting = ({
                                     add();
                                   }}
                                   block
-                                  icon={<PlusOutlined />}
+                                  icon={<SkipExport><PlusOutlined /></SkipExport>}
                                 >
                                   增加 token
                                 </Button>

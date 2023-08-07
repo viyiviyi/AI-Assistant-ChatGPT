@@ -23,6 +23,7 @@ import { MemoBackgroundImage } from "../BackgroundImage";
 import { MessageContext } from "./Chat";
 import { CtxRoleButton } from "./CtxRoleButton";
 import { MemoNavigation } from "./Navigation";
+import { SkipExport } from "../SkipExport";
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };
@@ -166,7 +167,7 @@ export function InputUtil() {
             <Button
               shape={"circle"}
               size="large"
-              icon={<VerticalAlignTopOutlined />}
+              icon={<SkipExport><VerticalAlignTopOutlined /></SkipExport>}
               onClick={() => {
                 stopScroll();
                 if (!activityTopic) return;
@@ -180,7 +181,7 @@ export function InputUtil() {
               shape={"circle"}
               size="large"
               // type={lockEnd ? "primary" : undefined}
-              icon={<VerticalAlignBottomOutlined />}
+              icon={<SkipExport><VerticalAlignBottomOutlined /></SkipExport>}
               onClick={() => {
                 stopScroll();
                 if (!activityTopic) return;
@@ -193,12 +194,12 @@ export function InputUtil() {
             />
           </Space>
           {screenSize.width < 1200 && (
-            <AlignLeftOutlined
+            <SkipExport><AlignLeftOutlined
               style={{ padding: "8px 12px 8px 0" }}
               onClick={(e) => {
                 setShowNav(true);
               }}
-            />
+            /></SkipExport>
           )}
           <Drawer
             placement={"left"}
@@ -243,15 +244,15 @@ export function InputUtil() {
               setCloasAll(!closeAll);
             }}
           >
-            <CommentOutlined />
-            <VerticalAlignMiddleOutlined />
+            <SkipExport><CommentOutlined /></SkipExport>
+            <SkipExport><VerticalAlignMiddleOutlined /></SkipExport>
           </Button>
           <span style={{ marginLeft: 10 }}></span>
           <Button
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<CommentOutlined />}
+            icon={<SkipExport><CommentOutlined /></SkipExport>}
             onClick={() => {
               onSubmit(true);
             }}
@@ -261,7 +262,7 @@ export function InputUtil() {
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<MessageOutlined />}
+            icon={<SkipExport><MessageOutlined /></SkipExport>}
             onClick={() => {
               onSubmit(false);
             }}

@@ -23,6 +23,7 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MessageContext } from "./Chat";
 import { MemoInsertInput } from "./InsertInput";
 import { MessageList, reloadTopic } from "./MessageList";
+import { SkipExport } from "../SkipExport";
 
 const { Panel } = Collapse;
 
@@ -112,7 +113,7 @@ export const ChatMessage = () => {
       bordered={false}
       activeKey={closeAll ? [] : activityKey}
       expandIcon={({ isActive }) => (
-        <CaretRightOutlined rotate={isActive ? 90 : 0} />
+        <SkipExport><CaretRightOutlined rotate={isActive ? 90 : 0} /></SkipExport>
       )}
     >
       {chat.topics.map((v) => (
@@ -171,7 +172,7 @@ function TopUtil({
         <Button
           shape="circle"
           type="text"
-          icon={<PlusOutlined />}
+          icon={<SkipExport><PlusOutlined /></SkipExport>}
           onClick={() => {
             reloadTopic(v.id, 0);
             setShowInsert0((v) => !v);
@@ -180,7 +181,7 @@ function TopUtil({
         <Button
           shape="circle"
           type="text"
-          icon={<MessageOutlined />}
+          icon={<SkipExport><MessageOutlined /></SkipExport>}
           onClick={() => {
             sendMessage(-1, v);
           }}
@@ -198,9 +199,9 @@ function TopUtil({
                 onDle(v);
               }}
             >
-              <DeleteOutlined
+              <SkipExport><DeleteOutlined
                 style={{ color: "#ff8d8f", padding: "0 5px" }}
-              ></DeleteOutlined>
+              ></DeleteOutlined></SkipExport>
             </Popconfirm>
           </Typography.Title>
           <Typography.Title
@@ -260,7 +261,7 @@ function TopUtil({
               okText="文档"
               cancelText="对话"
             >
-              <DownloadOutlined></DownloadOutlined>
+              <SkipExport><DownloadOutlined></DownloadOutlined></SkipExport>
             </Popconfirm>
           </Typography.Title>
         </Space>
@@ -341,7 +342,7 @@ function TopicTitle({
           <Button
             style={{ position: "absolute", right: 0 }}
             type="text"
-            icon={<EditOutlined />}
+            icon={<SkipExport><EditOutlined /></SkipExport>}
             onClick={(e) => {
               e.stopPropagation();
               setEdit((v) => !v);

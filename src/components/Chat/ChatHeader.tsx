@@ -15,6 +15,7 @@ import { Setting } from "../Setting";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
 import { reloadTopic } from "./MessageList";
 import { MemoSearchWrap } from "./Search";
+import { SkipExport } from "../SkipExport";
 
 export const ChatHeader = () => {
   const { chat, activityTopic } = useContext(ChatContext);
@@ -55,10 +56,10 @@ export const ChatHeader = () => {
         {chat?.group.name}
       </Typography.Text>
       <span style={{ flex: 1 }}></span>
-      <SearchOutlined
+      <SkipExport><SearchOutlined
         style={{ padding: "5px 10px" }}
         onClick={() => setOpenSearch(true)}
-      />
+      /></SkipExport>
       <Drawer
         placement={"right"}
         closable={false}
@@ -82,20 +83,20 @@ export const ChatHeader = () => {
           <MemoSearchWrap />
         </div>
       </Drawer>
-      <UserAddOutlined
+      <SkipExport><UserAddOutlined
         style={{ padding: "5px 10px" }}
         onClick={() => setRoleConfigShow(!roleConfigShow)}
-      />
-      <SettingOutlined
+      /></SkipExport>
+     <SkipExport> <SettingOutlined
         onClick={() => setSettingShow(!settingIsShow)}
         style={{ padding: "5px 10px" }}
-      />
-      <UnorderedListOutlined
+      /></SkipExport>
+      <SkipExport><UnorderedListOutlined
         onClick={() => {
           setlistIsShow(!listIsShow);
         }}
         style={{ padding: "5px 10px" }}
-      />
+      /></SkipExport>
       <Modal
         isShow={roleConfigShow}
         onCancel={() => {}}

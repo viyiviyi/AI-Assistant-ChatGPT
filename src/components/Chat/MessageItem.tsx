@@ -42,6 +42,7 @@ import React, {
   useState
 } from "react";
 import { MarkdownView } from "./MarkdownView";
+import { SkipExport } from "../SkipExport";
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -112,16 +113,16 @@ export const MessageItem = ({
         style={{ flex: 1 }}
       ></span>
       {edit ? (
-        <SaveOutlined
+        <SkipExport><SaveOutlined
           onMouseDown={(e) => e.preventDefault()}
           onClick={saveMsg}
           style={{ marginLeft: "16px" }}
-        />
+        /></SkipExport>
       ) : (
         <></>
       )}
       <span style={{ marginLeft: "16px" }}></span>
-      <EditOutlined
+      <SkipExport><EditOutlined
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           if (!edit) setMessage(msg.text);
@@ -130,24 +131,24 @@ export const MessageItem = ({
           scrollStatus.enableTop = true;
           scrollToTop(msg.id);
         }}
-      />
+      /></SkipExport>
       <span style={{ marginLeft: "16px" }}></span>
-      <CopyOutlined
+      <SkipExport><CopyOutlined
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => {
           if (copy(msg.text.toString())) {
             message.success("已复制");
           }
         }}
-      />
+      /></SkipExport>
       <span style={{ marginLeft: "16px" }}></span>
-      <RollbackOutlined
+      <SkipExport> <RollbackOutlined
         onMouseDown={(e) => e.preventDefault()}
         style={{ cursor: "pointer" }}
         onClick={() => {
           rBak(msg);
         }}
-      />
+      /></SkipExport>
       <span style={{ marginLeft: "30px" }}></span>
       {loadingMsgs[msg.id] ? (
         <Popconfirm
@@ -159,7 +160,7 @@ export const MessageItem = ({
           okText="确定"
           cancelText="取消"
         >
-          <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+         <SkipExport> <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined></SkipExport>
         </Popconfirm>
       ) : (
         <Popconfirm
@@ -170,7 +171,7 @@ export const MessageItem = ({
           okText="确定"
           cancelText="取消"
         >
-          <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
+          <SkipExport><DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined></SkipExport>
         </Popconfirm>
       )}
     </>
@@ -183,14 +184,14 @@ export const MessageItem = ({
             <Button
               shape="circle"
               type="text"
-              icon={<MessageOutlined />}
+              icon={<SkipExport><MessageOutlined /></SkipExport>}
               onClick={onSned}
             ></Button>
           )}
           <Button
             shape="circle"
             type="text"
-            icon={<PlusOutlined />}
+            icon={<SkipExport><PlusOutlined /></SkipExport>}
             onClick={onPush}
           ></Button>
         </Space>
@@ -368,7 +369,7 @@ export const MessageItem = ({
                 okText="确定"
                 cancelText="取消"
               >
-                <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+                <SkipExport><PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined></SkipExport>
               </Popconfirm>
             ) : (
               <></>

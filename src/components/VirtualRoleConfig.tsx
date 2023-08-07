@@ -20,6 +20,7 @@ import { CSSProperties, useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
 import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
+import { SkipExport } from "./SkipExport";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
 
@@ -337,9 +338,9 @@ export const VirtualRoleConfig = ({
                       okText="确定"
                       cancelText="取消"
                     >
-                      <DeleteOutlined
+                      <SkipExport><DeleteOutlined
                         style={{ color: "#ff8d8f" }}
-                      ></DeleteOutlined>
+                      ></DeleteOutlined></SkipExport>
                     </Popconfirm>
                   </Space>
                 </div>
@@ -363,7 +364,7 @@ export const VirtualRoleConfig = ({
               ]);
             }}
             block
-            icon={<PlusOutlined />}
+            icon={<SkipExport><PlusOutlined /></SkipExport>}
           >
             增加设定
           </Button>

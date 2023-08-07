@@ -10,10 +10,11 @@ import {
   Popconfirm,
   Segmented,
   Select,
-  theme
+  theme,
 } from "antd";
 import { useState } from "react";
 import { DragList } from "./DragList";
+import { SkipExport } from "./SkipExport";
 
 export function EditVirtualRoleSetting({
   item,
@@ -150,7 +151,9 @@ export function EditVirtualRoleSetting({
                         okText="确定"
                         cancelText="取消"
                       >
-                        <DeleteOutlined></DeleteOutlined>
+                        <SkipExport>
+                          <DeleteOutlined></DeleteOutlined>
+                        </SkipExport>
                       </Popconfirm>
                       <span style={{ marginLeft: "15px" }}></span>
                       <Form.Item noStyle>
@@ -202,7 +205,11 @@ export function EditVirtualRoleSetting({
                 ]);
               }}
               block
-              icon={<PlusOutlined />}
+              icon={
+                <SkipExport>
+                  <PlusOutlined />
+                </SkipExport>
+              }
             >
               增加设定
             </Button>

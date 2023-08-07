@@ -5,6 +5,7 @@ import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Switch, theme, Tooltip, Typography } from "antd";
 import React, { useContext, useState } from "react";
 import { reloadTopic } from "./MessageList";
+import { SkipExport } from "../SkipExport";
 const Navigation = () => {
   const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
   const { token } = theme.useToken();
@@ -21,8 +22,8 @@ const Navigation = () => {
         <Tooltip title={"显示已勾选的上下文"}>
           <Switch
             onChange={setShowCheckeds}
-            checkedChildren={<EyeOutlined />}
-            unCheckedChildren={<EyeInvisibleOutlined />}
+            checkedChildren={<SkipExport><EyeOutlined /></SkipExport>}
+            unCheckedChildren={<SkipExport><EyeInvisibleOutlined /></SkipExport>}
           ></Switch>
         </Tooltip>
       </div>
