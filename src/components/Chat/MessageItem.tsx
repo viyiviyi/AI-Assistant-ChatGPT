@@ -4,7 +4,7 @@ import {
   onTextareaTab,
   scrollStatus,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -16,7 +16,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -28,7 +28,7 @@ import {
   Popconfirm,
   Segmented,
   Space,
-  theme,
+  theme
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -39,10 +39,10 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useState
 } from "react";
-import { MarkdownView } from "./MarkdownView";
 import { SkipExport } from "../SkipExport";
+import { MarkdownView } from "./MarkdownView";
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -161,7 +161,6 @@ export const MessageItem = ({
       <span style={{ marginLeft: "30px" }}></span>
       {loadingMsgs[msg.id] ? (
         <SkipExport>
-          {" "}
           <Popconfirm
             title="确定停止？"
             onConfirm={() => {

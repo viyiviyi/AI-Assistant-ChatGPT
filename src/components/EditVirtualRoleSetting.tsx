@@ -10,7 +10,7 @@ import {
   Popconfirm,
   Segmented,
   Select,
-  theme,
+  theme
 } from "antd";
 import { useState } from "react";
 import { DragList } from "./DragList";
@@ -142,19 +142,20 @@ export function EditVirtualRoleSetting({
                       />
                     </Form.Item>
                     <span>
-                      <Popconfirm
-                        title="确定删除？"
-                        placement="topRight"
-                        onConfirm={() => {
-                          setCtx((v) => v.filter((f) => f.key != item.key));
-                        }}
-                        okText="确定"
-                        cancelText="取消"
-                      >
-                        <SkipExport>
+                      <SkipExport>
+                        {" "}
+                        <Popconfirm
+                          title="确定删除？"
+                          placement="topRight"
+                          onConfirm={() => {
+                            setCtx((v) => v.filter((f) => f.key != item.key));
+                          }}
+                          okText="确定"
+                          cancelText="取消"
+                        >
                           <DeleteOutlined></DeleteOutlined>
-                        </SkipExport>
-                      </Popconfirm>
+                        </Popconfirm>
+                      </SkipExport>
                       <span style={{ marginLeft: "15px" }}></span>
                       <Form.Item noStyle>
                         <Checkbox
