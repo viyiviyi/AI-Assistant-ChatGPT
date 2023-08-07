@@ -116,6 +116,7 @@ export class ChatManagement implements IChat {
                 {
                   role: this.parseTextToRole(v),
                   content: this.parseText(v),
+                  checked:true
                 },
               ],
             };
