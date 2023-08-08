@@ -4,7 +4,7 @@ import { CtxRole, Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "./../Models/Topic";
 import { aiServices } from "./AiService/ServiceProvider";
-import { getUuid, scrollToBotton } from "./utils";
+import { getUuid, scrollStatus, scrollToBotton, stopScroll } from "./utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{ width: number; height: number }>({
@@ -69,6 +69,7 @@ export function useReloadIndex(chat: ChatManagement) {
 }
 
 export const loadingMessages: { [key: string]: boolean } = {};
+const currentPullMessage = { id: "" };
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
@@ -99,6 +100,7 @@ export function useSendMessage(chat: ChatManagement) {
       loadingMessages[result.id] = true;
 
       let isFirst = true;
+      let saveTimer = setTimeout(() => {}, 500);
       aiService.sendMessage({
         msg: topic.messages[idx],
         context: chat.getAskContext(topic, idx),
@@ -115,19 +117,25 @@ export function useSendMessage(chat: ChatManagement) {
           loadingMsgs[result.id] = {
             stop: res.stop,
           };
-          chat.pushMessage(result, idx + 1).then((r) => {
-            result = r;
-            if (isFirst) {
-              isFirst = false;
-              reloadIndex(topic, idx);
-              reloadTopic(topic.id, idx + 1);
-              scrollToBotton(result.id);
-            }
-          });
+          clearTimeout(saveTimer);
+          setTimeout(
+            () => {
+              chat.pushMessage(result, idx + 1).then((r) => {
+                result = r;
+                if (isFirst) {
+                  isFirst = false;
+                  reloadIndex(topic, idx);
+                  reloadTopic(topic.id, idx + 1);
+                  currentPullMessage.id = result.id;
+                }
+                scrollToBotton(currentPullMessage.id);
+              });
+            },
+            isFirst ? 0 : 500
+          );
           if (res.end) {
             delete loadingMsgs[result.id];
             delete loadingMessages[result.id];
-            scrollToBotton(result.id);
           }
         },
         config: {

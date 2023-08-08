@@ -5,7 +5,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -15,7 +15,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -77,31 +77,19 @@ export function InputUtil() {
         });
       }
       if (!topic) return;
+      scrollStatus.enable = true;
       setLoading((v) => ++v);
-      pushMessage(
-        text,
-        topic.messages.length || 0,
-        topic,
-        role,
-        () => {
-          setInputText("");
-          setRole(["user", true]);
-          if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
-          setTimeout(() => {
-            setLoading((v) => --v);
-          }, 500);
-        }
-      );
+      pushMessage(text, topic.messages.length || 0, topic, role, () => {
+        setInputText("");
+        setRole(["user", true]);
+        if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
+        setTimeout(() => {
+          setLoading((v) => --v);
+        }, 500);
+      });
       return;
     },
-    [
-      chat,
-      inputText,
-      role,
-      reloadNav,
-      setActivityTopic,
-      pushMessage,
-    ]
+    [chat, inputText, role, reloadNav, setActivityTopic, pushMessage]
   );
 
   return (
@@ -167,7 +155,11 @@ export function InputUtil() {
             <Button
               shape={"circle"}
               size="large"
-              icon={<SkipExport><VerticalAlignTopOutlined /></SkipExport>}
+              icon={
+                <SkipExport>
+                  <VerticalAlignTopOutlined />
+                </SkipExport>
+              }
               onClick={() => {
                 stopScroll();
                 if (!activityTopic) return;
@@ -181,7 +173,11 @@ export function InputUtil() {
               shape={"circle"}
               size="large"
               // type={lockEnd ? "primary" : undefined}
-              icon={<SkipExport><VerticalAlignBottomOutlined /></SkipExport>}
+              icon={
+                <SkipExport>
+                  <VerticalAlignBottomOutlined />
+                </SkipExport>
+              }
               onClick={() => {
                 stopScroll();
                 if (!activityTopic) return;
@@ -194,12 +190,14 @@ export function InputUtil() {
             />
           </Space>
           {screenSize.width < 1200 && (
-            <SkipExport><AlignLeftOutlined
-              style={{ padding: "8px 12px 8px 0" }}
-              onClick={(e) => {
-                setShowNav(true);
-              }}
-            /></SkipExport>
+            <SkipExport>
+              <AlignLeftOutlined
+                style={{ padding: "8px 12px 8px 0" }}
+                onClick={(e) => {
+                  setShowNav(true);
+                }}
+              />
+            </SkipExport>
           )}
           <Drawer
             placement={"left"}
@@ -244,15 +242,23 @@ export function InputUtil() {
               setCloasAll(!closeAll);
             }}
           >
-            <SkipExport><CommentOutlined /></SkipExport>
-            <SkipExport><VerticalAlignMiddleOutlined /></SkipExport>
+            <SkipExport>
+              <CommentOutlined />
+            </SkipExport>
+            <SkipExport>
+              <VerticalAlignMiddleOutlined />
+            </SkipExport>
           </Button>
           <span style={{ marginLeft: 10 }}></span>
           <Button
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<SkipExport><CommentOutlined /></SkipExport>}
+            icon={
+              <SkipExport>
+                <CommentOutlined />
+              </SkipExport>
+            }
             onClick={() => {
               onSubmit(true);
             }}
@@ -262,7 +268,11 @@ export function InputUtil() {
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<SkipExport><MessageOutlined /></SkipExport>}
+            icon={
+              <SkipExport>
+                <MessageOutlined />
+              </SkipExport>
+            }
             onClick={() => {
               onSubmit(false);
             }}

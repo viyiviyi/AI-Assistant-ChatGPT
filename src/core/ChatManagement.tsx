@@ -9,7 +9,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -116,7 +116,7 @@ export class ChatManagement implements IChat {
                 {
                   role: this.parseTextToRole(v),
                   content: this.parseText(v),
-                  checked:true
+                  checked: true,
                 },
               ],
             };
@@ -581,7 +581,7 @@ export class ChatManagement implements IChat {
           tableName: "Message",
           value: msg.id,
           handle: (r) => {
-            message.updateTime = Date.now();
+            if (r.text != message.text) message.updateTime = Date.now();
             r = Object.assign(r, message);
             return r;
           },
