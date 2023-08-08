@@ -14,7 +14,7 @@ import {
   Tabs,
   Tag,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import ImageUpload from "./AvatarUpload";
@@ -240,7 +240,6 @@ export const VirtualRoleConfig = ({
             border: "1px solid " + token.colorBorder,
             padding: 5,
             marginBottom: 8,
-            // backgroundColor: token.colorFillContent,
           }}
           data={virtualRole_settings}
           onChange={(data) => {
@@ -286,7 +285,10 @@ export const VirtualRoleConfig = ({
                         paddingBottom: 2,
                       }}
                     >
-                      <Typography.Text ellipsis>
+                      <Typography.Text
+                        ellipsis
+                        style={{ width: "min(100vw - 150px, 400px)" }}
+                      >
                         {item.tags
                           .slice(0, Math.min(item.tags.length, 3))
                           .map((v) => (
