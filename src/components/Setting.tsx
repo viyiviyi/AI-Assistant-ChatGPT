@@ -28,6 +28,7 @@ import {
   InputNumber,
   Modal,
   Radio,
+  Segmented,
   Select,
   Switch,
   theme,
@@ -90,6 +91,7 @@ export const Setting = ({
     group_name: string;
     setting_slack_proxy_url: string;
     slack_user_token: string;
+    config_disable_renderType: string;
   }>();
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
@@ -115,6 +117,7 @@ export const Setting = ({
       config_page_size: chatMgt?.config.pageSize || 20,
       config_page_repect: chatMgt?.config.pageRepect || 10,
       config_limit_pre_height: chatMgt?.config.limitPreHeight,
+      config_disable_renderType: chatMgt?.config.renderType,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
       setting_slack_proxy_url: KeyValueData.instance()
@@ -161,6 +164,9 @@ export const Setting = ({
     chatMgt.config.limitPreHeight = values.config_limit_pre_height;
     chatMgt.config.pageSize = values.config_page_size;
     chatMgt.config.pageRepect = values.config_page_repect;
+    chatMgt.config.renderType = values.config_disable_renderType as
+      | "default"
+      | "document";
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -222,7 +228,9 @@ export const Setting = ({
                 rel="noopener noreferrer"
                 target={"_blank"}
               >
-                <SkipExport><GithubOutlined size={64} /></SkipExport>
+                <SkipExport>
+                  <GithubOutlined size={64} />
+                </SkipExport>
               </a>
               <a
                 href="https://gitee.com/yiyiooo/AI-Assistant-ChatGPT"
@@ -356,7 +364,9 @@ export const Setting = ({
                   });
                 }}
               >
-                <SkipExport><DownloadOutlined key="download" /></SkipExport>
+                <SkipExport>
+                  <DownloadOutlined key="download" />
+                </SkipExport>
                 备份会话
               </Button>
               <Button block>
@@ -382,7 +392,9 @@ export const Setting = ({
                     showUploadList: false,
                   }}
                 >
-                  <SkipExport><UploadOutlined key="upload" /></SkipExport>
+                  <SkipExport>
+                    <UploadOutlined key="upload" />
+                  </SkipExport>
                   还原会话
                 </Upload>
               </Button>
@@ -444,7 +456,10 @@ export const Setting = ({
             activeKey={activityKey}
             onChange={(keys) => setActivityKey(keys as string[])}
             expandIcon={({ isActive }) => (
-              <SkipExport> <CaretRightOutlined rotate={isActive ? 90 : 0} /></SkipExport>
+              <SkipExport>
+                {" "}
+                <CaretRightOutlined rotate={isActive ? 90 : 0} />
+              </SkipExport>
             )}
           >
             <Collapse.Panel
@@ -507,6 +522,20 @@ export const Setting = ({
                   label="代码块限高"
                 >
                   <Switch />
+                </Form.Item>
+              </div>
+              <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+                <Form.Item
+                  style={{ flex: "1" }}
+                  name="config_disable_renderType"
+                  label="渲染方式"
+                >
+                  <Segmented
+                    options={[
+                      { label: "对话", value: "default" },
+                      { label: "文档", value: "document" },
+                    ]}
+                  />
                 </Form.Item>
               </div>
             </Collapse.Panel>
@@ -639,7 +668,11 @@ export const Setting = ({
                                     add();
                                   }}
                                   block
-                                  icon={<SkipExport><PlusOutlined /></SkipExport>}
+                                  icon={
+                                    <SkipExport>
+                                      <PlusOutlined />
+                                    </SkipExport>
+                                  }
                                 >
                                   增加 token
                                 </Button>

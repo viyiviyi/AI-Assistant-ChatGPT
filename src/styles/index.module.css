@@ -51,7 +51,6 @@
 }
 .message_box {
   position: relative;
-  margin-top: 0.5em;
 }
 .message_box .message_extend_but {
   display: none;
@@ -85,7 +84,8 @@
 @media (max-width: 999px) {
   /* 在这里添加适用于小屏幕的样式 */
   .message_item {
-    width: calc(100vw - 100px);
+    /* width: calc(100vw - 100px); */
+    width: 100%;
   }
 }
 /* 屏幕宽度小于 1300px */

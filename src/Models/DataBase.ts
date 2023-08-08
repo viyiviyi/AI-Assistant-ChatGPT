@@ -35,6 +35,7 @@ export interface GroupConfig {
   botType: aiServiceType;
   cloudChannelId?: string;
   limitPreHeight?: boolean; // 限制代码块高度 50vh
+  renderType?: "default" | "document";
   pageSize?: number;
   pageRepect?: number;
   updateTime?: number;

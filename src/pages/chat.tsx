@@ -115,6 +115,12 @@ export default function Page() {
         }}
       >
         <MemoBackgroundImage />
+        <MemoBackgroundImage
+          src="url(images/mask.jpg)"
+          style={{
+            opacity: 0.1,
+          }}
+        />
         <Head>
           <title>Chat助理 {chatMgt.group.name}</title>
         </Head>

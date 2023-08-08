@@ -34,6 +34,7 @@ export default function App({ Component, pageProps }: AppProps) {
             colorBgElevated: isDark ? "#222" : "#eee",
             colorLink: "#59ccccd5",
             colorLinkActive: "#41CECED5",
+            fontSize:16,
             colorLinkHover: "#66E6E6D5",
           },
           components: {
@@ -42,6 +43,7 @@ export default function App({ Component, pageProps }: AppProps) {
             },
           },
           algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,
+          
         }}
       >
         <Head>

@@ -91,6 +91,7 @@ export default function Page() {
         }}
       >
         <MemoBackgroundImage />
+        <MemoBackgroundImage  src="images/mask.jpg" style={{opacity:0.2}}/>
         <Head>
           <title>Chat助理 灵活简洁美观的ChatGPT客户端</title>
         </Head>

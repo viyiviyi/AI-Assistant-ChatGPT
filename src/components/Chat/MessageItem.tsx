@@ -1,11 +1,6 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
-import {
-  onTextareaTab,
-  scrollStatus,
-  scrollToTop,
-  stopScroll
-} from "@/core/utils";
+import { onTextareaTab } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
@@ -130,9 +125,6 @@ export const MessageItem = ({
           onClick={() => {
             if (!edit) setMessage(msg.text);
             setEdit(!edit);
-            stopScroll();
-            scrollStatus.enableTop = true;
-            scrollToTop(msg.id);
           }}
         />
       </SkipExport>
@@ -149,7 +141,6 @@ export const MessageItem = ({
       </SkipExport>
       <span style={{ marginLeft: "16px" }}></span>
       <SkipExport>
-        {" "}
         <RollbackOutlined
           onMouseDown={(e) => e.preventDefault()}
           style={{ cursor: "pointer" }}
@@ -223,10 +214,17 @@ export const MessageItem = ({
     <div>
       {edit ? (
         <>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 5,
+              overflow: "auto",
+              maxWidth: "100%",
+            }}
+          >
             <Segmented
               value={ctxRole}
-              style={{ marginBottom: 5 }}
               onChange={(val) => {
                 setCtxRole(val as CtxRole);
               }}
@@ -245,14 +243,17 @@ export const MessageItem = ({
                   })
                 }
               >
-                保存并提交
+                提交
               </Button>
             </Button.Group>
           </div>
           <Input.TextArea
             value={messageText}
-            autoSize={{ maxRows: 10 }}
-            style={{ marginBottom: "4px" }}
+            autoSize={
+              chat.config.renderType == "document"
+                ? { maxRows: 100 }
+                : { maxRows: 10 }
+            }
             onChange={(e) => {
               setMessage(e.target.value);
             }}
@@ -292,14 +293,111 @@ export const MessageItem = ({
           doubleClick={() => {
             setMessage(msg.text);
             setEdit(true);
-            stopScroll();
-            scrollStatus.enableTop = true;
-            scrollToTop(msg.id);
           }}
         />
       )}
     </div>
   );
+  if (chat.config.renderType == "document") {
+    return (
+      <>
+        <div
+          className={
+            styleCss.message_box +
+            (chat.config.limitPreHeight ? " limt-hight" : "")
+          }
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            position: "relative",
+            flexDirection: "column",
+          }}
+          id={msg.id}
+        >
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              className={styleCss.message_item}
+              style={{
+                display: "flex",
+                wordWrap: "break-word",
+                flexDirection: "column",
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  padding: "0 5px",
+                  flexDirection:
+                    msg.ctxRole == "assistant" ? "row" : "row-reverse",
+                }}
+              >
+                {loadingMsgs[msg.id] ? (
+                  <SkipExport>
+                    <Popconfirm
+                      title="确定停止？"
+                      onConfirm={() => {
+                        if (typeof loadingMsgs[msg.id]?.stop == "function")
+                          loadingMsgs[msg.id]?.stop();
+                        else delete loadingMsgs[msg.id];
+                      }}
+                      okText="确定"
+                      cancelText="取消"
+                    >
+                      <PauseOutlined
+                        style={{ color: "#ff8d8f" }}
+                      ></PauseOutlined>
+                    </Popconfirm>
+                  </SkipExport>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  padding: "5px 10px",
+                  flexDirection: "column",
+                  marginBottom: "12px",
+                  marginTop: "12px",
+                  lineHeight: 1.7,
+                  borderLeft:
+                    msg.ctxRole == "assistant"
+                      ? "1px dashed " + token.colorPrimary
+                      : undefined,
+                  borderRight:
+                    msg.ctxRole == "user"
+                      ? "1px dashed " + token.colorPrimary
+                      : undefined,
+                }}
+              >
+                {Content}
+                <div
+                  className=""
+                  style={{
+                    display: "flex",
+                    borderTop: "1px solid #ccc3",
+                    justifyContent: "flex-end",
+                    opacity: 0.5,
+                  }}
+                >
+                  {utilsEle}
+                </div>
+              </div>
+            </div>
+          </div>
+          {!loadingMsgs[msg.id] && Extend}
+        </div>
+      </>
+    );
+  }
   if (msg.ctxRole === "system") {
     return (
       <div
@@ -344,6 +442,8 @@ export const MessageItem = ({
           flex: 1,
           display: "flex",
           flexDirection: msg.ctxRole == "assistant" ? "row" : "row-reverse",
+          paddingLeft: msg.ctxRole == "assistant" ? 0 : 12,
+          paddingRight: msg.ctxRole == "assistant" ? 12 : 0,
         }}
       >
         <Avatar
@@ -352,15 +452,14 @@ export const MessageItem = ({
               ? chat.virtualRole.avatar || undefined
               : chat.user.avatar || undefined
           }
-          style={{ width: 54, height: 54 }}
-          size={54}
-          icon={<Image width={54} height={54} src={"/logo.png"} alt="logo" />}
+          style={{ flex: "none" }}
+          size={50}
+          icon={<Image width={50} height={50} src={"/logo.png"} alt="logo" />}
         />
         <div
           className={styleCss.message_item}
           style={{
             display: "flex",
-            flex: edit ? 1 : undefined,
             wordWrap: "break-word",
             flexDirection: "column",
           }}

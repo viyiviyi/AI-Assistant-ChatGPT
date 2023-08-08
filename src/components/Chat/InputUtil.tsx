@@ -5,7 +5,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -15,15 +15,15 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
 import { MemoBackgroundImage } from "../BackgroundImage";
+import { SkipExport } from "../SkipExport";
 import { MessageContext } from "./Chat";
 import { CtxRoleButton } from "./CtxRoleButton";
 import { MemoNavigation } from "./Navigation";
-import { SkipExport } from "../SkipExport";
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };

@@ -1,9 +1,10 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
+import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { stopScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { Layout, message, theme } from "antd";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { MemoChatHeader } from "./ChatHeader";
 import { MemoInputUtil } from "./InputUtil";
 import { MemoNavigation } from "./Navigation";
@@ -27,7 +28,7 @@ export const Chat = () => {
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
   const screenSize = useScreenSize();
-  
+  const { chat } = useContext(ChatContext);
 
   return (
     <MessageContext.Provider

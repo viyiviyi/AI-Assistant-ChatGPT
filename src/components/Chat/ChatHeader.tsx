@@ -12,10 +12,10 @@ import { MemoBackgroundImage } from "../BackgroundImage";
 import { ChatList } from "../ChatList";
 import { Modal } from "../Modal";
 import { Setting } from "../Setting";
+import { SkipExport } from "../SkipExport";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
 import { reloadTopic } from "./MessageList";
 import { MemoSearchWrap } from "./Search";
-import { SkipExport } from "../SkipExport";
 
 export const ChatHeader = () => {
   const { chat, activityTopic } = useContext(ChatContext);
