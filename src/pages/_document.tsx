@@ -12,7 +12,7 @@ const MyDocument = () => (
       ></meta>
       <meta
         name="description"
-        content="以对话的方式使用各种AI大语言模型，可完全自由的控制对话上下文，灵活可控的对话提示词配置，最大程度开放AI的能力。现已支持ChatGPT各个模型 + ChatGLM + Claude各个模型的访问。"
+        content="ChatGPT、ChatGLM使用工具，灵活轻便，简洁美观，可完全自由的控制对话上下文，可简单生成远大于token限制的超长文本；可为ChatGPT设定复杂且便于控制的前导提示词，通过简单的勾选，实现超长记忆能力；导航式的话题管理，在多个话题间快速切换和创作，提升工作效率，解放你的生产力；文档/对话两种渲染方式，既能陪你聊天，又能帮你创作。"
       ></meta>
     </Head>
     <body>

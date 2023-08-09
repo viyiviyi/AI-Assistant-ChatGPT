@@ -99,6 +99,26 @@
   left: 0;
   top: 0;
 }
+.roll_button {
+  height: 90px;
+  min-width: 20px;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  bottom: calc(100% + 60px);
+  right: -10px;
+  opacity: 0.5;
+  padding-right: 10px;
+}
+.roll_button > button {
+  display: none;
+}
+.roll_button:hover button {
+  display: block;
+}
+.roll_button:hover > span:last-child {
+  display: none;
+}
 /* 屏幕宽度小于 1300px */
 @media (max-width: 1299px) {
   /* 在这里添加适用于大屏幕的样式 */

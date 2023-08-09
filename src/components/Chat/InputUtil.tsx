@@ -5,19 +5,20 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll,
+  stopScroll
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
-import style from "@/styles/index.module.css";
+import styleCss from "@/styles/index.module.css";
 import {
   AlignLeftOutlined,
+  CaretLeftOutlined,
   CommentOutlined,
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
-import { Button, Drawer, Input, Space, theme, Typography } from "antd";
+import { Button, Drawer, Input, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
 import { MemoBackgroundImage } from "../BackgroundImage";
 import { SkipExport } from "../SkipExport";
@@ -94,19 +95,19 @@ export function InputUtil() {
 
   return (
     <>
-      <div className={style.loading}>
+      <div className={styleCss.loading}>
         {loading ? (
-          <div className={style.loading}>
+          <div className={styleCss.loading}>
             {[0, 1, 2, 3, 4].map((v) => (
               <div
                 key={v}
                 style={{ backgroundColor: token.colorPrimary }}
-                className={style.loadingBar}
+                className={styleCss.loadingBar}
               ></div>
             ))}
           </div>
         ) : (
-          <div className={style.loading}></div>
+          <div className={styleCss.loading}></div>
         )}
       </div>
       <div
@@ -145,53 +146,43 @@ export function InputUtil() {
               }}
             />
           )}
-          <Space
-            size={10}
-            direction="vertical"
-            style={{
-              position: "absolute",
-              bottom: "calc(100% + 60px)",
-              right: 0,
-              opacity: 0.5,
-            }}
-          >
-            <Button
-              shape={"circle"}
-              size="large"
-              icon={
-                <SkipExport>
-                  <VerticalAlignTopOutlined />
-                </SkipExport>
-              }
-              onClick={() => {
-                stopScroll();
-                if (!activityTopic) return;
-                scrollStatus.enableTop = true;
-                if (onlyOne) {
-                  scrollToTop();
-                } else scrollToTop(activityTopic.id);
-              }}
-            />
-            <Button
-              shape={"circle"}
-              size="large"
-              // type={lockEnd ? "primary" : undefined}
-              icon={
-                <SkipExport>
-                  <VerticalAlignBottomOutlined />
-                </SkipExport>
-              }
-              onClick={() => {
-                stopScroll();
-                if (!activityTopic) return;
-                scrollStatus.enable = true;
-                if (onlyOne) {
-                  scrollToBotton();
-                }
-                scrollToBotton(activityTopic.id);
-              }}
-            />
-          </Space>
+          <SkipExport>
+            <div className={styleCss.roll_button}>
+              <Button
+                shape={"circle"}
+                size="large"
+                icon={<VerticalAlignTopOutlined />}
+                onClick={() => {
+                  stopScroll();
+                  if (!activityTopic) return;
+                  scrollStatus.enableTop = true;
+                  if (onlyOne) {
+                    scrollToTop();
+                  } else scrollToTop(activityTopic.id);
+                }}
+              />
+              <span style={{ marginTop: 10 }}></span>
+              <Button
+                shape={"circle"}
+                size="large"
+                icon={<VerticalAlignBottomOutlined />}
+                onClick={() => {
+                  stopScroll();
+                  if (!activityTopic) return;
+                  scrollStatus.enable = true;
+                  if (onlyOne) {
+                    scrollToBotton();
+                  }
+                  scrollToBotton(activityTopic.id);
+                }}
+              />
+              <SkipExport>
+                <CaretLeftOutlined
+                  style={{ position: "absolute", right: "0", top: "37px" }}
+                />
+              </SkipExport>
+            </div>
+          </SkipExport>
           {screenSize.width < 1200 && (
             <SkipExport>
               <AlignLeftOutlined
