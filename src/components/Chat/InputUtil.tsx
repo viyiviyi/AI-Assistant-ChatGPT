@@ -5,7 +5,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import style from "@/styles/index.module.css";
@@ -15,7 +15,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, Space, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -114,7 +114,10 @@ export function InputUtil() {
           width: "100%",
           padding: "0px 10px 10px",
           borderRadius: token.borderRadius,
-          backgroundColor: token.colorFillContent,
+          backgroundColor:
+            chat.config.renderType == "document"
+              ? token.colorInfoBg
+              : token.colorFillContent,
         }}
       >
         <div

@@ -65,7 +65,40 @@
 .message_box:hover .message_extend_but {
   display: block;
 }
-
+.message_box_hiddel_tool .item_utils {
+  /* display: none !important; */
+  opacity: 0;
+}
+.message_box_hiddel_tool:hover .item_utils {
+  /* display: flex !important; */
+  opacity: 0.7;
+}
+.message_box_hiddel_tool .label_right_top::before {
+  content: "";
+  border-width: 8px;
+  width: 0;
+  height: 0;
+  border-style: dotted;
+  border-color: #8888;
+  border-left-color: #0000;
+  border-bottom-color: #0000;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.message_box_hiddel_tool .label_left_top::before {
+  content: "";
+  border-width: 8px;
+  width: 0;
+  height: 0;
+  border-style: dotted;
+  border-color: #8888;
+  border-right-color: #0000;
+  border-bottom-color: #0000;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
 /* 屏幕宽度小于 1300px */
 @media (max-width: 1299px) {
   /* 在这里添加适用于大屏幕的样式 */

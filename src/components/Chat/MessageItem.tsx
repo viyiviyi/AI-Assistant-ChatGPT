@@ -11,7 +11,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -23,7 +23,7 @@ import {
   Popconfirm,
   Segmented,
   Space,
-  theme
+  theme,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -34,7 +34,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
 } from "react";
 import { SkipExport } from "../SkipExport";
 import { MarkdownView } from "./MarkdownView";
@@ -304,13 +304,16 @@ export const MessageItem = ({
         <div
           className={
             styleCss.message_box +
-            (chat.config.limitPreHeight ? " limt-hight" : "")
+            (chat.config.limitPreHeight ? " limt-hight" : "") +
+            " " +
+            styleCss.message_box_hiddel_tool
           }
           style={{
             display: "flex",
             justifyContent: "center",
             position: "relative",
             flexDirection: "column",
+            marginTop: "12px",
           }}
           id={msg.id}
         >
@@ -360,32 +363,29 @@ export const MessageItem = ({
                 )}
               </div>
               <div
+                className={
+                  msg.ctxRole == "assistant"
+                    ? styleCss.label_left_top
+                    : msg.ctxRole == "user"
+                    ? styleCss.label_right_top
+                    : undefined
+                }
                 style={{
                   flex: 1,
                   display: "flex",
                   padding: "5px 10px",
                   flexDirection: "column",
-                  marginBottom: "12px",
-                  marginTop: "12px",
+                  // marginBottom: "12px",
                   lineHeight: 1.7,
-                  borderLeft:
-                    msg.ctxRole == "assistant"
-                      ? "1px dashed " + token.colorPrimary
-                      : undefined,
-                  borderRight:
-                    msg.ctxRole == "user"
-                      ? "1px dashed " + token.colorPrimary
-                      : undefined,
                 }}
               >
                 {Content}
                 <div
-                  className=""
+                  className={styleCss.item_utils}
                   style={{
                     display: "flex",
                     borderTop: "1px solid #ccc3",
                     justifyContent: "flex-end",
-                    opacity: 0.5,
                   }}
                 >
                   {utilsEle}
@@ -434,6 +434,7 @@ export const MessageItem = ({
         justifyContent: msg.ctxRole == "assistant" ? "flex-start" : "flex-end",
         position: "relative",
         flexDirection: "column",
+        marginTop: "12px",
       }}
       id={msg.id}
     >

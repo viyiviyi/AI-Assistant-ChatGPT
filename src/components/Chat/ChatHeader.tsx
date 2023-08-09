@@ -39,7 +39,10 @@ export const ChatHeader = () => {
         position: "relative",
         borderRadius:
           "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",
-        backgroundColor: token.colorFillContent,
+        backgroundColor:
+        chat.config.renderType == "document"
+          ? token.colorInfoBg
+          :  token.colorFillContent,
       }}
     >
       <Avatar
