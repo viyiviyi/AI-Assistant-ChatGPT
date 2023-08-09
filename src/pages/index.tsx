@@ -10,6 +10,7 @@ import { Layout, theme } from "antd";
 import Head from "next/head";
 import React, { useContext, useEffect, useState } from "react";
 import chatConfig from "../../public/使用示例.json";
+import { MarkdownView } from "@/components/Chat/MarkdownView";
 
 const MemoChat = React.memo(Chat);
 
@@ -91,7 +92,7 @@ export default function Page() {
         }}
       >
         <MemoBackgroundImage />
-        <MemoBackgroundImage  src="images/mask.jpg" style={{opacity:0.2}}/>
+        <MemoBackgroundImage src="images/mask.jpg" style={{ opacity: 0.2 }} />
         <Head>
           <title>Chat助理 灵活简洁美观的ChatGPT客户端</title>
         </Head>

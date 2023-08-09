@@ -3,7 +3,7 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService
+  useService,
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -17,7 +17,7 @@ import {
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -32,7 +32,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload
+  Upload,
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
@@ -274,8 +274,8 @@ export const Setting = ({
             <div style={{ width: "100%", display: "flex", gap: "10px" }}>
               <ImageUpload
                 onSave={setGroup_background}
-                width={screenSize.width}
-                height={screenSize.height}
+                width={screenSize.screenWidth}
+                height={screenSize.screenHeight}
                 trigger={
                   <Button block style={{ width: "min(220px, 40vw)" }}>
                     设置
@@ -742,8 +742,8 @@ export const Setting = ({
                 >
                   <ImageUpload
                     onSave={setBackground}
-                    width={screenSize.width}
-                    height={screenSize.height}
+                    width={screenSize.screenWidth}
+                    height={screenSize.screenHeight}
                     trigger={
                       <Button block style={{ width: "min(220px, 40vw)" }}>
                         设置

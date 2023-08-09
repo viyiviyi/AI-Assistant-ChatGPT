@@ -1,6 +1,6 @@
 import { useScreenSize } from "@/core/hooks";
 import { Avatar, Modal, Space, Upload } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AvatarEditor from "react-avatar-editor";
 
 const ImageUpload = ({
@@ -22,6 +22,16 @@ const ImageUpload = ({
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0.5, y: 0.5 });
   const screenSize = useScreenSize();
+  const [renderSize, setRenderSize] = useState({
+    width: screenSize.width,
+    height: screenSize.width / (width / height),
+  });
+  useEffect(() => {
+    setRenderSize({
+      width: screenSize.width,
+      height: screenSize.width / (width / height),
+    });
+  }, [width, height, screenSize]);
   const handlePositionChange = (
     position: React.SetStateAction<{
       x: number;
@@ -66,7 +76,9 @@ const ImageUpload = ({
         onOk={handleSave}
         centered={true}
         onCancel={() => setShowModal(false)}
-        width={width > screenSize.width * 0.7 ? "calc(90vw)" : undefined}
+        width={
+          (screenSize.width / renderSize.height) * (renderSize.height - 90) + 40
+        }
       >
         <div style={{ marginTop: "30px", width: "100%" }}>
           <input
@@ -92,15 +104,19 @@ const ImageUpload = ({
           >
             <AvatarEditor
               style={{
-                maxWidth: (width / height) * (height - 220),
-                height: "100%",
+                // 这是一个意外写错的计算，结果意外的很好，不知道为什么
+                maxWidth:
+                  (renderSize.width / renderSize.height) *
+                  (renderSize.height * 0.75),
+                height: "auto",
               }}
               ref={(editor) => setEditor(editor)}
               image={image!}
               width={width}
               height={height}
+              disableHiDPIScaling={true}
               border={90}
-              borderRadius={0}
+              borderRadius={5}
               scale={scale}
               position={position}
               onPositionChange={handlePositionChange}

@@ -7,20 +7,41 @@ import { aiServices } from "./AiService/ServiceProvider";
 import { getUuid, scrollStatus, scrollToBotton, stopScroll } from "./utils";
 
 export function useScreenSize() {
-  const [obj, setObj] = useState<{ width: number; height: number }>({
+  const [obj, setObj] = useState<{
+    width: number;
+    height: number;
+    screenWidth: number;
+    screenHeight: number;
+    devicePixelRatio: number;
+  }>({
     width: 0,
     height: 0,
+    screenWidth: 0,
+    screenHeight: 0,
+    devicePixelRatio: 1,
   });
   const timeout = useRef<any>();
   const retrieved = useRef(false);
   useEffect(() => {
     if (retrieved.current) return;
     retrieved.current = true;
-    setObj({ width: window.innerWidth, height: window.innerHeight });
+    setObj({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      screenWidth: window.innerWidth * window.devicePixelRatio,
+      screenHeight: window.innerHeight * window.devicePixelRatio,
+      devicePixelRatio: window.devicePixelRatio,
+    });
     window.addEventListener("resize", () => {
       clearTimeout(timeout.current);
       timeout.current = setTimeout(() => {
-        setObj({ width: window.innerWidth, height: window.innerHeight });
+        setObj({
+          width: window.innerWidth,
+          height: window.innerHeight,
+          screenWidth: window.innerWidth * window.devicePixelRatio,
+          screenHeight: window.innerHeight * window.devicePixelRatio,
+          devicePixelRatio: window.devicePixelRatio,
+        });
       }, 1000);
     });
   }, []);
