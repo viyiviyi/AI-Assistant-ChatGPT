@@ -1,5 +1,6 @@
 import { MemoBackgroundImage } from "@/components/BackgroundImage";
 import { Chat } from "@/components/Chat/Chat";
+import { SkipExport } from "@/components/SkipExport";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -10,7 +11,6 @@ import { Layout, theme } from "antd";
 import Head from "next/head";
 import React, { useContext, useEffect, useState } from "react";
 import chatConfig from "../../public/使用示例.json";
-import { MarkdownView } from "@/components/Chat/MarkdownView";
 
 const MemoChat = React.memo(Chat);
 
@@ -91,8 +91,17 @@ export default function Page() {
           backgroundColor: token.colorBgContainer,
         }}
       >
-        <MemoBackgroundImage />
-        <MemoBackgroundImage src="images/mask.jpg" style={{ opacity: 0.2 }} />
+        <SkipExport>
+          <MemoBackgroundImage />
+        </SkipExport>
+        <SkipExport>
+          <MemoBackgroundImage
+            src="url(images/mask.jpg)"
+            style={{
+              opacity: 0.1,
+            }}
+          />
+        </SkipExport>
         <Head>
           <title>Chat助理 灵活简洁美观的ChatGPT客户端</title>
         </Head>

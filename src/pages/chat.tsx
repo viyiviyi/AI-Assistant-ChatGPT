@@ -1,5 +1,6 @@
 import { MemoBackgroundImage } from "@/components/BackgroundImage";
 import { Chat } from "@/components/Chat/Chat";
+import { SkipExport } from "@/components/SkipExport";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
@@ -114,13 +115,17 @@ export default function Page() {
           backgroundColor: token.colorBgContainer,
         }}
       >
-        <MemoBackgroundImage />
-        <MemoBackgroundImage
-          src="url(images/mask.jpg)"
-          style={{
-            opacity: 0.1,
-          }}
-        />
+        <SkipExport>
+          <MemoBackgroundImage />
+        </SkipExport>
+        <SkipExport>
+          <MemoBackgroundImage
+            src="url(images/mask.jpg)"
+            style={{
+              opacity: 0.1,
+            }}
+          />
+        </SkipExport>
         <Head>
           <title>Chat助理 {chatMgt.group.name}</title>
         </Head>

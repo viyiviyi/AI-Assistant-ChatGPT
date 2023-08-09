@@ -5,6 +5,7 @@ import { stopScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { Layout, message, theme } from "antd";
 import React, { useContext, useState } from "react";
+import { SkipExport } from "../SkipExport";
 import { MemoChatHeader } from "./ChatHeader";
 import { MemoInputUtil } from "./InputUtil";
 import { MemoNavigation } from "./Navigation";
@@ -55,7 +56,9 @@ export const Chat = () => {
           margin: "0 auto",
         }}
       >
-        <MemoChatHeader></MemoChatHeader>
+        <SkipExport>
+          <MemoChatHeader></MemoChatHeader>
+        </SkipExport>
         <Layout
           style={{
             color: token.colorTextBase,
@@ -111,7 +114,9 @@ export const Chat = () => {
             width: "100%",
           }}
         >
-          <MemoInputUtil></MemoInputUtil>
+          <SkipExport>
+            <MemoInputUtil></MemoInputUtil>
+          </SkipExport>
         </Footer>
       </div>
     </MessageContext.Provider>
