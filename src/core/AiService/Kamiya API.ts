@@ -115,6 +115,11 @@ export class Kamiya implements IAiService {
               end: true,
               text:
                 "\n\n 请求发生错误。\n\n" +
+                "token: ... " +
+                headers.Authorization.slice(
+                  Math.max(-headers.Authorization.length, -10)
+                ) +
+                "\n\n" +
                 response.status +
                 " " +
                 response.statusText +
