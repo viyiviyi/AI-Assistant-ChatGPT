@@ -5,7 +5,7 @@ import {
   scrollStatus,
   scrollToBotton,
   scrollToTop,
-  stopScroll
+  stopScroll,
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -16,7 +16,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, Input, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -196,6 +196,7 @@ export function InputUtil() {
           <Drawer
             placement={"left"}
             closable={false}
+            width={Math.min(screenSize.width - 40, 400)}
             key={"nav_drawer"}
             bodyStyle={{ padding: "1em 0" }}
             open={showNav}

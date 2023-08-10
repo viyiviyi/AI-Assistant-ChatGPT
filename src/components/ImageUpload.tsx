@@ -77,7 +77,10 @@ const ImageUpload = ({
         centered={true}
         onCancel={() => setShowModal(false)}
         width={
-          (screenSize.width / renderSize.height) * (renderSize.height - 90) + 40
+          (renderSize.width / renderSize.height) *
+            (Math.min(renderSize.height, screenSize.height) -
+              210 / screenSize.devicePixelRatio) +
+          40 / screenSize.devicePixelRatio
         }
       >
         <div style={{ marginTop: "30px", width: "100%" }}>
@@ -102,25 +105,46 @@ const ImageUpload = ({
               margin: "10px auto",
             }}
           >
-            <AvatarEditor
-              style={{
-                // 这是一个意外写错的计算，结果意外的很好，不知道为什么
-                maxWidth:
-                  (renderSize.width / renderSize.height) *
-                  (renderSize.height * 0.75),
-                height: "auto",
-              }}
-              ref={(editor) => setEditor(editor)}
-              image={image!}
-              width={width}
-              height={height}
-              disableHiDPIScaling={true}
-              border={90}
-              borderRadius={5}
-              scale={scale}
-              position={position}
-              onPositionChange={handlePositionChange}
-            />
+            {width > screenSize.width ? (
+              <AvatarEditor
+                style={{
+                  maxWidth:
+                    (renderSize.width / renderSize.height) *
+                    (Math.min(renderSize.height, screenSize.height) -
+                      210 / screenSize.devicePixelRatio),
+                  height: "auto",
+                }}
+                ref={(editor) => setEditor(editor)}
+                image={image!}
+                width={width}
+                height={height}
+                disableHiDPIScaling={true}
+                border={90}
+                borderRadius={5}
+                scale={scale}
+                position={position}
+                onPositionChange={handlePositionChange}
+              />
+            ) : (
+              <AvatarEditor
+                style={{
+                  maxWidth:
+                    (renderSize.width / renderSize.height) *
+                    (Math.min(renderSize.height, screenSize.height) -
+                      210 / screenSize.devicePixelRatio),
+                  height: "auto",
+                }}
+                ref={(editor) => setEditor(editor)}
+                image={image!}
+                width={width}
+                height={height}
+                border={90}
+                borderRadius={5}
+                scale={scale}
+                position={position}
+                onPositionChange={handlePositionChange}
+              />
+            )}
           </div>
         </div>
       </Modal>

@@ -17,10 +17,10 @@ import {
   Typography
 } from "antd";
 import { CSSProperties, useContext, useEffect, useState } from "react";
-import ImageUpload from "./AvatarUpload";
 import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 import { SkipExport } from "./SkipExport";
+import ImageUpload from "./ImageUpload";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
 

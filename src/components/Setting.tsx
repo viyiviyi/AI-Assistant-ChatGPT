@@ -36,9 +36,9 @@ import {
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
-import ImageUpload from "./AvatarUpload";
 import { downloadTopic } from "./Chat/ChatMessage";
 import { SkipExport } from "./SkipExport";
+import ImageUpload from "./ImageUpload";
 
 export const Setting = ({
   chatMgt,

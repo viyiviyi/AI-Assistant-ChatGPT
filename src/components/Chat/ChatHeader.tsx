@@ -3,7 +3,7 @@ import {
   SearchOutlined,
   SettingOutlined,
   UnorderedListOutlined,
-  UserAddOutlined
+  UserAddOutlined,
 } from "@ant-design/icons";
 import { Avatar, Drawer, Layout, theme, Typography } from "antd";
 import Image from "next/image";
@@ -16,6 +16,7 @@ import { SkipExport } from "../SkipExport";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
 import { reloadTopic } from "./MessageList";
 import { MemoSearchWrap } from "./Search";
+import { useScreenSize } from "@/core/hooks";
 
 export const ChatHeader = () => {
   const { chat, activityTopic } = useContext(ChatContext);
@@ -24,6 +25,7 @@ export const ChatHeader = () => {
   const [listIsShow, setlistIsShow] = useState(false);
   const [roleConfigShow, setRoleConfigShow] = useState(false);
   const [openSearch, setOpenSearch] = useState(false);
+  const screenSize = useScreenSize();
   return (
     <Layout.Header
       style={{
@@ -40,14 +42,14 @@ export const ChatHeader = () => {
         borderRadius:
           "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",
         backgroundColor:
-        chat.config.renderType == "document"
-          ? token.colorInfoBg
-          :  token.colorFillContent,
+          chat.config.renderType == "document"
+            ? token.colorInfoBg
+            : token.colorFillContent,
       }}
     >
       <Avatar
         onClick={(v) => {
-          setRoleConfigShow(roleConfigShow!);
+          setRoleConfigShow(!roleConfigShow);
         }}
         size={32}
         style={{ minWidth: "32px", minHeight: "32px" }}
@@ -59,14 +61,16 @@ export const ChatHeader = () => {
         {chat?.group.name}
       </Typography.Text>
       <span style={{ flex: 1 }}></span>
-      <SkipExport><SearchOutlined
-        style={{ padding: "5px 10px" }}
-        onClick={() => setOpenSearch(true)}
-      /></SkipExport>
+      <SkipExport>
+        <SearchOutlined
+          style={{ padding: "5px 10px" }}
+          onClick={() => setOpenSearch(true)}
+        />
+      </SkipExport>
       <Drawer
         placement={"right"}
         closable={false}
-        width={"min(500px ,100vw - 100px)"}
+        width={Math.min(screenSize.width - 40, 400)}
         key={"search_nav_drawer"}
         bodyStyle={{ padding: "1em 0" }}
         open={openSearch}
@@ -86,20 +90,27 @@ export const ChatHeader = () => {
           <MemoSearchWrap />
         </div>
       </Drawer>
-      <SkipExport><UserAddOutlined
-        style={{ padding: "5px 10px" }}
-        onClick={() => setRoleConfigShow(!roleConfigShow)}
-      /></SkipExport>
-     <SkipExport> <SettingOutlined
-        onClick={() => setSettingShow(!settingIsShow)}
-        style={{ padding: "5px 10px" }}
-      /></SkipExport>
-      <SkipExport><UnorderedListOutlined
-        onClick={() => {
-          setlistIsShow(!listIsShow);
-        }}
-        style={{ padding: "5px 10px" }}
-      /></SkipExport>
+      <SkipExport>
+        <UserAddOutlined
+          style={{ padding: "5px 10px" }}
+          onClick={() => setRoleConfigShow(!roleConfigShow)}
+        />
+      </SkipExport>
+      <SkipExport>
+        {" "}
+        <SettingOutlined
+          onClick={() => setSettingShow(!settingIsShow)}
+          style={{ padding: "5px 10px" }}
+        />
+      </SkipExport>
+      <SkipExport>
+        <UnorderedListOutlined
+          onClick={() => {
+            setlistIsShow(!listIsShow);
+          }}
+          style={{ padding: "5px 10px" }}
+        />
+      </SkipExport>
       <Modal
         isShow={roleConfigShow}
         onCancel={() => {}}
