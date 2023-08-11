@@ -22,7 +22,7 @@ export const VirtualRoleConfigInfo = ({
   };
 
   return (
-    <div style={{ maxHeight: "calc(100vh - 120px)", overflow: "auto" }}>
+    <div>
       <Space direction="vertical">
         {bio ? (
           <>

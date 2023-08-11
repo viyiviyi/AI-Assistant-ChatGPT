@@ -600,12 +600,18 @@ export const VirtualRoleConfig = ({
             </Form.Item>
             <Form.Item label="预览">
               <Modal
+                centered={true}
                 open={showInfo}
                 onCancel={() => {
                   setShowInfo(false);
                 }}
                 onOk={() => {
                   setShowInfo(false);
+                }}
+                bodyStyle={{
+                  maxHeight: "calc(100vh - 200px)",
+                  minHeight: "50vh",
+                  overflow: "auto",
                 }}
               >
                 <VirtualRoleConfigInfo
