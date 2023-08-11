@@ -10,6 +10,7 @@ import {
   Topic,
   User,
   VirtualRole,
+  VirtualRoleSetting,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
@@ -267,62 +268,43 @@ export class ChatManagement implements IChat {
     // 置顶助理全局配置
     if (this.config.enableVirtualRole) {
       let virtualRole = this.virtualRole;
-      let settings: {
-        role: CtxRole;
-        content: string;
-      }[] = [];
-      let lastSettint:
-        | undefined
-        | {
-            role: CtxRole;
-            content: string;
-            checked?: boolean;
-          } = undefined;
-      console.log(virtualRole.settings);
-      virtualRole.settings
-        .filter((v) => v.checked)
-        .map((v) => {
-          return v.extensionId
-            ? Extensions.getExtension(v.extensionId)?.getSettings() || v
-            : v;
-        })
-        .forEach((v) => {
-          v.ctx.forEach((c) => {
-            if (c.role) {
-              if (lastSettint && lastSettint.checked) {
-                settings.push(lastSettint);
-              }
-              lastSettint = { ...c, role: c.role! };
-            } else {
-              if (c.checked && lastSettint) {
-                lastSettint.content += "\n" + c.content;
-              }
-            }
-          });
-        });
-      if (lastSettint && (lastSettint as any).checked)
-        settings.push(lastSettint);
       ctx = [
-        ...settings.map((v) => ({
-          role: v.role,
-          content: v.content,
-          name: this.getNameByRole(v.role, virtualRole),
-        })),
+        // 助理简介
+        ...(virtualRole.bio
+          ? [
+              {
+                role: ChatManagement.parseTextToRole(virtualRole.bio, "system"),
+                content: ChatManagement.parseText(virtualRole.bio),
+                name: this.getNameByRole(
+                  ChatManagement.parseTextToRole(virtualRole.bio, "system"),
+                  virtualRole
+                ),
+              },
+            ]
+          : []),
+        // 助理设定
+        ...ChatManagement.parseSetting(
+          virtualRole.settings.filter((v) => !v.postposition)
+        ).map((v) => {
+          return {
+            role: v.role,
+            content: v.content,
+            name: this.getNameByRole(v.role, virtualRole),
+          };
+        }),
+        // 上下文
         ...ctx,
+        // 后置设定
+        ...ChatManagement.parseSetting(
+          virtualRole.settings.filter((v) => v.postposition)
+        ).map((v) => {
+          return {
+            role: v.role,
+            content: v.content,
+            name: this.getNameByRole(v.role, virtualRole),
+          };
+        }),
       ];
-      if (virtualRole.bio) {
-        ctx = [
-          {
-            role: ChatManagement.parseTextToRole(virtualRole.bio, "system"),
-            content: ChatManagement.parseText(virtualRole.bio),
-            name: this.getNameByRole(
-              ChatManagement.parseTextToRole(virtualRole.bio, "system"),
-              virtualRole
-            ),
-          },
-          ...ctx,
-        ];
-      }
     }
     return ctx;
   }
@@ -333,6 +315,46 @@ export class ChatManagement implements IChat {
       : role === "assistant"
       ? (virtualRole || this.virtualRole).enName || "assistant"
       : this.user.enName || "user";
+  }
+  static parseSetting(inputSettings: VirtualRoleSetting[]): {
+    role: CtxRole;
+    content: string;
+  }[] {
+    let lastSetting:
+      | undefined
+      | {
+          role: CtxRole;
+          content: string;
+          checked?: boolean;
+        } = undefined;
+    let settings: {
+      role: CtxRole;
+      content: string;
+    }[] = [];
+    lastSetting = undefined;
+    inputSettings
+      .filter((v) => v.checked)
+      .map((v) => {
+        return v.extensionId
+          ? Extensions.getExtension(v.extensionId)?.getSettings() || v
+          : v;
+      })
+      .forEach((v) => {
+        v.ctx.forEach((c) => {
+          if (c.role) {
+            if (lastSetting && lastSetting.checked) {
+              settings.push(lastSetting);
+            }
+            lastSetting = { ...c, role: c.role! };
+          } else {
+            if (c.checked && lastSetting) {
+              lastSetting.content += "\n" + c.content;
+            }
+          }
+        });
+      });
+    if (lastSetting && (lastSetting as any).checked) settings.push(lastSetting);
+    return settings;
   }
   static parseText(text: string): string {
     return text

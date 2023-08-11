@@ -74,6 +74,7 @@ export interface Topic {
 export type VirtualRoleSetting = {
   extensionId?: string;
   title?: string;
+  postposition?: boolean;
   checked: boolean;
   tags: string[];
   ctx: { role?: CtxRole; content: string; checked?: boolean }[];

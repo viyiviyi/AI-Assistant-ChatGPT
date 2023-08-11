@@ -1,11 +1,12 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { getUuid } from "@/core/utils";
-import { CtxRole, VirtualRole } from "@/Models/DataBase";
+import { CtxRole, VirtualRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Checkbox,
+  Divider,
   Form,
   Input,
   Popconfirm,
@@ -14,7 +15,7 @@ import {
   Tabs,
   Tag,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { DragList } from "./DragList";
@@ -106,20 +107,15 @@ export const VirtualRoleConfig = ({
     maxHeight: "calc(100vh - 350px)",
     overflow: "auto",
   };
-  function isShow(item: {
-    key: string;
-    edit: boolean;
-    extensionId?: string | undefined;
-    title?: string | undefined;
-    checked: boolean;
-    tags: string[];
-    ctx: {
-      role?: CtxRole;
-      content: string;
-      checked?: boolean;
-    }[];
-  }): boolean {
+  function isShow(
+    item: VirtualRoleSetting & {
+      key: string;
+      edit: boolean;
+    },
+    postposition: boolean = false
+  ): boolean {
     let show = true;
+    if (postposition != !!item.postposition) show = false;
     if (settingFilterText) {
       show =
         item.title?.includes(settingFilterText) ||
@@ -359,6 +355,153 @@ export const VirtualRoleConfig = ({
               setVirtualRole_settings((v) => [
                 ...v,
                 {
+                  checked: true,
+                  tags: [],
+                  ctx: [],
+                  key: getUuid(),
+                  edit: false,
+                },
+              ]);
+            }}
+            block
+            icon={
+              <SkipExport>
+                <PlusOutlined />
+              </SkipExport>
+            }
+          >
+            增加设定
+          </Button>
+        </Form.Item>
+      </Form.Item>
+      <Divider orientation="left">后置内容</Divider>
+      <Form.Item>
+        <DragList
+          style={{
+            borderRadius: 8,
+            border: "1px solid " + token.colorBorder,
+            padding: 5,
+            marginBottom: 8,
+          }}
+          data={virtualRole_settings}
+          onChange={(data) => {
+            setVirtualRole_settings(data);
+          }}
+          itemDom={(item) => {
+            return isShow(item, true) ? (
+              <div
+                style={{
+                  flex: 1,
+                  marginLeft: 10,
+                  display: "flex",
+                  width: 0,
+                  cursor: "pointer",
+                }}
+              >
+                <EditVirtualRoleSetting
+                  item={item}
+                  allTags={tags}
+                  visible={item.edit}
+                  onCancel={() => {
+                    item.edit = false;
+                    setVirtualRole_settings((v) => [...v]);
+                  }}
+                  onSave={(_item) => {
+                    _item.edit = false;
+                    setVirtualRole_settings((v) =>
+                      v.map((a) => (a.key == _item.key ? _item : a))
+                    );
+                  }}
+                />
+                <div
+                  style={{ flex: 1 }}
+                  onClick={() => {
+                    item.edit = true;
+                    setVirtualRole_settings((v) => [...v]);
+                  }}
+                >
+                  {item.title || item.tags.length ? (
+                    <div
+                      style={{
+                        borderBottom: "1px solid #ccc2",
+                        paddingBottom: 2,
+                      }}
+                    >
+                      <Typography.Text
+                        ellipsis
+                        style={{ width: "min(100vw - 150px, 400px)" }}
+                      >
+                        {item.tags
+                          .slice(0, Math.min(item.tags.length, 3))
+                          .map((v) => (
+                            <Tag key={"setting_tag_" + v} color="green">
+                              {v}
+                            </Tag>
+                          ))}{" "}
+                        {item.title}
+                      </Typography.Text>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+                  <Typography.Text
+                    style={{ width: "min(100vw - 150px, 400px)" }}
+                    type="secondary"
+                    ellipsis={true}
+                  >
+                    {item.ctx.length
+                      ? item.ctx
+                          .filter((v) => v.checked)
+                          .map((v) => v.content)
+                          .join("")
+                      : "无内容 点击编辑"}
+                  </Typography.Text>
+                </div>
+                <div
+                  style={{
+                    width: 30,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Space direction="vertical">
+                    <Checkbox
+                      checked={item.checked}
+                      onChange={(e) => {
+                        item.checked = e.target.checked;
+                        setVirtualRole_settings((v) => [...v]);
+                      }}
+                    ></Checkbox>
+                    <SkipExport>
+                      <Popconfirm
+                        title="确定删除？"
+                        onConfirm={() => {
+                          setVirtualRole_settings((v) =>
+                            v.filter((f) => f != item)
+                          );
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <DeleteOutlined
+                          style={{ color: "#ff8d8f" }}
+                        ></DeleteOutlined>
+                      </Popconfirm>
+                    </SkipExport>
+                  </Space>
+                </div>
+              </div>
+            ) : undefined;
+          }}
+        />
+        <Form.Item extra="当助理模式开启时，这些内容将追加在上下文最后面">
+          <Button
+            type="dashed"
+            onClick={() => {
+              setVirtualRole_settings((v) => [
+                ...v,
+                {
+                  postposition: true,
                   checked: true,
                   tags: [],
                   ctx: [],
