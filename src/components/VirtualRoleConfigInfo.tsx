@@ -1,6 +1,7 @@
 import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { ChatManagement } from "@/core/ChatManagement";
 import { Space, Tag, Typography } from "antd";
+import { MarkdownView } from "./Chat/MarkdownView";
 
 export const VirtualRoleConfigInfo = ({
   settings,
@@ -25,8 +26,8 @@ export const VirtualRoleConfigInfo = ({
       <Space direction="vertical">
         {bio ? (
           <>
-            {getTag(ChatManagement.parseTextToRole(bio))}
-            <Typography.Text>{bio}</Typography.Text>
+            {getTag(ChatManagement.parseTextToRole(bio, "system"))}
+            <MarkdownView markdown={bio} />
           </>
         ) : (
           <></>
@@ -37,18 +38,18 @@ export const VirtualRoleConfigInfo = ({
           return (
             <>
               {getTag(v.role)}
-              <Typography.Text>{v.content}</Typography.Text>
+              <MarkdownView markdown={v.content} />
             </>
           );
         })}
-        <p>{"... 上下文"}</p>
+        <Typography.Text type="secondary">{"... 上下文"}</Typography.Text>
         {ChatManagement.parseSetting(
           settings.filter((v) => v.postposition)
         ).map((v) => {
           return (
             <>
               {getTag(v.role)}
-              <Typography.Text>{v.content}</Typography.Text>
+              <MarkdownView markdown={v.content} />
             </>
           );
         })}

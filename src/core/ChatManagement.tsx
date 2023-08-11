@@ -348,7 +348,7 @@ export class ChatManagement implements IChat {
             lastSetting = { ...c, role: c.role! };
           } else {
             if (c.checked && lastSetting) {
-              lastSetting.content += "\n" + c.content;
+              lastSetting.content += "\n\n" + c.content;
             }
           }
         });

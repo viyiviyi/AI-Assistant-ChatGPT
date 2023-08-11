@@ -9,6 +9,7 @@ import {
   Divider,
   Form,
   Input,
+  Modal,
   Popconfirm,
   Space,
   Switch,
@@ -22,6 +23,7 @@ import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 import { SkipExport } from "./SkipExport";
 import ImageUpload from "./ImageUpload";
+import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
 
@@ -43,6 +45,7 @@ export const VirtualRoleConfig = ({
   const { setChat } = useContext(ChatContext);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [showInfo, setShowInfo] = useState(false);
   const [virtualRole_settings, setVirtualRole_settings] = useState(
     chatMgt?.virtualRole.settings?.map((v, i) => ({
       ...v,
@@ -453,7 +456,7 @@ export const VirtualRoleConfig = ({
                       ? item.ctx
                           .filter((v) => v.checked)
                           .map((v) => v.content)
-                          .join("")
+                          .join(" ")
                       : "无内容 点击编辑"}
                   </Typography.Text>
                 </div>
@@ -594,6 +597,29 @@ export const VirtualRoleConfig = ({
                   粘贴
                 </Button>
               </Button.Group>
+            </Form.Item>
+            <Form.Item label="预览">
+              <Modal
+                open={showInfo}
+                onCancel={() => {
+                  setShowInfo(false);
+                }}
+                onOk={() => {
+                  setShowInfo(false);
+                }}
+              >
+                <VirtualRoleConfigInfo
+                  bio={form.getFieldValue("virtualRole_bio")}
+                  settings={virtualRole_settings}
+                />
+              </Modal>
+              <Button
+                onClick={() => {
+                  setShowInfo(true);
+                }}
+              >
+                {"预览"}
+              </Button>
             </Form.Item>
           </Space>
           <Tabs
