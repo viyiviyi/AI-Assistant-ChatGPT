@@ -24,6 +24,7 @@ import {
   Segmented,
   Space,
   theme,
+  Tooltip,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -363,13 +364,16 @@ export const MessageItem = ({
                 )}
               </div>
               <div
-                className={
+                className={[
+                  styleCss.top_label,
                   msg.ctxRole == "assistant"
-                    ? styleCss.label_left_top
+                    ? styleCss.top_label_assistant
                     : msg.ctxRole == "user"
-                    ? styleCss.label_right_top
-                    : undefined
-                }
+                    ? styleCss.top_label_user
+                    : msg.ctxRole == "system"
+                    ? styleCss.top_label_system
+                    : "",
+                ].join(" ")}
                 style={{
                   flex: 1,
                   display: "flex",
@@ -379,6 +383,30 @@ export const MessageItem = ({
                   lineHeight: 1.7,
                 }}
               >
+                <Tooltip
+                  placement="rightBottom"
+                  title={
+                    msg.ctxRole == "assistant"
+                      ? "助理"
+                      : msg.ctxRole == "user"
+                      ? "用户"
+                      : msg.ctxRole == "system"
+                      ? "系统"
+                      : ""
+                  }
+                >
+                  <div
+                    style={{
+                      width: 16,
+                      height: 16,
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                    }}
+                  >
+                    <span></span>
+                  </div>
+                </Tooltip>
                 {Content}
                 <div
                   className={styleCss.item_utils}

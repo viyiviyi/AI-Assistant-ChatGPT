@@ -73,20 +73,7 @@
   /* display: flex !important; */
   opacity: 0.7;
 }
-.message_box_hiddel_tool .label_right_top::before {
-  content: "";
-  border-width: 8px;
-  width: 0;
-  height: 0;
-  border-style: dotted;
-  border-color: #8888;
-  border-left-color: #0000;
-  border-bottom-color: #0000;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-.message_box_hiddel_tool .label_left_top::before {
+.message_box_hiddel_tool .top_label::before {
   content: "";
   border-width: 8px;
   width: 0;
@@ -99,6 +86,29 @@
   left: 0;
   top: 0;
 }
+
+.message_box_hiddel_tool .top_label_user::before {
+  border-color: #854eca;
+}
+.message_box_hiddel_tool .top_label_system::before {
+  border-color: #3c89e8;
+}
+.message_box_hiddel_tool .top_label_assistant::before {
+  border-color: #33bcb7;
+}
+.message_box_hiddel_tool .top_label::before {
+  content: "";
+  border-width: 8px;
+  width: 0;
+  height: 0;
+  border-style: dotted;
+  border-right-color: #0000;
+  border-bottom-color: #0000;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
 .roll_button {
   height: 90px;
   min-width: 20px;
