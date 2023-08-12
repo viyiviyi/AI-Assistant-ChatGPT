@@ -1,4 +1,3 @@
-import { isXML } from "@/components/Chat/MarkdownView";
 import { IndexedDB } from "@/core/IndexDb";
 import { Extensions } from "@/extensions/Extensions";
 import {
@@ -580,15 +579,6 @@ export class ChatManagement implements IChat {
     if (!message.text || !message.text.trim()) return message;
     message.text = message.text.trim();
     // 让纯xml内容显示正常
-    if (/^</.test(message.text) && isXML(message.text)) {
-      message.text = "```xml\n" + message.text + "\n```";
-    }
-    // 让换行符正常换行
-    message.text = message.text.replace(
-      /([!\?~。！？】）～：；”……])\n([^\n])/g,
-      "$1\n\n$2"
-    );
-
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) return message;
     message.topicId = topic.id;
