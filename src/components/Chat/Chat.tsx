@@ -3,11 +3,12 @@ import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { activityScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
-import { Layout, message, theme } from "antd";
-import React, { useContext, useState } from "react";
+import { Layout, message, Modal, theme } from "antd";
+import React, { useContext, useEffect, useState } from "react";
 import { SkipExport } from "../SkipExport";
 import { MemoChatHeader } from "./ChatHeader";
 import { MemoInputUtil } from "./InputUtil";
+import { MarkdownView } from "./MarkdownView";
 import { MemoNavigation } from "./Navigation";
 
 const { Content, Footer } = Layout;
@@ -30,7 +31,13 @@ export const Chat = () => {
   const [closeAll, setCloasAll] = useState(false);
   const screenSize = useScreenSize();
   const { chat } = useContext(ChatContext);
-
+  const [showNotice, setShowNotice] = useState(false);
+  useEffect(() => {
+    if (!window) return;
+    if (location.origin.includes("22733.site")) {
+      setShowNotice(true);
+    }
+  }, []);
   return (
     <MessageContext.Provider
       value={{
@@ -58,6 +65,25 @@ export const Chat = () => {
       >
         <SkipExport>
           <MemoChatHeader></MemoChatHeader>
+        </SkipExport>
+        <SkipExport>
+          <Modal
+            title={"重要通知"}
+            open={showNotice}
+            centered
+            onCancel={() => setShowNotice(false)}
+            onOk={() => setShowNotice(false)}
+          >
+            <MarkdownView
+              markdown={`
+### 此站点已经转移到新域名，将在不久后停止访问，请尽快导出会话并导入到新域名。
+
+---
+
+#### 新域名：[https://eaias.com/](https://eaias.com/)
+`}
+            ></MarkdownView>
+          </Modal>
         </SkipExport>
         <Layout
           style={{
