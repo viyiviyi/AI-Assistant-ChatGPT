@@ -184,6 +184,15 @@ export function usePushMessage(chat: ChatManagement) {
   const { reloadIndex } = useReloadIndex(chat);
   const { getHistory } = useGetHistory(chat);
   const pushMessage = useCallback(
+  /**
+   * 
+   * @param text 内容
+   * @param idx 目标索引
+   * @param topic 
+   * @param role 
+   * @param pushCallback 
+   * @returns 
+   */
     async function (
       text: string,
       idx: number,

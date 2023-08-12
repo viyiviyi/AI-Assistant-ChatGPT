@@ -1,7 +1,8 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { usePushMessage, useScreenSize } from "@/core/hooks";
 import {
-  activityScroll, onTextareaTab,
+  activityScroll,
+  onTextareaTab,
   scrollToBotton,
   scrollToTop
 } from "@/core/utils";
@@ -76,22 +77,16 @@ export function InputUtil() {
         });
       }
       if (!topic) return;
-      activityScroll({botton:true})
+      activityScroll({ botton: true });
       setLoading((v) => ++v);
-      pushMessage(
-        text,
-        topic.messages.length ? topic.messages.length - 1 : 0,
-        topic,
-        role,
-        () => {
-          setInputText("");
-          setRole(["user", true]);
-          if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
-          setTimeout(() => {
-            setLoading((v) => --v);
-          }, 500);
-        }
-      );
+      pushMessage(text, topic.messages.length || 0, topic, role, () => {
+        setInputText("");
+        setRole(["user", true]);
+        if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
+        setTimeout(() => {
+          setLoading((v) => --v);
+        }, 500);
+      });
       return;
     },
     [chat, inputText, role, reloadNav, setActivityTopic, pushMessage]
@@ -157,7 +152,7 @@ export function InputUtil() {
                 size="large"
                 icon={<VerticalAlignTopOutlined />}
                 onClick={() => {
-                  activityScroll({top:true});
+                  activityScroll({ top: true });
                   if (!activityTopic) return;
                   if (onlyOne) {
                     scrollToTop();
@@ -170,7 +165,7 @@ export function InputUtil() {
                 size="large"
                 icon={<VerticalAlignBottomOutlined />}
                 onClick={() => {
-                  activityScroll({botton:true});
+                  activityScroll({ botton: true });
                   if (!activityTopic) return;
                   if (onlyOne) {
                     scrollToBotton();
