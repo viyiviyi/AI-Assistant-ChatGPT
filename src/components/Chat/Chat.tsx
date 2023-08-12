@@ -1,7 +1,7 @@
 import { ChatMessage } from "@/components/Chat/ChatMessage";
 import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
-import { stopScroll } from "@/core/utils";
+import { activityScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { Layout, message, theme } from "antd";
 import React, { useContext, useState } from "react";
@@ -95,10 +95,10 @@ export const Chat = () => {
                 screenSize.width >= 1200 ? "clamp(5px,100vw - 1200px,50px)" : 0,
             }}
             onTouchMove={() => {
-              stopScroll();
+              activityScroll({});
             }}
             onWheel={() => {
-              stopScroll();
+              activityScroll({});
             }}
           >
             <MemoChatMessage />

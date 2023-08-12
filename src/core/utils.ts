@@ -115,13 +115,11 @@ export const onTextareaTab = (
   return result;
 };
 
-let toEndCache = { id: "", await: false, animation: 0 as any, to_top_id: "" };
+let toEndCache = { id: "", animation: 0 as any, to_top_id: "" };
 export function scrollToBotton(id?: string) {
   toEndCache.id = id || "";
-  if (toEndCache.await) return;
-  toEndCache.await = true;
+  if (!scrollStatus.enable) return;
   setTimeout(() => {
-    toEndCache.await = false;
     if (window) {
       const target = document.getElementById(toEndCache.id);
       const wrap = document.getElementById("content");
@@ -150,10 +148,16 @@ export function scrollToTop(id?: string) {
     }
   }, 500);
 }
-export const scrollStatus = { enable: true, enableTop: true };
-export function stopScroll() {
-  scrollStatus.enable = false;
-  scrollStatus.enableTop = false;
+const scrollStatus = { enable: true, enableTop: true };
+export function activityScroll({
+  botton,
+  top,
+}: {
+  botton?: boolean;
+  top?: boolean;
+  }) {
+  scrollStatus.enable = !!botton;
+  scrollStatus.enableTop = !botton && !!top;
   clearInterval(toEndCache.animation);
 }
 

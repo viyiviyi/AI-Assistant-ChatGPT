@@ -1,11 +1,11 @@
 import { ChatContext } from "@/core/ChatManagement";
-import { scrollStatus, scrollToBotton } from "@/core/utils";
+import { activityScroll, scrollToBotton } from "@/core/utils";
 import style from "@/styles/index.module.css";
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Switch, theme, Tooltip, Typography } from "antd";
 import React, { useContext, useState } from "react";
-import { reloadTopic } from "./MessageList";
 import { SkipExport } from "../SkipExport";
+import { reloadTopic } from "./MessageList";
 const Navigation = () => {
   const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
   const { token } = theme.useToken();
@@ -22,8 +22,16 @@ const Navigation = () => {
         <Tooltip title={"显示已勾选的上下文"}>
           <Switch
             onChange={setShowCheckeds}
-            checkedChildren={<SkipExport><EyeOutlined /></SkipExport>}
-            unCheckedChildren={<SkipExport><EyeInvisibleOutlined /></SkipExport>}
+            checkedChildren={
+              <SkipExport>
+                <EyeOutlined />
+              </SkipExport>
+            }
+            unCheckedChildren={
+              <SkipExport>
+                <EyeInvisibleOutlined />
+              </SkipExport>
+            }
           ></Switch>
         </Tooltip>
       </div>
@@ -42,7 +50,7 @@ const Navigation = () => {
               onClick={() => {
                 setActivityTopic(t);
                 reloadTopic(t.id, t.messages.length - 1);
-                scrollStatus.enable = true;
+                activityScroll({ botton: true });
                 setTimeout(() => {
                   scrollToBotton(t.messages.slice(-1)[0]?.id || t.id);
                 }, 200);
@@ -73,7 +81,7 @@ const Navigation = () => {
                       onClick={() => {
                         setActivityTopic(t);
                         reloadTopic(t.id, idx);
-                        scrollStatus.enable = true;
+                        activityScroll({ botton: true });
                         setTimeout(() => {
                           scrollToBotton(m.id);
                         }, 200);
@@ -101,7 +109,7 @@ const Navigation = () => {
                 onClick={() => {
                   setActivityTopic(t);
                   reloadTopic(t.id, m.index);
-                  scrollStatus.enable = true;
+                  activityScroll({ botton: true });
                   setTimeout(() => {
                     scrollToBotton(m.msgId);
                   }, 200);

@@ -4,7 +4,7 @@ import { CtxRole, Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "./../Models/Topic";
 import { aiServices } from "./AiService/ServiceProvider";
-import { getUuid, scrollStatus, scrollToBotton, stopScroll } from "./utils";
+import { getUuid, scrollToBotton } from "./utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{
@@ -91,10 +91,17 @@ export function useReloadIndex(chat: ChatManagement) {
 
 export const loadingMessages: { [key: string]: boolean } = {};
 const currentPullMessage = { id: "" };
+
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
   const sendMessage = useCallback(
+    /**
+     * 发送上下文给AI
+     * @param idx 最后一条上下文的索引
+     * @param topic 话题
+     * @returns
+     */
     async (idx: number, topic: TopicMessage) => {
       const aiService = aiServices.current;
       if (!aiService) return;
@@ -114,7 +121,7 @@ export function useSendMessage(chat: ChatManagement) {
       };
       if (
         topic.messages
-          .slice(Math.max(0, idx - chat.gptConfig.msgCount), idx)
+          .slice(Math.max(0, idx - chat.gptConfig.msgCount), idx + 1)
           .findIndex((f) => loadingMessages[f.id]) != -1
       )
         return;

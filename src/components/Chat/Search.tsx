@@ -1,5 +1,5 @@
 import { ChatContext } from "@/core/ChatManagement";
-import { scrollStatus, scrollToBotton } from "@/core/utils";
+import { activityScroll, scrollToBotton } from "@/core/utils";
 import { TitleTree, TopicMessage } from "@/Models/Topic";
 import style from "@/styles/index.module.css";
 import { Input, theme, Typography } from "antd";
@@ -90,7 +90,7 @@ const SearchWrap = () => {
                 setCheckedId(t.id);
                 setActivityTopic(t);
                 reloadTopic(t.id, t.messages.length - 1);
-                scrollStatus.enable = true;
+                activityScroll({ botton: true });
                 scrollToBotton(t.messages.slice(-1)[0]?.id || t.id);
               }}
             >
@@ -118,7 +118,7 @@ const SearchWrap = () => {
                   setCheckedId(m.msgId);
                   setActivityTopic(t);
                   reloadTopic(t.id, m.index);
-                  scrollStatus.enable = true;
+                  activityScroll({ botton: true });
                   setTimeout(() => {
                     scrollToBotton(m.msgId);
                   }, 500);

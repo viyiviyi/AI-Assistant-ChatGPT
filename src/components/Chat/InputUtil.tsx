@@ -1,11 +1,9 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { usePushMessage, useScreenSize } from "@/core/hooks";
 import {
-  onTextareaTab,
-  scrollStatus,
+  activityScroll, onTextareaTab,
   scrollToBotton,
-  scrollToTop,
-  stopScroll,
+  scrollToTop
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -16,7 +14,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Drawer, Input, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -78,16 +76,22 @@ export function InputUtil() {
         });
       }
       if (!topic) return;
-      scrollStatus.enable = true;
+      activityScroll({botton:true})
       setLoading((v) => ++v);
-      pushMessage(text, topic.messages.length || 0, topic, role, () => {
-        setInputText("");
-        setRole(["user", true]);
-        if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
-        setTimeout(() => {
-          setLoading((v) => --v);
-        }, 500);
-      });
+      pushMessage(
+        text,
+        topic.messages.length ? topic.messages.length - 1 : 0,
+        topic,
+        role,
+        () => {
+          setInputText("");
+          setRole(["user", true]);
+          if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
+          setTimeout(() => {
+            setLoading((v) => --v);
+          }, 500);
+        }
+      );
       return;
     },
     [chat, inputText, role, reloadNav, setActivityTopic, pushMessage]
@@ -153,9 +157,8 @@ export function InputUtil() {
                 size="large"
                 icon={<VerticalAlignTopOutlined />}
                 onClick={() => {
-                  stopScroll();
+                  activityScroll({top:true});
                   if (!activityTopic) return;
-                  scrollStatus.enableTop = true;
                   if (onlyOne) {
                     scrollToTop();
                   } else scrollToTop(activityTopic.id);
@@ -167,9 +170,8 @@ export function InputUtil() {
                 size="large"
                 icon={<VerticalAlignBottomOutlined />}
                 onClick={() => {
-                  stopScroll();
+                  activityScroll({botton:true});
                   if (!activityTopic) return;
-                  scrollStatus.enable = true;
                   if (onlyOne) {
                     scrollToBotton();
                   }
