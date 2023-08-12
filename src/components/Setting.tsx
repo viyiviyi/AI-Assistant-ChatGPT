@@ -3,7 +3,7 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService,
+  useService
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -17,7 +17,7 @@ import {
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -32,13 +32,13 @@ import {
   Select,
   Switch,
   theme,
-  Upload,
+  Upload
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import { downloadTopic } from "./Chat/ChatMessage";
-import { SkipExport } from "./SkipExport";
 import ImageUpload from "./ImageUpload";
+import { SkipExport } from "./SkipExport";
 
 export const Setting = ({
   chatMgt,
@@ -57,10 +57,12 @@ export const Setting = ({
   const [models, setModels] = useState<string[]>([]);
   const screenSize = useScreenSize();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
-  const [selectRoles, setSelectRoles] = useState({
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportConfig, setExportConfig] = useState({
     assistant: true,
     system: true,
     user: true,
+    isMarkdown: false,
   });
   const [group_background, setGroup_background] = useState(
     chatMgt?.group.background
@@ -294,76 +296,95 @@ export const Setting = ({
           </Form.Item>
           <Form.Item>
             <Button.Group style={{ width: "100%" }}>
-              <Button
-                block
-                onClick={() => {
-                  modal.confirm({
-                    title: "可选择导出的文件类型",
-                    content: (
-                      <>
-                        <p>
-                          Markdown格式是分开导出所有的话题，且不支持用于还原,
-                        </p>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          <span>指定身份，仅对md文档生效</span>
-                          <Checkbox
-                            checked={selectRoles.user}
-                            onChange={(e) => {
-                              setSelectRoles((v) => ({
-                                ...v,
-                                user: e.target.checked,
-                              }));
-                            }}
-                          >
-                            用户
-                          </Checkbox>
-                          <Checkbox
-                            checked={selectRoles.assistant}
-                            onChange={(e) => {
-                              setSelectRoles((v) => ({
-                                ...v,
-                                assistant: e.target.checked,
-                              }));
-                            }}
-                          >
-                            助理
-                          </Checkbox>
-                          <Checkbox
-                            checked={selectRoles.system}
-                            onChange={(e) => {
-                              setSelectRoles((v) => ({
-                                ...v,
-                                system: e.target.checked,
-                              }));
-                            }}
-                          >
-                            系统
-                          </Checkbox>
-                        </div>
-                      </>
-                    ),
-                    okText: "JSON",
-                    cancelText: "Markdown",
-                    onCancel: () => {
-                      chatMgt?.topics.forEach((v) => {
-                        ChatManagement.loadMessage(v).then((t) => {
-                          downloadTopic(v, false, chatMgt, selectRoles);
-                        });
+              <Modal
+                open={showExportModal}
+                centered={true}
+                title={"导出会话"}
+                onCancel={() => setShowExportModal(false)}
+                onOk={() => {
+                  if (exportConfig.isMarkdown) {
+                    chatMgt?.topics.forEach((v) => {
+                      ChatManagement.loadMessage(v).then((t) => {
+                        downloadTopic(v, false, chatMgt, exportConfig);
                       });
-                    },
-                    onOk: () => {
-                      let _chat = chatMgt!.toJson();
-                      _chat.group.background = undefined;
-                      downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
-                    },
-                  });
+                    });
+                  } else {
+                    let _chat = chatMgt!.toJson();
+                    _chat.group.background = undefined;
+                    downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
+                  }
+                  setShowExportModal(false);
                 }}
               >
+                <p>
+                  Markdown格式是分开导出所有的话题为多个文件，且不能用于还原。
+                </p>
+                <div>
+                  <Checkbox
+                    checked={exportConfig.isMarkdown}
+                    onChange={(e) => {
+                      setExportConfig((v) => ({
+                        ...v,
+                        isMarkdown: true,
+                      }));
+                    }}
+                  >
+                    {" Markdown"}
+                  </Checkbox>
+                  <Checkbox
+                    checked={!exportConfig.isMarkdown}
+                    onChange={(e) => {
+                      setExportConfig((v) => ({
+                        ...v,
+                        isMarkdown: false,
+                      }));
+                    }}
+                  >
+                    {"JSON"}
+                  </Checkbox>
+                </div>
+                {exportConfig.isMarkdown ? (
+                  <div>
+                    <p>可选需要导出的内容的角色</p>
+                    <Checkbox
+                      checked={exportConfig.user}
+                      onChange={(e) => {
+                        setExportConfig((v) => ({
+                          ...v,
+                          user: e.target.checked,
+                        }));
+                      }}
+                    >
+                      {"用户"}
+                    </Checkbox>
+                    <Checkbox
+                      checked={exportConfig.assistant}
+                      onChange={(e) => {
+                        setExportConfig((v) => ({
+                          ...v,
+                          assistant: e.target.checked,
+                        }));
+                      }}
+                    >
+                      {"助理"}
+                    </Checkbox>
+                    <Checkbox
+                      checked={exportConfig.system}
+                      onChange={(e) => {
+                        setExportConfig((v) => ({
+                          ...v,
+                          system: e.target.checked,
+                        }));
+                      }}
+                    >
+                      {"系统"}
+                    </Checkbox>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </Modal>
+              <Button block onClick={() => setShowExportModal(true)}>
                 <SkipExport>
                   <DownloadOutlined key="download" />
                 </SkipExport>

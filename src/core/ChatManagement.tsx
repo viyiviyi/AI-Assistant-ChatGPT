@@ -10,7 +10,7 @@ import {
   Topic,
   User,
   VirtualRole,
-  VirtualRoleSetting,
+  VirtualRoleSetting
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
