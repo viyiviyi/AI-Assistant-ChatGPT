@@ -1,6 +1,6 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useSendMessage } from "@/core/hooks";
-import { pagesUtil } from "@/core/utils";
+import { activityScroll, pagesUtil } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { Button } from "antd";
@@ -172,6 +172,7 @@ export function MessageList({
                 onPush(idx!);
               }}
               onSned={() => {
+                activityScroll({botton:true})
                 sendMessage(idx!, topic);
               }}
             ></MemoMessageItem>

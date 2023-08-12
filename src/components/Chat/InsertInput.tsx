@@ -1,13 +1,13 @@
 import { ChatManagement } from "@/core/ChatManagement";
 import { usePushMessage } from "@/core/hooks";
-import { onTextareaTab } from "@/core/utils";
+import { activityScroll, onTextareaTab } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
 import { Button, Input, theme } from "antd";
 import React, { useState } from "react";
-import { CtxRoleButton } from "./CtxRoleButton";
 import { SkipExport } from "../SkipExport";
+import { CtxRoleButton } from "./CtxRoleButton";
 
 // export const insertInputRef = React.createRef<HTMLInputElement>();
 function InsertInput({
@@ -28,7 +28,8 @@ function InsertInput({
   const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
 
   const onSubmit = (text: string, idx: number) => {
-    if(!text.trim()) return
+    if (!text.trim()) return;
+    activityScroll({ botton: true });
     pushMessage(text, idx, topic, role, () => {
       onHidden();
       setInsertText("");
@@ -57,7 +58,11 @@ function InsertInput({
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<SkipExport><CloseOutlined /></SkipExport>}
+            icon={
+              <SkipExport>
+                <CloseOutlined />
+              </SkipExport>
+            }
             onClick={() => {
               onHidden && onHidden();
             }}
@@ -67,7 +72,11 @@ function InsertInput({
             shape="circle"
             size="large"
             onMouseDown={(e) => e.preventDefault()}
-            icon={<SkipExport><MessageOutlined /></SkipExport>}
+            icon={
+              <SkipExport>
+                <MessageOutlined />
+              </SkipExport>
+            }
             onClick={() => {
               onSubmit(insertText, insertIndex);
             }}
