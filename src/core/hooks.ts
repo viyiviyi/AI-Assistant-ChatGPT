@@ -128,12 +128,11 @@ export function useSendMessage(chat: ChatManagement) {
       loadingMessages[result.id] = true;
 
       let isFirst = true;
-      let saveTimer = setTimeout(() => {}, 500);
       aiService.sendMessage({
         msg: topic.messages[idx],
         context: chat.getAskContext(topic, idx),
         onMessage(res) {
-          if (!topic) return;
+          if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;
             result.cloudTopicId = res.cloud_topic_id;
@@ -141,30 +140,28 @@ export function useSendMessage(chat: ChatManagement) {
           }
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
-          reloadTopic(topic.id, result.id);
           loadingMsgs[result.id] = {
             stop: res.stop,
           };
-          clearTimeout(saveTimer);
-          setTimeout(
-            () => {
-              chat.pushMessage(result, idx + 1).then((r) => {
-                result = r;
-                if (isFirst) {
-                  isFirst = false;
-                  reloadIndex(topic, idx);
-                  reloadTopic(topic.id, idx + 1);
-                  currentPullMessage.id = result.id;
-                }
-                reloadTopic(topic.id, result.id);
-                scrollToBotton(currentPullMessage.id);
-              });
-            },
-            isFirst ? 0 : 500
-          );
+          if (isFirst) {
+            isFirst = false;
+            currentPullMessage.id = result.id;
+            chat.pushMessage(result, idx + 1).then((r) => {
+              result = r;
+              reloadIndex(topic, idx);
+              reloadTopic(topic.id);
+              scrollToBotton(currentPullMessage.id);
+            });
+          } else {
+            reloadTopic(topic.id, result.id);
+            scrollToBotton(currentPullMessage.id);
+          }
           if (res.end) {
-            delete loadingMsgs[result.id];
-            delete loadingMessages[result.id];
+            chat.pushMessage(result, idx + 1).then((r) => {
+              scrollToBotton(currentPullMessage.id);
+              delete loadingMsgs[result.id];
+              delete loadingMessages[result.id];
+            });
           }
         },
         config: {

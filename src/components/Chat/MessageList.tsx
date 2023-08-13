@@ -129,6 +129,7 @@ export function MessageList({
     };
     return () => {
       delete topicRender[topic.id];
+      Object.keys(renderMessage).forEach((key) => delete renderMessage[key]);
     };
   }, [rangeMessage, renderMessage, topic, pageCount, pageSize]);
   return (
@@ -172,7 +173,7 @@ export function MessageList({
                 onPush(idx!);
               }}
               onSned={() => {
-                activityScroll({botton:true})
+                activityScroll({ botton: true });
                 sendMessage(idx!, topic);
               }}
             ></MemoMessageItem>
