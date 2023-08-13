@@ -119,13 +119,13 @@ const scroolArgsCache = {
   id: "",
   animation: 0 as any,
   to_top_id: "",
-  timer: setTimeout(() => {}, 0),
+  lastRunTime: Date.now(),
 };
 export function scrollToBotton(id?: string) {
   scroolArgsCache.id = id || "";
   if (!scrollStatus.enable) return;
-  clearTimeout(scroolArgsCache.timer);
-  scroolArgsCache.timer = setTimeout(() => {
+  if (scroolArgsCache.lastRunTime + 500 > Date.now()) return;
+  setTimeout(() => {
     if (window) {
       const wrap = document.getElementById("content");
       if (!wrap) return;
@@ -144,8 +144,8 @@ export function scrollToBotton(id?: string) {
 export function scrollToTop(id?: string) {
   scroolArgsCache.to_top_id = id || "";
   if (!scrollStatus.enableTop) return;
-  clearTimeout(scroolArgsCache.timer);
-  scroolArgsCache.timer = setTimeout(() => {
+  if (scroolArgsCache.lastRunTime + 500 > Date.now()) return;
+  setTimeout(() => {
     if (window) {
       const wrap = document.getElementById("content");
       if (!wrap) return;
