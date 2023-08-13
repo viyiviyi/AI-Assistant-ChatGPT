@@ -115,15 +115,21 @@ export const onTextareaTab = (
   return result;
 };
 
-let toEndCache = { id: "", animation: 0 as any, to_top_id: "" };
+const scroolArgsCache = {
+  id: "",
+  animation: 0 as any,
+  to_top_id: "",
+  timer: setTimeout(() => {}, 0),
+};
 export function scrollToBotton(id?: string) {
-  toEndCache.id = id || "";
+  scroolArgsCache.id = id || "";
   if (!scrollStatus.enable) return;
-  setTimeout(() => {
+  clearTimeout(scroolArgsCache.timer);
+  scroolArgsCache.timer = setTimeout(() => {
     if (window) {
-      const target = document.getElementById(toEndCache.id);
       const wrap = document.getElementById("content");
       if (!wrap) return;
+      const target = document.getElementById(scroolArgsCache.id);
       const offsetTop = target?.offsetTop || wrap.scrollHeight;
       const offsetHeight = target?.offsetHeight || 56;
       smoothScroll(
@@ -136,13 +142,14 @@ export function scrollToBotton(id?: string) {
   }, 500);
 }
 export function scrollToTop(id?: string) {
-  toEndCache.to_top_id = id || "";
+  scroolArgsCache.to_top_id = id || "";
   if (!scrollStatus.enableTop) return;
-  setTimeout(() => {
+  clearTimeout(scroolArgsCache.timer);
+  scroolArgsCache.timer = setTimeout(() => {
     if (window) {
-      const target = document.getElementById(toEndCache.to_top_id);
       const wrap = document.getElementById("content");
       if (!wrap) return;
+      const target = document.getElementById(scroolArgsCache.to_top_id);
       const offsetTop = target?.offsetTop || 56;
       smoothScroll(wrap, wrap.scrollTop, offsetTop - 56, 700);
     }
@@ -155,10 +162,10 @@ export function activityScroll({
 }: {
   botton?: boolean;
   top?: boolean;
-  }) {
+}) {
   scrollStatus.enable = !!botton;
   scrollStatus.enableTop = !botton && !!top;
-  clearInterval(toEndCache.animation);
+  clearInterval(scroolArgsCache.animation);
 }
 
 const smoothScroll = (
@@ -167,15 +174,15 @@ const smoothScroll = (
   targetPosition: number,
   duration: number
 ) => {
-  clearInterval(toEndCache.animation);
+  clearInterval(scroolArgsCache.animation);
   if (!scrollStatus.enable && !scrollStatus.enableTop) return;
   const distance = targetPosition - startPosition;
   const pixelsPerSecond = distance / (duration / 1000);
   let currentTime = 0;
-  toEndCache.animation = setInterval(() => {
+  scroolArgsCache.animation = setInterval(() => {
     currentTime += 20;
     const newPosition = startPosition + pixelsPerSecond * (currentTime / 1000);
     target.scrollTop = newPosition;
-    if (currentTime >= duration) clearInterval(toEndCache.animation);
+    if (currentTime >= duration) clearInterval(scroolArgsCache.animation);
   }, 20);
 };
