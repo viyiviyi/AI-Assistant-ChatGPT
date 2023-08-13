@@ -161,6 +161,7 @@ export function useSendMessage(chat: ChatManagement) {
               scrollToBotton(currentPullMessage.id);
               delete loadingMsgs[result.id];
               delete loadingMessages[result.id];
+              reloadTopic(topic.id, result.id);
             });
           }
         },
