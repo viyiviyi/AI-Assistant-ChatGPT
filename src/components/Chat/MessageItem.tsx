@@ -11,7 +11,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -24,7 +24,7 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip,
+  Tooltip
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -35,7 +35,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useState
 } from "react";
 import { SkipExport } from "../SkipExport";
 import { MarkdownView } from "./MarkdownView";
@@ -60,7 +60,7 @@ export const MessageItem = ({
   onSned: () => void;
   style?: CSSProperties | undefined;
 }) => {
-  const { chat, loadingMsgs, reloadNav } = useContext(ChatContext);
+  const { chatMgt: chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
@@ -69,8 +69,16 @@ export const MessageItem = ({
   const [none, setNone] = useState([]);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   useEffect(() => {
+    let timer = setTimeout(() => {}, 0);
+    let lastRenderTime = Date.now();
     renderMessage[msg.id] = () => {
-      setNone([]);
+      clearTimeout(timer);
+      if (lastRenderTime + 50 > Date.now()) {
+        return setNone([]);
+      }
+      timer = setTimeout(() => {
+        setNone([]);
+      }, 50);
     };
     return () => {
       delete renderMessage[msg.id];
@@ -158,6 +166,8 @@ export const MessageItem = ({
             onConfirm={() => {
               if (typeof loadingMsgs[msg.id]?.stop == "function")
                 loadingMsgs[msg.id]?.stop();
+              delete loadingMsgs[msg.id];
+              setNone([]);
             }}
             okText="确定"
             cancelText="取消"
@@ -349,7 +359,8 @@ export const MessageItem = ({
                       onConfirm={() => {
                         if (typeof loadingMsgs[msg.id]?.stop == "function")
                           loadingMsgs[msg.id]?.stop();
-                        else delete loadingMsgs[msg.id];
+                        delete loadingMsgs[msg.id];
+                        setNone([]);
                       }}
                       okText="确定"
                       cancelText="取消"
@@ -514,7 +525,8 @@ export const MessageItem = ({
                   onConfirm={() => {
                     if (typeof loadingMsgs[msg.id]?.stop == "function")
                       loadingMsgs[msg.id]?.stop();
-                    else delete loadingMsgs[msg.id];
+                    delete loadingMsgs[msg.id];
+                    setNone([]);
                   }}
                   okText="确定"
                   cancelText="取消"

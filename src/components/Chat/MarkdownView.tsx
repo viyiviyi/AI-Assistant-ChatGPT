@@ -14,7 +14,7 @@ import sql from "highlight.js/lib/languages/sql";
 import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
-import React, { createElement, Fragment, useEffect, useState } from "react";
+import React, { createElement, Fragment } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
 import rehypeReact from "rehype-react";
@@ -93,7 +93,6 @@ let processor = unified()
         return (
           <code className={className}>
             <SkipExport>
-              {" "}
               <CopyOutlined
                 onClick={() => {
                   if (copy(toTxt(children))) {
@@ -109,9 +108,8 @@ let processor = unified()
       },
     },
   });
-
 // 创建解析方法
-export const MarkdownView = ({
+const _MarkdownView = ({
   markdown,
   menu,
   doubleClick,
@@ -120,27 +118,19 @@ export const MarkdownView = ({
   menu?: MenuProps;
   doubleClick?: React.MouseEventHandler<HTMLDivElement>;
 }) => {
-  const [text, setText] = useState(markdown);
-  useEffect(() => {
-    let input = markdown;
-    if (/^</.test(markdown) && isXML(markdown)) {
-      // 让xml显示为xml代码
-      input = "```xml\n" + markdown + "\n```";
-    }
-    setText(
-      // 让换行符正常换行
-      input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2")
-    );
-  }, [markdown]);
-  const renderedMarkdown = processor.processSync(text).result;
+  let input = markdown;
+  if (/^</.test(markdown) && isXML(markdown)) {
+    // 让xml显示为xml代码
+    input = "```xml\n" + markdown + "\n```";
+  }
+  input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2");
+  const renderedMarkdown = processor.processSync(input).result;
   return (
     <div onDoubleClick={doubleClick}>{renderedMarkdown}</div>
-    // <Dropdown menu={menu}  trigger={["contextMenu"]}>
-
-    // </Dropdown>
   );
 };
 
+export const MarkdownView = React.memo(_MarkdownView);
 export function isXML(str: string) {
   try {
     var parser = new DOMParser();

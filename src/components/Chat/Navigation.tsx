@@ -7,7 +7,7 @@ import React, { useContext, useState } from "react";
 import { SkipExport } from "../SkipExport";
 import { reloadTopic } from "./MessageList";
 const Navigation = () => {
-  const { chat, activityTopic, setActivityTopic } = useContext(ChatContext);
+  const { chatMgt: chat, activityTopic, setActivityTopic } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [showCheckeds, setShowCheckeds] = useState(false);
   return (

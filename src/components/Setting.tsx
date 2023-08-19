@@ -200,8 +200,8 @@ export const Setting = ({
       if (!t.tokens.includes(t.current)) t.current = t.tokens[0];
       saveToken(v.key, t);
     });
-    reloadService(chatMgt, KeyValueData.instance());
-    setChat(new ChatManagement(chatMgt));
+    reloadService(chatMgt.getChat(), KeyValueData.instance());
+    setChat(chatMgt.getChat());
     onSaved();
   }
   return (
@@ -305,7 +305,12 @@ export const Setting = ({
                   if (exportConfig.isMarkdown) {
                     chatMgt?.topics.forEach((v) => {
                       ChatManagement.loadMessage(v).then((t) => {
-                        downloadTopic(v, false, chatMgt, exportConfig);
+                        downloadTopic(
+                          v,
+                          false,
+                          chatMgt.getChat(),
+                          exportConfig
+                        );
                       });
                     });
                   } else {
@@ -401,7 +406,7 @@ export const Setting = ({
                           chatMgt
                             ?.fromJson(JSON.parse(e.target.result.toString()))
                             .then((chat) => {
-                              setChat(new ChatManagement(chat));
+                              setChat(chat);
                               onCancel();
                             });
                         }
@@ -444,7 +449,7 @@ export const Setting = ({
             <Select
               style={{ width: "100%" }}
               onChange={(value, o) => {
-                let server = getServiceInstance(value, chatMgt!);
+                let server = getServiceInstance(value, chatMgt!.getChat());
                 if (!server) setModels([]);
                 server?.models().then((res) => {
                   setModels(res);
@@ -478,7 +483,6 @@ export const Setting = ({
             onChange={(keys) => setActivityKey(keys as string[])}
             expandIcon={({ isActive }) => (
               <SkipExport>
-                {" "}
                 <CaretRightOutlined rotate={isActive ? 90 : 0} />
               </SkipExport>
             )}

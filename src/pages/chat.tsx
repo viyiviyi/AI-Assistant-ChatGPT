@@ -3,7 +3,12 @@ import { Chat } from "@/components/Chat/Chat";
 import { SkipExport } from "@/components/SkipExport";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
-import { ChatContext, ChatManagement, noneChat } from "@/core/ChatManagement";
+import {
+  ChatContext,
+  ChatManagement,
+  IChat,
+  noneChat
+} from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
 import { scrollToBotton } from "@/core/utils";
@@ -74,8 +79,11 @@ export default function Page() {
   return (
     <ChatContext.Provider
       value={{
-        chat: chatMgt,
-        setChat: setChatMgt,
+        chatMgt: chatMgt,
+        setChat: (chat: IChat) => {
+          
+          setChatMgt(new ChatManagement(chat));
+        },
         activityTopic,
         loadingMsgs,
         setActivityTopic: (topic?: TopicMessage) => {

@@ -1,7 +1,7 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { getUuid } from "@/core/utils";
-import { CtxRole, VirtualRole, VirtualRoleSetting } from "@/Models/DataBase";
+import { VirtualRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -16,13 +16,13 @@ import {
   Tabs,
   Tag,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import { CSSProperties, useContext, useEffect, useState } from "react";
 import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
-import { SkipExport } from "./SkipExport";
 import ImageUpload from "./ImageUpload";
+import { SkipExport } from "./SkipExport";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
@@ -103,7 +103,7 @@ export const VirtualRoleConfig = ({
     chatMgt.user.enName = values.user_en_name;
     chatMgt.user.avatar = user_Avatar || "";
     chatMgt.saveUser();
-    setChat(new ChatManagement(chatMgt));
+    setChat(chatMgt.getChat());
     onSaved();
   }
   const tabItemStyle: CSSProperties = {

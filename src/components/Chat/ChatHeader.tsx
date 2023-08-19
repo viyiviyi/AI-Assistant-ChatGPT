@@ -1,9 +1,10 @@
 import { ChatContext } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 import {
   SearchOutlined,
   SettingOutlined,
   UnorderedListOutlined,
-  UserAddOutlined,
+  UserAddOutlined
 } from "@ant-design/icons";
 import { Avatar, Drawer, Layout, theme, Typography } from "antd";
 import Image from "next/image";
@@ -16,10 +17,9 @@ import { SkipExport } from "../SkipExport";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
 import { reloadTopic } from "./MessageList";
 import { MemoSearchWrap } from "./Search";
-import { useScreenSize } from "@/core/hooks";
 
 export const ChatHeader = () => {
-  const { chat, activityTopic } = useContext(ChatContext);
+  const { chatMgt: chat, activityTopic } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [settingIsShow, setSettingShow] = useState(false);
   const [listIsShow, setlistIsShow] = useState(false);

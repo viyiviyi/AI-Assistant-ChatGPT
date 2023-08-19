@@ -20,9 +20,11 @@ export function reloadTopic(topicId: string, messageId?: string | number) {
 export function MessageList({
   topic,
   chat,
+  firstMsgIdxRef,
 }: {
   topic: TopicMessage;
   chat: ChatManagement;
+  firstMsgIdxRef: React.MutableRefObject<number | undefined>;
 }) {
   const { reloadNav, forceRender } = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
@@ -48,6 +50,7 @@ export function MessageList({
   const { sendMessage } = useSendMessage(chat);
   const rangeMessage = useCallback(
     (pageNumber: number, isEnd = true) => {
+      msgIdIdxMap.clear();
       const { range, totalPages, pageIndex } = pagesUtil(
         topic.messages,
         pageNumber,
@@ -59,11 +62,11 @@ export function MessageList({
       steMessages(range);
       setPageNumber(pageIndex);
       topic.messages.forEach((m, idx) => {
-        msgIdIdxMap.set(m.id, idx);
+        msgIdIdxMap.set(m.id + "", idx);
       });
       return range;
     },
-    [topic, pageSize, repect, msgIdIdxMap]
+    [topic, pageSize, repect,msgIdIdxMap]
   );
   useEffect(() => {
     rangeMessage(999999999999); // 为了省事，直接写了一个几乎不可能存在的页数，会自动转换成最后一页的
@@ -72,6 +75,12 @@ export function MessageList({
     setPageSize(Math.max(0, chat.config.pageSize || 0) || 20);
     setRepect(Math.max(0, chat.config.pageRepect || 0) || 10);
   }, [chat]);
+  useEffect(() => {
+    firstMsgIdxRef.current = msgIdIdxMap.get(messages[0]?.id);
+    return () => {
+      firstMsgIdxRef.current = undefined;
+    };
+  }, [messages, firstMsgIdxRef, msgIdIdxMap]);
 
   const rBak = useCallback(
     (v: Message) => {
@@ -114,6 +123,7 @@ export function MessageList({
     setInsertIndex(idx);
   }, []);
   useEffect(() => {
+    let timer = setTimeout(() => {}, 100);
     topicRender[topic.id] = (messageId?: string | number) => {
       if (typeof messageId == "number") {
         rangeMessage(
@@ -128,6 +138,7 @@ export function MessageList({
       rangeMessage(pageCount + 1);
     };
     return () => {
+      clearTimeout(timer);
       delete topicRender[topic.id];
       Object.keys(renderMessage).forEach((key) => delete renderMessage[key]);
     };

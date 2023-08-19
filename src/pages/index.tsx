@@ -3,7 +3,7 @@ import { Chat } from "@/components/Chat/Chat";
 import { SkipExport } from "@/components/SkipExport";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig } from "@/core/BgImageStore";
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
 import { TopicMessage } from "@/Models/Topic";
@@ -33,7 +33,7 @@ export default function Page() {
   useEffect(() => {
     ChatManagement.load().then(async () => {
       initTokenStore().then(() => {
-        reloadService(chatMgt, KeyValueData.instance());
+        reloadService(chatMgt.getChat(), KeyValueData.instance());
       });
       let chats = ChatManagement.getGroups();
       // 如果不在本地保存一份，编辑是会出错的
@@ -43,15 +43,17 @@ export default function Page() {
       if (idx == -1) {
         await ChatManagement.createGroup(chatMgt.group);
       }
-      await chatMgt.fromJson(chatMgt, false);
+      await chatMgt.fromJson(chatMgt.getChat(), false);
     });
   }, [reloadService, chatMgt]);
 
   return (
     <ChatContext.Provider
       value={{
-        chat: chatMgt,
-        setChat: setChatMgt,
+        chatMgt: chatMgt,
+        setChat: (chat: IChat) => {
+          setChatMgt(new ChatManagement(chat));
+        },
         activityTopic,
         loadingMsgs,
         setActivityTopic: (topic?: TopicMessage) => {

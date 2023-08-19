@@ -25,8 +25,8 @@ export async function useInterceptorExec(
 ) {}
 
 export async function useSendBeforeInterceptor() {
-  const { chat } = useContext(ChatContext);
-  const { extensions } = Extensions.useExtension(chat);
+  const { chatMgt: chat } = useContext(ChatContext);
+  const { extensions } = Extensions.useExtension(chat.getChat());
   function onSendBeforeInterceptor(
     input: {
       msg: Message;

@@ -18,6 +18,7 @@ import { BgConfig } from "./BgImageStore";
 import { getUuid } from "./utils";
 
 const defaultChat: IChat = {
+  id: "",
   user: { id: "", name: "", groupId: "" },
   group: { id: "", name: "", index: 0 },
   virtualRole: { id: "", name: "", groupId: "", bio: "", settings: [] },
@@ -42,6 +43,7 @@ const defaultChat: IChat = {
 };
 
 export interface IChat {
+  id: string;
   user: User;
   virtualRole: VirtualRole;
   topics: TopicMessage[];
@@ -50,7 +52,7 @@ export interface IChat {
   gptConfig: GptConfig;
 }
 
-export class ChatManagement implements IChat {
+export class ChatManagement {
   constructor(chat: IChat) {
     this.topics = chat.topics || [];
     this.config = chat.config;
@@ -130,6 +132,7 @@ export class ChatManagement implements IChat {
         if (!config.botType) config.botType = "ChatGPT";
         let topics: TopicMessage[] = [];
         const chat: IChat = {
+          id: g.id,
           group: g,
           user,
           gptConfig,
@@ -236,7 +239,8 @@ export class ChatManagement implements IChat {
     }> = [];
     if (topic) {
       let messages = topic.messages;
-      if (index > -1) messages = messages.slice(0, index + 1);
+      if (index > -1) messages = messages.slice(0, index);
+      else messages = [];
       if (
         this.gptConfig.msgCount > 0 &&
         messages.length > this.gptConfig.msgCount
@@ -562,6 +566,7 @@ export class ChatManagement implements IChat {
     let config = await this.createConfig(group.id);
     let virtualRole = await this.createVirtualRoleBio(group.id);
     let chat: IChat = {
+      id: group.id,
       group,
       user,
       gptConfig,
@@ -587,7 +592,7 @@ export class ChatManagement implements IChat {
     if (insertIndex >= topic.messages.length) insertIndex = -1;
     if (insertIndex !== -1) previousMessage = topic.messages[insertIndex];
     if (message.id) {
-      let msg = topic.messages.find((f) => f.id == message.id);
+      let msg = topic.messageMap[message.id]; //.messages.find((f) => f.id == message.id);
       if (msg) {
         await getInstance().update_by_primaryKey<Message>({
           tableName: "Message",
@@ -702,6 +707,7 @@ export class ChatManagement implements IChat {
   }
   toJson(): IChat {
     let chat = {
+      id: this.group.id,
       user: this.user,
       group: this.group,
       config: this.config,
@@ -715,6 +721,9 @@ export class ChatManagement implements IChat {
       v.messageMap = {};
     });
     return chat;
+  }
+  getChat(): IChat {
+    return ChatManagement.chatList.find((f) => f.group.id == this.group.id)!;
   }
   async fromJson(json: IChat, isToFirst = true) {
     if (!json.group.createTime) json.gptConfig.role = "user";
@@ -792,8 +801,8 @@ export class ChatManagement implements IChat {
 export const noneChat = new ChatManagement(defaultChat);
 const obj: { [key: string]: any } = {};
 let context = {
-  chat: noneChat,
-  setChat: (chat: ChatManagement) => {},
+  chatMgt: noneChat,
+  setChat: (chat: IChat) => {},
   activityTopic: obj.topic as TopicMessage | undefined,
   setActivityTopic: (topic?: TopicMessage) => {
     obj.topic = topic;

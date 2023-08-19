@@ -30,7 +30,7 @@ export const Chat = () => {
   const [onlyOne, setOnlyOne] = useState(false);
   const [closeAll, setCloasAll] = useState(false);
   const screenSize = useScreenSize();
-  const { chat } = useContext(ChatContext);
+  const { chatMgt: chat } = useContext(ChatContext);
   const [showNotice, setShowNotice] = useState(false);
   useEffect(() => {
     if (!window) return;
@@ -65,25 +65,6 @@ export const Chat = () => {
       >
         <SkipExport>
           <MemoChatHeader></MemoChatHeader>
-        </SkipExport>
-        <SkipExport>
-          <Modal
-            title={"重要通知"}
-            open={showNotice}
-            centered
-            onCancel={() => setShowNotice(false)}
-            onOk={() => setShowNotice(false)}
-          >
-            <MarkdownView
-              markdown={`
-### 此站点已经转移到新域名，将在不久后停止访问，请尽快导出会话并导入到新域名。
-
----
-
-#### 新域名：[https://eaias.com/](https://eaias.com/)
-`}
-            ></MarkdownView>
-          </Modal>
         </SkipExport>
         <Layout
           style={{
@@ -145,6 +126,25 @@ export const Chat = () => {
           </SkipExport>
         </Footer>
       </div>
+      <SkipExport>
+        <Modal
+          title={"重要通知"}
+          open={showNotice}
+          centered
+          onCancel={() => setShowNotice(false)}
+          onOk={() => setShowNotice(false)}
+        >
+          <MarkdownView
+            markdown={`
+### 此站点已经转移到新域名，将在不久后停止访问，请尽快导出会话并导入到新域名。
+
+---
+
+#### 新域名：[https://eaias.com/](https://eaias.com/)
+`}
+          ></MarkdownView>
+        </Modal>
+      </SkipExport>
     </MessageContext.Provider>
   );
 };

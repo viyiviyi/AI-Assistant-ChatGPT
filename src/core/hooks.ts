@@ -95,6 +95,7 @@ const currentPullMessage = { id: "" };
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
+  const chatRef = useRef<ChatManagement>();
   const sendMessage = useCallback(
     /**
      * 发送上下文给AI
@@ -126,19 +127,30 @@ export function useSendMessage(chat: ChatManagement) {
       )
         return;
       loadingMessages[result.id] = true;
-
+      // 因为回调函数引用了chat，而编辑配置时会创建新的chat，导致旧的chat不能被回收，导致内存溢出
+      let currentChat: { current: ChatManagement | undefined } = {
+        current: chat,
+      };
       let isFirst = true;
       aiService.sendMessage({
         msg: topic.messages[idx],
-        context: chat.getAskContext(topic, idx),
+        context: currentChat.current!.getAskContext(topic, idx + 1),
         onMessage(res) {
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;
             result.cloudTopicId = res.cloud_topic_id;
-            chat.saveTopic(topic.id, topic.name, res.cloud_topic_id);
+            currentChat.current?.saveTopic(
+              topic.id,
+              topic.name,
+              res.cloud_topic_id
+            );
           }
-          result.text = res.text + (res.end ? "" : "\n\nloading...");
+          if (!res.end) {
+            result.text = res.text + "\n\nloading...";
+          } else {
+            result.text = res.text;
+          }
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           loadingMsgs[result.id] = {
             stop: res.stop,
@@ -146,7 +158,7 @@ export function useSendMessage(chat: ChatManagement) {
           if (isFirst) {
             isFirst = false;
             currentPullMessage.id = result.id;
-            chat.pushMessage(result, idx + 1).then((r) => {
+            currentChat.current?.pushMessage(result, idx + 1).then((r) => {
               result = r;
               reloadIndex(topic, idx);
               reloadTopic(topic.id);
@@ -157,17 +169,18 @@ export function useSendMessage(chat: ChatManagement) {
             scrollToBotton(currentPullMessage.id);
           }
           if (res.end) {
-            chat.pushMessage(result, idx + 1).then((r) => {
+            currentChat.current?.pushMessage(result, idx + 1).then((r) => {
               scrollToBotton(currentPullMessage.id);
               delete loadingMsgs[result.id];
               delete loadingMessages[result.id];
               reloadTopic(topic.id, result.id);
+              delete currentChat.current;
             });
           }
         },
         config: {
-          channel_id: chat.config.cloudChannelId,
-          ...chat.gptConfig,
+          channel_id: currentChat.current!.config.cloudChannelId,
+          ...currentChat.current!.gptConfig,
           user: "user",
           messages: [],
         },

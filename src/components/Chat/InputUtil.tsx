@@ -39,7 +39,7 @@ export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
   const [showNav, setShowNav] = useState(false);
-  const { chat, activityTopic, setActivityTopic, reloadNav } =
+  const { chatMgt: chat, activityTopic, setActivityTopic, reloadNav } =
     useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);

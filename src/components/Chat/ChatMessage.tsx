@@ -7,7 +7,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   MessageOutlined,
-  PlusOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,13 +17,19 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography,
+  Typography
 } from "antd";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import { SkipExport } from "../SkipExport";
 import { MessageContext } from "./Chat";
 import { MemoInsertInput } from "./InsertInput";
 import { MessageList, reloadTopic } from "./MessageList";
-import { SkipExport } from "../SkipExport";
 
 const { Panel } = Collapse;
 
@@ -32,8 +38,14 @@ const MemoMessageList = React.memo(MessageList);
 const MemoTopUtil = React.memo(TopUtil);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
-  const { chat, setActivityTopic, activityTopic, reloadNav, forceRender } =
-    useContext(ChatContext);
+  const firstMsgIdx = useRef<number>();
+  const {
+    chatMgt: chat,
+    setActivityTopic,
+    activityTopic,
+    reloadNav,
+    forceRender,
+  } = useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([
     chat.config.activityTopicId,
   ]);
@@ -99,9 +111,17 @@ export const ChatMessage = () => {
         <div style={{ padding: token.paddingContentVerticalSM }}>
           <MemoTopicTitle topic={topic} onClick={() => {}}></MemoTopicTitle>
           <div style={{ marginTop: "15px" }}>
-            <MemoTopUtil topic={topic} onDle={handlerDelete} />
+            <MemoTopUtil
+              topic={topic}
+              onDle={handlerDelete}
+              firstMsgIdxRef={firstMsgIdx}
+            />
           </div>
-          <MemoMessageList chat={chat} topic={topic}></MemoMessageList>
+          <MemoMessageList
+            chat={chat}
+            topic={topic}
+            firstMsgIdxRef={firstMsgIdx}
+          ></MemoMessageList>
         </div>
       );
     }
@@ -136,8 +156,16 @@ export const ChatMessage = () => {
           }}
         >
           <>
-            <MemoTopUtil topic={v} onDle={handlerDelete} />
-            <MemoMessageList chat={chat} topic={v}></MemoMessageList>
+            <MemoTopUtil
+              topic={v}
+              onDle={handlerDelete}
+              firstMsgIdxRef={firstMsgIdx}
+            />
+            <MemoMessageList
+              chat={chat}
+              topic={v}
+              firstMsgIdxRef={firstMsgIdx}
+            ></MemoMessageList>
           </>
         </Panel>
       ))}
@@ -148,12 +176,15 @@ export const ChatMessage = () => {
 function TopUtil({
   topic: v,
   onDle,
+  firstMsgIdxRef,
 }: {
   topic: TopicMessage;
   onDle: (topic: TopicMessage) => void;
+
+  firstMsgIdxRef: React.MutableRefObject<number | undefined>;
 }) {
   const [showInsert0, setShowInsert0] = useState(false);
-  const { chat } = useContext(ChatContext);
+  const { chatMgt: chat } = useContext(ChatContext);
   const { sendMessage } = useSendMessage(chat);
   const [selectRoles, setSelectRoles] = useState({
     assistant: true,
@@ -193,7 +224,7 @@ function TopUtil({
             </SkipExport>
           }
           onClick={() => {
-            sendMessage(-1, v);
+            sendMessage((firstMsgIdxRef.current ?? 0) - 1, v);
           }}
         ></Button>
         <span style={{ flex: 1 }}></span>
@@ -268,10 +299,10 @@ function TopUtil({
                   </>
                 }
                 onConfirm={() => {
-                  downloadTopic(v, false, chat, selectRoles);
+                  downloadTopic(v, false, chat.getChat(), selectRoles);
                 }}
                 onCancel={() => {
-                  downloadTopic(v, true, chat, selectRoles);
+                  downloadTopic(v, true, chat.getChat(), selectRoles);
                 }}
                 okText="文档"
                 cancelText="对话"
@@ -305,7 +336,7 @@ function TopicTitle({
   onClick: () => void;
 }) {
   const { token } = theme.useToken();
-  const { chat } = useContext(ChatContext);
+  const { chatMgt: chat } = useContext(ChatContext);
   const [title, setTitle] = useState(topic.name);
   const [edit, setEdit] = useState(false);
   const cancelEdit = useCallback(() => {

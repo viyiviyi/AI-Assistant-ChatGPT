@@ -6,7 +6,7 @@ import { Input, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
 import { reloadTopic } from "./MessageList";
 const SearchWrap = () => {
-  const { setActivityTopic, chat } = useContext(ChatContext);
+  const { setActivityTopic, chatMgt: chat } = useContext(ChatContext);
   const [searchText, setSearchText] = useState("");
   const [result, setResult] = useState<TopicMessage[]>([]);
   const [checkedId, setCheckedId] = useState("");
