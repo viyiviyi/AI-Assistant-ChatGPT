@@ -23,7 +23,7 @@ export class ChatGLM_API implements IAiService {
   history = undefined;
   baseUrl: string;
   tokens: ServiceTokens;
-  serverType: aiServiceType = 'Oauther';
+  serverType: aiServiceType = "Oauther";
   constructor(baseUrl: string, tokens: ServiceTokens) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
@@ -43,7 +43,7 @@ export class ChatGLM_API implements IAiService {
       text: string;
       end: boolean;
       stop?: (() => void) | undefined;
-    }) => void;
+    }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     if (context.length == 0) {

@@ -1,6 +1,6 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
-import { onTextareaTab } from "@/core/utils";
+import { onTextareaTab, throttleAndDebounce } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
@@ -69,21 +69,14 @@ export const MessageItem = ({
   const [none, setNone] = useState([]);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   useEffect(() => {
-    let timer = setTimeout(() => {}, 0);
-    let lastRenderTime = Date.now();
-    renderMessage[msg.id] = () => {
-      clearTimeout(timer);
-      if (lastRenderTime + 50 > Date.now()) {
-        return setNone([]);
-      }
-      timer = setTimeout(() => {
-        setNone([]);
-      }, 50);
-    };
+    renderMessage[msg.id] = throttleAndDebounce(() => {
+      setNone([]);
+    }, 200);
     return () => {
       delete renderMessage[msg.id];
     };
   }, [renderMessage, msg]);
+
   const saveMsg = useCallback(async () => {
     const isReloadNav =
       /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
@@ -94,6 +87,7 @@ export const MessageItem = ({
     if (topic && isReloadNav) reloadNav(topic);
     setEdit(false);
   }, [chat, setEdit, reloadNav, messageText, msg, ctxRole]);
+  
   const utilsEle = (
     <>
       <Checkbox
@@ -191,6 +185,7 @@ export const MessageItem = ({
       )}
     </>
   );
+  
   const Extend = (
     <div className={styleCss.message_extend_but} style={{ ...style }}>
       <Divider style={{ margin: 0 }}>

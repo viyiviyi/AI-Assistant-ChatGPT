@@ -186,3 +186,27 @@ const smoothScroll = (
     if (currentTime >= duration) clearInterval(scroolArgsCache.animation);
   }, 20);
 };
+
+export const throttleAndDebounce = (
+  func: (...args: any[]) => void,
+  delay: number
+): ((...args: any[]) => void) => {
+  let timerId = setTimeout(() => {}, 0);
+  let lastExecTime = 0;
+
+  return (...args: any[]) => {
+    const now = Date.now();
+    const remainingTime = delay - (now - lastExecTime);
+
+    clearTimeout(timerId);
+    if (remainingTime <= 0) {
+      func(...args);
+      lastExecTime = now;
+    } else {
+      timerId = setTimeout(() => {
+        lastExecTime = Date.now();
+        func(...args);
+      }, remainingTime);
+    }
+  };
+};

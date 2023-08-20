@@ -25,7 +25,7 @@ export interface IAiService {
       cloud_send_id?: string;
       cloud_result_id?: string;
       stop: () => void;
-    }) => void;
+    }) => Promise<void>;
     config: InputConfig;
   }): Promise<void>;
   history?: (input: {

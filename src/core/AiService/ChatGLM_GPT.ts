@@ -25,7 +25,7 @@ export class ChatGLM_GPT implements IAiService {
       text: string;
       end: boolean;
       stop?: (() => void) | undefined;
-    }) => void;
+    }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     if (context.length == 0) {
@@ -86,16 +86,17 @@ export class ChatGLM_GPT implements IAiService {
       .then(async (response) => {
         if (!response.ok) {
           onMessage &&
-            onMessage({
+            (await onMessage({
               error: true,
               end: true,
               text:
                 "\n\n 请求发生错误。\n\n" +
-                response.status +' '+
+                response.status +
+                " " +
                 response.statusText +
                 "\n\n" +
                 (await response.text()),
-            });
+            }));
           return;
         }
         const reader = response.body?.getReader();
@@ -109,7 +110,11 @@ export class ChatGLM_GPT implements IAiService {
             const { done, value } = await reader.read();
             if (done) {
               onMessage &&
-                onMessage({ error: false, end: true, text: full_response });
+                (await onMessage({
+                  error: false,
+                  end: true,
+                  text: full_response,
+                }));
               break;
             }
             const decodedValue = new TextDecoder("utf-8").decode(value);
@@ -120,7 +125,11 @@ export class ChatGLM_GPT implements IAiService {
               }
               if (line.trim() === "data: [DONE]") {
                 onMessage &&
-                  onMessage({ error: false, end: true, text: full_response });
+                  (await onMessage({
+                    error: false,
+                    end: true,
+                    text: full_response,
+                  }));
                 break;
               }
               try {
@@ -142,12 +151,12 @@ export class ChatGLM_GPT implements IAiService {
                   const content = delta.content;
                   full_response += content;
                   onMessage &&
-                    onMessage({
+                    (await onMessage({
                       error: false,
                       end: false,
                       text: full_response,
                       stop: stop,
-                    });
+                    }));
                 }
               } catch (error) {
                 console.error(error);

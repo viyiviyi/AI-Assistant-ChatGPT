@@ -4,7 +4,7 @@ import { CtxRole, Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "./../Models/Topic";
 import { aiServices } from "./AiService/ServiceProvider";
-import { getUuid, scrollToBotton } from "./utils";
+import { getUuid, scrollToBotton, throttleAndDebounce } from "./utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{
@@ -76,7 +76,7 @@ export function useReloadIndex(chat: ChatManagement) {
     (topic: TopicMessage, idx: number) => {
       if (idx + 1 >= topic.messages.length) return;
       if (idx < 0) return;
-      if (topic.messages[idx].timestamp > topic.messages[idx + 1].timestamp)
+      if (topic.messages[idx].timestamp < topic.messages[idx + 1].timestamp)
         return;
       topic.messages[idx + 1].timestamp = topic.messages[idx].timestamp + 0.001;
       chat.pushMessage(topic.messages[idx + 1]);
@@ -95,7 +95,6 @@ const currentPullMessage = { id: "" };
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
-  const chatRef = useRef<ChatManagement>();
   const sendMessage = useCallback(
     /**
      * 发送上下文给AI
@@ -108,7 +107,7 @@ export function useSendMessage(chat: ChatManagement) {
       if (!aiService) return;
       if (idx > topic.messages.length) return;
       let time = Date.now();
-      if (idx < 0 && idx < topic.messages.length)
+      if (idx < 0 )
         time = topic.messages[0].timestamp - 1;
       if (idx >= 0 && idx < topic.messages.length)
         time = topic.messages[idx].timestamp + 0.001;
@@ -132,10 +131,16 @@ export function useSendMessage(chat: ChatManagement) {
         current: chat,
       };
       let isFirst = true;
+      let save = throttleAndDebounce(async (text) => {
+        result.text = text;
+        chat.pushMessage(result, idx + 1).then((r) => {
+          result = r;
+        });
+      }, 1000);
       aiService.sendMessage({
         msg: topic.messages[idx],
         context: currentChat.current!.getAskContext(topic, idx + 1),
-        onMessage(res) {
+        async onMessage(res) {
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;
@@ -146,11 +151,7 @@ export function useSendMessage(chat: ChatManagement) {
               res.cloud_topic_id
             );
           }
-          if (!res.end) {
-            result.text = res.text + "\n\nloading...";
-          } else {
-            result.text = res.text;
-          }
+          result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           loadingMsgs[result.id] = {
             stop: res.stop,
@@ -158,24 +159,26 @@ export function useSendMessage(chat: ChatManagement) {
           if (isFirst) {
             isFirst = false;
             currentPullMessage.id = result.id;
-            currentChat.current?.pushMessage(result, idx + 1).then((r) => {
-              result = r;
-              reloadIndex(topic, idx);
-              reloadTopic(topic.id);
-              scrollToBotton(currentPullMessage.id);
-            });
+            await currentChat.current
+              ?.pushMessage(result, idx + 1)
+              .then((r) => {
+                result = r;
+                reloadIndex(topic, idx);
+                reloadTopic(topic.id);
+                scrollToBotton(currentPullMessage.id);
+                delete currentChat.current;
+              });
           } else {
+            save(result.text);
             reloadTopic(topic.id, result.id);
             scrollToBotton(currentPullMessage.id);
           }
           if (res.end) {
-            currentChat.current?.pushMessage(result, idx + 1).then((r) => {
-              scrollToBotton(currentPullMessage.id);
-              delete loadingMsgs[result.id];
-              delete loadingMessages[result.id];
-              reloadTopic(topic.id, result.id);
-              delete currentChat.current;
-            });
+            save(res.text);
+            delete loadingMsgs[result.id];
+            delete loadingMessages[result.id];
+            reloadTopic(topic.id, result.id);
+            scrollToBotton(currentPullMessage.id);
           }
         },
         config: {

@@ -14,19 +14,22 @@ import sql from "highlight.js/lib/languages/sql";
 import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
-import React, { createElement, Fragment } from "react";
+import React, {
+  createElement,
+  Fragment, useMemo
+} from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
 import rehypeReact from "rehype-react";
-import rehypeStringify from "rehype-stringify";
-import remarkFrontmatter from "remark-frontmatter";
+// import rehypeStringify from "rehype-stringify";
+// import remarkFrontmatter from "remark-frontmatter";
+// import rehypeFormat from 'rehype-format';
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { SkipExport } from "../SkipExport";
-
 function toTxt(node: React.ReactNode): string {
   let str = "";
   if (Array.isArray(node)) {
@@ -63,8 +66,8 @@ let processor = unified()
     },
   })
   .use(rehypeMathjax)
-  .use(remarkFrontmatter, ["yaml", "toml"])
-  .use(rehypeStringify)
+  // .use(remarkFrontmatter, ["yaml", "toml"])
+  // .use(rehypeFormat, {indent:4})
   .use(rehypeReact, {
     createElement,
     Fragment,
@@ -108,6 +111,7 @@ let processor = unified()
       },
     },
   });
+
 // 创建解析方法
 const _MarkdownView = ({
   markdown,
@@ -118,25 +122,40 @@ const _MarkdownView = ({
   menu?: MenuProps;
   doubleClick?: React.MouseEventHandler<HTMLDivElement>;
 }) => {
-  let input = markdown;
-  if (/^</.test(markdown) && isXML(markdown)) {
-    // 让xml显示为xml代码
-    input = "```xml\n" + markdown + "\n```";
-  }
-  input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2");
-  const renderedMarkdown = processor.processSync(input).result;
-  return (
-    <div onDoubleClick={doubleClick}>{renderedMarkdown}</div>
-  );
+  const renderedContent = useMemo(() => {
+    return processor.processSync(pipe(markdown)).result;
+  }, [markdown]);
+  return <div onDoubleClick={doubleClick}>{renderedContent}</div>;
 };
 
 export const MarkdownView = React.memo(_MarkdownView);
 export function isXML(str: string) {
   try {
     var parser = new DOMParser();
-    var xmlDoc = parser.parseFromString(str, "text/xml");
+    parser.parseFromString(str, "text/xml");
     return true;
   } catch (error) {
     return false;
   }
+}
+
+const renderPipes: Array<(input: string) => string> = [
+  (input) => {
+    if (/^</.test(input) && isXML(input)) {
+      // 让xml显示为xml代码
+      return "```xml\n" + input + "\n```";
+    }
+    return input;
+  },
+  (input) => {
+    return input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2");
+  },
+];
+
+function pipe(input: string): string {
+  let output = input;
+  renderPipes.forEach((func) => {
+    output = func(output);
+  });
+  return output;
 }

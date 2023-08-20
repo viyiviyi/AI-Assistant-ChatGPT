@@ -39,7 +39,7 @@ export class SlackClaude implements IAiService {
       cloud_send_id?: string;
       cloud_result_id?: string;
       stop?: () => void;
-    }) => void;
+    }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     if (!config.channel_id)

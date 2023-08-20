@@ -49,8 +49,8 @@ export function MessageList({
   const [msgIdIdxMap] = useState(new Map<string, number>());
   const { sendMessage } = useSendMessage(chat);
   const rangeMessage = useCallback(
-    (pageNumber: number, isEnd = true) => {
-      msgIdIdxMap.clear();
+    (pageNumber: number = pageCount + 1, isEnd = true) => {
+      console.log(topic.messages.length, topic.messages);
       const { range, totalPages, pageIndex } = pagesUtil(
         topic.messages,
         pageNumber,
@@ -61,12 +61,13 @@ export function MessageList({
       setPageCount(totalPages);
       steMessages(range);
       setPageNumber(pageIndex);
+      msgIdIdxMap.clear();
       topic.messages.forEach((m, idx) => {
         msgIdIdxMap.set(m.id + "", idx);
       });
       return range;
     },
-    [topic, pageSize, repect,msgIdIdxMap]
+    [topic, pageSize, repect, msgIdIdxMap, pageCount]
   );
   useEffect(() => {
     rangeMessage(999999999999); // 为了省事，直接写了一个几乎不可能存在的页数，会自动转换成最后一页的
@@ -123,7 +124,6 @@ export function MessageList({
     setInsertIndex(idx);
   }, []);
   useEffect(() => {
-    let timer = setTimeout(() => {}, 100);
     topicRender[topic.id] = (messageId?: string | number) => {
       if (typeof messageId == "number") {
         rangeMessage(
@@ -135,14 +135,13 @@ export function MessageList({
       if (messageId) {
         return renderMessage[messageId] && renderMessage[messageId]();
       }
-      rangeMessage(pageCount + 1);
+      rangeMessage();
     };
     return () => {
-      clearTimeout(timer);
       delete topicRender[topic.id];
       Object.keys(renderMessage).forEach((key) => delete renderMessage[key]);
     };
-  }, [rangeMessage, renderMessage, topic, pageCount, pageSize]);
+  }, [rangeMessage, renderMessage, topic, pageSize]);
   return (
     <>
       {pageNumber > 1 ? (
