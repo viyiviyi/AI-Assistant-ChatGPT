@@ -1,4 +1,5 @@
 import { ChatManagement, IChat } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 
 import { Button, theme } from "antd";
 import { useRouter } from "next/router";
@@ -8,6 +9,7 @@ import { Groups } from "./Groups";
 export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
   const router = useRouter();
   const { token } = theme.useToken();
+  const screenSize = useScreenSize();
 
   return (
     <>
@@ -18,7 +20,7 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          maxHeight: "100%",
+          maxHeight: screenSize.height - 150,
         }}
       >
         <div

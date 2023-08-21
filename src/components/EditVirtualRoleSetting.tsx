@@ -1,6 +1,7 @@
 import { getUuid } from "@/core/utils";
 import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+
 import {
   Button,
   Checkbox,
@@ -12,6 +13,7 @@ import {
   Select,
   theme
 } from "antd";
+import copy from "copy-to-clipboard";
 import { useState } from "react";
 import { DragList } from "./DragList";
 import { SkipExport } from "./SkipExport";
@@ -62,6 +64,39 @@ export function EditVirtualRoleSetting({
         autoComplete="off"
         initialValues={item}
       >
+        <Form.Item>
+          <Button.Group>
+            <Button
+              onClick={() => {
+                copy(JSON.stringify(item));
+              }}
+            >
+              复制
+            </Button>
+            <Button
+              onClick={() => {
+                navigator?.clipboard.readText().then((text) => {
+                  try {
+                    if (!text) return;
+                    let res = JSON.parse(text) as VirtualRoleSetting;
+                    if (!res) return;
+                    setTags(res.tags);
+                    setTitle(res.title);
+                    setCtx(res.ctx.map((v) => ({ ...v, key: getUuid() })));
+                  } catch (err) {
+                    item.ctx.push({
+                      role: "system",
+                      content: text,
+                      checked: true,
+                    });
+                  }
+                });
+              }}
+            >
+              粘贴
+            </Button>
+          </Button.Group>
+        </Form.Item>
         <Form.Item validateTrigger={["onChange", "onBlur"]}>
           <Input.TextArea
             placeholder="标题，不影响上下文，可不填"

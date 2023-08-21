@@ -79,10 +79,7 @@ export const Chat = () => {
               overflow: "auto",
               lineHeight: 1,
               borderRadius: token.borderRadius,
-              backgroundColor:
-                chat.config.renderType == "document"
-                  ? token.colorInfoBg
-                  : token.colorFillContent,
+              backgroundColor:token.colorFillContent,
             }}
           >
             <MemoNavigation></MemoNavigation>
@@ -92,10 +89,7 @@ export const Chat = () => {
             style={{
               overflow: "auto",
               borderRadius: token.borderRadius,
-              backgroundColor:
-                chat.config.renderType == "document"
-                  ? token.colorInfoBg
-                  : token.colorFillContent,
+              backgroundColor:token.colorFillContent,
               width: "100%",
               maxWidth: "100%",
               marginLeft:

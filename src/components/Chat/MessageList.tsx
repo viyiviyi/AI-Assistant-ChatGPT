@@ -50,7 +50,6 @@ export function MessageList({
   const { sendMessage } = useSendMessage(chat);
   const rangeMessage = useCallback(
     (pageNumber: number = pageCount + 1, isEnd = true) => {
-      console.log(topic.messages.length, topic.messages);
       const { range, totalPages, pageIndex } = pagesUtil(
         topic.messages,
         pageNumber,

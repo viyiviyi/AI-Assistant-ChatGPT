@@ -114,10 +114,7 @@ export function InputUtil() {
           width: "100%",
           padding: "0px 10px 10px",
           borderRadius: token.borderRadius,
-          backgroundColor:
-            chat.config.renderType == "document"
-              ? token.colorInfoBg
-              : token.colorFillContent,
+          backgroundColor: token.colorFillContent,
         }}
       >
         <div

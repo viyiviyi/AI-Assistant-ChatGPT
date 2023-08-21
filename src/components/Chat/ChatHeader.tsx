@@ -41,10 +41,7 @@ export const ChatHeader = () => {
         position: "relative",
         borderRadius:
           "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",
-        backgroundColor:
-          chat.config.renderType == "document"
-            ? token.colorInfoBg
-            : token.colorFillContent,
+        backgroundColor: token.colorFillContent,
       }}
     >
       <Avatar
@@ -97,7 +94,6 @@ export const ChatHeader = () => {
         />
       </SkipExport>
       <SkipExport>
-        {" "}
         <SettingOutlined
           onClick={() => setSettingShow(!settingIsShow)}
           style={{ padding: "5px 10px" }}
@@ -129,7 +125,6 @@ export const ChatHeader = () => {
       ></Modal>
       <Modal
         isShow={settingIsShow}
-        maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
           setSettingShow(false);
         }}
@@ -147,7 +142,6 @@ export const ChatHeader = () => {
       ></Modal>
       <Modal
         isShow={listIsShow}
-        maxHight={"calc(70vh + 84px)"}
         onCancel={() => {
           setlistIsShow(false);
         }}

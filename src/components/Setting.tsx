@@ -209,7 +209,7 @@ export const Setting = ({
       <Form form={form} layout="vertical" autoComplete="off">
         <div
           style={{
-            maxHeight: "70vh",
+            maxHeight: screenSize.height - 200,
             width: "min(90vw, 500px)",
             overflow: "auto",
             padding: token.paddingContentHorizontalSM + "px",

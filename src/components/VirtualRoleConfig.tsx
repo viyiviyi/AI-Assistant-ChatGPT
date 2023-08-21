@@ -1,4 +1,5 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
 import { getUuid } from "@/core/utils";
 import { VirtualRole, VirtualRoleSetting } from "@/Models/DataBase";
@@ -46,6 +47,7 @@ export const VirtualRoleConfig = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [showInfo, setShowInfo] = useState(false);
+  const screenSize = useScreenSize();
   const [virtualRole_settings, setVirtualRole_settings] = useState(
     chatMgt?.virtualRole.settings?.map((v, i) => ({
       ...v,
@@ -107,7 +109,7 @@ export const VirtualRoleConfig = ({
     onSaved();
   }
   const tabItemStyle: CSSProperties = {
-    maxHeight: "calc(100vh - 350px)",
+    maxHeight: screenSize.height - 350,
     overflow: "auto",
   };
   function isShow(
@@ -563,7 +565,7 @@ export const VirtualRoleConfig = ({
           <Space size={32}>
             <Form.Item
               name="virtualRole_enable"
-              label="启用助理"
+              label="启用"
               valuePropName="checked"
             >
               <Switch></Switch>
