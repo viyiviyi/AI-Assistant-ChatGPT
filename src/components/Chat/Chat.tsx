@@ -101,7 +101,7 @@ export const Chat = () => {
             <div
               style={{
                 display: "flex",
-                maxHeight: screenSize.height - 160,
+                height: screenSize.height - 160,
               }}
             >
               <Layout.Sider
@@ -161,7 +161,7 @@ export const Chat = () => {
                 <div
                   style={{
                     maxWidth: 1100,
-                    width: "auto",
+                    width: "100%",
                     minWidth: 300,
                   }}
                 >
