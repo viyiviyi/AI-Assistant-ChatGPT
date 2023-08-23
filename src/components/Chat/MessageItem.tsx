@@ -342,7 +342,7 @@ export const MessageItem = ({
                 style={{
                   flex: 1,
                   display: "flex",
-                  padding: "0 5px",
+                  padding: "0 5px 0 20px",
                   flexDirection:
                     msg.ctxRole == "assistant" ? "row" : "row-reverse",
                 }}
