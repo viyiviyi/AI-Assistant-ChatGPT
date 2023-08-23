@@ -37,7 +37,7 @@ export const ChatHeader = () => {
         alignItems: "center",
         marginBottom: "3px",
         padding: "10px",
-        height: "52px",
+        height: 52,
         position: "relative",
         borderRadius:
           "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",

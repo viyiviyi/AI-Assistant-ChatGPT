@@ -6,7 +6,7 @@ import {
   arrayMove,
   SortableContext,
   useSortable,
-  verticalListSortingStrategy,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React, { useEffect, useState } from "react";
@@ -17,11 +17,13 @@ export function DragList<T>({
   itemDom,
   onChange,
   style,
+  centenDrag = false,
 }: {
   data: Array<T & { key: string }>;
   itemDom: (item: T, index: number) => React.ReactElement | undefined;
   onChange: (data: T[]) => void;
   style?: React.CSSProperties;
+  centenDrag?: boolean;
 }) {
   const [dataSource, setDataSource] =
     useState<Array<T & { key: string }>>(data);
@@ -61,6 +63,7 @@ export function DragList<T>({
 }
 interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   "data-row-key": string;
+  centenDrag?: boolean;
 }
 function Row({ children, ...props }: RowProps) {
   const {
@@ -88,10 +91,13 @@ function Row({ children, ...props }: RowProps) {
       style={{ ...style, width: "100%" }}
       {...attributes}
     >
-      <div style={{ display: "flex", width: "100%" }}>
+      <div
+        style={{ display: "flex", width: "100%" }}
+        ref={props.centenDrag ? setActivatorNodeRef : undefined}
+      >
         <SkipExport>
           <MenuOutlined
-            ref={setActivatorNodeRef}
+            ref={props.centenDrag ? undefined : setActivatorNodeRef}
             style={{ touchAction: "none", cursor: "move" }}
             {...listeners}
           />

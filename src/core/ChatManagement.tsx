@@ -527,7 +527,7 @@ export class ChatManagement {
       id: getUuid(),
       name: "助理",
       groupId,
-      bio: `接下来，请输出多方面验证后可行或正确的内容，尽可能输出最好的内容，请专业、客观的输出内容。`,
+      bio: ``,
       settings: [],
     };
     await getInstance().insert<VirtualRole>({ tableName: "VirtualRole", data });

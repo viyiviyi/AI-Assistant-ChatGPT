@@ -80,7 +80,7 @@ const ImageUpload = ({
           (renderSize.width / renderSize.height) *
             (Math.min(renderSize.height, screenSize.height) -
               210 / screenSize.devicePixelRatio) +
-          40 / screenSize.devicePixelRatio
+          40
         }
       >
         <div style={{ marginTop: "30px", width: "100%" }}>
@@ -111,7 +111,7 @@ const ImageUpload = ({
                   maxWidth:
                     (renderSize.width / renderSize.height) *
                     (Math.min(renderSize.height, screenSize.height) -
-                      210 / screenSize.devicePixelRatio),
+                      210 / screenSize.devicePixelRatio)-40,
                   height: "auto",
                 }}
                 ref={(editor) => setEditor(editor)}

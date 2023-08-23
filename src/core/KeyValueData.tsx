@@ -55,9 +55,29 @@ export class KeyValueData {
       save ? val : ""
     );
   }
+  private _UIConfig: UIConfig = {};
+  getUIConfig(): UIConfig {
+    if (this._slackProxyUrl) return this._UIConfig;
+    try {
+      return JSON.parse(
+        this.provider.getItem(this.dataKeyPrefix + "UIConfig") || "{}"
+      );
+    } catch {
+      return {};
+    }
+  }
+  setUIConfig(val: UIConfig, save: boolean = true) {
+    this._UIConfig = { ...this._UIConfig, ...val };
+    this.provider.setItem(
+      this.dataKeyPrefix + "UIConfig",
+      save ? JSON.stringify(this._UIConfig) : "{}"
+    );
+  }
   static instance(): KeyValueData {
     return KeyValueData._instance
       ? KeyValueData._instance
       : new KeyValueData(localStorage);
   }
 }
+
+type UIConfig = { showNav?: boolean; showConfigPanl?: boolean };
