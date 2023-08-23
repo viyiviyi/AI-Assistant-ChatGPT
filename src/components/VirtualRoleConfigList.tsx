@@ -79,6 +79,7 @@ export const VirtualRoleConfigList = () => {
   };
   useEffect(() => {
     save();
+    chatMgt.saveVirtualRoleBio()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [virtualRole_settings]);
   return (
