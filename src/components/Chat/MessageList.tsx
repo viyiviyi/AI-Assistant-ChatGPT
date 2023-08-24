@@ -5,6 +5,7 @@ import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { Button } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
+import { Hidden } from "../Hidden";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
 import { MemoInsertInput } from "./InsertInput";
@@ -40,6 +41,7 @@ export function MessageList({
   );
   const [pageNumber, setPageNumber] = useState(pageCount);
   const [insertIndex, setInsertIndex] = useState(-1);
+  const [countChar, setCountChar] = useState(0);
   const [renderMessage] = useState<{ [key: string]: () => void }>({});
   const [messages, steMessages] = useState<Message[]>([
     ...(forceRender
@@ -61,9 +63,12 @@ export function MessageList({
       steMessages(range);
       setPageNumber(pageIndex);
       msgIdIdxMap.clear();
+      let charCount = 0;
       topic.messages.forEach((m, idx) => {
         msgIdIdxMap.set(m.id + "", idx);
+        charCount += m.text.length;
       });
+      setCountChar(charCount);
       return range;
     },
     [topic, pageSize, repect, msgIdIdxMap, pageCount]
@@ -202,6 +207,13 @@ export function MessageList({
         );
       })}
 
+      <Hidden
+        hidden={chat.config.renderType != "document" || chat.topics.length < 1}
+      >
+        <div style={{ fontSize: ".8em", textAlign: "center" }}>
+          <span>字数统计：{countChar}</span>
+        </div>
+      </Hidden>
       {pageNumber < pageCount ? (
         <Button.Group style={{ width: "100%", marginTop: "2em" }}>
           <Button

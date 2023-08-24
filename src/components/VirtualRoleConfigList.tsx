@@ -79,11 +79,11 @@ export const VirtualRoleConfigList = () => {
   };
   useEffect(() => {
     save();
-    chatMgt.saveVirtualRoleBio()
+    chatMgt.saveVirtualRoleBio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [virtualRole_settings]);
   return (
-    <Form>
+    <Form style={{height:'100%',overflow:'auto'}}>
       <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
         <Input.Search
           placeholder={"搜索关键字"}
@@ -128,9 +128,9 @@ export const VirtualRoleConfigList = () => {
               <div
                 style={{
                   flex: 1,
+                  width: 0,
                   marginLeft: 10,
                   display: "flex",
-                  width: 0,
                   cursor: "pointer",
                 }}
               >
@@ -150,7 +150,7 @@ export const VirtualRoleConfigList = () => {
                   }}
                 />
                 <div
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, width: 0 }}
                   onClick={() => {
                     item.edit = true;
                     setVirtualRole_settings((v) => [...v]);
@@ -163,10 +163,7 @@ export const VirtualRoleConfigList = () => {
                         paddingBottom: 2,
                       }}
                     >
-                      <Typography.Text
-                        ellipsis
-                        style={{ width: 260 }}
-                      >
+                      <Typography.Text ellipsis style={{ width: "100%" }}>
                         {item.tags
                           .slice(0, Math.min(item.tags.length, 3))
                           .map((v) => (
@@ -180,11 +177,7 @@ export const VirtualRoleConfigList = () => {
                   ) : (
                     <></>
                   )}
-                  <Typography.Text
-                    style={{ width: 260 }}
-                    // type="secondary"
-                    ellipsis={true}
-                  >
+                  <Typography.Text style={{ width: "100%" }} ellipsis={true}>
                     {item.ctx.length
                       ? item.ctx
                           .filter((v) => v.checked)
@@ -195,7 +188,7 @@ export const VirtualRoleConfigList = () => {
                 </div>
                 <div
                   style={{
-                    width: 30,
+                    // width: 30,
                     display: "flex",
                     justifyContent: "flex-end",
                   }}
@@ -230,7 +223,7 @@ export const VirtualRoleConfigList = () => {
             ) : undefined;
           }}
         />
-        <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
+        <Form.Item>
           <Button
             ghost
             type="dashed"
@@ -297,7 +290,7 @@ export const VirtualRoleConfigList = () => {
                   }}
                 />
                 <div
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, width: 0 }}
                   onClick={() => {
                     item.edit = true;
                     setVirtualRole_settings((v) => [...v]);
@@ -310,10 +303,7 @@ export const VirtualRoleConfigList = () => {
                         paddingBottom: 2,
                       }}
                     >
-                      <Typography.Text
-                        ellipsis
-                        style={{ width: "min(100vw - 150px, 400px)" }}
-                      >
+                      <Typography.Text ellipsis style={{ width: "100%" }}>
                         {item.tags
                           .slice(0, Math.min(item.tags.length, 3))
                           .map((v) => (
@@ -328,7 +318,7 @@ export const VirtualRoleConfigList = () => {
                     <></>
                   )}
                   <Typography.Text
-                    style={{ width: "min(100vw - 150px, 400px)" }}
+                    style={{ width: "100%" }}
                     type="secondary"
                     ellipsis={true}
                   >
@@ -377,7 +367,7 @@ export const VirtualRoleConfigList = () => {
             ) : undefined;
           }}
         />
-        <Form.Item extra="当助理模式开启时，这些内容将追加在上下文最后面">
+        <Form.Item>
           <Button
             ghost
             type="dashed"

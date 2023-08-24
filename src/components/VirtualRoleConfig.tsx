@@ -273,7 +273,7 @@ export const VirtualRoleConfig = ({
                   }}
                 />
                 <div
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, width: 0 }}
                   onClick={() => {
                     item.edit = true;
                     setVirtualRole_settings((v) => [...v]);
@@ -286,10 +286,7 @@ export const VirtualRoleConfig = ({
                         paddingBottom: 2,
                       }}
                     >
-                      <Typography.Text
-                        ellipsis
-                        style={{ width: "min(100vw - 150px, 400px)" }}
-                      >
+                      <Typography.Text ellipsis style={{ width: "100%" }}>
                         {item.tags
                           .slice(0, Math.min(item.tags.length, 3))
                           .map((v) => (
@@ -304,7 +301,7 @@ export const VirtualRoleConfig = ({
                     <></>
                   )}
                   <Typography.Text
-                    style={{ width: "min(100vw - 150px, 400px)" }}
+                    style={{ width: "100%" }}
                     type="secondary"
                     ellipsis={true}
                   >
@@ -419,7 +416,7 @@ export const VirtualRoleConfig = ({
                   }}
                 />
                 <div
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, width: 0 }}
                   onClick={() => {
                     item.edit = true;
                     setVirtualRole_settings((v) => [...v]);
@@ -432,10 +429,7 @@ export const VirtualRoleConfig = ({
                         paddingBottom: 2,
                       }}
                     >
-                      <Typography.Text
-                        ellipsis
-                        style={{ width: "min(100vw - 150px, 400px)" }}
-                      >
+                      <Typography.Text ellipsis style={{ width: "100%" }}>
                         {item.tags
                           .slice(0, Math.min(item.tags.length, 3))
                           .map((v) => (
@@ -450,7 +444,7 @@ export const VirtualRoleConfig = ({
                     <></>
                   )}
                   <Typography.Text
-                    style={{ width: "min(100vw - 150px, 400px)" }}
+                    style={{ width: "100%" }}
                     type="secondary"
                     ellipsis={true}
                   >

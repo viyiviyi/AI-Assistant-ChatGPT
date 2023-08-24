@@ -55,6 +55,22 @@ export const Chat = () => {
       showConfigPanl: showConfigs,
     });
   }, [showNav, showConfigs]);
+  useEffect(() => {
+    setShowConfigs((v) => {
+      if (showNav && v && screenSize.width < 1300) {
+        return false;
+      }
+      return v;
+    });
+  }, [showNav, screenSize]);
+  useEffect(() => {
+    setShowNav((v) => {
+      if (showConfigs && v && screenSize.width < 1300) {
+        return false;
+      }
+      return v;
+    });
+  }, [showConfigs, screenSize]);
   return (
     <MessageContext.Provider
       value={{
@@ -76,7 +92,6 @@ export const Chat = () => {
           height: "100%",
           width: "100%",
           maxHeight: "100%",
-          // maxWidth: "min(1500px, 100%)",
           margin: "0 auto",
         }}
       >
@@ -93,7 +108,6 @@ export const Chat = () => {
             style={{
               display: "inline-flex",
               margin: "0 auto",
-              width: screenSize.width < 1460 ? "100%" : "auto",
               flexDirection: "column",
               position: "relative",
             }}
@@ -142,13 +156,10 @@ export const Chat = () => {
               </Hidden>
 
               <Content
-                id="content"
                 style={{
-                  overflow: "auto",
                   borderRadius: token.borderRadius,
                   backgroundColor: token.colorFillContent,
-                  width: "auto",
-                  // maxWidth: "100%",
+                  // width: "auto",
                   display: "flex",
                 }}
                 onTouchMove={() => {
@@ -159,9 +170,21 @@ export const Chat = () => {
                 }}
               >
                 <div
+                  id="content"
                   style={{
+                    height: "100%",
+                    overflow: "auto",
                     maxWidth: 1100,
-                    width: "100%",
+                    width:
+                      screenSize.width >= 1200
+                        ? screenSize.width -
+                          (showConfigs ? 340 : 0) -
+                          (showNav
+                            ? 300 +
+                              Math.min(50, Math.max(5, screenSize.width - 1200))
+                            : 0) -
+                          120
+                        : "100vw",
                     minWidth: 300,
                   }}
                 >
@@ -187,7 +210,9 @@ export const Chat = () => {
                 <MemoInputUtil></MemoInputUtil>
               </div>
             </SkipExport>
-            <Hidden hidden={screenSize.width < 1700}>
+            <Hidden
+              hidden={screenSize.width > 1460 ? false : screenSize.width < 1200}
+            >
               <div style={{ position: "absolute", right: -40, bottom: 10 }}>
                 <Button
                   type="text"
