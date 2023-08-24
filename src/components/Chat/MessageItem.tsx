@@ -11,7 +11,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -24,7 +24,7 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip
+  Tooltip,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -35,7 +35,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState
+  useState,
 } from "react";
 import { SkipExport } from "../SkipExport";
 import { MarkdownView } from "./MarkdownView";
@@ -87,7 +87,7 @@ export const MessageItem = ({
     if (topic && isReloadNav) reloadNav(topic);
     setEdit(false);
   }, [chat, setEdit, reloadNav, messageText, msg, ctxRole]);
-  
+
   const utilsEle = (
     <>
       <Checkbox
@@ -185,7 +185,7 @@ export const MessageItem = ({
       )}
     </>
   );
-  
+
   const Extend = (
     <div className={styleCss.message_extend_but} style={{ ...style }}>
       <Divider style={{ margin: 0 }}>
@@ -418,11 +418,93 @@ export const MessageItem = ({
                   className={styleCss.item_utils}
                   style={{
                     display: "flex",
-                    borderTop: "1px solid #ccc3",
                     justifyContent: "flex-end",
                   }}
                 >
-                  {utilsEle}
+                  <Checkbox
+                    disabled={!aiService?.customContext}
+                    checked={msg.checked || false}
+                    onChange={(e) => {
+                      msg.checked = e.target.checked;
+                      chat.pushMessage(msg);
+                      setNone([]);
+                    }}
+                  >
+                    <span>
+                      {"字数："}
+                      {msg.text.length}
+                    </span>
+                  </Checkbox>
+                  <span
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setEdit(false);
+                    }}
+                    style={{ flex: 1 }}
+                  ></span>
+                  {edit ? (
+                    <SkipExport>
+                      <SaveOutlined
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={saveMsg}
+                        style={{ marginLeft: "16px" }}
+                      />
+                    </SkipExport>
+                  ) : (
+                    <></>
+                  )}
+                  <span style={{ marginLeft: "16px" }}></span>
+                  <SkipExport>
+                    <EditOutlined
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        if (!edit) setMessage(msg.text);
+                        setEdit(!edit);
+                      }}
+                    />
+                  </SkipExport>
+                  <span style={{ marginLeft: "16px" }}></span>
+                  <SkipExport>
+                    <CopyOutlined
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        if (copy(msg.text.toString())) {
+                          message.success("已复制");
+                        }
+                      }}
+                    />
+                  </SkipExport>
+                  <span style={{ marginLeft: "30px" }}></span>
+                  {loadingMsgs[msg.id] ? (
+                    <SkipExport>
+                      <Popconfirm
+                        title="确定停止？"
+                        onConfirm={() => {
+                          if (typeof loadingMsgs[msg.id]?.stop == "function")
+                            loadingMsgs[msg.id]?.stop();
+                          delete loadingMsgs[msg.id];
+                          setNone([]);
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <PauseOutlined></PauseOutlined>
+                      </Popconfirm>
+                    </SkipExport>
+                  ) : (
+                    <SkipExport>
+                      <Popconfirm
+                        title="确定删除？"
+                        onConfirm={() => {
+                          onDel(msg);
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <DeleteOutlined></DeleteOutlined>
+                      </Popconfirm>
+                    </SkipExport>
+                  )}
                 </div>
               </div>
             </div>
@@ -449,7 +531,7 @@ export const MessageItem = ({
             borderTop: "1px solid #ccc3",
             justifyContent: "flex-end",
             padding: "5px 5px",
-            opacity: 0.7,
+            opacity: 0.6,
           }}
         >
           {utilsEle}
@@ -550,7 +632,6 @@ export const MessageItem = ({
           >
             {Content}
             <div
-              className=""
               style={{
                 display: "flex",
                 borderTop: "1px solid #ccc3",

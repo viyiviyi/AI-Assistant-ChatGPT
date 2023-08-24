@@ -67,7 +67,7 @@
 }
 .message_box_hiddel_tool .item_utils {
   /* display: none !important; */
-  opacity: 0;
+  opacity: 0.2;
 }
 .message_box_hiddel_tool:hover .item_utils {
   /* display: flex !important; */
