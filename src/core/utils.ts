@@ -123,6 +123,7 @@ const scroolArgsCache = {
 };
 export function scrollToBotton(id?: string) {
   scroolArgsCache.id = id || "";
+  console.log(id);
   if (!scrollStatus.enable) return;
   if (scroolArgsCache.lastRunTime + 500 > Date.now()) return;
   setTimeout(() => {
@@ -130,7 +131,7 @@ export function scrollToBotton(id?: string) {
       const wrap = document.getElementById("content");
       if (!wrap) return;
       const target = document.getElementById(scroolArgsCache.id);
-      const offsetTop = target?.offsetTop || wrap.scrollHeight;
+      const offsetTop = target ? target.offsetTop : wrap.scrollHeight;
       const offsetHeight = target?.offsetHeight || 56;
       smoothScroll(
         wrap,
@@ -150,7 +151,7 @@ export function scrollToTop(id?: string) {
       const wrap = document.getElementById("content");
       if (!wrap) return;
       const target = document.getElementById(scroolArgsCache.to_top_id);
-      const offsetTop = target?.offsetTop || 56;
+      const offsetTop = target ? target.offsetTop : 56;
       smoothScroll(wrap, wrap.scrollTop, offsetTop - 56, 700);
     }
   }, 500);
