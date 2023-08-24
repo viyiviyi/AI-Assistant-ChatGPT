@@ -592,7 +592,7 @@ export const Setting = ({
               <Form.Item
                 name="GptConfig_top_p"
                 label="ChatGPT参数： top_p"
-                extra={"指定从概率分布中选择的标记的概率阈值（不懂）"}
+                extra={"控制生成内容的多样性, 推荐0.8-0.9, 稍高一些, 保证有一定的词汇多样性"}
               >
                 <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
               </Form.Item>
@@ -606,21 +606,21 @@ export const Setting = ({
               <Form.Item
                 name="GptConfig_temperature"
                 label="ChatGPT参数： temperature"
-                extra={"较高的值会产生更多样化的文本"}
+                extra={"控制生成内容的随机性, 推荐0.5-0.7, 较低一些, 使内容更加清晰连贯"}
               >
                 <InputNumber step="0.05" min={0} max={2} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_presence_penalty"
                 label="ChatGPT参数： presence_penalty"
-                extra={"较高的值会增加模型谈论新话题的可能性"}
+                extra={"减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多"}
               >
                 <InputNumber step="0.01" min={-2} max={2} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_frequency_penalty"
                 label="ChatGPT参数： frequency_penalty"
-                extra={"较高的值会降低模型直接重复相同语句的可能性"}
+                extra={"减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词"}
               >
                 <InputNumber step="0.05" min={-2} max={2} autoComplete="off" />
               </Form.Item>
