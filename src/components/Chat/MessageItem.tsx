@@ -1,5 +1,6 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
+import { useScreenSize } from "@/core/hooks";
 import { onTextareaTab, throttleAndDebounce } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -11,7 +12,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -24,7 +25,7 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip,
+  Tooltip
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -35,7 +36,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
+  useState
 } from "react";
 import { SkipExport } from "../SkipExport";
 import { MarkdownView } from "./MarkdownView";
@@ -68,6 +69,7 @@ export const MessageItem = ({
   const [inputRef] = useState(createRef<TextAreaRef>());
   const [none, setNone] = useState([]);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
+  const screenSize = useScreenSize();
   useEffect(() => {
     renderMessage[msg.id] = throttleAndDebounce(() => {
       setNone([]);
@@ -319,7 +321,7 @@ export const MessageItem = ({
             justifyContent: "center",
             position: "relative",
             flexDirection: "column",
-            marginTop: "12px",
+            marginTop: "18px",
           }}
           id={msg.id}
         >
@@ -330,14 +332,7 @@ export const MessageItem = ({
               justifyContent: "center",
             }}
           >
-            <div
-              className={styleCss.message_item}
-              style={{
-                display: "flex",
-                wordWrap: "break-word",
-                flexDirection: "column",
-              }}
-            >
+            <div className={styleCss.message_item}>
               <div
                 style={{
                   flex: 1,
@@ -383,9 +378,9 @@ export const MessageItem = ({
                 style={{
                   flex: 1,
                   display: "flex",
-                  padding: "5px 10px",
+                  paddingLeft: screenSize.width >= 1200 ? 28 : 10,
+                  paddingRight: screenSize.width >= 1200 ? 28 : 10,
                   flexDirection: "column",
-                  // marginBottom: "12px",
                   lineHeight: 1.7,
                 }}
               >
@@ -559,8 +554,14 @@ export const MessageItem = ({
           flex: 1,
           display: "flex",
           flexDirection: msg.ctxRole == "assistant" ? "row" : "row-reverse",
-          paddingLeft: msg.ctxRole == "assistant" ? 0 : 12,
-          paddingRight: msg.ctxRole == "assistant" ? 12 : 0,
+          paddingLeft:
+            msg.ctxRole == "assistant" ? 0 : screenSize.width > 1300 ? 120 : 25,
+          paddingRight:
+            msg.ctxRole == "assistant"
+              ? screenSize.width > 1300
+                ? 120
+                : 25
+              : 0,
         }}
       >
         <Avatar
@@ -573,14 +574,7 @@ export const MessageItem = ({
           size={50}
           icon={<Image width={50} height={50} src={"/logo.png"} alt="logo" />}
         />
-        <div
-          className={styleCss.message_item}
-          style={{
-            display: "flex",
-            wordWrap: "break-word",
-            flexDirection: "column",
-          }}
-        >
+        <div className={styleCss.message_item}>
           <div
             style={{
               flex: 1,
@@ -619,7 +613,7 @@ export const MessageItem = ({
             style={{
               flex: 1,
               display: "flex",
-              padding: "5px 10px",
+              padding: "10px 16px",
               flexDirection: "column",
               boxSizing: "border-box",
               borderRadius: token.borderRadiusLG,

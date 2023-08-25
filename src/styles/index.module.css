@@ -129,32 +129,10 @@
 .roll_button:hover > span:last-child {
   display: none;
 }
-/* 屏幕宽度小于 1300px */
-@media (max-width: 1299px) {
-  /* 在这里添加适用于大屏幕的样式 */
-  .message_item {
-    width: calc(100vw - 400px);
-  }
-}
-/* 屏幕宽度小于 1200px */
-@media (max-width: 1199px) {
-  /* 在这里添加适用于中等屏幕的样式 */
-  .message_item {
-    width: 900px;
-  }
-}
-/* 屏幕宽度小于 1000px */
-@media (max-width: 999px) {
-  /* 在这里添加适用于小屏幕的样式 */
-  .message_item {
-    /* width: calc(100vw - 100px); */
-    width: 100%;
-  }
-}
-/* 屏幕宽度小于 1300px */
-@media (min-width: 1299px) {
-  /* 在这里添加适用于大屏幕的样式 */
-  .message_item {
-    width: 900px;
-  }
+.message_item {
+  display: flex;
+  word-wrap: break-word;
+  flex-direction: column;
+  flex: 1;
+  width: 0;
 }

@@ -43,7 +43,7 @@ export default function Page() {
       if (idx == -1) {
         await ChatManagement.createGroup(chatMgt.group);
       }
-      await chatMgt.fromJson(chatMgt.getChat(), false);
+      await chatMgt.fromJson(chatMgt.toJson(), false);
     });
   }, [reloadService, chatMgt]);
 
