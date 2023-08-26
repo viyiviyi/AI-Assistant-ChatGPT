@@ -78,18 +78,30 @@ export const MessageItem = ({
     return () => {
       delete renderMessage[msg.id];
     };
-  }, [renderMessage, msg]);
+  }, [renderMessage, msg.id]);
 
-  const saveMsg = useCallback(async () => {
-    const isReloadNav =
-      /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
-    msg.text = messageText;
-    msg.ctxRole = ctxRole;
-    await chat.pushMessage(msg);
-    var topic = chat.topics.find((f) => f.id === msg.topicId);
-    if (topic && isReloadNav) reloadNav(topic);
-    setEdit(false);
-  }, [chat, setEdit, reloadNav, messageText, msg, ctxRole]);
+  const saveMsg = useCallback(
+    async (
+      msg: Message,
+      messageText: string,
+      ctxRole: "assistant" | "system" | "user"
+    ) => {
+      const isReloadNav =
+        /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
+      msg.text = messageText;
+      msg.ctxRole = ctxRole;
+      return await chat.pushMessage(msg).then((res) => {
+        if (isReloadNav) {
+          var topic = chat.topics.find((f) => f.id === msg.topicId);
+          if (topic) reloadNav(topic);
+        }
+        reloadTopic(msg.topicId);
+        setEdit(false);
+        setNone([]);
+      });
+    },
+    [chat, reloadNav]
+  );
 
   const utilsEle = (
     <>
@@ -117,7 +129,11 @@ export const MessageItem = ({
         <SkipExport>
           <SaveOutlined
             onMouseDown={(e) => e.preventDefault()}
-            onClick={saveMsg}
+            onClick={() =>
+              setTimeout(() => {
+                saveMsg(msg, messageText, ctxRole);
+              }, 50)
+            }
             style={{ marginLeft: "16px" }}
           />
         </SkipExport>
@@ -247,15 +263,25 @@ export const MessageItem = ({
               ]}
             />
             <Button.Group size="small">
-              <Button onClick={saveMsg}>保存</Button>
               <Button
-                onClick={() =>
-                  saveMsg().then(() => {
-                    onSned();
-                  })
-                }
+                onClick={() => {
+                  setTimeout(() => {
+                    saveMsg(msg, messageText, ctxRole);
+                  }, 50);
+                }}
               >
-                提交
+                {"保存"}
+              </Button>
+              <Button
+                onClick={() => {
+                  setTimeout(() => {
+                    saveMsg(msg, messageText, ctxRole).then(() => {
+                      onSned();
+                    });
+                  }, 50);
+                }}
+              >
+                {"提交"}
               </Button>
             </Button.Group>
           </div>
@@ -272,7 +298,9 @@ export const MessageItem = ({
             onKeyDown={(e) => {
               if (e.key === "s" && e.ctrlKey) {
                 e.preventDefault();
-                saveMsg();
+                setTimeout(() => {
+                  saveMsg(msg, messageText, ctxRole);
+                }, 50);
               }
               if (e.key === "Tab") {
                 e.preventDefault();
@@ -446,7 +474,11 @@ export const MessageItem = ({
                     <SkipExport>
                       <SaveOutlined
                         onMouseDown={(e) => e.preventDefault()}
-                        onClick={saveMsg}
+                        onClick={() => {
+                          setTimeout(() => {
+                            saveMsg(msg, messageText, ctxRole);
+                          }, 50);
+                        }}
                         style={{ marginLeft: "16px" }}
                       />
                     </SkipExport>

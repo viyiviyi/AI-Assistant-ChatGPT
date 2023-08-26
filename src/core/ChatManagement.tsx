@@ -13,8 +13,8 @@ import {
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import React from "react";
-import { getInstance } from "ts-indexdb";
 import { BgConfig } from "./BgImageStore";
+import { getDbInstance as getInstance, setSkipDbSave } from "./IndexDbInstance";
 import { getUuid } from "./utils";
 
 const defaultChat: IChat = {
@@ -53,13 +53,20 @@ export interface IChat {
 }
 
 export class ChatManagement {
-  constructor(chat: IChat) {
+  constructor(chat: IChat, skipSave = false) {
     this.topics = chat.topics || [];
     this.config = chat.config;
     this.group = chat.group;
     this.gptConfig = chat.gptConfig;
     this.user = chat.user;
     this.virtualRole = chat.virtualRole;
+    setSkipDbSave(skipSave);
+    this.topics.forEach((t) => {
+      t.messages.forEach((m) => {
+        t.messageMap[m.id] = m;
+      });
+      ChatManagement.loadTitleTree(t);
+    });
   }
   readonly topics: TopicMessage[];
   readonly config: GroupConfig;
@@ -603,7 +610,7 @@ export class ChatManagement {
             return r;
           },
         });
-        return msg;
+        return message;
       }
     } else {
       message.id = getUuid();
@@ -713,13 +720,9 @@ export class ChatManagement {
       config: this.config,
       virtualRole: this.virtualRole,
       gptConfig: this.gptConfig,
-      topics: this.topics,
+      topics: this.topics.map((v) => ({ ...v, titleTree: [], messageMap: {} })),
     };
     chat = JSON.parse(JSON.stringify(chat));
-    chat.topics.forEach((v) => {
-      v.titleTree = [];
-      v.messageMap = {};
-    });
     return chat;
   }
   getChat(): IChat {
@@ -779,7 +782,11 @@ export class ChatManagement {
         ChatManagement.createTopic(
           _this.group.id,
           v.name,
-          Object.assign({}, v, { messages: undefined })
+          Object.assign({}, v, {
+            messages: undefined,
+            messageMap: undefined,
+            titleTree: undefined,
+          })
         )
       );
       v.messages.forEach((m) => {
@@ -794,6 +801,10 @@ export class ChatManagement {
     });
     await Promise.all(proT);
     await Promise.all(proM);
+    _this.topics.forEach((v) => {
+      v.titleTree;
+      v.messages.forEach((m) => (v.messageMap[m.id] = m));
+    });
     if (isToFirst) ChatManagement.toFirst(_this.group);
     return _this;
   }

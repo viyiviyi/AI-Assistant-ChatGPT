@@ -35,15 +35,15 @@ export default function Page() {
       initTokenStore().then(() => {
         reloadService(chatMgt.toJson(), KeyValueData.instance());
       });
-      let chats = ChatManagement.getGroups();
-      // 如果不在本地保存一份，编辑是会出错的
-      chatMgt.group.id = "1f8c8194-2392-400e-9ab1-5a91dc1f08fd";
-      let idx = chats.findIndex((f) => f.group.id == chatMgt.group.id);
-      chatMgt.group.index = chats.length;
-      if (idx == -1) {
-        await ChatManagement.createGroup(chatMgt.group);
-      }
-      await chatMgt.fromJson(chatMgt.toJson(), false);
+      // let chats = ChatManagement.getGroups();
+      // // 如果不在本地保存一份，编辑是会出错的
+      // chatMgt.group.id = "1f8c8194-2392-400e-9ab1-5a91dc1f08fd";
+      // let idx = chats.findIndex((f) => f.group.id == chatMgt.group.id);
+      // chatMgt.group.index = chats.length;
+      // if (idx == -1) {
+      //   await ChatManagement.createGroup(chatMgt.group);
+      // }
+      // await chatMgt.fromJson(chatMgt.toJson(), false);
     });
   }, [reloadService, chatMgt]);
 

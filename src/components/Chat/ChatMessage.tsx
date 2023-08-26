@@ -365,8 +365,16 @@ function TopicTitle({
           value={title}
           onKeyUp={(e) => {
             if ((e.key === "s" && e.ctrlKey) || e.key == "Enter") {
+              e.stopPropagation();
+              e.preventDefault();
               chat.saveTopic(topic.id, title.trim());
               setEdit(false);
+            }
+          }}
+          onKeyDown={(e) => {
+            if ((e.key === "s" && e.ctrlKey) || e.key == "Enter") {
+              e.stopPropagation();
+              e.preventDefault();
             }
           }}
           onChange={(e) => setTitle(e.target.value)}
