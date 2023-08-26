@@ -70,6 +70,7 @@ export const Modal = ({
       <Drawer
         title={title}
         placement={"bottom"}
+        destroyOnClose={true}
         closable={false}
         maskClosable={maskClosable}
         onClose={cancel}

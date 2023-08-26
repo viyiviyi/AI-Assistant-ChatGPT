@@ -33,7 +33,7 @@ export default function Page() {
   useEffect(() => {
     ChatManagement.load().then(async () => {
       initTokenStore().then(() => {
-        reloadService(chatMgt.getChat(), KeyValueData.instance());
+        reloadService(chatMgt.toJson(), KeyValueData.instance());
       });
       let chats = ChatManagement.getGroups();
       // 如果不在本地保存一份，编辑是会出错的

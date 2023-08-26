@@ -440,6 +440,11 @@ export const Setting = ({
                     onOk: () => {
                       ChatManagement.remove(chatMgt!.group.id).then(() => {
                         router.push("/chat");
+                        if (ChatManagement.getGroups().length) {
+                          setChat(ChatManagement.getGroups()[0]);
+                        } else {
+                          location.reload();
+                        }
                         cbs.current.cancel();
                       });
                     },
