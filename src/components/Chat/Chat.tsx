@@ -115,7 +115,8 @@ export const Chat = () => {
             <div
               style={{
                 display: "flex",
-                height: screenSize.height - 160,
+                height: 0,
+                flex: 1,
               }}
             >
               <Layout.Sider

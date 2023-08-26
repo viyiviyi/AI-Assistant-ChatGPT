@@ -108,50 +108,38 @@ export const ChatHeader = () => {
         />
       </SkipExport>
       <Modal
-        isShow={roleConfigShow}
-        onCancel={() => {}}
-        items={
-          <VirtualRoleConfig
-            onCancel={() => {
-              setRoleConfigShow(false);
-            }}
-            onSaved={() => {
-              setRoleConfigShow(false);
-              if (activityTopic) reloadTopic(activityTopic.id);
-            }}
-            chatMgt={chat}
-          ></VirtualRoleConfig>
-        }
+        open={roleConfigShow}
+        onCancel={() => {
+          setRoleConfigShow(false);
+        }}
+        maskClosable={screenSize.width <= 500}
+        onOk={() => {
+          setRoleConfigShow(false);
+          if (activityTopic) reloadTopic(activityTopic.id);
+        }}
+        items={(cbs) => {
+          return (
+            <VirtualRoleConfig cbs={cbs} chatMgt={chat}></VirtualRoleConfig>
+          );
+        }}
       ></Modal>
       <Modal
-        isShow={settingIsShow}
+        open={settingIsShow}
         onCancel={() => {
           setSettingShow(false);
         }}
-        items={
-          <Setting
-            onCancel={() => {
-              setSettingShow(false);
-            }}
-            onSaved={() => {
-              setSettingShow(false);
-            }}
-            chatMgt={chat}
-          ></Setting>
-        }
+        onOk={() => {
+          setSettingShow(false);
+        }}
+        items={(cbs) => <Setting cbs={cbs} chatMgt={chat}></Setting>}
       ></Modal>
       <Modal
-        isShow={listIsShow}
+        open={listIsShow}
         onCancel={() => {
           setlistIsShow(false);
         }}
-        items={
-          <ChatList
-            onCacle={() => {
-              setlistIsShow(false);
-            }}
-          ></ChatList>
-        }
+        okText={null}
+        items={(cbs) => <ChatList onCacle={cbs.current.cancel}></ChatList>}
       ></Modal>
     </Layout.Header>
   );

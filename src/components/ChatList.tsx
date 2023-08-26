@@ -1,7 +1,7 @@
 import { ChatManagement, IChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 
-import { Button, theme } from "antd";
+import { Button, theme, Typography } from "antd";
 import { useRouter } from "next/router";
 
 import { Groups } from "./Groups";
@@ -15,21 +15,22 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
     <>
       <div
         style={{
-          padding: token.paddingSM,
-          width: "min(90vw, 460px)",
           display: "flex",
           flexDirection: "column",
           height: "100%",
-          maxHeight: screenSize.height - 150,
+          maxHeight: screenSize.height - 250,
+          marginBottom: 20,
         }}
       >
         <div
           style={{
             flex: 1,
             overflow: "auto",
-            marginBottom: "20px",
           }}
         >
+          <Typography.Title level={4} style={{ textAlign: "center" }}>
+            {"会话列表"}
+          </Typography.Title>
           <Groups
             onClick={(chat: IChat) => {
               ChatManagement.toFirst(chat.group).then(() => {
@@ -39,25 +40,28 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
             }}
           ></Groups>
         </div>
-        <Button.Group>
-          <Button
-            block
-            onClick={(e) => {
-              e.stopPropagation();
-              ChatManagement.createChat().then((v) => {
-                router.replace("/chat?id=" + v.group.id);
-                onCacle();
-              });
-            }}
-          >
-            <div>
-              <span>新建</span>
-            </div>
-          </Button>
-          <Button block onClick={() => onCacle()}>
-            <span>关闭</span>
-          </Button>
-        </Button.Group>
+        <Button
+          block
+          ghost
+          onClick={(e) => {
+            e.stopPropagation();
+            ChatManagement.createChat().then((v) => {
+              router.replace("/chat?id=" + v.group.id);
+              onCacle();
+            });
+          }}
+          style={{
+            marginTop: 10,
+            padding: 10,
+            height: "auto",
+            color: token.colorTextPlaceholder,
+            borderColor: token.colorTextQuaternary,
+          }}
+        >
+          <div>
+            <span>新建</span>
+          </div>
+        </Button>
       </div>
     </>
   );

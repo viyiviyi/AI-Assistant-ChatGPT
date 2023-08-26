@@ -34,16 +34,19 @@ export default function App({ Component, pageProps }: AppProps) {
             colorBgElevated: isDark ? "#222" : "#eee",
             colorLink: "#59ccccd5",
             colorLinkActive: "#41CECED5",
-            fontSize:16,
+            fontSize: 16,
             colorLinkHover: "#66E6E6D5",
           },
           components: {
             Segmented: {
               itemHoverColor: isDark ? "#00b96b" : "#00b96b",
             },
+            Modal: {
+              padding: 12,
+            },
+            
           },
           algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,
-          
         }}
       >
         <Head>
@@ -57,7 +60,9 @@ export default function App({ Component, pageProps }: AppProps) {
               dangerouslySetInnerHTML={{
                 __html: `/* https://github.com/ant-design/ant-design/issues/16037#issuecomment-483140458 */
 /* Not only antd, but also any other style if you want to use ssr. */
-*, *::before, *::after {transition: none!important;}`,}}/>
+*, *::before, *::after {transition: none!important;}`,
+              }}
+            />
           ) : undefined}
         </Head>
         <Component {...pageProps} />

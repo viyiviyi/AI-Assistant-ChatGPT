@@ -10,7 +10,6 @@ import {
   Divider,
   Form,
   Input,
-  Modal,
   Popconfirm,
   Space,
   Switch,
@@ -23,6 +22,7 @@ import { CSSProperties, useContext, useEffect, useState } from "react";
 import { DragList } from "./DragList";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 import ImageUpload from "./ImageUpload";
+import { Modal, ModalCallback } from "./Modal";
 import { SkipExport } from "./SkipExport";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
 
@@ -30,12 +30,10 @@ let copyRoleVal: VirtualRole | undefined = undefined;
 
 export const VirtualRoleConfig = ({
   chatMgt,
-  onCancel,
-  onSaved,
+  cbs,
 }: {
   chatMgt?: ChatManagement;
-  onSaved: () => void;
-  onCancel: () => void;
+  cbs: ModalCallback;
 }) => {
   const [virtualRole_Avatar, setVirtualRole_Avatar] = useState(
     chatMgt?.virtualRole.avatar
@@ -48,6 +46,14 @@ export const VirtualRoleConfig = ({
   const [tags, setTags] = useState<string[]>([]);
   const [showInfo, setShowInfo] = useState(false);
   const screenSize = useScreenSize();
+  const [form] = Form.useForm<{
+    virtualRole_name: string;
+    virtualRole_bio: string;
+    virtualRole_enable: boolean;
+    virtualRole_en_name: string;
+    user_name: string;
+    user_en_name: string;
+  }>();
   const [virtualRole_settings, setVirtualRole_settings] = useState(
     chatMgt?.virtualRole.settings?.map((v, i) => ({
       ...v,
@@ -69,14 +75,6 @@ export const VirtualRoleConfig = ({
     );
     setTags(tags);
   }, [chatMgt, virtualRole_settings]);
-  const [form] = Form.useForm<{
-    virtualRole_name: string;
-    virtualRole_bio: string;
-    virtualRole_enable: boolean;
-    virtualRole_en_name: string;
-    user_name: string;
-    user_en_name: string;
-  }>();
   const handleChange = (tag: string, checked: boolean) => {
     const nextSelectedTags = checked
       ? [...selectedTags, tag]
@@ -106,10 +104,11 @@ export const VirtualRoleConfig = ({
     chatMgt.user.avatar = user_Avatar || "";
     chatMgt.saveUser();
     setChat(chatMgt.getChat());
-    onSaved();
   }
+  cbs.current.okCallback = onSave;
+
   const tabItemStyle: CSSProperties = {
-    maxHeight: screenSize.height - 350,
+    maxHeight: screenSize.height - 300,
     overflow: "auto",
   };
   function isShow(
@@ -235,6 +234,27 @@ export const VirtualRoleConfig = ({
         )}
       </Form.Item>
       <Form.Item>
+        <Modal
+          open={showInfo}
+          onCancel={() => {
+            setShowInfo(false);
+          }}
+          okText={null}
+          bodyStyle={{
+            maxHeight: "calc(100vh - 200px)",
+            minHeight: "50vh",
+            overflow: "auto",
+            padding: 0,
+          }}
+          items={() => {
+            return (
+              <VirtualRoleConfigInfo
+                bio={form.getFieldValue("virtualRole_bio")}
+                settings={virtualRole_settings}
+              />
+            );
+          }}
+        ></Modal>
         <DragList
           style={{
             borderRadius: 8,
@@ -538,14 +558,7 @@ export const VirtualRoleConfig = ({
           user_en_name: chatMgt?.user.enName,
         }}
       >
-        <div
-          style={{
-            // maxHeight: "70vh",
-            width: "min(90vw, 500px)",
-            overflow: "auto",
-            padding: token.paddingContentHorizontalSM + "px",
-          }}
-        >
+        <div>
           <div
             style={{
               width: "100%",
@@ -554,7 +567,7 @@ export const VirtualRoleConfig = ({
               left: "0",
               top: "0",
             }}
-            onClick={onCancel}
+            onClick={cbs.current.cancel}
           ></div>
           <Space size={32}>
             <Form.Item
@@ -564,7 +577,7 @@ export const VirtualRoleConfig = ({
             >
               <Switch></Switch>
             </Form.Item>
-            <Form.Item name="virtualRole_copy" label="复制配置">
+            <Form.Item name="virtualRole_copy" label="操作">
               <Button.Group>
                 <Button
                   onClick={() => {
@@ -592,36 +605,14 @@ export const VirtualRoleConfig = ({
                 >
                   粘贴
                 </Button>
+                <Button
+                  onClick={() => {
+                    setShowInfo(true);
+                  }}
+                >
+                  {"预览"}
+                </Button>
               </Button.Group>
-            </Form.Item>
-            <Form.Item label="预览">
-              <Modal
-                centered={true}
-                open={showInfo}
-                onCancel={() => {
-                  setShowInfo(false);
-                }}
-                onOk={() => {
-                  setShowInfo(false);
-                }}
-                bodyStyle={{
-                  maxHeight: "calc(100vh - 200px)",
-                  minHeight: "50vh",
-                  overflow: "auto",
-                }}
-              >
-                <VirtualRoleConfigInfo
-                  bio={form.getFieldValue("virtualRole_bio")}
-                  settings={virtualRole_settings}
-                />
-              </Modal>
-              <Button
-                onClick={() => {
-                  setShowInfo(true);
-                }}
-              >
-                {"预览"}
-              </Button>
             </Form.Item>
           </Space>
           <Tabs
@@ -650,25 +641,6 @@ export const VirtualRoleConfig = ({
             ]}
           />
         </div>
-        <Button.Group style={{ width: "100%" }}>
-          <Button
-            block
-            onClick={(e) => {
-              onCancel();
-            }}
-          >
-            关闭
-          </Button>
-          <Button
-            block
-            onClick={(e) => {
-              e.stopPropagation();
-              onSave();
-            }}
-          >
-            保存
-          </Button>
-        </Button.Group>
       </Form>
     </>
   );

@@ -33,6 +33,15 @@ export const VirtualRoleConfigList = () => {
     })) || []
   );
   useEffect(() => {
+    setVirtualRole_settings(
+      chatMgt?.virtualRole.settings?.map((v, i) => ({
+        ...v,
+        key: getUuid(),
+        edit: false,
+      })) || []
+    );
+  }, [chatMgt]);
+  useEffect(() => {
     let tags: string[] = [];
     let tagsmap = new Map<string, number>();
     virtualRole_settings.forEach((v) => {
@@ -83,7 +92,7 @@ export const VirtualRoleConfigList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [virtualRole_settings]);
   return (
-    <Form style={{height:'100%',overflow:'auto'}}>
+    <Form style={{ height: "100%", overflow: "auto" }}>
       <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
         <Input.Search
           placeholder={"搜索关键字"}

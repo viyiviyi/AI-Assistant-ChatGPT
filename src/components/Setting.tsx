@@ -38,16 +38,16 @@ import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import { downloadTopic } from "./Chat/ChatMessage";
 import ImageUpload from "./ImageUpload";
+import { ModalCallback } from "./Modal";
 import { SkipExport } from "./SkipExport";
 
 export const Setting = ({
   chatMgt,
-  onCancel,
-  onSaved,
+  cbs,
 }: {
   chatMgt?: ChatManagement;
-  onSaved: () => void;
-  onCancel: () => void;
+
+  cbs: ModalCallback;
 }) => {
   const [modal, contextHolder] = Modal.useModal();
   const [activityKey, setActivityKey] = useState<string[]>(["UI"]);
@@ -202,17 +202,22 @@ export const Setting = ({
     });
     reloadService(chatMgt.getChat(), KeyValueData.instance());
     setChat(chatMgt.getChat());
-    onSaved();
   }
+  cbs.current.okCallback = onSave;
   return (
     <>
-      <Form form={form} layout="vertical" autoComplete="off">
+      <Form
+        form={form}
+        layout="vertical"
+        autoComplete="off"
+        style={{
+          padding: "16px 0",
+        }}
+      >
         <div
           style={{
             maxHeight: screenSize.height - 200,
-            width: "min(90vw, 500px)",
             overflow: "auto",
-            padding: token.paddingContentHorizontalSM + "px",
           }}
         >
           <div
@@ -407,7 +412,7 @@ export const Setting = ({
                             ?.fromJson(JSON.parse(e.target.result.toString()))
                             .then((chat) => {
                               setChat(chat);
-                              onCancel();
+                              cbs.current.cancel();
                             });
                         }
                       };
@@ -435,7 +440,7 @@ export const Setting = ({
                     onOk: () => {
                       ChatManagement.remove(chatMgt!.group.id).then(() => {
                         router.push("/chat");
-                        onCancel();
+                        cbs.current.cancel();
                       });
                     },
                   });
@@ -592,7 +597,9 @@ export const Setting = ({
               <Form.Item
                 name="GptConfig_top_p"
                 label="ChatGPT参数： top_p"
-                extra={"控制生成内容的多样性, 推荐0.8-0.9, 稍高一些, 保证有一定的词汇多样性"}
+                extra={
+                  "控制生成内容的多样性, 推荐0.8-0.9, 稍高一些, 保证有一定的词汇多样性"
+                }
               >
                 <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
               </Form.Item>
@@ -606,21 +613,27 @@ export const Setting = ({
               <Form.Item
                 name="GptConfig_temperature"
                 label="ChatGPT参数： temperature"
-                extra={"控制生成内容的随机性, 推荐0.5-0.7, 较低一些, 使内容更加清晰连贯"}
+                extra={
+                  "控制生成内容的随机性, 推荐0.5-0.7, 较低一些, 使内容更加清晰连贯"
+                }
               >
                 <InputNumber step="0.05" min={0} max={2} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_presence_penalty"
                 label="ChatGPT参数： presence_penalty"
-                extra={"减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多"}
+                extra={
+                  "减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多"
+                }
               >
                 <InputNumber step="0.01" min={-2} max={2} autoComplete="off" />
               </Form.Item>
               <Form.Item
                 name="GptConfig_frequency_penalty"
                 label="ChatGPT参数： frequency_penalty"
-                extra={"减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词"}
+                extra={
+                  "减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词"
+                }
               >
                 <InputNumber step="0.05" min={-2} max={2} autoComplete="off" />
               </Form.Item>
@@ -787,29 +800,7 @@ export const Setting = ({
               </Form.Item>
             </Collapse.Panel>
           </Collapse>
-          <Form.Item></Form.Item>
         </div>
-        <Button.Group style={{ width: "100%" }}>
-          <Button
-            block
-            style={{ marginTop: "20px" }}
-            onClick={(e) => {
-              onCancel();
-            }}
-          >
-            关闭
-          </Button>
-          <Button
-            block
-            style={{ marginTop: "20px" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSave();
-            }}
-          >
-            保存
-          </Button>
-        </Button.Group>
         {contextHolder}
       </Form>
     </>

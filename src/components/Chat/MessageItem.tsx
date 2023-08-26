@@ -232,6 +232,7 @@ export const MessageItem = ({
             }}
           >
             <Segmented
+              size="small"
               value={ctxRole}
               onChange={(val) => {
                 setCtxRole(val as CtxRole);
@@ -242,7 +243,7 @@ export const MessageItem = ({
                 { label: "用户", value: "user" },
               ]}
             />
-            <Button.Group>
+            <Button.Group size="small">
               <Button onClick={saveMsg}>保存</Button>
               <Button
                 onClick={() =>

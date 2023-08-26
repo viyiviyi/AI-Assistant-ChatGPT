@@ -123,7 +123,6 @@ const scroolArgsCache = {
 };
 export function scrollToBotton(id?: string) {
   scroolArgsCache.id = id || "";
-  console.log(id);
   if (!scrollStatus.enable) return;
   if (scroolArgsCache.lastRunTime + 500 > Date.now()) return;
   setTimeout(() => {

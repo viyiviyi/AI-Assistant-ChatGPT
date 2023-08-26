@@ -39,8 +39,12 @@ export function InputUtil() {
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(0);
   const [showNav, setShowNav] = useState(false);
-  const { chatMgt: chat, activityTopic, setActivityTopic, reloadNav } =
-    useContext(ChatContext);
+  const {
+    chatMgt: chat,
+    activityTopic,
+    setActivityTopic,
+    reloadNav,
+  } = useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
   const { token } = theme.useToken();
@@ -213,6 +217,8 @@ export function InputUtil() {
             style={{
               cursor: "pointer",
               color: onlyOne ? token.colorPrimary : undefined,
+              flex: 1,
+              width: 0,
             }}
             ellipsis={true}
             onMouseDown={(e) => e.preventDefault()}

@@ -7,7 +7,6 @@ import {
   Checkbox,
   Form,
   Input,
-  Modal,
   Popconfirm,
   Segmented,
   Select,
@@ -16,6 +15,7 @@ import {
 import copy from "copy-to-clipboard";
 import { useState } from "react";
 import { DragList } from "./DragList";
+import { Modal } from "./Modal";
 import { SkipExport } from "./SkipExport";
 
 export function EditVirtualRoleSetting({
@@ -31,7 +31,7 @@ export function EditVirtualRoleSetting({
   onCancel: () => void;
   allTags: string[];
 }) {
-  const [form] = Form.useForm();
+  // const [form] = Form.useForm();
   const [tags, setTags] = useState<string[]>(item.tags);
   const { token } = theme.useToken();
   const [ctx, setCtx] = useState(
@@ -50,19 +50,17 @@ export function EditVirtualRoleSetting({
         });
       }}
       onCancel={onCancel}
-      centered={true}
-      title={"编辑设定"}
       bodyStyle={{
         maxHeight: "calc(100vh - 200px)",
         minHeight: "50vh",
         overflow: "auto",
       }}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        autoComplete="off"
-        initialValues={item}
+      <div
+        // form={form}
+        // layout="vertical"
+        // autoComplete="off"
+        // initialValues={item}
       >
         <Form.Item>
           <Button.Group>
@@ -251,7 +249,7 @@ export function EditVirtualRoleSetting({
             </Button>
           </Form.Item>
         </div>
-      </Form>
+      </div>
     </Modal>
   );
 }
