@@ -236,7 +236,9 @@ function TopUtil({
           >
             <SkipExport>
               <Popconfirm
-                title="确定删除？"
+                overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                okType="danger"
+                title="确定删除此话题？"
                 onConfirm={() => {
                   onDle(v);
                 }}

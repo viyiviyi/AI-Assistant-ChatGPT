@@ -1,7 +1,7 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
-import { onTextareaTab, throttleAndDebounce } from "@/core/utils";
+import { createThrottleAndDebounce, onTextareaTab } from "@/core/utils";
 import { CtxRole, Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
@@ -40,6 +40,7 @@ import React, {
 } from "react";
 import { SkipExport } from "../SkipExport";
 import { MarkdownView } from "./MarkdownView";
+import { reloadTopic } from "./MessageList";
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -71,7 +72,7 @@ export const MessageItem = ({
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   useEffect(() => {
-    renderMessage[msg.id] = throttleAndDebounce(() => {
+    renderMessage[msg.id] = createThrottleAndDebounce(() => {
       setNone([]);
     }, 200);
     return () => {
@@ -98,7 +99,7 @@ export const MessageItem = ({
         onChange={(e) => {
           msg.checked = e.target.checked;
           chat.pushMessage(msg);
-          setNone([]);
+          reloadTopic(msg.topicId, msg.id);
         }}
       >
         <span>
@@ -174,7 +175,9 @@ export const MessageItem = ({
       ) : (
         <SkipExport>
           <Popconfirm
-            title="确定删除？"
+            overlayInnerStyle={{ whiteSpace: "nowrap" }}
+            okType="danger"
+            title="确定删除此消息？"
             onConfirm={() => {
               onDel(msg);
             }}
@@ -331,6 +334,7 @@ export const MessageItem = ({
               flex: 1,
               display: "flex",
               justifyContent: "center",
+              paddingBottom: 15,
             }}
           >
             <div className={styleCss.message_item}>
@@ -423,7 +427,7 @@ export const MessageItem = ({
                     onChange={(e) => {
                       msg.checked = e.target.checked;
                       chat.pushMessage(msg);
-                      setNone([]);
+                      reloadTopic(msg.topicId, msg.id);
                     }}
                   >
                     <span>
@@ -490,7 +494,9 @@ export const MessageItem = ({
                   ) : (
                     <SkipExport>
                       <Popconfirm
-                        title="确定删除？"
+                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                        okType="danger"
+                        title="确定删除此内容？"
                         onConfirm={() => {
                           onDel(msg);
                         }}

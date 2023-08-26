@@ -187,7 +187,7 @@ const smoothScroll = (
   }, 20);
 };
 
-export const throttleAndDebounce = (
+export const createThrottleAndDebounce = (
   func: (...args: any[]) => void,
   delay: number
 ): ((...args: any[]) => void) => {

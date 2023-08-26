@@ -4,7 +4,7 @@ import { CtxRole, Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "./../Models/Topic";
 import { aiServices } from "./AiService/ServiceProvider";
-import { getUuid, scrollToBotton, throttleAndDebounce } from "./utils";
+import { createThrottleAndDebounce, getUuid, scrollToBotton } from "./utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{
@@ -131,7 +131,7 @@ export function useSendMessage(chat: ChatManagement) {
         current: chat,
       };
       let isFirst = true;
-      let save = throttleAndDebounce(async (text) => {
+      let save = createThrottleAndDebounce(async (text) => {
         result.text = text;
         chat.pushMessage(result, idx + 1).then((r) => {
           result = r;

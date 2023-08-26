@@ -67,11 +67,11 @@
 }
 .message_box_hiddel_tool .item_utils {
   /* display: none !important; */
-  opacity: 0.2;
+  opacity: 0.4;
 }
 .message_box_hiddel_tool:hover .item_utils {
   /* display: flex !important; */
-  opacity: 0.7;
+  opacity: 0.3;
 }
 .message_box_hiddel_tool .top_label::before {
   content: "";

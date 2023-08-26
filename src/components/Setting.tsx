@@ -436,6 +436,7 @@ export const Setting = ({
                 onClick={(e) => {
                   modal.confirm({
                     title: "确定删除？",
+                    okType: "danger",
                     content: "删除操作不可逆，请谨慎操作。",
                     onOk: () => {
                       ChatManagement.remove(chatMgt!.group.id).then(() => {
