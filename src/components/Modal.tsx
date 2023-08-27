@@ -161,7 +161,7 @@ export const Modal = ({
           justifyContent: "center",
           backgroundColor: token.colorBgMask,
           alignItems: screenSize.width < 500 ? "end" : "center",
-          zIndex: 10,
+          zIndex: 999,
           ...style,
         }}
       >
