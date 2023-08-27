@@ -195,9 +195,6 @@ export const Chat = () => {
                   <div
                     style={{
                       width: 340,
-                      position: "sticky",
-                      top: 0,
-                      right: 0,
                       padding: 10,
                     }}
                   >
@@ -207,7 +204,7 @@ export const Chat = () => {
               </Content>
             </div>
             <SkipExport>
-              <div style={{ position: "sticky", bottom: 0 }}>
+              <div>
                 <MemoInputUtil></MemoInputUtil>
               </div>
             </SkipExport>
@@ -229,22 +226,6 @@ export const Chat = () => {
             </Hidden>
           </div>
         </Layout>
-        {/* <Footer
-          id="footer"
-          style={{
-            padding: 0,
-            backgroundColor: "#0000",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-          }}
-        >
-          <SkipExport>
-            <div style={{ position: "sticky", bottom: 0 }}>
-              <MemoInputUtil></MemoInputUtil>
-            </div>
-          </SkipExport>
-        </Footer> */}
       </div>
       <SkipExport>
         <Modal
