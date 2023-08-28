@@ -175,7 +175,7 @@ export const MessageItem = ({
       {loadingMsgs[msg.id] ? (
         <SkipExport>
           <Popconfirm
-            placement="bottomRight"
+            placement="topRight"
             overlayInnerStyle={{ whiteSpace: "nowrap" }}
             title={"确定停止？"}
             onConfirm={() => {
@@ -191,7 +191,7 @@ export const MessageItem = ({
       ) : (
         <SkipExport>
           <Popconfirm
-            placement="bottomRight"
+            placement="topRight"
             overlayInnerStyle={{ whiteSpace: "nowrap" }}
             okType="danger"
             title="确定删除此消息？"
@@ -377,7 +377,7 @@ export const MessageItem = ({
                 {loadingMsgs[msg.id] ? (
                   <SkipExport>
                     <Popconfirm
-                      placement="bottomLeft"
+                      placement="topRight"
                       overlayInnerStyle={{ whiteSpace: "nowrap" }}
                       title="确定停止？"
                       onConfirm={() => {
@@ -509,7 +509,7 @@ export const MessageItem = ({
                   {loadingMsgs[msg.id] ? (
                     <SkipExport>
                       <Popconfirm
-                        placement="bottomRight"
+                        placement="topRight"
                         overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         title="确定停止？"
                         onConfirm={() => {
@@ -525,7 +525,7 @@ export const MessageItem = ({
                   ) : (
                     <SkipExport>
                       <Popconfirm
-                        placement="bottomRight"
+                        placement="topRight"
                         overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         okType="danger"
                         title="确定删除此内容？"
@@ -629,7 +629,7 @@ export const MessageItem = ({
             {loadingMsgs[msg.id] ? (
               <SkipExport>
                 <Popconfirm
-                  placement="bottomLeft"
+                  placement="topRight"
                   overlayInnerStyle={{ whiteSpace: "nowrap" }}
                   title="确定停止？"
                   onConfirm={() => {

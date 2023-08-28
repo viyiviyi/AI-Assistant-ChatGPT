@@ -237,7 +237,7 @@ function TopUtil({
             <SkipExport>
               <Popconfirm
                 overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                placement="bottomRight"
+                placement="topRight"
                 okType="danger"
                 title="确定删除此话题？"
                 onConfirm={() => {
@@ -258,7 +258,7 @@ function TopUtil({
             <SkipExport>
               <Popconfirm
                 title="请选择内容格式。"
-                placement="bottomRight"
+                placement="topRight"
                 description={
                   <>
                     <p>当选择对话时，将会给每条消息前加上助理或用户的名字。</p>
