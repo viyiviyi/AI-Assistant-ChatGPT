@@ -1,15 +1,15 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useSendMessage } from "@/core/hooks";
 import {
-  activityScroll,
-  createThrottleAndDebounce,
-  pagesUtil
+    activityScroll,
+    createThrottleAndDebounce,
+    pagesUtil
 } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { Button } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { Hidden } from "../Hidden";
+import { Hidden } from "../common/Hidden";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
 import { MemoInsertInput } from "./InsertInput";

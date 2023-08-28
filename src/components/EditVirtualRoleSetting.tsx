@@ -14,9 +14,9 @@ import {
 } from "antd";
 import copy from "copy-to-clipboard";
 import { useState } from "react";
-import { DragList } from "./DragList";
-import { Modal } from "./Modal";
-import { SkipExport } from "./SkipExport";
+import { DragList } from "./common/DragList";
+import { Modal } from "./common/Modal";
+import { SkipExport } from "./common/SkipExport";
 
 export function EditVirtualRoleSetting({
   item,
@@ -57,10 +57,10 @@ export function EditVirtualRoleSetting({
       }}
     >
       <div
-        // form={form}
-        // layout="vertical"
-        // autoComplete="off"
-        // initialValues={item}
+      // form={form}
+      // layout="vertical"
+      // autoComplete="off"
+      // initialValues={item}
       >
         <Form.Item>
           <Button.Group>
@@ -176,15 +176,13 @@ export function EditVirtualRoleSetting({
                     </Form.Item>
                     <span>
                       <SkipExport>
-                        {" "}
                         <Popconfirm
+                          overlayInnerStyle={{ whiteSpace: "nowrap" }}
                           title="确定删除？"
                           placement="topRight"
                           onConfirm={() => {
                             setCtx((v) => v.filter((f) => f.key != item.key));
                           }}
-                          okText="确定"
-                          cancelText="取消"
                         >
                           <DeleteOutlined></DeleteOutlined>
                         </Popconfirm>

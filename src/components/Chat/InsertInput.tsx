@@ -6,7 +6,7 @@ import { TopicMessage } from "@/Models/Topic";
 import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
 import { Button, Input, theme } from "antd";
 import React, { useState } from "react";
-import { SkipExport } from "../SkipExport";
+import { SkipExport } from "../common/SkipExport";
 import { CtxRoleButton } from "./CtxRoleButton";
 
 // export const insertInputRef = React.createRef<HTMLInputElement>();

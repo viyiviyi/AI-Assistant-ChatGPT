@@ -15,8 +15,8 @@ import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import React, {
-  createElement,
-  Fragment, useMemo
+    createElement,
+    Fragment, useMemo
 } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
@@ -29,7 +29,7 @@ import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
-import { SkipExport } from "../SkipExport";
+import { SkipExport } from "./SkipExport";
 function toTxt(node: React.ReactNode): string {
   let str = "";
   if (Array.isArray(node)) {

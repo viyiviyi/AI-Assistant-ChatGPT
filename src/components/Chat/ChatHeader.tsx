@@ -9,11 +9,11 @@ import {
 import { Avatar, Drawer, Layout, theme, Typography } from "antd";
 import Image from "next/image";
 import React, { useContext, useState } from "react";
-import { MemoBackgroundImage } from "../BackgroundImage";
 import { ChatList } from "../ChatList";
-import { Modal } from "../Modal";
+import { MemoBackgroundImage } from "../common/BackgroundImage";
+import { Modal } from "../common/Modal";
+import { SkipExport } from "../common/SkipExport";
 import { Setting } from "../Setting";
-import { SkipExport } from "../SkipExport";
 import { VirtualRoleConfig } from "../VirtualRoleConfig";
 import { reloadTopic } from "./MessageList";
 import { MemoSearchWrap } from "./Search";

@@ -15,9 +15,9 @@ import {
   Typography
 } from "antd";
 import { useContext, useEffect, useState } from "react";
-import { DragList } from "./DragList";
+import { DragList } from "./common/DragList";
+import { SkipExport } from "./common/SkipExport";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
-import { SkipExport } from "./SkipExport";
 
 export const VirtualRoleConfigList = () => {
   const { chatMgt } = useContext(ChatContext);
@@ -212,14 +212,14 @@ export const VirtualRoleConfigList = () => {
                     ></Checkbox>
                     <SkipExport>
                       <Popconfirm
+                        placement="topRight"
+                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         title="确定删除？"
                         onConfirm={() => {
                           setVirtualRole_settings((v) =>
                             v.filter((f) => f != item)
                           );
                         }}
-                        okText="确定"
-                        cancelText="取消"
                       >
                         <DeleteOutlined
                           style={{ color: "#ff8d8f" }}
@@ -356,14 +356,14 @@ export const VirtualRoleConfigList = () => {
                     ></Checkbox>
                     <SkipExport>
                       <Popconfirm
+                        placement="topRight"
+                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         title="确定删除？"
                         onConfirm={() => {
                           setVirtualRole_settings((v) =>
                             v.filter((f) => f != item)
                           );
                         }}
-                        okText="确定"
-                        cancelText="取消"
                       >
                         <DeleteOutlined
                           style={{ color: "#ff8d8f" }}

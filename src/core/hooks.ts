@@ -107,7 +107,7 @@ export function useSendMessage(chat: ChatManagement) {
       if (!aiService) return;
       if (idx > topic.messages.length) return;
       let time = Date.now();
-      if (idx < 0 )
+      if (idx < 0 && topic.messages.length)
         time = topic.messages[0].timestamp - 1;
       if (idx >= 0 && idx < topic.messages.length)
         time = topic.messages[idx].timestamp + 0.001;

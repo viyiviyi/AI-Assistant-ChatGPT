@@ -26,7 +26,7 @@ import React, {
   useRef,
   useState
 } from "react";
-import { SkipExport } from "../SkipExport";
+import { SkipExport } from "../common/SkipExport";
 import { MessageContext } from "./Chat";
 import { MemoInsertInput } from "./InsertInput";
 import { MessageList, reloadTopic } from "./MessageList";
@@ -237,6 +237,7 @@ function TopUtil({
             <SkipExport>
               <Popconfirm
                 overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                placement="bottomRight"
                 okType="danger"
                 title="确定删除此话题？"
                 onConfirm={() => {
@@ -257,13 +258,14 @@ function TopUtil({
             <SkipExport>
               <Popconfirm
                 title="请选择内容格式。"
+                placement="bottomRight"
                 description={
                   <>
                     <p>当选择对话时，将会给每条消息前加上助理或用户的名字。</p>
                     <div
                       style={{ display: "flex", justifyContent: "flex-end" }}
                     >
-                      <span>指定身份，仅对md文档生效</span>
+                      <span>{"指定身份，仅对md文档生效"}</span>
                       <Checkbox
                         checked={selectRoles.user}
                         onChange={(e) => {
@@ -273,7 +275,7 @@ function TopUtil({
                           }));
                         }}
                       >
-                        用户
+                        {"用户"}
                       </Checkbox>
                       <Checkbox
                         checked={selectRoles.assistant}
@@ -284,7 +286,7 @@ function TopUtil({
                           }));
                         }}
                       >
-                        助理
+                        {"助理"}
                       </Checkbox>
                       <Checkbox
                         checked={selectRoles.system}
@@ -295,7 +297,7 @@ function TopUtil({
                           }));
                         }}
                       >
-                        系统
+                        {"系统"}
                       </Checkbox>
                     </div>
                   </>
@@ -306,8 +308,8 @@ function TopUtil({
                 onCancel={() => {
                   downloadTopic(v, true, chat.getChat(), selectRoles);
                 }}
-                okText="文档"
-                cancelText="对话"
+                okText={"文档"}
+                cancelText={"对话"}
               >
                 <DownloadOutlined></DownloadOutlined>
               </Popconfirm>

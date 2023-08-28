@@ -30,8 +30,8 @@ export const DefaultBaseUrl: BaseUrlScheam = {
   Kamiya: "https://p0.kamiya.dev",
 };
 export const ProxyBaseUrl: BaseUrlScheam = {
-  chatGPT: "https://chat.22733.site",
-  slackClaude: "https://slack.22733.site",
+  chatGPT: "https://chat.eaias.com",
+  slackClaude: "https://slack.eaias.com",
   Kamiya: "https://p0.kamiya.dev",
 };
 export const DevBaseUrl: BaseUrlScheam = {
@@ -95,7 +95,7 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat) {
         tokens
       );
     case "GPTFree":
-      return new ChatGPT("https://chat-free.22733.site", {
+      return new ChatGPT("https://chat-free.eaias.com", {
         openai: { apiKey: "123" },
       });
     case "ChatGPT":

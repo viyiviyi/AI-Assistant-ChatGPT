@@ -1,13 +1,13 @@
-import { MemoBackgroundImage } from "@/components/BackgroundImage";
 import { Chat } from "@/components/Chat/Chat";
-import { SkipExport } from "@/components/SkipExport";
+import { MemoBackgroundImage } from "@/components/common/BackgroundImage";
+import { SkipExport } from "@/components/common/SkipExport";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import {
-  ChatContext,
-  ChatManagement,
-  IChat,
-  noneChat
+    ChatContext,
+    ChatManagement,
+    IChat,
+    noneChat
 } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { initTokenStore } from "@/core/tokens";

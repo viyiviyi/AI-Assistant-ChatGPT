@@ -19,11 +19,11 @@ import {
   Typography
 } from "antd";
 import { CSSProperties, useContext, useEffect, useState } from "react";
-import { DragList } from "./DragList";
+import { DragList } from "./common/DragList";
+import ImageUpload from "./common/ImageUpload";
+import { Modal, ModalCallback } from "./common/Modal";
+import { SkipExport } from "./common/SkipExport";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
-import ImageUpload from "./ImageUpload";
-import { Modal, ModalCallback } from "./Modal";
-import { SkipExport } from "./SkipExport";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
@@ -350,14 +350,14 @@ export const VirtualRoleConfig = ({
                     ></Checkbox>
                     <SkipExport>
                       <Popconfirm
+                        placement="topRight"
+                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         title="确定删除？"
                         onConfirm={() => {
                           setVirtualRole_settings((v) =>
                             v.filter((f) => f != item)
                           );
                         }}
-                        okText="确定"
-                        cancelText="取消"
                       >
                         <DeleteOutlined
                           style={{ color: "#ff8d8f" }}
@@ -493,14 +493,14 @@ export const VirtualRoleConfig = ({
                     ></Checkbox>
                     <SkipExport>
                       <Popconfirm
+                        placement="topRight"
+                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         title="确定删除？"
                         onConfirm={() => {
                           setVirtualRole_settings((v) =>
                             v.filter((f) => f != item)
                           );
                         }}
-                        okText="确定"
-                        cancelText="取消"
                       >
                         <DeleteOutlined
                           style={{ color: "#ff8d8f" }}

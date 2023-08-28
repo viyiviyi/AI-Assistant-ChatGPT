@@ -37,9 +37,9 @@ import {
 import { useRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import { downloadTopic } from "./Chat/ChatMessage";
-import ImageUpload from "./ImageUpload";
-import { ModalCallback } from "./Modal";
-import { SkipExport } from "./SkipExport";
+import ImageUpload from "./common/ImageUpload";
+import { ModalCallback } from "./common/Modal";
+import { SkipExport } from "./common/SkipExport";
 
 export const Setting = ({
   chatMgt,
@@ -438,6 +438,7 @@ export const Setting = ({
                     title: "确定删除？",
                     okType: "danger",
                     content: "删除操作不可逆，请谨慎操作。",
+                    bodyStyle: { whiteSpace: "nowrap" },
                     onOk: () => {
                       ChatManagement.remove(chatMgt!.group.id).then(() => {
                         router.push("/chat");
@@ -452,7 +453,7 @@ export const Setting = ({
                   });
                 }}
               >
-                删除会话
+                {"删除会话"}
               </Button>
             </Button.Group>
           </Form.Item>
@@ -669,7 +670,7 @@ export const Setting = ({
                 label="Slack配置：用户token (user-token) (全局生效)"
                 extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
               >
-                <Input.Password autoComplete="off" />
+                <Input.Password autoComplete="off" type="text" />
               </Form.Item>
             </Collapse.Panel>
             <Collapse.Panel
@@ -701,7 +702,10 @@ export const Setting = ({
                               {fields.map((field, index) => {
                                 return (
                                   <Form.Item {...field}>
-                                    <Input.Password autoComplete="off" />
+                                    <Input.Password
+                                      autoComplete="off"
+                                      type="text"
+                                    />
                                   </Form.Item>
                                 );
                               })}

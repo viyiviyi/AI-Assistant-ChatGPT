@@ -2,11 +2,11 @@ import { useScreenSize } from "@/core/hooks";
 import { CloseOutlined } from "@ant-design/icons";
 import { Button, Drawer, theme, Typography } from "antd";
 import React, {
-  CSSProperties,
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useRef
+    CSSProperties,
+    MutableRefObject,
+    useCallback,
+    useEffect,
+    useRef
 } from "react";
 import { Hidden } from "./Hidden";
 

@@ -7,12 +7,12 @@ import { Message } from "@/Models/DataBase";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, message, Modal, theme } from "antd";
 import React, { useContext, useEffect, useState } from "react";
-import { Hidden } from "../Hidden";
-import { SkipExport } from "../SkipExport";
+import { Hidden } from "../common/Hidden";
+import { MarkdownView } from "../common/MarkdownView";
+import { SkipExport } from "../common/SkipExport";
 import { VirtualRoleConfigList } from "../VirtualRoleConfigList";
 import { MemoChatHeader } from "./ChatHeader";
 import { MemoInputUtil } from "./InputUtil";
-import { MarkdownView } from "./MarkdownView";
 import { MemoNavigation } from "./Navigation";
 
 const { Content, Footer } = Layout;

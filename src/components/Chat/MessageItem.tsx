@@ -38,8 +38,8 @@ import React, {
   useEffect,
   useState
 } from "react";
-import { SkipExport } from "../SkipExport";
-import { MarkdownView } from "./MarkdownView";
+import { MarkdownView } from "../common/MarkdownView";
+import { SkipExport } from "../common/SkipExport";
 import { reloadTopic } from "./MessageList";
 
 const MemoMarkdownView = React.memo(MarkdownView);
@@ -175,15 +175,15 @@ export const MessageItem = ({
       {loadingMsgs[msg.id] ? (
         <SkipExport>
           <Popconfirm
-            title="确定停止？"
+            placement="bottomRight"
+            overlayInnerStyle={{ whiteSpace: "nowrap" }}
+            title={"确定停止？"}
             onConfirm={() => {
               if (typeof loadingMsgs[msg.id]?.stop == "function")
                 loadingMsgs[msg.id]?.stop();
               delete loadingMsgs[msg.id];
               setNone([]);
             }}
-            okText="确定"
-            cancelText="取消"
           >
             <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
           </Popconfirm>
@@ -191,14 +191,13 @@ export const MessageItem = ({
       ) : (
         <SkipExport>
           <Popconfirm
+            placement="bottomRight"
             overlayInnerStyle={{ whiteSpace: "nowrap" }}
             okType="danger"
             title="确定删除此消息？"
             onConfirm={() => {
               onDel(msg);
             }}
-            okText="确定"
-            cancelText="取消"
           >
             <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
           </Popconfirm>
@@ -378,6 +377,8 @@ export const MessageItem = ({
                 {loadingMsgs[msg.id] ? (
                   <SkipExport>
                     <Popconfirm
+                      placement="bottomLeft"
+                      overlayInnerStyle={{ whiteSpace: "nowrap" }}
                       title="确定停止？"
                       onConfirm={() => {
                         if (typeof loadingMsgs[msg.id]?.stop == "function")
@@ -385,8 +386,6 @@ export const MessageItem = ({
                         delete loadingMsgs[msg.id];
                         setNone([]);
                       }}
-                      okText="确定"
-                      cancelText="取消"
                     >
                       <PauseOutlined
                         style={{ color: "#ff8d8f" }}
@@ -510,6 +509,8 @@ export const MessageItem = ({
                   {loadingMsgs[msg.id] ? (
                     <SkipExport>
                       <Popconfirm
+                        placement="bottomRight"
+                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         title="确定停止？"
                         onConfirm={() => {
                           if (typeof loadingMsgs[msg.id]?.stop == "function")
@@ -517,8 +518,6 @@ export const MessageItem = ({
                           delete loadingMsgs[msg.id];
                           setNone([]);
                         }}
-                        okText="确定"
-                        cancelText="取消"
                       >
                         <PauseOutlined></PauseOutlined>
                       </Popconfirm>
@@ -526,14 +525,13 @@ export const MessageItem = ({
                   ) : (
                     <SkipExport>
                       <Popconfirm
+                        placement="bottomRight"
                         overlayInnerStyle={{ whiteSpace: "nowrap" }}
                         okType="danger"
                         title="确定删除此内容？"
                         onConfirm={() => {
                           onDel(msg);
                         }}
-                        okText="确定"
-                        cancelText="取消"
                       >
                         <DeleteOutlined></DeleteOutlined>
                       </Popconfirm>
@@ -631,6 +629,8 @@ export const MessageItem = ({
             {loadingMsgs[msg.id] ? (
               <SkipExport>
                 <Popconfirm
+                  placement="bottomLeft"
+                  overlayInnerStyle={{ whiteSpace: "nowrap" }}
                   title="确定停止？"
                   onConfirm={() => {
                     if (typeof loadingMsgs[msg.id]?.stop == "function")
@@ -638,8 +638,6 @@ export const MessageItem = ({
                     delete loadingMsgs[msg.id];
                     setNone([]);
                   }}
-                  okText="确定"
-                  cancelText="取消"
                 >
                   <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
                 </Popconfirm>
