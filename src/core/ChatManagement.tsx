@@ -726,7 +726,17 @@ export class ChatManagement {
     return chat;
   }
   getChat(): IChat {
-    return ChatManagement.chatList.find((f) => f.group.id == this.group.id)!;
+    return (
+      ChatManagement.chatList.find((f) => f.group.id == this.group.id) || {
+        id: this.group.id,
+        user: this.user,
+        group: this.group,
+        config: this.config,
+        virtualRole: this.virtualRole,
+        gptConfig: this.gptConfig,
+        topics: this.topics,
+      }
+    );
   }
   async fromJson(json: IChat, isToFirst = true) {
     if (!json.group.createTime) json.gptConfig.role = "user";

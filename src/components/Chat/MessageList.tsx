@@ -1,9 +1,9 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useSendMessage } from "@/core/hooks";
 import {
-    activityScroll,
-    createThrottleAndDebounce,
-    pagesUtil
+  activityScroll,
+  createThrottleAndDebounce,
+  pagesUtil
 } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";

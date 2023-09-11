@@ -137,39 +137,34 @@ export const ChatMessage = () => {
           <CaretRightOutlined rotate={isActive ? 90 : 0} />
         </SkipExport>
       )}
-    >
-      {chat.topics.map((v) => (
-        <Panel
-          id={v.id}
-          forceRender={forceRender}
-          header={
-            <MemoTopicTitle
-              topic={v}
-              onClick={() => onClickTopicTitle(v)}
-            ></MemoTopicTitle>
-          }
-          key={v.id}
-          style={{
-            border: "none",
-            padding: "0 8px",
-            width: "100%",
-          }}
-        >
-          <>
-            <MemoTopUtil
-              topic={v}
-              onDle={handlerDelete}
-              firstMsgIdxRef={firstMsgIdx}
-            />
-            <MemoMessageList
-              chat={chat}
-              topic={v}
-              firstMsgIdxRef={firstMsgIdx}
-            ></MemoMessageList>
-          </>
-        </Panel>
-      ))}
-    </Collapse>
+      items={chat.topics.map((v) => ({
+        forceRender: forceRender,
+        key: v.id,
+        style: { border: "none", padding: "0 8px", width: "100%" },
+        label: (
+          <MemoTopicTitle
+            topic={v}
+            onClick={() => onClickTopicTitle(v)}
+          ></MemoTopicTitle>
+        ),
+        children: (
+          <div id={v.id}>
+            <>
+              <MemoTopUtil
+                topic={v}
+                onDle={handlerDelete}
+                firstMsgIdxRef={firstMsgIdx}
+              />
+              <MemoMessageList
+                chat={chat}
+                topic={v}
+                firstMsgIdxRef={firstMsgIdx}
+              ></MemoMessageList>
+            </>
+          </div>
+        ),
+      }))}
+    ></Collapse>
   );
 };
 

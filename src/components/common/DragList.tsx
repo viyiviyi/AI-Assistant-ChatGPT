@@ -3,13 +3,13 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import { DndContext } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
-    arrayMove,
-    SortableContext,
-    useSortable,
-    verticalListSortingStrategy
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { SkipExport } from "./SkipExport";
 
 export function DragList<T>({
@@ -27,6 +27,23 @@ export function DragList<T>({
 }) {
   const [dataSource, setDataSource] =
     useState<Array<T & { key: string }>>(data);
+  // 无用的代码
+  // const [cache] = useState<{ [key: string]: { dom: any; data: any } }>({});
+  // const getCache = useCallback(
+  //   function <T>(cb: () => T, data: any & { key: string }): T {
+  //     if (cache[data.key]?.data == data) return cache[data.key].dom;
+  //     const res = cb();
+  //     cache[data.key] = { data, dom: res };
+  //     console.log("reload");
+  //     return res;
+  //   },
+  //   [cache]
+  // );
+  const domList = useMemo(() => {
+    return dataSource.map((v, idx) => {
+      return itemDom(v, idx);
+    });
+  }, [dataSource, itemDom]);
   useEffect(() => {
     setDataSource(data);
   }, [data]);
@@ -49,7 +66,7 @@ export function DragList<T>({
         strategy={verticalListSortingStrategy}
       >
         {dataSource.map((v, idx) => {
-          let dom = itemDom(v, idx);
+          let dom = domList[idx];
           if (!dom) return undefined;
           return (
             <Row style={style} key={v.key} data-row-key={v.key}>

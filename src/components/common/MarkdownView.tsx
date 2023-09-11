@@ -15,8 +15,8 @@ import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import React, {
-    createElement,
-    Fragment, useMemo
+  createElement,
+  Fragment, useMemo
 } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
@@ -140,13 +140,13 @@ export function isXML(str: string) {
 }
 
 const renderPipes: Array<(input: string) => string> = [
-  (input) => {
-    if (/^</.test(input) && isXML(input)) {
-      // 让xml显示为xml代码
-      return "```xml\n" + input + "\n```";
-    }
-    return input;
-  },
+  // (input) => {
+  //   if (/^</.test(input) && isXML(input)) {
+  //     // 让xml显示为xml代码
+  //     return "```xml\n" + input + "\n```";
+  //   }
+  //   return input;
+  // },
   (input) => {
     return input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2");
   },

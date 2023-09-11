@@ -1,6 +1,6 @@
 import { ChatContext } from "@/core/ChatManagement";
 import { getUuid } from "@/core/utils";
-import { VirtualRoleSetting } from "@/Models/DataBase";
+import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -14,7 +14,7 @@ import {
   theme,
   Typography
 } from "antd";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { DragList } from "./common/DragList";
 import { SkipExport } from "./common/SkipExport";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
@@ -61,26 +61,29 @@ export const VirtualRoleConfigList = () => {
       : selectedTags.filter((t) => t !== tag);
     setSelectedTags(nextSelectedTags);
   };
-  function isShow(
-    item: VirtualRoleSetting & {
-      key: string;
-      edit: boolean;
+  const isShow = useCallback(
+    (
+      item: VirtualRoleSetting & {
+        key: string;
+        edit: boolean;
+      },
+      postposition: boolean = false
+    ): boolean => {
+      let show = true;
+      if (postposition != !!item.postposition) show = false;
+      if (settingFilterText) {
+        show =
+          item.title?.includes(settingFilterText) ||
+          item.tags.filter((f) => f.includes(settingFilterText)).length > 0;
+      }
+      if (selectedTags.length > 0) {
+        show =
+          show && item.tags.filter((f) => selectedTags.includes(f)).length > 0;
+      }
+      return show;
     },
-    postposition: boolean = false
-  ): boolean {
-    let show = true;
-    if (postposition != !!item.postposition) show = false;
-    if (settingFilterText) {
-      show =
-        item.title?.includes(settingFilterText) ||
-        item.tags.filter((f) => f.includes(settingFilterText)).length > 0;
-    }
-    if (selectedTags.length > 0) {
-      show =
-        show && item.tags.filter((f) => selectedTags.includes(f)).length > 0;
-    }
-    return show;
-  }
+    [selectedTags, settingFilterText]
+  );
   const save = () => {
     chatMgt.virtualRole.settings = virtualRole_settings
       .filter((f) => f && (f.ctx.filter((_f) => _f.content).length || f.title))
@@ -91,6 +94,121 @@ export const VirtualRoleConfigList = () => {
     chatMgt.saveVirtualRoleBio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [virtualRole_settings]);
+  const dragItem = useCallback(
+    (item: {
+      key: string;
+      edit: boolean;
+      extensionId?: string | undefined;
+      title?: string | undefined;
+      postposition?: boolean | undefined;
+      checked: boolean;
+      tags: string[];
+      ctx: {
+        role?: CtxRole | undefined;
+        content: string;
+        checked?: boolean | undefined;
+      }[];
+    }) => {
+      return isShow(item, true) ? (
+        <div
+          style={{
+            flex: 1,
+            marginLeft: 10,
+            display: "flex",
+            width: 0,
+            cursor: "pointer",
+          }}
+        >
+          <EditVirtualRoleSetting
+            item={item}
+            allTags={tags}
+            visible={item.edit}
+            onCancel={() => {
+              item.edit = false;
+              setVirtualRole_settings((v) => [...v]);
+            }}
+            onSave={(_item) => {
+              _item.edit = false;
+              setVirtualRole_settings((v) =>
+                v.map((a) => (a.key == _item.key ? _item : a))
+              );
+            }}
+          />
+          <div
+            style={{ flex: 1, width: 0 }}
+            onClick={() => {
+              item.edit = true;
+              setVirtualRole_settings((v) => [...v]);
+            }}
+          >
+            {item.title || item.tags.length ? (
+              <div
+                style={{
+                  borderBottom: "1px solid #ccc2",
+                  paddingBottom: 2,
+                }}
+              >
+                <Typography.Text ellipsis style={{ width: "100%" }}>
+                  {item.tags
+                    .slice(0, Math.min(item.tags.length, 3))
+                    .map((v) => (
+                      <Tag key={"setting_tag_" + v} color="green">
+                        {v}
+                      </Tag>
+                    ))}{" "}
+                  {item.title}
+                </Typography.Text>
+              </div>
+            ) : (
+              <></>
+            )}
+            <Typography.Text
+              style={{ width: "100%" }}
+              type="secondary"
+              ellipsis={true}
+            >
+              {item.ctx.length
+                ? item.ctx
+                    .filter((v) => v.checked)
+                    .map((v) => v.content)
+                    .join(" ")
+                : "无内容 点击编辑"}
+            </Typography.Text>
+          </div>
+          <div
+            style={{
+              width: 30,
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Space direction="vertical">
+              <Checkbox
+                checked={item.checked}
+                onChange={(e) => {
+                  item.checked = e.target.checked;
+                  setVirtualRole_settings((v) => [...v]);
+                }}
+              ></Checkbox>
+              <SkipExport>
+                <Popconfirm
+                  placement="topRight"
+                  overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                  title="确定删除？"
+                  onConfirm={() => {
+                    setVirtualRole_settings((v) => v.filter((f) => f != item));
+                  }}
+                >
+                  <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
+                </Popconfirm>
+              </SkipExport>
+            </Space>
+          </div>
+        </div>
+      ) : undefined;
+    },
+    [isShow, tags]
+  );
   return (
     <Form style={{ height: "100%", overflow: "auto" }}>
       <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
@@ -132,105 +250,7 @@ export const VirtualRoleConfigList = () => {
           onChange={(data) => {
             setVirtualRole_settings(data);
           }}
-          itemDom={(item) => {
-            return isShow(item) ? (
-              <div
-                style={{
-                  flex: 1,
-                  width: 0,
-                  marginLeft: 10,
-                  display: "flex",
-                  cursor: "pointer",
-                }}
-              >
-                <EditVirtualRoleSetting
-                  item={item}
-                  allTags={tags}
-                  visible={item.edit}
-                  onCancel={() => {
-                    item.edit = false;
-                    setVirtualRole_settings((v) => [...v]);
-                  }}
-                  onSave={(_item) => {
-                    _item.edit = false;
-                    setVirtualRole_settings((v) =>
-                      v.map((a) => (a.key == _item.key ? _item : a))
-                    );
-                  }}
-                />
-                <div
-                  style={{ flex: 1, width: 0 }}
-                  onClick={() => {
-                    item.edit = true;
-                    setVirtualRole_settings((v) => [...v]);
-                  }}
-                >
-                  {item.title || item.tags.length ? (
-                    <div
-                      style={{
-                        borderBottom: "1px solid #ccc2",
-                        paddingBottom: 2,
-                      }}
-                    >
-                      <Typography.Text ellipsis style={{ width: "100%" }}>
-                        {item.tags
-                          .slice(0, Math.min(item.tags.length, 3))
-                          .map((v) => (
-                            <Tag key={"setting_tag_" + v} color="green">
-                              {v}
-                            </Tag>
-                          ))}{" "}
-                        {item.title}
-                      </Typography.Text>
-                    </div>
-                  ) : (
-                    <></>
-                  )}
-                  <Typography.Text style={{ width: "100%" }} ellipsis={true}>
-                    {item.ctx.length
-                      ? item.ctx
-                          .filter((v) => v.checked)
-                          .map((v) => v.content)
-                          .join("")
-                      : "无内容 点击编辑"}
-                  </Typography.Text>
-                </div>
-                <div
-                  style={{
-                    // width: 30,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <Space direction="vertical">
-                    <Checkbox
-                      checked={item.checked}
-                      onChange={(e) => {
-                        item.checked = e.target.checked;
-                        setVirtualRole_settings((v) => [...v]);
-                      }}
-                    ></Checkbox>
-                    <SkipExport>
-                      <Popconfirm
-                        placement="topRight"
-                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                        title="确定删除？"
-                        onConfirm={() => {
-                          setVirtualRole_settings((v) =>
-                            v.filter((f) => f != item)
-                          );
-                        }}
-                      >
-                        <DeleteOutlined
-                          style={{ color: "#ff8d8f" }}
-                        ></DeleteOutlined>
-                      </Popconfirm>
-                    </SkipExport>
-                  </Space>
-                </div>
-              </div>
-            ) : undefined;
-          }}
+          itemDom={dragItem}
         />
         <Form.Item>
           <Button
@@ -272,109 +292,7 @@ export const VirtualRoleConfigList = () => {
           onChange={(data) => {
             setVirtualRole_settings(data);
           }}
-          itemDom={(item) => {
-            return isShow(item, true) ? (
-              <div
-                style={{
-                  flex: 1,
-                  marginLeft: 10,
-                  display: "flex",
-                  width: 0,
-                  cursor: "pointer",
-                }}
-              >
-                <EditVirtualRoleSetting
-                  item={item}
-                  allTags={tags}
-                  visible={item.edit}
-                  onCancel={() => {
-                    item.edit = false;
-                    setVirtualRole_settings((v) => [...v]);
-                  }}
-                  onSave={(_item) => {
-                    _item.edit = false;
-                    setVirtualRole_settings((v) =>
-                      v.map((a) => (a.key == _item.key ? _item : a))
-                    );
-                  }}
-                />
-                <div
-                  style={{ flex: 1, width: 0 }}
-                  onClick={() => {
-                    item.edit = true;
-                    setVirtualRole_settings((v) => [...v]);
-                  }}
-                >
-                  {item.title || item.tags.length ? (
-                    <div
-                      style={{
-                        borderBottom: "1px solid #ccc2",
-                        paddingBottom: 2,
-                      }}
-                    >
-                      <Typography.Text ellipsis style={{ width: "100%" }}>
-                        {item.tags
-                          .slice(0, Math.min(item.tags.length, 3))
-                          .map((v) => (
-                            <Tag key={"setting_tag_" + v} color="green">
-                              {v}
-                            </Tag>
-                          ))}{" "}
-                        {item.title}
-                      </Typography.Text>
-                    </div>
-                  ) : (
-                    <></>
-                  )}
-                  <Typography.Text
-                    style={{ width: "100%" }}
-                    type="secondary"
-                    ellipsis={true}
-                  >
-                    {item.ctx.length
-                      ? item.ctx
-                          .filter((v) => v.checked)
-                          .map((v) => v.content)
-                          .join(" ")
-                      : "无内容 点击编辑"}
-                  </Typography.Text>
-                </div>
-                <div
-                  style={{
-                    width: 30,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <Space direction="vertical">
-                    <Checkbox
-                      checked={item.checked}
-                      onChange={(e) => {
-                        item.checked = e.target.checked;
-                        setVirtualRole_settings((v) => [...v]);
-                      }}
-                    ></Checkbox>
-                    <SkipExport>
-                      <Popconfirm
-                        placement="topRight"
-                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                        title="确定删除？"
-                        onConfirm={() => {
-                          setVirtualRole_settings((v) =>
-                            v.filter((f) => f != item)
-                          );
-                        }}
-                      >
-                        <DeleteOutlined
-                          style={{ color: "#ff8d8f" }}
-                        ></DeleteOutlined>
-                      </Popconfirm>
-                    </SkipExport>
-                  </Space>
-                </div>
-              </div>
-            ) : undefined;
-          }}
+          itemDom={dragItem}
         />
         <Form.Item>
           <Button

@@ -4,10 +4,10 @@ import { SkipExport } from "@/components/common/SkipExport";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig, BgImageStore } from "@/core/BgImageStore";
 import {
-    ChatContext,
-    ChatManagement,
-    IChat,
-    noneChat
+  ChatContext,
+  ChatManagement,
+  IChat,
+  noneChat
 } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
@@ -81,7 +81,6 @@ export default function Page() {
       value={{
         chatMgt: chatMgt,
         setChat: (chat: IChat) => {
-          
           setChatMgt(new ChatManagement(chat));
         },
         activityTopic,

@@ -35,7 +35,7 @@ import {
   Upload
 } from "antd";
 import { useRouter } from "next/router";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { downloadTopic } from "./Chat/ChatMessage";
 import ImageUpload from "./common/ImageUpload";
 import { ModalCallback } from "./common/Modal";
@@ -95,9 +95,8 @@ export const Setting = ({
     slack_user_token: string;
     config_disable_renderType: string;
   }>();
-  useEffect(() => {
-    BgImageStore.getInstance().getBgImage().then(setBackground);
-    let vals: { [key: string]: any } = {
+  const formValus = useMemo(() => {
+    return {
       setting_apitoken: KeyValueData.instance().getApiKey(),
       GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
       GptConfig_role: chatMgt?.gptConfig.role,
@@ -127,19 +126,26 @@ export const Setting = ({
         .trim()
         ?.replace(/\/$/, ""),
       group_name: chatMgt?.group.name,
+      ...(() => {
+        let d: { [key: string]: string[] } = {};
+        aiServerList.forEach((v) => {
+          let t = getToken(v.key);
+          d["global_tokens_" + v.key] = t.tokens;
+        });
+        return d;
+      })(),
     };
+  }, [chatMgt]);
+  useEffect(() => {
+    BgImageStore.getInstance().getBgImage().then(setBackground);
     aiServices.current?.models().then((res) => {
       setModels(res);
       if (!res.includes(chatMgt?.gptConfig.model || "") && res.length) {
-        vals.GptConfig_model = res[0];
-        form.setFieldsValue(vals);
+        formValus.GptConfig_model = res[0];
+        form.setFieldsValue(formValus);
       }
     });
-    aiServerList.forEach((v) => {
-      let t = getToken(v.key);
-      vals["global_tokens_" + v.key] = t.tokens;
-    });
-    form.setFieldsValue(vals);
+    form.setFieldsValue(formValus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   async function onSave() {
@@ -203,6 +209,10 @@ export const Setting = ({
     reloadService(chatMgt.getChat(), KeyValueData.instance());
     setChat(chatMgt.getChat());
   }
+  const panlProp = {
+    forceRender: true,
+    style: { padding: "0 8px" },
+  };
   cbs.current.okCallback = onSave;
   return (
     <>
@@ -498,318 +508,362 @@ export const Setting = ({
                 <CaretRightOutlined rotate={isActive ? 90 : 0} />
               </SkipExport>
             )}
-          >
-            <Collapse.Panel
-              forceRender={true}
-              key={"UI"}
-              header={"界面配置"}
-              style={{ padding: "0 8px" }}
-            >
-              <Form.Item
-                name="GptConfig_msgCount"
-                label="上下文数量"
-                extra="表示最近的几条消息会被当成上下文发送给AI，模拟聊天时建议10以上，当做辅助工具时建议1  "
-              >
-                <InputNumber
-                  style={{ width: "100%" }}
-                  step="1"
-                  min={0}
-                  autoComplete="off"
-                />
-              </Form.Item>
-              <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-                <Form.Item
-                  style={{ flex: "1" }}
-                  name="config_page_size"
-                  label="单页显示条数"
-                >
-                  <InputNumber
-                    style={{ width: "100%" }}
-                    step="1"
-                    min={0}
-                    autoComplete="off"
-                  />
-                </Form.Item>
-                <Form.Item
-                  style={{ flex: "1" }}
-                  name="config_page_repect"
-                  label="重复显示条数"
-                >
-                  <InputNumber
-                    style={{ width: "100%" }}
-                    step="1"
-                    min={0}
-                    autoComplete="off"
-                  />
-                </Form.Item>
-              </div>
-              <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-                <Form.Item
-                  style={{ flex: "1" }}
-                  name="config_disable_strikethrough"
-                  valuePropName="checked"
-                  label="禁用删除线"
-                >
-                  <Switch />
-                </Form.Item>
-                <Form.Item
-                  style={{ flex: "1" }}
-                  name="config_limit_pre_height"
-                  valuePropName="checked"
-                  label="代码块限高"
-                >
-                  <Switch />
-                </Form.Item>
-              </div>
-              <div style={{ width: "100%", display: "flex", gap: "10px" }}>
-                <Form.Item
-                  style={{ flex: "1" }}
-                  name="config_disable_renderType"
-                  label="渲染方式"
-                >
-                  <Segmented
-                    options={[
-                      { label: "对话", value: "default" },
-                      { label: "文档", value: "document" },
-                    ]}
-                  />
-                </Form.Item>
-              </div>
-            </Collapse.Panel>
-            <Collapse.Panel
-              forceRender={true}
-              key={"GPT_Args"}
-              header={"参数配置"}
-              style={{ padding: "0 8px" }}
-            >
-              <Form.Item extra="ChatGLM与ChatGPT共用了部分参数"></Form.Item>
-              <Form.Item
-                name="GptConfig_role"
-                label="ChatGPT参数： role"
-                extra={" 用户使用的角色 建议使用user"}
-              >
-                <Radio.Group style={{ width: "100%" }}>
-                  <Radio.Button value="assistant">assistant</Radio.Button>
-                  <Radio.Button value="system">system</Radio.Button>
-                  <Radio.Button value="user">user</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item
-                name="GptConfig_max_tokens"
-                label="ChatGPT参数： max_tokens"
-                extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K；在ChatGPT是返回的内容的token限制，在ChatGLM是总内容的token限制，为方便，在ChatGLM会对这个值乘以10。"
-              >
-                <InputNumber step="50" min={0} autoComplete="off" />
-              </Form.Item>
-              <Form.Item
-                name="GptConfig_top_p"
-                label="ChatGPT参数： top_p"
-                extra={
-                  "控制生成内容的多样性, 推荐0.8-0.9, 稍高一些, 保证有一定的词汇多样性"
-                }
-              >
-                <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
-              </Form.Item>
-              <Form.Item
-                name="GptConfig_n"
-                label="ChatGPT参数： n"
-                extra={"指定生成文本的数量"}
-              >
-                <InputNumber step="1" min={1} max={10} autoComplete="off" />
-              </Form.Item>
-              <Form.Item
-                name="GptConfig_temperature"
-                label="ChatGPT参数： temperature"
-                extra={
-                  "控制生成内容的随机性, 推荐0.5-0.7, 较低一些, 使内容更加清晰连贯"
-                }
-              >
-                <InputNumber step="0.05" min={0} max={2} autoComplete="off" />
-              </Form.Item>
-              <Form.Item
-                name="GptConfig_presence_penalty"
-                label="ChatGPT参数： presence_penalty"
-                extra={
-                  "减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多"
-                }
-              >
-                <InputNumber step="0.01" min={-2} max={2} autoComplete="off" />
-              </Form.Item>
-              <Form.Item
-                name="GptConfig_frequency_penalty"
-                label="ChatGPT参数： frequency_penalty"
-                extra={
-                  "减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词"
-                }
-              >
-                <InputNumber step="0.05" min={-2} max={2} autoComplete="off" />
-              </Form.Item>
-            </Collapse.Panel>
-            <Collapse.Panel
-              forceRender={true}
-              key={"Slack"}
-              header={"Slack配置"}
-              style={{ padding: "0 8px" }}
-            >
-              <Form.Item
-                name="config_channel_id"
-                label="Slack配置：频道id (channel_id)"
-                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
-              >
-                <Input type="text" autoComplete="off" />
-              </Form.Item>
-              <Form.Item
-                name="slack_claude_id"
-                label="Slack配置：ClaudeID (全局生效)"
-                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-              >
-                <Input type="text" autoComplete="off" />
-              </Form.Item>
-              <Form.Item
-                name="slack_user_token"
-                label="Slack配置：用户token (user-token) (全局生效)"
-                extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-              >
-                <Input.Password autoComplete="off" type="text" />
-              </Form.Item>
-            </Collapse.Panel>
-            <Collapse.Panel
-              forceRender={true}
-              key={"token"}
-              header={"秘钥配置"}
-              style={{ padding: "0 8px" }}
-            >
-              <Form.Item
-                style={{ flex: "1" }}
-                name="config_saveKey"
-                valuePropName="checked"
-                label="保存秘钥到浏览器"
-              >
-                <Switch />
-              </Form.Item>
-              {aiServerList
-                .filter((s) => ["Kamiya", "ChatGPT"].includes(s.key))
-                .map((s) => {
-                  return (
+            items={[
+              {
+                key: "UI",
+                label: "界面配置",
+                ...panlProp,
+                children: (
+                  <div>
                     <Form.Item
-                      key={"global_tokens_" + s.key}
-                      label={s.name + " token (全局生效)"}
+                      name="GptConfig_msgCount"
+                      label="上下文数量"
+                      extra="表示最近的几条消息会被当成上下文发送给AI，模拟聊天时建议10以上，当做辅助工具时建议1  "
                     >
-                      <Form.List name={"global_tokens_" + s.key}>
-                        {(fields, { add, remove }, { errors }) => {
-                          return (
-                            <div style={{ overflow: "auto" }}>
-                              {fields.map((field, index) => {
-                                return (
-                                  <Form.Item {...field}>
-                                    <Input.Password
-                                      autoComplete="off"
-                                      type="text"
-                                    />
-                                  </Form.Item>
-                                );
-                              })}
-                              <Form.Item extra="当存在多个token时，每次请求后都会切换到下一个token">
-                                <Button
-                                  type="dashed"
-                                  onClick={() => {
-                                    add();
-                                  }}
-                                  block
-                                  icon={
-                                    <SkipExport>
-                                      <PlusOutlined />
-                                    </SkipExport>
-                                  }
-                                >
-                                  增加 token
-                                </Button>
-                                <Form.ErrorList errors={errors} />
-                              </Form.Item>
-                            </div>
-                          );
-                        }}
-                      </Form.List>
+                      <InputNumber
+                        style={{ width: "100%" }}
+                        step="1"
+                        min={0}
+                        autoComplete="off"
+                      />
                     </Form.Item>
-                  );
-                })}
-            </Collapse.Panel>
-            <Collapse.Panel
-              forceRender={true}
-              key={"network"}
-              header={"网络配置"}
-              style={{ padding: "0 8px" }}
-            >
-              <Form.Item
-                name="setting_baseurl"
-                label="ChatGPT参数： 接口访问地址"
-                extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
-              >
-                <Input
-                  type="text"
-                  placeholder="https://xxxx.xx.xx"
-                  autoComplete="off"
-                />
-              </Form.Item>
-              <Form.Item
-                name="setting_slack_proxy_url"
-                label="Slack配置： 接口访问地址 (全局生效)"
-                extra="api代理地址 (反向代理了 https://slack.com 的地址)"
-              >
-                <Input
-                  type="text"
-                  placeholder="https://xxxx.xx.xx"
-                  autoComplete="off"
-                />
-              </Form.Item>
-              <Form.Item
-                name="setting_user_server_url"
-                label="自定义服务地址"
-                extra="用于访问自建AI服务的地址，比如ChatGLM"
-              >
-                <Input
-                  type="text"
-                  placeholder="https://xxxx.xx.xx"
-                  autoComplete="off"
-                />
-              </Form.Item>
-            </Collapse.Panel>
-            <Collapse.Panel
-              forceRender={true}
-              key={"Glabal"}
-              header={"全局设置"}
-              style={{ padding: "0 8px" }}
-            >
-              <Form.Item label={"全局背景图片"}>
-                <div
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    gap: "10px",
-                  }}
-                >
-                  <ImageUpload
-                    onSave={setBackground}
-                    width={screenSize.screenWidth}
-                    height={screenSize.screenHeight}
-                    trigger={
-                      <Button block style={{ width: "min(220px, 40vw)" }}>
-                        设置
-                      </Button>
-                    }
-                  ></ImageUpload>
-                  <Button
-                    style={{ flex: "1" }}
-                    onClick={() => {
-                      setBackground("");
-                    }}
-                  >
-                    清除
-                  </Button>
-                </div>
-              </Form.Item>
-            </Collapse.Panel>
-          </Collapse>
+                    <div
+                      style={{ width: "100%", display: "flex", gap: "10px" }}
+                    >
+                      <Form.Item
+                        style={{ flex: "1" }}
+                        name="config_page_size"
+                        label="单页显示条数"
+                      >
+                        <InputNumber
+                          style={{ width: "100%" }}
+                          step="1"
+                          min={0}
+                          autoComplete="off"
+                        />
+                      </Form.Item>
+                      <Form.Item
+                        style={{ flex: "1" }}
+                        name="config_page_repect"
+                        label="重复显示条数"
+                      >
+                        <InputNumber
+                          style={{ width: "100%" }}
+                          step="1"
+                          min={0}
+                          autoComplete="off"
+                        />
+                      </Form.Item>
+                    </div>
+                    <div
+                      style={{ width: "100%", display: "flex", gap: "10px" }}
+                    >
+                      <Form.Item
+                        style={{ flex: "1" }}
+                        name="config_disable_strikethrough"
+                        valuePropName="checked"
+                        label="禁用删除线"
+                      >
+                        <Switch />
+                      </Form.Item>
+                      <Form.Item
+                        style={{ flex: "1" }}
+                        name="config_limit_pre_height"
+                        valuePropName="checked"
+                        label="代码块限高"
+                      >
+                        <Switch />
+                      </Form.Item>
+                    </div>
+                    <div
+                      style={{ width: "100%", display: "flex", gap: "10px" }}
+                    >
+                      <Form.Item
+                        style={{ flex: "1" }}
+                        name="config_disable_renderType"
+                        label="渲染方式"
+                      >
+                        <Segmented
+                          options={[
+                            { label: "对话", value: "default" },
+                            { label: "文档", value: "document" },
+                          ]}
+                        />
+                      </Form.Item>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: "GPT_Args",
+                label: "参数配置",
+                ...panlProp,
+                children: (
+                  <div>
+                    <Form.Item extra="ChatGLM与ChatGPT共用了部分参数"></Form.Item>
+                    <Form.Item
+                      name="GptConfig_role"
+                      label="ChatGPT参数： role"
+                      extra={" 用户使用的角色 建议使用user"}
+                    >
+                      <Radio.Group style={{ width: "100%" }}>
+                        <Radio.Button value="assistant">assistant</Radio.Button>
+                        <Radio.Button value="system">system</Radio.Button>
+                        <Radio.Button value="user">user</Radio.Button>
+                      </Radio.Group>
+                    </Form.Item>
+                    <Form.Item
+                      name="GptConfig_max_tokens"
+                      label="ChatGPT参数： max_tokens"
+                      extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K；在ChatGPT是返回的内容的token限制，在ChatGLM是总内容的token限制，为方便，在ChatGLM会对这个值乘以10。"
+                    >
+                      <InputNumber step="50" min={0} autoComplete="off" />
+                    </Form.Item>
+                    <Form.Item
+                      name="GptConfig_top_p"
+                      label="ChatGPT参数： top_p"
+                      extra={
+                        "控制生成内容的多样性, 推荐0.8-0.9, 稍高一些, 保证有一定的词汇多样性"
+                      }
+                    >
+                      <InputNumber
+                        step="0.05"
+                        min={0}
+                        max={1}
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="GptConfig_n"
+                      label="ChatGPT参数： n"
+                      extra={"指定生成文本的数量"}
+                    >
+                      <InputNumber
+                        step="1"
+                        min={1}
+                        max={10}
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="GptConfig_temperature"
+                      label="ChatGPT参数： temperature"
+                      extra={
+                        "控制生成内容的随机性, 推荐0.5-0.7, 较低一些, 使内容更加清晰连贯"
+                      }
+                    >
+                      <InputNumber
+                        step="0.05"
+                        min={0}
+                        max={2}
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="GptConfig_presence_penalty"
+                      label="ChatGPT参数： presence_penalty"
+                      extra={
+                        "减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多"
+                      }
+                    >
+                      <InputNumber
+                        step="0.01"
+                        min={-2}
+                        max={2}
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="GptConfig_frequency_penalty"
+                      label="ChatGPT参数： frequency_penalty"
+                      extra={
+                        "减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词"
+                      }
+                    >
+                      <InputNumber
+                        step="0.05"
+                        min={-2}
+                        max={2}
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: "Slack",
+                label: "Slack配置",
+                ...panlProp,
+                children: (
+                  <div>
+                    <Form.Item
+                      name="config_channel_id"
+                      label="Slack配置：频道id (channel_id)"
+                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
+                    >
+                      <Input type="text" autoComplete="off" />
+                    </Form.Item>
+                    <Form.Item
+                      name="slack_claude_id"
+                      label="Slack配置：ClaudeID (全局生效)"
+                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+                    >
+                      <Input type="text" autoComplete="off" />
+                    </Form.Item>
+                    <Form.Item
+                      name="slack_user_token"
+                      label="Slack配置：用户token (user-token) (全局生效)"
+                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+                    >
+                      <Input.Password autoComplete="off" type="text" />
+                    </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: "token",
+                label: "秘钥配置",
+                ...panlProp,
+                children: (
+                  <div>
+                    <Form.Item
+                      style={{ flex: "1" }}
+                      name="config_saveKey"
+                      valuePropName="checked"
+                      label="保存秘钥到浏览器"
+                    >
+                      <Switch />
+                    </Form.Item>
+                    {aiServerList
+                      .filter((s) => ["Kamiya", "ChatGPT"].includes(s.key))
+                      .map((s) => {
+                        return (
+                          <Form.Item
+                            key={"global_tokens_" + s.key}
+                            label={s.name + " token (全局生效)"}
+                          >
+                            <Form.List name={"global_tokens_" + s.key}>
+                              {(fields, { add, remove }, { errors }) => {
+                                return (
+                                  <div style={{ overflow: "auto" }}>
+                                    {fields.map((field, index) => {
+                                      return (
+                                        <Form.Item {...field}>
+                                          <Input.Password
+                                            autoComplete="off"
+                                            type="text"
+                                          />
+                                        </Form.Item>
+                                      );
+                                    })}
+                                    <Form.Item extra="当存在多个token时，每次请求后都会切换到下一个token">
+                                      <Button
+                                        type="dashed"
+                                        onClick={() => {
+                                          add();
+                                        }}
+                                        block
+                                        icon={
+                                          <SkipExport>
+                                            <PlusOutlined />
+                                          </SkipExport>
+                                        }
+                                      >
+                                        增加 token
+                                      </Button>
+                                      <Form.ErrorList errors={errors} />
+                                    </Form.Item>
+                                  </div>
+                                );
+                              }}
+                            </Form.List>
+                          </Form.Item>
+                        );
+                      })}
+                  </div>
+                ),
+              },
+              {
+                key: "network",
+                label: "网络配置",
+                ...panlProp,
+                children: (
+                  <div>
+                    <Form.Item
+                      name="setting_baseurl"
+                      label="ChatGPT参数： 接口访问地址"
+                      extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
+                    >
+                      <Input
+                        type="text"
+                        placeholder="https://xxxx.xx.xx"
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="setting_slack_proxy_url"
+                      label="Slack配置： 接口访问地址 (全局生效)"
+                      extra="api代理地址 (反向代理了 https://slack.com 的地址)"
+                    >
+                      <Input
+                        type="text"
+                        placeholder="https://xxxx.xx.xx"
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="setting_user_server_url"
+                      label="自定义服务地址"
+                      extra="用于访问自建AI服务的地址，比如ChatGLM"
+                    >
+                      <Input
+                        type="text"
+                        placeholder="https://xxxx.xx.xx"
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: "Glabal",
+                label: "全局设置",
+                ...panlProp,
+                children: (
+                  <div>
+                    <Form.Item label={"全局背景图片"}>
+                      <div
+                        style={{
+                          width: "100%",
+                          display: "flex",
+                          gap: "10px",
+                        }}
+                      >
+                        <ImageUpload
+                          onSave={setBackground}
+                          width={screenSize.screenWidth}
+                          height={screenSize.screenHeight}
+                          trigger={
+                            <Button block style={{ width: "min(220px, 40vw)" }}>
+                              设置
+                            </Button>
+                          }
+                        ></ImageUpload>
+                        <Button
+                          style={{ flex: "1" }}
+                          onClick={() => {
+                            setBackground("");
+                          }}
+                        >
+                          清除
+                        </Button>
+                      </div>
+                    </Form.Item>
+                  </div>
+                ),
+              },
+            ]}
+          ></Collapse>
         </div>
         {contextHolder}
       </Form>
