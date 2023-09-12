@@ -39,11 +39,6 @@ export function DragList<T>({
   //   },
   //   [cache]
   // );
-  const domList = useMemo(() => {
-    return dataSource.map((v, idx) => {
-      return itemDom(v, idx);
-    });
-  }, [dataSource, itemDom]);
   useEffect(() => {
     setDataSource(data);
   }, [data]);
@@ -66,7 +61,7 @@ export function DragList<T>({
         strategy={verticalListSortingStrategy}
       >
         {dataSource.map((v, idx) => {
-          let dom = domList[idx];
+          let dom = itemDom(v, idx);
           if (!dom) return undefined;
           return (
             <Row style={style} key={v.key} data-row-key={v.key}>
