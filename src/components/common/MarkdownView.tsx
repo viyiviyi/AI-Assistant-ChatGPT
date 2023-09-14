@@ -16,7 +16,10 @@ import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import React, {
   createElement,
-  Fragment, useMemo
+  Fragment,
+  MouseEventHandler,
+  useMemo,
+  useState
 } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
@@ -125,7 +128,23 @@ const _MarkdownView = ({
   const renderedContent = useMemo(() => {
     return processor.processSync(pipe(markdown)).result;
   }, [markdown]);
-  return <div onDoubleClick={doubleClick}>{renderedContent}</div>;
+  const [checkTimes, setChrckTimes] = useState(0);
+  const [timer, setTimer] = useState(setTimeout(() => {}, 0));
+  const click: MouseEventHandler<HTMLDivElement> = (e) => {
+    clearTimeout(timer);
+    if (checkTimes+1 >= 4 && doubleClick) {
+      doubleClick!(e);
+      setChrckTimes(0);
+    } else {
+      setChrckTimes((v) => ++v);
+    }
+    setTimer(
+      setTimeout(() => {
+        setChrckTimes(0);
+      }, 500)
+    );
+  };
+  return <div onClick={click}>{renderedContent}</div>;
 };
 
 export const MarkdownView = React.memo(_MarkdownView);

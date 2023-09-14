@@ -95,7 +95,7 @@ export const MessageItem = ({
           var topic = chat.topics.find((f) => f.id === msg.topicId);
           if (topic) reloadNav(topic);
         }
-        reloadTopic(msg.topicId);
+        reloadTopic(msg.topicId, msg.id);
         setEdit(false);
         setNone([]);
       });
@@ -110,8 +110,7 @@ export const MessageItem = ({
         checked={msg.checked || false}
         onChange={(e) => {
           msg.checked = e.target.checked;
-          chat.pushMessage(msg);
-          reloadTopic(msg.topicId, msg.id);
+          chat.pushMessage(msg).then(() => reloadTopic(msg.topicId, msg.id));
         }}
       >
         <span>
@@ -453,8 +452,9 @@ export const MessageItem = ({
                     checked={msg.checked || false}
                     onChange={(e) => {
                       msg.checked = e.target.checked;
-                      chat.pushMessage(msg);
-                      reloadTopic(msg.topicId, msg.id);
+                      chat
+                        .pushMessage(msg)
+                        .then(() => reloadTopic(msg.topicId, msg.id));
                     }}
                   >
                     <span>
