@@ -16,7 +16,7 @@ import {
   Tabs,
   Tag,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import {
   CSSProperties,
@@ -24,7 +24,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 import { DragList } from "./common/DragList";
 import ImageUpload from "./common/ImageUpload";
@@ -68,6 +68,15 @@ export const VirtualRoleConfig = ({
       edit: false,
     })) || []
   );
+  useEffect(() => {
+    setVirtualRole_settings(
+      chatMgt?.virtualRole.settings?.map((v, i) => ({
+        ...v,
+        key: getUuid(),
+        edit: false,
+      })) || []
+    );
+  }, [chatMgt]);
   useEffect(() => {
     let tags: string[] = [];
     let tagsmap = new Map<string, number>();
