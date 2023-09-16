@@ -623,7 +623,7 @@ export const Setting = ({
                       name="GptConfig_top_p"
                       label="ChatGPT参数： top_p"
                       extra={
-                        "控制生成内容的多样性, 推荐0.8-0.9, 稍高一些, 保证有一定的词汇多样性"
+                        "控制生成内容的多样性, 推荐0.5-0.9, 稍高一些, 保证有一定的词汇多样性，也可能出现一长串形容词"
                       }
                     >
                       <InputNumber
@@ -649,7 +649,7 @@ export const Setting = ({
                       name="GptConfig_temperature"
                       label="ChatGPT参数： temperature"
                       extra={
-                        "控制生成内容的随机性, 推荐0.5-0.7, 较低一些, 使内容更加清晰连贯"
+                        "控制生成内容的随机性, 推荐0.5-0.1, 较低一些, 使内容更加清晰连贯，写文建议值0.7 - 1,"
                       }
                     >
                       <InputNumber
@@ -735,7 +735,7 @@ export const Setting = ({
                       <Switch />
                     </Form.Item>
                     {aiServerList
-                      .filter((s) => ["Kamiya", "ChatGPT"].includes(s.key))
+                      .filter((s) => s.hasToken)
                       .map((s) => {
                         return (
                           <Form.Item

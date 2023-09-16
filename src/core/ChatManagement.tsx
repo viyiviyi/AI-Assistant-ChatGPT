@@ -550,12 +550,12 @@ export class ChatManagement {
       role: "user",
       model: "gpt-3.5-turbo",
       max_tokens: 1024,
-      top_p: 0.7,
-      temperature: 0.6,
+      top_p: 0.5,
+      temperature: 0.7,
       n: 1,
       msgCount: 11,
       presence_penalty: 0.7,
-      frequency_penalty: 1.2,
+      frequency_penalty: 1.0,
     };
     await getInstance().insert<GptConfig>({ tableName: "GptConfig", data });
     return data;

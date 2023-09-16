@@ -9,6 +9,7 @@ import { getToken } from "../tokens";
 import { IChat } from "./../ChatManagement";
 import { ChatGLM_GPT } from "./ChatGLM_GPT";
 import { IAiService } from "./IAiService";
+import { QWen } from "./QWen";
 import { SlackClaude } from "./SlackClaude";
 export interface ServiceTokens {
   openai?: { apiKey: string };
@@ -22,22 +23,26 @@ export type BaseUrlScheam = {
   chatGPT: string;
   slackClaude: string;
   Kamiya: string;
+  dashscope_alyun: string;
 };
 
 export const DefaultBaseUrl: BaseUrlScheam = {
   chatGPT: "https://api.openai.com",
   slackClaude: "https://slack.com",
   Kamiya: "https://p0.kamiya.dev",
+  dashscope_alyun: "https://dashscope.aliyuncs.com",
 };
 export const ProxyBaseUrl: BaseUrlScheam = {
   chatGPT: "https://chat.eaias.com",
   slackClaude: "https://slack.eaias.com",
   Kamiya: "https://p0.kamiya.dev",
+  dashscope_alyun: "https://dashscope.alyun.proxy.eaias.com",
 };
 export const DevBaseUrl: BaseUrlScheam = {
   chatGPT: ProxyBaseUrl.chatGPT,
   slackClaude: "http://slack.yiyiooo.com",
   Kamiya: ProxyBaseUrl.Kamiya,
+  dashscope_alyun: "https://dashscope-proxy.yiyiooo.workers.dev/",
 };
 
 export type aiServiceType =
@@ -47,23 +52,37 @@ export type aiServiceType =
   | "GPTFree"
   | "Kamiya"
   | "ChatGLM"
+  | "QWen"
   | "Oauther";
-export const aiServerList: { key: aiServiceType; name: string }[] = [
+export const aiServerList: {
+  key: aiServiceType;
+  name: string;
+  hasToken: boolean;
+}[] = [
   {
     key: "None",
     name: "不启用AI",
+    hasToken: false,
   },
   {
     key: "ChatGPT",
     name: "ChatGPT",
+    hasToken: true,
   },
   {
     key: "Slack",
     name: "Slack(Claude)",
+    hasToken: false,
   },
   {
     key: "Kamiya",
     name: "众神之谷",
+    hasToken: true,
+  },
+  {
+    key: "QWen",
+    name: "通义千问",
+    hasToken: true,
   },
   // {
   //   key: "GPTFree",
@@ -72,6 +91,7 @@ export const aiServerList: { key: aiServiceType; name: string }[] = [
   {
     key: "ChatGLM",
     name: "ChatGLM",
+    hasToken: false,
   },
 ];
 
@@ -106,6 +126,8 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat) {
       return new ChatGLM_GPT(chat.config.userServerUrl || "", tokens);
     case "Oauther":
       return new ChatGLM_API(chat.config.userServerUrl || "", tokens);
+    case "QWen":
+      return new QWen(chat.config.userServerUrl || baseUrl.dashscope_alyun);
     case "None":
       return undefined;
   }
