@@ -2,36 +2,13 @@ import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
 import { getUuid } from "@/core/utils";
-import { CtxRole, VirtualRole, VirtualRoleSetting } from "@/Models/DataBase";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Checkbox,
-  Divider,
-  Form,
-  Input,
-  Popconfirm,
-  Space,
-  Switch,
-  Tabs,
-  Tag,
-  theme,
-  Typography,
-} from "antd";
-import {
-  CSSProperties,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { DragList } from "./common/DragList";
+import { VirtualRole } from "@/Models/DataBase";
+import { Button, Form, Input, Space, Switch, Tabs, theme } from "antd";
+import { CSSProperties, useContext, useState } from "react";
 import ImageUpload from "./common/ImageUpload";
 import { Modal, ModalCallback } from "./common/Modal";
-import { SkipExport } from "./common/SkipExport";
-import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
+import { VirtualRoleConfigList } from "./VirtualRoleConfigList";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
 
@@ -46,11 +23,8 @@ export const VirtualRoleConfig = ({
     chatMgt?.virtualRole.avatar
   );
   const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
-  const [settingFilterText, setSettingFilterText] = useState("");
   const { token } = theme.useToken();
   const { setChat } = useContext(ChatContext);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
   const [showInfo, setShowInfo] = useState(false);
   const screenSize = useScreenSize();
   const [form] = Form.useForm<{
@@ -68,35 +42,7 @@ export const VirtualRoleConfig = ({
       edit: false,
     })) || []
   );
-  useEffect(() => {
-    setVirtualRole_settings(
-      chatMgt?.virtualRole.settings?.map((v, i) => ({
-        ...v,
-        key: getUuid(),
-        edit: false,
-      })) || []
-    );
-  }, [chatMgt]);
-  useEffect(() => {
-    let tags: string[] = [];
-    let tagsmap = new Map<string, number>();
-    virtualRole_settings.forEach((v) => {
-      v.tags.forEach((tag) => {
-        if (tagsmap.has(tag)) tagsmap.set(tag, tagsmap.get(tag)! + 1);
-        else tagsmap.set(tag, 1);
-      });
-    });
-    tags = Array.from(tagsmap.keys()).sort(
-      (l, n) => tagsmap.get(n)! - tagsmap.get(l)!
-    );
-    setTags(tags);
-  }, [chatMgt, virtualRole_settings]);
-  const handleChange = (tag: string, checked: boolean) => {
-    const nextSelectedTags = checked
-      ? [...selectedTags, tag]
-      : selectedTags.filter((t) => t !== tag);
-    setSelectedTags(nextSelectedTags);
-  };
+
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
@@ -127,185 +73,6 @@ export const VirtualRoleConfig = ({
     maxHeight: screenSize.height - 300,
     overflow: "auto",
   };
-  const isShow = useCallback(
-    function (
-      item: VirtualRoleSetting & {
-        key: string;
-        edit: boolean;
-      }
-    ): boolean {
-      let show = true;
-      if (settingFilterText) {
-        show =
-          item.title?.includes(settingFilterText) ||
-          item.tags.filter((f) => f.includes(settingFilterText)).length > 0;
-      }
-      if (selectedTags.length > 0) {
-        show =
-          show && item.tags.filter((f) => selectedTags.includes(f)).length > 0;
-      }
-      return show;
-    },
-    [selectedTags, settingFilterText]
-  );
-  const dragItem = useCallback(
-    (
-      item: {
-        key: string;
-        edit: boolean;
-        extensionId?: string | undefined;
-        title?: string | undefined;
-        postposition?: boolean | undefined;
-        checked: boolean;
-        tags: string[];
-        ctx: {
-          role?: CtxRole | undefined;
-          content: string;
-          checked?: boolean | undefined;
-        }[];
-      },
-      idx: number
-    ) => {
-      return isShow(item) ? (
-        <div
-          style={{
-            flex: 1,
-            marginLeft: 10,
-            display: "flex",
-            width: 0,
-            cursor: "pointer",
-          }}
-        >
-          <EditVirtualRoleSetting
-            item={item}
-            allTags={tags}
-            visible={item.edit}
-            onCancel={() => {
-              item.edit = false;
-              setVirtualRole_settings((v) => [...v]);
-            }}
-            onSave={(_item) => {
-              _item.edit = false;
-              setVirtualRole_settings((v) =>
-                v.map((a) => (a.key == _item.key ? _item : a))
-              );
-            }}
-          />
-          <div
-            style={{ flex: 1, width: 0 }}
-            onClick={() => {
-              item.edit = true;
-              setVirtualRole_settings((v) => [...v]);
-            }}
-          >
-            {item.title || item.tags.length ? (
-              <div
-                style={{
-                  borderBottom: "1px solid #ccc2",
-                  paddingBottom: 2,
-                }}
-              >
-                <Typography.Text ellipsis style={{ width: "100%" }}>
-                  {item.tags
-                    .slice(0, Math.min(item.tags.length, 3))
-                    .map((v) => (
-                      <Tag key={"setting_tag_" + v} color="green">
-                        {v}
-                      </Tag>
-                    ))}{" "}
-                  {item.title}
-                </Typography.Text>
-              </div>
-            ) : (
-              <></>
-            )}
-            <Typography.Text
-              style={{ width: "100%" }}
-              type="secondary"
-              ellipsis={true}
-            >
-              {item.ctx.length
-                ? item.ctx
-                    .filter((v) => v.checked)
-                    .map((v) => v.content)
-                    .join("")
-                : "无内容 点击编辑"}
-            </Typography.Text>
-          </div>
-          <div
-            style={{
-              width: 30,
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-          >
-            <Space direction="vertical">
-              <Checkbox
-                checked={item.checked}
-                onChange={(e) => {
-                  item.checked = e.target.checked;
-                  setVirtualRole_settings((v) => [...v]);
-                }}
-              ></Checkbox>
-              <SkipExport>
-                <Popconfirm
-                  placement="topRight"
-                  overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                  title="确定删除？"
-                  onConfirm={() => {
-                    setVirtualRole_settings((v) => v.filter((f) => f != item));
-                  }}
-                >
-                  <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
-                </Popconfirm>
-              </SkipExport>
-            </Space>
-          </div>
-        </div>
-      ) : undefined;
-    },
-    [isShow, tags]
-  );
-  const perDragList = useMemo(() => {
-    return (
-      <DragList
-        style={{
-          borderRadius: 8,
-          border: "1px solid " + token.colorBorder,
-          padding: 5,
-          marginBottom: 8,
-        }}
-        data={virtualRole_settings.filter((f) => !f.postposition)}
-        onChange={(data) => {
-          setVirtualRole_settings([
-            ...data,
-            ...virtualRole_settings.filter((f) => f.postposition),
-          ]);
-        }}
-        itemDom={dragItem}
-      />
-    );
-  }, [dragItem, token.colorBorder, virtualRole_settings]);
-  const endDragList = useMemo(() => {
-    return (
-      <DragList
-        style={{
-          borderRadius: 8,
-          border: "1px solid " + token.colorBorder,
-          padding: 5,
-          marginBottom: 8,
-        }}
-        data={virtualRole_settings.filter((f) => f.postposition)}
-        onChange={(data) => {
-          setVirtualRole_settings([
-            ...virtualRole_settings.filter((f) => !f.postposition),
-            ...data,
-          ]);
-        }}
-        itemDom={dragItem}
-      />
-    );
-  }, [dragItem, token.colorBorder, virtualRole_settings]);
   const VirtualRoleInfo = (
     <div style={{ ...tabItemStyle }}>
       <div
@@ -380,115 +147,6 @@ export const VirtualRoleConfig = ({
       </Form.Item>
     </div>
   );
-  const SettingsInfo = (
-    <div style={{ ...tabItemStyle }}>
-      <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
-        <Input.Search
-          placeholder={"搜索关键字"}
-          onSearch={(val) => {
-            setSettingFilterText(val);
-            setVirtualRole_settings((v) => [...v]);
-          }}
-        />
-      </Form.Item>
-      <Form.Item>
-        {tags.length > 0 ? (
-          <Space size={[0, 8]} wrap style={{ overflow: "auto" }}>
-            {tags.slice(0, Math.min(50, tags.length)).map((tag) => (
-              <Tag.CheckableTag
-                key={tag}
-                checked={selectedTags.includes(tag)}
-                onChange={(checked) => handleChange(tag, checked)}
-              >
-                {tag}
-              </Tag.CheckableTag>
-            ))}
-          </Space>
-        ) : (
-          <span style={{ opacity: 0.4 }}>{"没有tag"}</span>
-        )}
-      </Form.Item>
-      <Form.Item>
-        <Modal
-          open={showInfo}
-          onCancel={() => {
-            setShowInfo(false);
-          }}
-          okText={null}
-          bodyStyle={{
-            maxHeight: "calc(100vh - 200px)",
-            minHeight: "50vh",
-            overflow: "auto",
-            padding: 0,
-          }}
-          items={() => {
-            return (
-              <VirtualRoleConfigInfo
-                bio={form.getFieldValue("virtualRole_bio")}
-                settings={virtualRole_settings}
-              />
-            );
-          }}
-        ></Modal>
-        {perDragList}
-        <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
-          <Button
-            type="dashed"
-            onClick={() => {
-              setVirtualRole_settings((v) => [
-                ...v,
-                {
-                  checked: true,
-                  tags: [],
-                  ctx: [],
-                  key: getUuid(),
-                  edit: false,
-                },
-              ]);
-            }}
-            block
-            icon={
-              <SkipExport>
-                <PlusOutlined />
-              </SkipExport>
-            }
-          >
-            增加设定
-          </Button>
-        </Form.Item>
-      </Form.Item>
-      <Divider orientation="left">后置内容</Divider>
-      <Form.Item>
-        {endDragList}
-        <Form.Item extra="当助理模式开启时，这些内容将追加在上下文最后面">
-          <Button
-            type="dashed"
-            onClick={() => {
-              setVirtualRole_settings((v) => [
-                ...v,
-                {
-                  postposition: true,
-                  checked: true,
-                  tags: [],
-                  ctx: [],
-                  key: getUuid(),
-                  edit: false,
-                },
-              ]);
-            }}
-            block
-            icon={
-              <SkipExport>
-                <PlusOutlined />
-              </SkipExport>
-            }
-          >
-            增加设定
-          </Button>
-        </Form.Item>
-      </Form.Item>
-    </div>
-  );
   return (
     <>
       <Form
@@ -533,7 +191,7 @@ export const VirtualRoleConfig = ({
                     );
                   }}
                 >
-                  复制
+                  {"复制"}
                 </Button>
                 <Button
                   disabled={!copyRoleVal}
@@ -550,7 +208,7 @@ export const VirtualRoleConfig = ({
                     );
                   }}
                 >
-                  粘贴
+                  {"粘贴"}
                 </Button>
                 <Button
                   onClick={() => {
@@ -560,6 +218,29 @@ export const VirtualRoleConfig = ({
                   {"预览"}
                 </Button>
               </Button.Group>
+            </Form.Item>
+            <Form.Item name={"VirtualRoleConfigInfo"}>
+              <Modal
+                open={showInfo}
+                onCancel={() => {
+                  setShowInfo(false);
+                }}
+                okText={null}
+                bodyStyle={{
+                  maxHeight: "calc(100vh - 200px)",
+                  minHeight: "50vh",
+                  overflow: "auto",
+                  padding: 0,
+                }}
+                items={() => {
+                  return (
+                    <VirtualRoleConfigInfo
+                      bio={form.getFieldValue("virtualRole_bio")}
+                      settings={virtualRole_settings}
+                    />
+                  );
+                }}
+              ></Modal>
             </Form.Item>
           </Space>
           <Tabs
@@ -577,7 +258,11 @@ export const VirtualRoleConfig = ({
                 label: `设定列表`,
                 key: "settings",
                 forceRender: true,
-                children: SettingsInfo,
+                children: (
+                  <div style={{ ...tabItemStyle }}>
+                    <VirtualRoleConfigList save={setVirtualRole_settings} />
+                  </div>
+                ),
               },
               {
                 label: `插件列表`,

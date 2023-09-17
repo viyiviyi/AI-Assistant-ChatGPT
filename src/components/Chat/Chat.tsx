@@ -5,7 +5,7 @@ import { KeyValueData } from "@/core/KeyValueData";
 import { activityScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button, Layout, message, Modal, theme } from "antd";
+import { Button, Form, Layout, message, Modal, theme } from "antd";
 import React, { useContext, useEffect, useState } from "react";
 import { Hidden } from "../common/Hidden";
 import { MarkdownView } from "../common/MarkdownView";
@@ -198,7 +198,9 @@ export const Chat = () => {
                       padding: 10,
                     }}
                   >
-                    <VirtualRoleConfigList />
+                    <Form style={{ height: "100%", overflow: "auto" }}>
+                      <VirtualRoleConfigList autoSave={true} />
+                    </Form>
                   </div>
                 </Hidden>
               </Content>

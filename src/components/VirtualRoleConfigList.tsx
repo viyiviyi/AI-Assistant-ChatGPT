@@ -19,7 +19,28 @@ import { DragList } from "./common/DragList";
 import { SkipExport } from "./common/SkipExport";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 
-export const VirtualRoleConfigList = () => {
+export const VirtualRoleConfigList = ({
+  autoSave = false,
+  save,
+}: {
+  autoSave?: boolean;
+  save?: (
+    settings: {
+      key: string;
+      edit: boolean;
+      extensionId?: string | undefined;
+      title?: string | undefined;
+      postposition?: boolean | undefined;
+      checked: boolean;
+      tags: string[];
+      ctx: {
+        role?: CtxRole | undefined;
+        content: string;
+        checked?: boolean | undefined;
+      }[];
+    }[]
+  ) => void;
+}) => {
   const { chatMgt } = useContext(ChatContext);
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -66,11 +87,9 @@ export const VirtualRoleConfigList = () => {
       item: VirtualRoleSetting & {
         key: string;
         edit: boolean;
-      },
-      postposition: boolean = false
+      }
     ): boolean => {
       let show = true;
-      if (postposition != !!item.postposition) show = false;
       if (settingFilterText) {
         show =
           item.title?.includes(settingFilterText) ||
@@ -84,14 +103,20 @@ export const VirtualRoleConfigList = () => {
     },
     [selectedTags, settingFilterText]
   );
-  const save = () => {
+  const saveFunc = () => {
     chatMgt.virtualRole.settings = virtualRole_settings
       .filter((f) => f && (f.ctx.filter((_f) => _f.content).length || f.title))
       .map((v) => ({ ...v, key: undefined, edit: undefined }));
+    chatMgt.saveVirtualRoleBio();
   };
   useEffect(() => {
-    save();
-    chatMgt.saveVirtualRoleBio();
+    if (autoSave) saveFunc();
+    if (save)
+      save(
+        virtualRole_settings.filter(
+          (f) => f && (f.ctx.filter((_f) => _f.content).length || f.title)
+        )
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [virtualRole_settings]);
   const dragItem = useCallback(
@@ -109,7 +134,7 @@ export const VirtualRoleConfigList = () => {
         checked?: boolean | undefined;
       }[];
     }) => {
-      return isShow(item, true) ? (
+      return isShow(item) ? (
         <div
           style={{
             flex: 1,
@@ -210,7 +235,7 @@ export const VirtualRoleConfigList = () => {
     [isShow, tags]
   );
   return (
-    <Form style={{ height: "100%", overflow: "auto" }}>
+    <>
       <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
         <Input.Search
           placeholder={"搜索关键字"}
@@ -246,9 +271,12 @@ export const VirtualRoleConfigList = () => {
             marginBottom: 8,
           }}
           centenDrag={true}
-          data={virtualRole_settings}
+          data={virtualRole_settings.filter((f) => !f.postposition)}
           onChange={(data) => {
-            setVirtualRole_settings(data);
+            setVirtualRole_settings([
+              ...data,
+              ...virtualRole_settings.filter((f) => f.postposition),
+            ]);
           }}
           itemDom={dragItem}
         />
@@ -269,13 +297,13 @@ export const VirtualRoleConfigList = () => {
               ]);
             }}
             block
-            icon={
+          >
+            <Typography.Text>
               <SkipExport>
                 <PlusOutlined />
               </SkipExport>
-            }
-          >
-            增加设定
+              {"增加设定"}
+            </Typography.Text>
           </Button>
         </Form.Item>
       </Form.Item>
@@ -288,9 +316,12 @@ export const VirtualRoleConfigList = () => {
             padding: 5,
             marginBottom: 8,
           }}
-          data={virtualRole_settings}
+          data={virtualRole_settings.filter((f) => f.postposition)}
           onChange={(data) => {
-            setVirtualRole_settings(data);
+            setVirtualRole_settings([
+              ...virtualRole_settings.filter((f) => !f.postposition),
+              ...data,
+            ]);
           }}
           itemDom={dragItem}
         />
@@ -312,16 +343,16 @@ export const VirtualRoleConfigList = () => {
               ]);
             }}
             block
-            icon={
+          >
+            <Typography.Text>
               <SkipExport>
                 <PlusOutlined />
               </SkipExport>
-            }
-          >
-            增加设定
+              {"增加设定"}
+            </Typography.Text>
           </Button>
         </Form.Item>
       </Form.Item>
-    </Form>
+    </>
   );
 };

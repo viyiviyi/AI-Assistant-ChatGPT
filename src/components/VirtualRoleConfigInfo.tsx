@@ -34,23 +34,23 @@ export const VirtualRoleConfigInfo = ({
         )}
         {ChatManagement.parseSetting(
           settings.filter((v) => !v.postposition)
-        ).map((v) => {
+        ).map((v,idx) => {
           return (
-            <>
+            <div key={idx+'_settint_info_item_p'}>
               {getTag(v.role)}
               <MarkdownView markdown={v.content} />
-            </>
+            </div>
           );
         })}
         <Typography.Text type="secondary">{"... 上下文"}</Typography.Text>
         {ChatManagement.parseSetting(
           settings.filter((v) => v.postposition)
-        ).map((v) => {
+        ).map((v,idx) => {
           return (
-            <>
+            <div key={idx+'_settint_info_item_e'}>
               {getTag(v.role)}
               <MarkdownView markdown={v.content} />
-            </>
+            </div>
           );
         })}
       </Space>

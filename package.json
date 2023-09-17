@@ -6,6 +6,7 @@
     "dev": "next dev -p 9000",
     "build": "next build",
     "static": "next build && next export",
+    "export": "next export",
     "cloudflare": "npx @cloudflare/next-on-pages@1",
     "start": "next start",
     "lint": "next lint"
