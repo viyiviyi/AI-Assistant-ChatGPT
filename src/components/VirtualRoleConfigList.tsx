@@ -280,7 +280,7 @@ export const VirtualRoleConfigList = ({
           }}
           itemDom={dragItem}
         />
-        <Form.Item>
+        <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
           <Button
             ghost
             type="dashed"
@@ -308,7 +308,7 @@ export const VirtualRoleConfigList = ({
         </Form.Item>
       </Form.Item>
       <Divider orientation="left">后置内容</Divider>
-      <Form.Item>
+      <Form.Item extra="当助理模式开启时，这些内容将追加在上下文后面">
         <DragList
           style={{
             borderRadius: 8,

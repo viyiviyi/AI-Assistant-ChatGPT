@@ -214,6 +214,30 @@ export function EditVirtualRoleSetting({
           />
         </Form.Item>
         <div style={{ overflow: "auto" }}>
+          <Form.Item>
+            <Button
+              type="dashed"
+              onClick={() => {
+                setCtx((v) => [
+                  {
+                    content: "",
+                    role: 'system',
+                    key: getUuid(),
+                    checked: true,
+                  },
+                  ...v,
+                ]);
+              }}
+              block
+              icon={
+                <SkipExport>
+                  <PlusOutlined />
+                </SkipExport>
+              }
+            >
+              {"增加设定"}
+            </Button>
+          </Form.Item>
           <DragList
             data={ctx}
             onChange={(data) => {
@@ -231,7 +255,7 @@ export function EditVirtualRoleSetting({
             }}
             itemDom={renderItem}
           ></DragList>
-          <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
+          <Form.Item>
             <Button
               type="dashed"
               onClick={() => {
@@ -252,7 +276,7 @@ export function EditVirtualRoleSetting({
                 </SkipExport>
               }
             >
-              增加设定
+              {"增加设定"}
             </Button>
           </Form.Item>
         </div>

@@ -9,7 +9,7 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SkipExport } from "./SkipExport";
 
 export function DragList<T>({
@@ -27,18 +27,7 @@ export function DragList<T>({
 }) {
   const [dataSource, setDataSource] =
     useState<Array<T & { key: string }>>(data);
-  // 无用的代码
-  // const [cache] = useState<{ [key: string]: { dom: any; data: any } }>({});
-  // const getCache = useCallback(
-  //   function <T>(cb: () => T, data: any & { key: string }): T {
-  //     if (cache[data.key]?.data == data) return cache[data.key].dom;
-  //     const res = cb();
-  //     cache[data.key] = { data, dom: res };
-  //     console.log("reload");
-  //     return res;
-  //   },
-  //   [cache]
-  // );
+
   useEffect(() => {
     setDataSource(data);
   }, [data]);
