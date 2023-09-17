@@ -331,7 +331,7 @@ export const Setting = ({
                   } else {
                     let _chat = chatMgt!.toJson();
                     _chat.group.background = undefined;
-                    downloadJson(JSON.stringify(_chat), chatMgt!.group.name);
+                    downloadJson(JSON.stringify(_chat), chatMgt!.group.name+"_eaias.com");
                   }
                   setShowExportModal(false);
                 }}
