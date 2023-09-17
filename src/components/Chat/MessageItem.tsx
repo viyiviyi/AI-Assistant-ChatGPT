@@ -331,6 +331,7 @@ export const MessageItem = ({
           doubleClick={() => {
             setMessage(msg.text);
             setEdit(true);
+            inputRef.current?.focus();
           }}
         />
       )}
