@@ -6,11 +6,13 @@ import {
   arrayMove,
   SortableContext,
   useSortable,
-  verticalListSortingStrategy
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React, { useEffect, useState } from "react";
 import { SkipExport } from "./SkipExport";
+
+export type DragItem = { key: string };
 
 export function DragList<T>({
   data,
@@ -19,15 +21,13 @@ export function DragList<T>({
   style,
   centenDrag = false,
 }: {
-  data: Array<T & { key: string }>;
+  data: Array<T & DragItem>;
   itemDom: (item: T, index: number) => React.ReactElement | undefined;
   onChange: (data: T[]) => void;
   style?: React.CSSProperties;
   centenDrag?: boolean;
 }) {
-  const [dataSource, setDataSource] =
-    useState<Array<T & { key: string }>>(data);
-
+  const [dataSource, setDataSource] = useState<Array<T & DragItem>>(data);
   useEffect(() => {
     setDataSource(data);
   }, [data]);

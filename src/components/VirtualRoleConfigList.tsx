@@ -12,56 +12,47 @@ import {
   Space,
   Tag,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { DragList } from "./common/DragList";
+import { DragItem, DragList } from "./common/DragList";
 import { SkipExport } from "./common/SkipExport";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
+
+type SettingItem = Array<VirtualRoleSetting & { key: string; edit: boolean }>;
 
 export const VirtualRoleConfigList = ({
   autoSave = false,
   save,
+  inputSettings,
 }: {
   autoSave?: boolean;
-  save?: (
-    settings: {
-      key: string;
-      edit: boolean;
-      extensionId?: string | undefined;
-      title?: string | undefined;
-      postposition?: boolean | undefined;
-      checked: boolean;
-      tags: string[];
-      ctx: {
-        role?: CtxRole | undefined;
-        content: string;
-        checked?: boolean | undefined;
-      }[];
-    }[]
-  ) => void;
+  save?: (settings: SettingItem) => void;
+  inputSettings?: SettingItem;
 }) => {
   const { chatMgt } = useContext(ChatContext);
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [settingFilterText, setSettingFilterText] = useState("");
   const { token } = theme.useToken();
+
   const [virtualRole_settings, setVirtualRole_settings] = useState(
-    chatMgt?.virtualRole.settings?.map((v, i) => ({
-      ...v,
-      key: getUuid(),
-      edit: false,
-    })) || []
+    inputSettings || []
   );
   useEffect(() => {
-    setVirtualRole_settings(
-      chatMgt?.virtualRole.settings?.map((v, i) => ({
-        ...v,
-        key: getUuid(),
-        edit: false,
-      })) || []
-    );
-  }, [chatMgt]);
+    // 从两个地方获取数据更新 设定列表，以inputSettings的优先
+    if (inputSettings) setVirtualRole_settings(inputSettings);
+    else {
+      setVirtualRole_settings(
+        chatMgt.virtualRole.settings.map((v) => ({
+          ...v,
+          key: (v as any).key || getUuid(),
+          edit: false,
+        }))
+      );
+    }
+  }, [inputSettings, chatMgt]);
+
   useEffect(() => {
     let tags: string[] = [];
     let tagsmap = new Map<string, number>();
@@ -75,7 +66,7 @@ export const VirtualRoleConfigList = ({
       (l, n) => tagsmap.get(n)! - tagsmap.get(l)!
     );
     setTags(tags);
-  }, [chatMgt, virtualRole_settings]);
+  }, [virtualRole_settings]);
   const handleChange = (tag: string, checked: boolean) => {
     const nextSelectedTags = checked
       ? [...selectedTags, tag]
@@ -103,37 +94,40 @@ export const VirtualRoleConfigList = ({
     },
     [selectedTags, settingFilterText]
   );
-  const saveFunc = () => {
-    chatMgt.virtualRole.settings = virtualRole_settings
-      .filter((f) => f && (f.ctx.filter((_f) => _f.content).length || f.title))
-      .map((v) => ({ ...v, key: undefined, edit: undefined }));
-    chatMgt.saveVirtualRoleBio();
-  };
-  useEffect(() => {
-    if (autoSave) saveFunc();
-    if (save)
-      save(
-        virtualRole_settings.filter(
+  const saveFunc = useCallback(
+    (setting: SettingItem) => {
+      chatMgt.virtualRole.settings = setting
+        .filter(
           (f) => f && (f.ctx.filter((_f) => _f.content).length || f.title)
         )
-      );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [virtualRole_settings]);
+        .map((v) => ({ ...v, edit: undefined }));
+      chatMgt.saveVirtualRoleBio();
+    },
+    [chatMgt]
+  );
+  const saveSettings = useCallback(
+    (setting: ((setting: SettingItem) => SettingItem) | SettingItem) => {
+      setVirtualRole_settings((last_settings) => {
+        let next_setting = last_settings;
+        if (typeof setting === "function") {
+          next_setting = setting(last_settings);
+        } else {
+          next_setting = setting;
+        }
+        if (autoSave) saveFunc(next_setting);
+        if (save)
+          save(
+            next_setting.filter(
+              (f) => f && (f.ctx.filter((_f) => _f.content).length || f.title)
+            )
+          );
+        return next_setting;
+      });
+    },
+    [autoSave, save, saveFunc]
+  );
   const dragItem = useCallback(
-    (item: {
-      key: string;
-      edit: boolean;
-      extensionId?: string | undefined;
-      title?: string | undefined;
-      postposition?: boolean | undefined;
-      checked: boolean;
-      tags: string[];
-      ctx: {
-        role?: CtxRole | undefined;
-        content: string;
-        checked?: boolean | undefined;
-      }[];
-    }) => {
+    (item: VirtualRoleSetting & DragItem & { edit: boolean }) => {
       return isShow(item) ? (
         <div
           style={{
@@ -150,11 +144,11 @@ export const VirtualRoleConfigList = ({
             visible={item.edit}
             onCancel={() => {
               item.edit = false;
-              setVirtualRole_settings((v) => [...v]);
+              saveSettings((v) => [...v]);
             }}
             onSave={(_item) => {
               _item.edit = false;
-              setVirtualRole_settings((v) =>
+              saveSettings((v) =>
                 v.map((a) => (a.key == _item.key ? _item : a))
               );
             }}
@@ -163,7 +157,7 @@ export const VirtualRoleConfigList = ({
             style={{ flex: 1, width: 0 }}
             onClick={() => {
               item.edit = true;
-              setVirtualRole_settings((v) => [...v]);
+              saveSettings((v) => [...v]);
             }}
           >
             {item.title || item.tags.length ? (
@@ -212,7 +206,7 @@ export const VirtualRoleConfigList = ({
                 checked={item.checked}
                 onChange={(e) => {
                   item.checked = e.target.checked;
-                  setVirtualRole_settings((v) => [...v]);
+                  saveSettings((v) => [...v]);
                 }}
               ></Checkbox>
               <SkipExport>
@@ -221,7 +215,7 @@ export const VirtualRoleConfigList = ({
                   overlayInnerStyle={{ whiteSpace: "nowrap" }}
                   title="确定删除？"
                   onConfirm={() => {
-                    setVirtualRole_settings((v) => v.filter((f) => f != item));
+                    saveSettings((v) => v.filter((f) => f != item));
                   }}
                 >
                   <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
@@ -232,16 +226,17 @@ export const VirtualRoleConfigList = ({
         </div>
       ) : undefined;
     },
-    [isShow, tags]
+    [isShow, tags, saveSettings]
   );
   return (
     <>
       <Form.Item label="搜索配置" noStyle style={{ marginBottom: 10 }}>
         <Input.Search
           placeholder={"搜索关键字"}
+          value={settingFilterText}
+          onChange={(e) => setSettingFilterText(e.target.value)}
           onSearch={(val) => {
             setSettingFilterText(val);
-            // setVirtualRole_settings((v) => [...v]);
           }}
         />
       </Form.Item>
@@ -273,7 +268,7 @@ export const VirtualRoleConfigList = ({
           centenDrag={true}
           data={virtualRole_settings.filter((f) => !f.postposition)}
           onChange={(data) => {
-            setVirtualRole_settings([
+            saveSettings([
               ...data,
               ...virtualRole_settings.filter((f) => f.postposition),
             ]);
@@ -285,7 +280,7 @@ export const VirtualRoleConfigList = ({
             ghost
             type="dashed"
             onClick={() => {
-              setVirtualRole_settings((v) => [
+              saveSettings((v) => [
                 ...v,
                 {
                   checked: true,
@@ -318,7 +313,7 @@ export const VirtualRoleConfigList = ({
           }}
           data={virtualRole_settings.filter((f) => f.postposition)}
           onChange={(data) => {
-            setVirtualRole_settings([
+            saveSettings([
               ...virtualRole_settings.filter((f) => !f.postposition),
               ...data,
             ]);
@@ -330,7 +325,7 @@ export const VirtualRoleConfigList = ({
             ghost
             type="dashed"
             onClick={() => {
-              setVirtualRole_settings((v) => [
+              saveSettings((v) => [
                 ...v,
                 {
                   postposition: true,

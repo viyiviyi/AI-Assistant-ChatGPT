@@ -2,11 +2,11 @@ import { useScreenSize } from "@/core/hooks";
 import { CloseOutlined } from "@ant-design/icons";
 import { Button, Drawer, theme, Typography } from "antd";
 import React, {
-    CSSProperties,
-    MutableRefObject,
-    useCallback,
-    useEffect,
-    useRef
+  CSSProperties,
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useRef,
 } from "react";
 import { Hidden } from "./Hidden";
 
@@ -32,6 +32,7 @@ export const Modal = ({
   closable,
   children,
   title,
+  width,
 }: {
   open: boolean;
   items?: (cbs: ModalCallback) => React.ReactNode;
@@ -46,6 +47,7 @@ export const Modal = ({
   okText?: React.ReactNode;
   cancelText?: React.ReactNode;
   maskClosable?: boolean;
+  width?: string | number | undefined;
 }) => {
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
@@ -80,6 +82,7 @@ export const Modal = ({
           borderRadius: "10px 10px 0 0 ",
           ...style,
         }}
+        width={width}
         bodyStyle={{ padding: 0 }}
         open={open}
       >
@@ -176,7 +179,7 @@ export const Modal = ({
             borderRadius: token.borderRadiusLG,
             // maxHeight: maxHight ? maxHight : "calc(100% - 40px)",
             // overflow: "auto",
-            width: "min(100%, 500px)",
+            width: width || "min(100%, 500px)",
             position: "relative",
           }}
         >

@@ -2,7 +2,7 @@ import { ChatMessage } from "@/components/Chat/ChatMessage";
 import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks";
 import { KeyValueData } from "@/core/KeyValueData";
-import { activityScroll } from "@/core/utils";
+import { activityScroll, getUuid } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Form, Layout, message, Modal, theme } from "antd";
@@ -199,7 +199,9 @@ export const Chat = () => {
                     }}
                   >
                     <Form style={{ height: "100%", overflow: "auto" }}>
-                      <VirtualRoleConfigList autoSave={true} />
+                      <VirtualRoleConfigList
+                        autoSave={true}
+                      />
                     </Form>
                   </div>
                 </Hidden>

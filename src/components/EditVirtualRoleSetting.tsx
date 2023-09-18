@@ -10,11 +10,11 @@ import {
   Popconfirm,
   Segmented,
   Select,
-  theme
+  theme,
 } from "antd";
 import copy from "copy-to-clipboard";
 import { useCallback, useState } from "react";
-import { DragList } from "./common/DragList";
+import { DragItem, DragList } from "./common/DragList";
 import { Modal } from "./common/Modal";
 import { SkipExport } from "./common/SkipExport";
 
@@ -25,15 +25,15 @@ export function EditVirtualRoleSetting({
   onCancel,
   allTags,
 }: {
-  item: VirtualRoleSetting & { key: string; edit: boolean };
+  item: VirtualRoleSetting & DragItem & { edit: boolean };
   visible: boolean;
-  onSave: (item: VirtualRoleSetting & { key: string; edit: boolean }) => void;
+  onSave: (item: VirtualRoleSetting & DragItem & { edit: boolean }) => void;
   onCancel: () => void;
   allTags: string[];
 }) {
-  // const [form] = Form.useForm();
   const [tags, setTags] = useState<string[]>(item.tags);
   const { token } = theme.useToken();
+  const [filterText, setFilterText] = useState("");
   const [ctx, setCtx] = useState(
     item.ctx.filter((f) => f.content).map((v) => ({ ...v, key: getUuid() }))
   );
@@ -47,6 +47,7 @@ export function EditVirtualRoleSetting({
       },
       idx: number
     ) => {
+      if (filterText && !item.content.includes(filterText)) return undefined;
       return (
         <div
           style={{
@@ -126,20 +127,26 @@ export function EditVirtualRoleSetting({
         </div>
       );
     },
-    []
+    [filterText]
   );
   const [title, setTitle] = useState(item.title);
+  if (!visible) return <></>;
   return (
     <Modal
       open={visible}
       onOk={() => {
-        onSave({
-          ...item,
-          tags,
-          ctx: ctx.filter((f) => f.content),
-          title: title,
+        setCtx((ctx) => {
+          let next_ctx = ctx.filter((f) => f.content);
+          onSave({
+            ...item,
+            tags,
+            ctx: next_ctx,
+            title: title,
+          });
+          return next_ctx;
         });
       }}
+      width="clamp(720px, 100% - 100px, 100%)"
       onCancel={onCancel}
       bodyStyle={{
         maxHeight: "calc(100vh - 200px)",
@@ -147,12 +154,7 @@ export function EditVirtualRoleSetting({
         overflow: "auto",
       }}
     >
-      <div
-      // form={form}
-      // layout="vertical"
-      // autoComplete="off"
-      // initialValues={item}
-      >
+      <div>
         <Form.Item>
           <Button.Group>
             <Button
@@ -160,7 +162,7 @@ export function EditVirtualRoleSetting({
                 copy(JSON.stringify(item));
               }}
             >
-              复制
+              {"复制"}
             </Button>
             <Button
               onClick={() => {
@@ -182,9 +184,19 @@ export function EditVirtualRoleSetting({
                 });
               }}
             >
-              粘贴
+              {"粘贴"}
             </Button>
           </Button.Group>
+        </Form.Item>
+        <Form.Item style={{ marginBottom: 10 }}>
+          <Input.Search
+            placeholder={"搜索关键字"}
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            onSearch={(val) => {
+              setFilterText(val);
+            }}
+          />
         </Form.Item>
         <Form.Item validateTrigger={["onChange", "onBlur"]}>
           <Input.TextArea
@@ -221,7 +233,7 @@ export function EditVirtualRoleSetting({
                 setCtx((v) => [
                   {
                     content: "",
-                    role: 'system',
+                    role: undefined,
                     key: getUuid(),
                     checked: true,
                   },

@@ -260,7 +260,10 @@ export const VirtualRoleConfig = ({
                 forceRender: true,
                 children: (
                   <div style={{ ...tabItemStyle }}>
-                    <VirtualRoleConfigList save={setVirtualRole_settings} />
+                    <VirtualRoleConfigList
+                      save={setVirtualRole_settings}
+                      inputSettings={virtualRole_settings}
+                    />
                   </div>
                 ),
               },
