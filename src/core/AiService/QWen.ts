@@ -204,7 +204,7 @@ export class QWen implements IAiService {
                 if (!text) {
                   continue;
                 }
-                full_response += text;
+                full_response = text;
                 onMessage &&
                   (await onMessage({
                     error: false,
