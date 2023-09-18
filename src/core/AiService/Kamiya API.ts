@@ -152,6 +152,16 @@ export class Kamiya implements IAiService {
               if (line.trim() === "") {
                 continue;
               }
+              if (!line.startsWith("data")) {
+                return (
+                  onMessage &&
+                  (await onMessage({
+                    error: true,
+                    end: true,
+                    text: line,
+                  }))
+                );
+              }
               if (line.trim() === "data: [DONE]") {
                 onMessage &&
                   (await onMessage({
