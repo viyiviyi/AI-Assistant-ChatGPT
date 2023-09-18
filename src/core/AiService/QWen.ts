@@ -14,7 +14,7 @@ export class QWen implements IAiService {
     this.tokens = {};
   }
   serverType: aiServiceType = "QWen";
-  models = async () => ["qwen-turbo", "qwen-v1", "qwen-plus-v1"];
+  models = async () => ["qwen-turbo", "qwen-plus"];
   async sendMessage({
     context,
     onMessage,
@@ -97,8 +97,6 @@ export class QWen implements IAiService {
           seed: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - 1),
         },
       },
-      messages: context,
-      stream: true,
     };
     const controller = new AbortController();
     await fetch(
@@ -160,6 +158,7 @@ export class QWen implements IAiService {
               if (line.trim() === "") {
                 continue;
               }
+              console.log(line);
               if (line.trim() === "data: [DONE]") {
                 onMessage &&
                   (await onMessage({
@@ -172,12 +171,23 @@ export class QWen implements IAiService {
               try {
                 let data;
                 try {
-                  data = JSON.parse(line.substring(6));
+                  data = JSON.parse(line.substring(5));
                 } catch (error) {
                   continue;
                 }
                 const output = data.output;
                 if (!output) {
+                  if (data.code) {
+                    return (
+                      onMessage &&
+                      (await onMessage({
+                        error: false,
+                        end: true,
+                        text:
+                          "```json\n" + JSON.stringify(data, null, 4) + "\n```",
+                      }))
+                    );
+                  }
                   continue;
                 }
                 const finish_reason = output.finish_reason;

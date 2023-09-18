@@ -42,7 +42,7 @@ export const DevBaseUrl: BaseUrlScheam = {
   chatGPT: ProxyBaseUrl.chatGPT,
   slackClaude: "http://slack.yiyiooo.com",
   Kamiya: ProxyBaseUrl.Kamiya,
-  dashscope_alyun: "https://dashscope-proxy.yiyiooo.workers.dev/",
+  dashscope_alyun: "https://dashscope-proxy.yiyiooo.workers.dev",
 };
 
 export type aiServiceType =
