@@ -11,6 +11,7 @@ import { Layout, theme } from "antd";
 import Head from "next/head";
 import React, { useContext, useEffect, useState } from "react";
 import chatConfig from "../../public/使用示例.json";
+import appManifest from "../../public/manifest.json";
 
 const MemoChat = React.memo(Chat);
 
@@ -105,7 +106,7 @@ export default function Page() {
           />
         </SkipExport>
         <Head>
-          <title>Chat助理 灵活简洁美观的ChatGPT客户端</title>
+          <title>{appManifest.name}</title>
         </Head>
         <MemoChat />
       </Layout>

@@ -7,7 +7,7 @@ import {
   ChatContext,
   ChatManagement,
   IChat,
-  noneChat
+  noneChat,
 } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
@@ -17,6 +17,7 @@ import { Layout, Spin, theme } from "antd";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
+import appManifest from "../../public/manifest.json";
 
 const MemoChat = React.memo(Chat);
 
@@ -134,7 +135,9 @@ export default function Page() {
           />
         </SkipExport>
         <Head>
-          <title>Chat助理 {chatMgt.group.name}</title>
+          <title>
+            {appManifest.name} {chatMgt.group.name}
+          </title>
         </Head>
         <Spin
           style={{

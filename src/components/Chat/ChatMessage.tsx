@@ -7,7 +7,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   MessageOutlined,
-  PlusOutlined
+  PlusOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,14 +17,14 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography
+  Typography,
 } from "antd";
 import React, {
   useCallback,
   useContext,
   useEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 import { SkipExport } from "../common/SkipExport";
 import { MessageContext } from "./Chat";
@@ -85,14 +85,14 @@ export const ChatMessage = () => {
   const handlerDelete = useCallback(
     (topic: TopicMessage) => {
       chat.removeTopic(topic!).then(() => {
-        setActivityTopic(activityTopic == topic ? undefined : activityTopic);
-        if (
-          activityTopic &&
-          activityTopic != topic &&
-          !activityKey.includes(activityTopic?.id || "")
-        )
-          setActivityKey((k) => [activityTopic.id, ...k]);
-        reloadNav(topic!);
+        let next_t = activityTopic;
+        if (activityTopic == topic) {
+          next_t = chat.topics.length ? chat.topics.slice(-1)[0] : undefined;
+        }
+        setActivityTopic(next_t);
+        if (next_t && !activityKey.includes(next_t?.id || ""))
+          setActivityKey((k) => [next_t!.id, ...k]);
+        reloadNav(next_t!);
         reloadTopic;
         setNone([]);
       });
@@ -108,7 +108,14 @@ export const ChatMessage = () => {
     let topic = activityTopic;
     if (topic) {
       return (
-        <div style={{ padding: token.paddingContentVerticalSM }}>
+        <div
+          style={{
+            padding: token.paddingContentVerticalSM,
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+        >
           <MemoTopicTitle topic={topic} onClick={() => {}}></MemoTopicTitle>
           <div style={{ marginTop: "15px" }}>
             <MemoTopUtil
@@ -117,14 +124,17 @@ export const ChatMessage = () => {
               firstMsgIdxRef={firstMsgIdx}
             />
           </div>
-          <MemoMessageList
-            chat={chat}
-            topic={topic}
-            firstMsgIdxRef={firstMsgIdx}
-          ></MemoMessageList>
+          <div id={"content"} style={{ flex: 1, overflow: "auto" }}>
+            <MemoMessageList
+              chat={chat}
+              topic={topic}
+              firstMsgIdxRef={firstMsgIdx}
+            ></MemoMessageList>
+          </div>
         </div>
       );
     }
+    return <></>;
   }
 
   return (

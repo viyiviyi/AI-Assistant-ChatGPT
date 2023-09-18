@@ -1,11 +1,11 @@
 {
-  "name": "ChatGPT Tool",
-  "short_name": "ChatGPT Tool",
+  "name": "ChatAI Tool",
+  "short_name": "ChatAI Tool",
   "start_url": "/chat",
   "display": "standalone",
   "background_color": "#22252a",
   "theme_color": "#292c33",
-  "description": "ChatGPT、ChatGLM使用工具,灵活轻便,简洁美观,可完全自由的控制对话上下文,可简单生成远大于token限制的超长文本;可为ChatGPT设定复杂且便于控制的前导提示词,通过简单的勾选,实现超长记忆能力;提升工作效率,解放生产力;文档/对话两种渲染方式,既能模拟聊天,叢能用于创作。",
+  "description": "这是一个AI使用工具，可以使用AI进行文字创作或模拟聊天，支持简单地配置复杂的设定，支持在任何时候修改、停用、启用设定，实现更便捷有效的控制AI生成内容。",
   "icons": [
     {
       "src": "logo-192.png",

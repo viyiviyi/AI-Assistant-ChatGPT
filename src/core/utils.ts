@@ -70,7 +70,7 @@ export function downloadJson(jsonData: string, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename+'.json';
+  a.download = filename + ".json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -131,12 +131,12 @@ export function scrollToBotton(id?: string) {
       if (!wrap) return;
       const target = document.getElementById(scroolArgsCache.id);
       const offsetTop = target ? target.offsetTop : wrap.scrollHeight;
-      const offsetHeight = target?.offsetHeight || 56;
+      const offsetHeight = target?.offsetHeight || wrap.offsetHeight;
       smoothScroll(
         wrap,
         wrap.scrollTop,
-        offsetTop + offsetHeight - wrap.offsetHeight - 56,
-        700
+        offsetTop + offsetHeight - wrap.offsetHeight,
+        500
       );
     }
   }, 500);
@@ -150,8 +150,8 @@ export function scrollToTop(id?: string) {
       const wrap = document.getElementById("content");
       if (!wrap) return;
       const target = document.getElementById(scroolArgsCache.to_top_id);
-      const offsetTop = target ? target.offsetTop : 56;
-      smoothScroll(wrap, wrap.scrollTop, offsetTop - 56, 700);
+      const offsetTop = target ? target.offsetTop : 0;
+      smoothScroll(wrap, wrap.scrollTop, offsetTop, 500);
     }
   }, 500);
 }
@@ -163,8 +163,9 @@ export function activityScroll({
   botton?: boolean;
   top?: boolean;
 }) {
+  if ((top == botton) == true) top = false; // 向下滚动优先
   scrollStatus.enable = !!botton;
-  scrollStatus.enableTop = !botton && !!top;
+  scrollStatus.enableTop = !!top;
   clearInterval(scroolArgsCache.animation);
 }
 

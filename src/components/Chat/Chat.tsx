@@ -28,13 +28,13 @@ export const MessageContext = React.createContext({
 });
 
 export const Chat = () => {
+  const { chatMgt: chat, forceRender } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [cite, setCite] = useState<Message>();
   const [_, contextHolder] = message.useMessage();
-  const [onlyOne, setOnlyOne] = useState(false);
+  const [onlyOne, setOnlyOne] = useState(forceRender ? false : true);
   const [closeAll, setCloasAll] = useState(false);
   const screenSize = useScreenSize();
-  const { chatMgt: chat } = useContext(ChatContext);
   const [showConfigs, setShowConfigs] = useState(false);
   const [showNav, setShowNav] = useState(true);
   const [showNotice, setShowNotice] = useState(false);
@@ -171,7 +171,7 @@ export const Chat = () => {
                 }}
               >
                 <div
-                  id="content"
+                  id={onlyOne ? undefined : "content"}
                   style={{
                     height: "100%",
                     overflow: "auto",
