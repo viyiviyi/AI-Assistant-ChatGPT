@@ -7,7 +7,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   MessageOutlined,
-  PlusOutlined,
+  PlusOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,14 +17,14 @@ import {
   Popconfirm,
   Space,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import React, {
   useCallback,
   useContext,
   useEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { SkipExport } from "../common/SkipExport";
 import { MessageContext } from "./Chat";
@@ -358,6 +358,9 @@ function TopicTitle({
       document.removeEventListener("click", cancelEdit);
     };
   }, [cancelEdit]);
+  useEffect(() => {
+    setTitle(topic.name);
+  }, [topic]);
   return (
     <div
       style={{ position: "relative", height: "24px" }}
