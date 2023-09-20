@@ -120,10 +120,10 @@
   opacity: 0.5;
   padding-right: 10px;
 }
-.roll_button > button {
+.roll_button  button.roll_button_item {
   display: none;
 }
-.roll_button:hover button {
+.roll_button:hover button.roll_button_item {
   display: block;
 }
 .roll_button:hover > span:last-child {

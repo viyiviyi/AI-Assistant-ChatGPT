@@ -1,21 +1,21 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { usePushMessage, useScreenSize } from "@/core/hooks";
 import {
-    activityScroll,
-    onTextareaTab,
-    scrollToBotton,
-    scrollToTop
+  activityScroll,
+  onTextareaTab,
+  scrollToBotton,
+  scrollToTop
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
-    AlignLeftOutlined,
-    CaretLeftOutlined,
-    CommentOutlined,
-    MessageOutlined,
-    VerticalAlignBottomOutlined,
-    VerticalAlignMiddleOutlined,
-    VerticalAlignTopOutlined
+  AlignLeftOutlined,
+  CaretLeftOutlined,
+  CommentOutlined,
+  MessageOutlined,
+  VerticalAlignBottomOutlined,
+  VerticalAlignMiddleOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Drawer, Input, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
@@ -151,6 +151,7 @@ export function InputUtil() {
               <Button
                 shape={"circle"}
                 size="large"
+                className={styleCss.roll_button_item}
                 icon={<VerticalAlignTopOutlined />}
                 onClick={() => {
                   activityScroll({ top: true });
@@ -164,6 +165,7 @@ export function InputUtil() {
               <Button
                 shape={"circle"}
                 size="large"
+                className={styleCss.roll_button_item}
                 icon={<VerticalAlignBottomOutlined />}
                 onClick={() => {
                   activityScroll({ botton: true });

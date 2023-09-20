@@ -178,7 +178,7 @@ export function EditVirtualRoleSetting({
           return next_ctx;
         });
       }}
-      width="clamp(720px, 100% - 100px, 100%)"
+      width="min(860px, 100%)"
       onCancel={onCancel}
       bodyStyle={{
         maxHeight: "calc(100vh - 200px)",
