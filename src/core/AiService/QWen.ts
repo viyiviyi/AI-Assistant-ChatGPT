@@ -158,7 +158,6 @@ export class QWen implements IAiService {
               if (line.trim() === "") {
                 continue;
               }
-              console.log(line);
               if (line.trim() === "data: [DONE]") {
                 onMessage &&
                   (await onMessage({

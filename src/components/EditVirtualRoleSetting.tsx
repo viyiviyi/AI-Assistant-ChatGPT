@@ -7,6 +7,7 @@ import {
   Checkbox,
   Form,
   Input,
+  message,
   Popconfirm,
   Segmented,
   Select,
@@ -138,6 +139,7 @@ export function EditVirtualRoleSetting({
   const [ctx, setCtx] = useState(
     item.ctx.filter((f) => f.content).map((v) => ({ ...v, key: getUuid() }))
   );
+  const [messageApi, contextHolder] = message.useMessage();
   const renderItem = useCallback(
     (
       item: {
@@ -186,12 +188,15 @@ export function EditVirtualRoleSetting({
         overflow: "auto",
       }}
     >
+      {contextHolder}
       <div>
         <Form.Item>
           <Button.Group>
             <Button
               onClick={() => {
-                copy(JSON.stringify(item));
+                if (copy(JSON.stringify(item))) {
+                  messageApi.success("已复制");
+                }
               }}
             >
               {"复制"}

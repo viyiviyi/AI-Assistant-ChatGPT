@@ -8,7 +8,7 @@ import {
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { Button } from "antd";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Hidden } from "../common/Hidden";
 import { MessageContext } from "./Chat";
 import { useInput } from "./InputUtil";
@@ -58,8 +58,8 @@ export function MessageList({
   /**
    * 更新字数统计 最小更新间隔： 两秒
    */
-  const resetCharCount = useCallback(
-    createThrottleAndDebounce(() => {
+  const resetCharCount = useMemo(() => {
+    return createThrottleAndDebounce(() => {
       let charCount = 0;
       topic.messages.forEach((m, idx) => {
         charCount += m.text.length;
@@ -70,9 +70,8 @@ export function MessageList({
       });
       setCountChar(charCount);
       setCtxCountChar(ctxCountChar);
-    }, 2000),
-    [chat, topic]
-  );
+    }, 2000);
+  }, [chat, topic]);
   /**
    * 分页
    */

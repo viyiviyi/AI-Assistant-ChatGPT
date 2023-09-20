@@ -17,10 +17,11 @@ import {
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
 } from "@ant-design/icons";
-import { Button, Drawer, Input, theme, Typography } from "antd";
+import { Button, Drawer, theme, Typography } from "antd";
 import React, { useCallback, useContext, useState } from "react";
 import { MemoBackgroundImage } from "../common/BackgroundImage";
 import { SkipExport } from "../common/SkipExport";
+import { TextEditor } from "../common/TextEditor";
 import { MessageContext } from "./Chat";
 import { CtxRoleButton } from "./CtxRoleButton";
 import { MemoNavigation } from "./Navigation";
@@ -36,7 +37,7 @@ export function useInput() {
   };
 }
 export function InputUtil() {
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState({ text: "" });
   const [loading, setLoading] = useState(0);
   const [showNav, setShowNav] = useState(false);
   const {
@@ -52,13 +53,13 @@ export function InputUtil() {
   const screenSize = useScreenSize();
   const { pushMessage } = usePushMessage(chat);
   objs.setInput = (input: string | ((s: string) => string)) => {
-    let next_input = inputText;
+    let next_input = inputText.text;
     if (typeof input == "function") {
       next_input = input(next_input);
     } else {
       next_input = input;
     }
-    setInputText(ChatManagement.parseText(next_input));
+    setInputText({ text: ChatManagement.parseText(next_input) });
     setRole([ChatManagement.parseTextToRole(next_input), role[1]]);
   };
   /**
@@ -68,7 +69,7 @@ export function InputUtil() {
    */
   const onSubmit = useCallback(
     async function (isNewTopic: boolean) {
-      let text = inputText.trim();
+      let text = inputText.text.trim();
       text = ChatManagement.parseText(text);
       let topic = chat.getActivityTopic();
       if (!chat.config.activityTopicId) isNewTopic = true;
@@ -84,7 +85,7 @@ export function InputUtil() {
       activityScroll({ botton: true });
       setLoading((v) => ++v);
       pushMessage(text, topic.messages.length || 0, topic, role, () => {
-        setInputText("");
+        setInputText({ text: "" });
         setRole(["user", true]);
         if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
         setTimeout(() => {
@@ -276,7 +277,7 @@ export function InputUtil() {
           ></Button>
         </div>
         <div style={{ width: "100%" }}>
-          <Input.TextArea
+          <TextEditor
             placeholder="Ctrl + S 发送    Ctrl + Enter 创建话题"
             autoSize={{ maxRows: 10 }}
             allowClear
@@ -287,9 +288,8 @@ export function InputUtil() {
                 block: "end",
               })
             }
+            input={inputText}
             autoFocus={false}
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
             onKeyUp={(e) =>
               (e.key === "s" && e.altKey && onSubmit(false)) ||
               (e.key === "Enter" && e.ctrlKey && onSubmit(true))
@@ -297,15 +297,15 @@ export function InputUtil() {
             onKeyDown={(e) =>
               e.key === "Tab" &&
               (e.preventDefault(),
-              setInputText((v) =>
-                onTextareaTab(
-                  v,
+              setInputText((v) => ({
+                text: onTextareaTab(
+                  v.text,
                   e.currentTarget?.selectionStart,
                   e.currentTarget?.selectionEnd,
                   e.currentTarget,
                   e.shiftKey
-                )
-              ))
+                ),
+              })))
             }
           />
         </div>

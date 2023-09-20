@@ -19,7 +19,6 @@ import {
   Button,
   Checkbox,
   Divider,
-  Input,
   message,
   Popconfirm,
   Segmented,
@@ -36,10 +35,12 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState
 } from "react";
 import { MarkdownView } from "../common/MarkdownView";
 import { SkipExport } from "../common/SkipExport";
+import { TextEditor } from "../common/TextEditor";
 import { reloadTopic } from "./MessageList";
 
 const MemoMarkdownView = React.memo(MarkdownView);
@@ -66,11 +67,12 @@ export const MessageItem = ({
   const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
-  const [messageText, setMessage] = useState("");
+  const [messageText, setMessage] = useState({ text: "" });
   const [inputRef] = useState(createRef<TextAreaRef>());
   const [none, setNone] = useState([]);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
+  const [messageApi, contextHolder] = message.useMessage();
   useEffect(() => {
     renderMessage[msg.id] = createThrottleAndDebounce(() => {
       setNone([]);
@@ -102,244 +104,269 @@ export const MessageItem = ({
     },
     [chat, reloadNav]
   );
-
-  const utilsEle = (
-    <>
-      <Checkbox
-        disabled={!aiService?.customContext}
-        checked={msg.checked || false}
-        onChange={(e) => {
-          msg.checked = e.target.checked;
-          chat.pushMessage(msg).then(() => reloadTopic(msg.topicId, msg.id));
-        }}
-      >
-        <span>
-          {new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}
-        </span>
-      </Checkbox>
-      <span
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => {
-          setEdit(false);
-        }}
-        style={{ flex: 1 }}
-      ></span>
-      {edit ? (
+  // 下方工具条
+  const utilsEle = useMemo(() => {
+    return (
+      <>
+        <Checkbox
+          disabled={!aiService?.customContext}
+          checked={msg.checked || false}
+          onChange={(e) => {
+            msg.checked = e.target.checked;
+            chat.pushMessage(msg).then(() => reloadTopic(msg.topicId, msg.id));
+          }}
+        >
+          <span>
+            {new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}
+          </span>
+        </Checkbox>
+        <span
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            setEdit(false);
+          }}
+          style={{ flex: 1 }}
+        ></span>
+        {edit ? (
+          <SkipExport>
+            <SaveOutlined
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() =>
+                setTimeout(() => {
+                  saveMsg(msg, messageText.text, ctxRole);
+                }, 50)
+              }
+              style={{ marginLeft: "16px" }}
+            />
+          </SkipExport>
+        ) : (
+          <></>
+        )}
+        <span style={{ marginLeft: "16px" }}></span>
         <SkipExport>
-          <SaveOutlined
+          <EditOutlined
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              setTimeout(() => {
-                saveMsg(msg, messageText, ctxRole);
-              }, 50)
-            }
-            style={{ marginLeft: "16px" }}
+            onClick={() => {
+              if (!edit) setMessage({ text: msg.text });
+              setEdit(!edit);
+            }}
           />
         </SkipExport>
-      ) : (
-        <></>
-      )}
-      <span style={{ marginLeft: "16px" }}></span>
-      <SkipExport>
-        <EditOutlined
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => {
-            if (!edit) setMessage(msg.text);
-            setEdit(!edit);
-          }}
-        />
-      </SkipExport>
-      <span style={{ marginLeft: "16px" }}></span>
-      <SkipExport>
-        <CopyOutlined
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => {
-            if (copy(msg.text.toString())) {
-              message.success("已复制");
-            }
-          }}
-        />
-      </SkipExport>
-      <span style={{ marginLeft: "16px" }}></span>
-      <SkipExport>
-        <RollbackOutlined
-          onMouseDown={(e) => e.preventDefault()}
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            rBak(msg);
-          }}
-        />
-      </SkipExport>
-      <span style={{ marginLeft: "30px" }}></span>
-      {loadingMsgs[msg.id] ? (
+        <span style={{ marginLeft: "16px" }}></span>
         <SkipExport>
-          <Popconfirm
-            placement="topRight"
-            overlayInnerStyle={{ whiteSpace: "nowrap" }}
-            title={"确定停止？"}
-            onConfirm={() => {
-              if (typeof loadingMsgs[msg.id]?.stop == "function")
-                loadingMsgs[msg.id]?.stop();
-              delete loadingMsgs[msg.id];
-              setNone([]);
+          <CopyOutlined
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              if (copy(msg.text.toString())) {
+                messageApi.success("已复制");
+              }
             }}
-          >
-            <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
-          </Popconfirm>
+          />
         </SkipExport>
-      ) : (
+        <span style={{ marginLeft: "16px" }}></span>
         <SkipExport>
-          <Popconfirm
-            placement="topRight"
-            overlayInnerStyle={{ whiteSpace: "nowrap" }}
-            okType="danger"
-            title="确定删除此消息？"
-            onConfirm={() => {
-              onDel(msg);
+          <RollbackOutlined
+            onMouseDown={(e) => e.preventDefault()}
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              rBak(msg);
             }}
-          >
-            <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
-          </Popconfirm>
+          />
         </SkipExport>
-      )}
-    </>
-  );
+        <span style={{ marginLeft: "30px" }}></span>
+        {loadingMsgs[msg.id] ? (
+          <SkipExport>
+            <Popconfirm
+              placement="topRight"
+              overlayInnerStyle={{ whiteSpace: "nowrap" }}
+              title={"确定停止？"}
+              onConfirm={() => {
+                if (typeof loadingMsgs[msg.id]?.stop == "function")
+                  loadingMsgs[msg.id]?.stop();
+                delete loadingMsgs[msg.id];
+                setNone([]);
+              }}
+            >
+              <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+            </Popconfirm>
+          </SkipExport>
+        ) : (
+          <SkipExport>
+            <Popconfirm
+              placement="topRight"
+              overlayInnerStyle={{ whiteSpace: "nowrap" }}
+              okType="danger"
+              title="确定删除此消息？"
+              onConfirm={() => {
+                onDel(msg);
+              }}
+            >
+              <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
+            </Popconfirm>
+          </SkipExport>
+        )}
+      </>
+    );
+  }, [
+    aiService?.customContext,
+    chat,
+    ctxRole,
+    edit,
+    loadingMsgs,
+    messageApi,
+    messageText.text,
+    msg,
+    onDel,
+    rBak,
+    saveMsg,
+  ]);
 
-  const Extend = (
-    <div className={styleCss.message_extend_but} style={{ ...style }}>
-      <Divider style={{ margin: 0 }}>
-        <Space size={6}>
-          {aiService?.customContext && (
+  // 下方悬浮按钮
+  const Extend = useMemo(() => {
+    return (
+      <div className={styleCss.message_extend_but} style={{ ...style }}>
+        <Divider style={{ margin: 0 }}>
+          <Space size={6}>
+            {aiService?.customContext && (
+              <Button
+                shape="circle"
+                type="text"
+                icon={
+                  <SkipExport>
+                    <MessageOutlined />
+                  </SkipExport>
+                }
+                onClick={onSned}
+              ></Button>
+            )}
             <Button
               shape="circle"
               type="text"
               icon={
                 <SkipExport>
-                  <MessageOutlined />
+                  <PlusOutlined />
                 </SkipExport>
               }
-              onClick={onSned}
+              onClick={onPush}
             ></Button>
-          )}
-          <Button
-            shape="circle"
-            type="text"
-            icon={
-              <SkipExport>
-                <PlusOutlined />
-              </SkipExport>
-            }
-            onClick={onPush}
-          ></Button>
-        </Space>
-      </Divider>
-    </div>
-  );
-  const Content = (
-    <div>
-      {edit ? (
-        <>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 5,
-              overflow: "auto",
-              maxWidth: "100%",
-            }}
-          >
-            <Segmented
-              size="small"
-              value={ctxRole}
-              onChange={(val) => {
-                setCtxRole(val as CtxRole);
+          </Space>
+        </Divider>
+      </div>
+    );
+  }, [aiService?.customContext, onPush, onSned, style]);
+  // 内容显示
+  const Content = useMemo(() => {
+    return (
+      <div>
+        {edit ? (
+          <>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 5,
+                overflow: "auto",
+                maxWidth: "100%",
               }}
-              options={[
-                { label: "助理", value: "assistant" },
-                { label: "系统", value: "system" },
-                { label: "用户", value: "user" },
-              ]}
+            >
+              <Segmented
+                size="small"
+                value={ctxRole}
+                onChange={(val) => {
+                  setCtxRole(val as CtxRole);
+                }}
+                options={[
+                  { label: "助理", value: "assistant" },
+                  { label: "系统", value: "system" },
+                  { label: "用户", value: "user" },
+                ]}
+              />
+              <Button.Group size="small">
+                <Button
+                  onClick={() => {
+                    setTimeout(() => {
+                      saveMsg(msg, messageText.text, ctxRole);
+                    }, 50);
+                  }}
+                >
+                  {"保存"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setTimeout(() => {
+                      saveMsg(msg, messageText.text, ctxRole).then(() => {
+                        onSned();
+                      });
+                    }, 50);
+                  }}
+                >
+                  {"提交"}
+                </Button>
+              </Button.Group>
+            </div>
+            <TextEditor
+              autoSize={
+                chat.config.renderType == "document" ? true : { maxRows: 10 }
+              }
+              input={messageText}
+              onKeyDown={(e) => {
+                if (e.key === "s" && e.ctrlKey) {
+                  e.preventDefault();
+                  setTimeout(() => {
+                    saveMsg(msg, messageText.text, ctxRole);
+                  }, 50);
+                }
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  setMessage((v) => ({
+                    text: onTextareaTab(
+                      v.text,
+                      e.currentTarget?.selectionStart,
+                      e.currentTarget?.selectionEnd,
+                      e.currentTarget,
+                      e.shiftKey
+                    ),
+                  }));
+                }
+              }}
+              onFocus={(e) => {
+                e.target.selectionStart = msg.text.length;
+                e.target.selectionEnd = msg.text.length;
+              }}
+              ref={inputRef}
+              autoFocus={true}
             />
-            <Button.Group size="small">
-              <Button
-                onClick={() => {
-                  setTimeout(() => {
-                    saveMsg(msg, messageText, ctxRole);
-                  }, 50);
-                }}
-              >
-                {"保存"}
-              </Button>
-              <Button
-                onClick={() => {
-                  setTimeout(() => {
-                    saveMsg(msg, messageText, ctxRole).then(() => {
-                      onSned();
-                    });
-                  }, 50);
-                }}
-              >
-                {"提交"}
-              </Button>
-            </Button.Group>
-          </div>
-          <Input.TextArea
-            value={messageText}
-            autoSize={
-              chat.config.renderType == "document"
-                ? { maxRows: 100 }
-                : { maxRows: 10 }
+          </>
+        ) : (
+          <MemoMarkdownView
+            markdown={
+              chat.config.disableStrikethrough
+                ? msg.text.replaceAll("~", "～")
+                : msg.text
             }
-            onChange={(e) => {
-              setMessage(e.target.value);
+            doubleClick={() => {
+              setMessage({ text: msg.text });
+              setEdit(true);
             }}
-            onKeyDown={(e) => {
-              if (e.key === "s" && e.ctrlKey) {
-                e.preventDefault();
-                setTimeout(() => {
-                  saveMsg(msg, messageText, ctxRole);
-                }, 50);
-              }
-              if (e.key === "Tab") {
-                e.preventDefault();
-                setMessage((v) =>
-                  onTextareaTab(
-                    v,
-                    e.currentTarget?.selectionStart,
-                    e.currentTarget?.selectionEnd,
-                    e.currentTarget,
-                    e.shiftKey
-                  )
-                );
-              }
-            }}
-            onFocus={(e) => {
-              e.target.selectionStart = msg.text.length;
-              e.target.selectionEnd = msg.text.length;
-            }}
-            ref={inputRef}
-            autoFocus={true}
           />
-        </>
-      ) : (
-        <MemoMarkdownView
-          markdown={
-            chat.config.disableStrikethrough
-              ? msg.text.replaceAll("~", "～")
-              : msg.text
-          }
-          doubleClick={() => {
-            setMessage(msg.text);
-            setEdit(true);
-            inputRef.current?.focus();
-          }}
-        />
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  }, [
+    chat.config.disableStrikethrough,
+    chat.config.renderType,
+    ctxRole,
+    edit,
+    inputRef,
+    messageText,
+    msg,
+    onSned,
+    saveMsg,
+  ]);
   if (chat.config.renderType == "document") {
     return (
       <>
+        {contextHolder}
         <div
           className={
             styleCss.message_box +
@@ -475,9 +502,7 @@ export const MessageItem = ({
                       <SaveOutlined
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => {
-                          setTimeout(() => {
-                            saveMsg(msg, messageText, ctxRole);
-                          }, 50);
+                          saveMsg(msg, messageText.text, ctxRole);
                         }}
                         style={{ marginLeft: "16px" }}
                       />
@@ -490,7 +515,7 @@ export const MessageItem = ({
                     <EditOutlined
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {
-                        if (!edit) setMessage(msg.text);
+                        if (!edit) setMessage({ text: msg.text });
                         setEdit(!edit);
                       }}
                     />
@@ -501,7 +526,7 @@ export const MessageItem = ({
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {
                         if (copy(msg.text.toString())) {
-                          message.success("已复制");
+                          messageApi.success("已复制");
                         }
                       }}
                     />
@@ -557,6 +582,7 @@ export const MessageItem = ({
         id={msg.id}
         className={styleCss.message_box}
       >
+        {contextHolder}
         {Content}
         <div
           style={{
@@ -587,6 +613,7 @@ export const MessageItem = ({
       }}
       id={msg.id}
     >
+      {contextHolder}
       <div
         style={{
           flex: 1,
