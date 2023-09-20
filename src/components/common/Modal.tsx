@@ -6,7 +6,7 @@ import React, {
   MutableRefObject,
   useCallback,
   useEffect,
-  useRef,
+  useRef
 } from "react";
 import { Hidden } from "./Hidden";
 
@@ -197,10 +197,17 @@ export const Modal = ({
             <Typography.Text>{title}</Typography.Text>
           </Hidden>
           <div style={{ ...bodyStyle }}>{children || items(callback)}</div>
-          <Button.Group style={{ width: "100%" }}>
+          <Button.Group
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
             <Hidden hidden={cancelText === null}>
               <Button
                 block
+                style={{ maxWidth: 200 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   cancel();
@@ -212,6 +219,7 @@ export const Modal = ({
             <Hidden hidden={okText === null}>
               <Button
                 block
+                style={{ maxWidth: 200 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   ok();

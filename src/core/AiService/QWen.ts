@@ -57,7 +57,7 @@ export class QWen implements IAiService {
     let lastItem: ChatCompletionRequestMessage | undefined = undefined;
     context.forEach((v) => {
       if (v.role != "user") {
-        history.push({ bot: v.content, user: lastItem?.content || "" });
+        history.push({ bot: v.content || "", user: lastItem?.content || "" });
         lastItem = undefined;
       } else {
         if (lastItem) {

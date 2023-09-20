@@ -10,14 +10,115 @@ import {
   Popconfirm,
   Segmented,
   Select,
-  theme,
+  theme
 } from "antd";
 import copy from "copy-to-clipboard";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DragItem, DragList } from "./common/DragList";
+import { Hidden } from "./common/Hidden";
 import { Modal } from "./common/Modal";
 import { SkipExport } from "./common/SkipExport";
-
+const ContentItem = ({
+  item,
+  idx,
+  del,
+}: {
+  item: {
+    key: string;
+    role?: CtxRole | undefined;
+    content: string;
+    checked?: boolean | undefined;
+  };
+  idx: number;
+  del: (key: string) => void;
+}) => {
+  const [text, setText] = useState(item.content);
+  const [role, setRole] = useState(item.role);
+  const [checked, setChecked] = useState(item.checked);
+  useEffect(() => {
+    setText(item.content);
+    setRole(item.role);
+    setChecked(item.checked);
+  }, [item]);
+  return (
+    <div
+      style={{
+        position: "relative",
+        marginBottom: 0,
+        marginLeft: 10,
+        width: "100%",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 6,
+        }}
+      >
+        <Form.Item noStyle>
+          <Segmented
+            size="small"
+            value={role ? role : "null"}
+            onChange={(val) => {
+              item.role = val != "null" ? (val as CtxRole) : undefined;
+              setRole(item.role);
+            }}
+            options={[
+              { label: "助理", value: "assistant" },
+              { label: "系统", value: "system" },
+              { label: "用户", value: "user" },
+              ...(idx > 0 ? [{ label: "向上合并", value: "null" }] : []),
+            ]}
+          />
+        </Form.Item>
+        <span>
+          <SkipExport>
+            <Popconfirm
+              overlayInnerStyle={{ whiteSpace: "nowrap" }}
+              title="确定删除？"
+              placement="topRight"
+              onConfirm={() => {
+                del(item.key);
+              }}
+            >
+              <DeleteOutlined></DeleteOutlined>
+            </Popconfirm>
+          </SkipExport>
+          <span style={{ marginLeft: "15px" }}></span>
+          <Form.Item noStyle>
+            <Checkbox
+              checked={checked}
+              onChange={(e) => {
+                item.checked = e.target.checked;
+                setChecked(item.checked);
+              }}
+            ></Checkbox>
+          </Form.Item>
+        </span>
+      </div>
+      <Form.Item
+        valuePropName="content"
+        validateTrigger={["onChange", "onBlur"]}
+        noStyle
+      >
+        <Input.TextArea
+          placeholder="追加内容"
+          autoSize={{ maxRows: 10 }}
+          value={text}
+          style={{
+            paddingRight: "1em",
+            paddingLeft: "1em",
+          }}
+          onChange={(e) => {
+            setText(e.target.value);
+            item.content = e.target.value;
+          }}
+        />
+      </Form.Item>
+    </div>
+  );
+};
 export function EditVirtualRoleSetting({
   item,
   onSave,
@@ -49,82 +150,13 @@ export function EditVirtualRoleSetting({
     ) => {
       if (filterText && !item.content.includes(filterText)) return undefined;
       return (
-        <div
-          style={{
-            position: "relative",
-            marginBottom: 0,
-            marginLeft: 10,
-            width: "100%",
+        <ContentItem
+          item={item}
+          idx={idx}
+          del={(key) => {
+            setCtx((v) => v.filter((f) => f.key !== key));
           }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 6,
-            }}
-          >
-            <Form.Item noStyle>
-              <Segmented
-                size="small"
-                value={item.role ? item.role : "null"}
-                onChange={(val) => {
-                  item.role = val != "null" ? (val as CtxRole) : undefined;
-                  setCtx((v) => [...v]);
-                }}
-                options={[
-                  { label: "助理", value: "assistant" },
-                  { label: "系统", value: "system" },
-                  { label: "用户", value: "user" },
-                  ...(idx > 0 ? [{ label: "向上合并", value: "null" }] : []),
-                ]}
-              />
-            </Form.Item>
-            <span>
-              <SkipExport>
-                <Popconfirm
-                  overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                  title="确定删除？"
-                  placement="topRight"
-                  onConfirm={() => {
-                    setCtx((v) => v.filter((f) => f.key != item.key));
-                  }}
-                >
-                  <DeleteOutlined></DeleteOutlined>
-                </Popconfirm>
-              </SkipExport>
-              <span style={{ marginLeft: "15px" }}></span>
-              <Form.Item noStyle>
-                <Checkbox
-                  checked={item.checked}
-                  onChange={(e) => {
-                    item.checked = e.target.checked;
-                    setCtx((v) => [...v]);
-                  }}
-                ></Checkbox>
-              </Form.Item>
-            </span>
-          </div>
-          <Form.Item
-            valuePropName="content"
-            validateTrigger={["onChange", "onBlur"]}
-            noStyle
-          >
-            <Input.TextArea
-              placeholder="追加内容"
-              autoSize={{ maxRows: 10 }}
-              value={item.content}
-              style={{
-                paddingRight: "1em",
-                paddingLeft: "1em",
-              }}
-              onChange={(e) => {
-                item.content = e.target.value;
-                setCtx((v) => [...v]);
-              }}
-            />
-          </Form.Item>
-        </div>
+        />
       );
     },
     [filterText]
@@ -226,30 +258,32 @@ export function EditVirtualRoleSetting({
           />
         </Form.Item>
         <div style={{ overflow: "auto" }}>
-          <Form.Item>
-            <Button
-              type="dashed"
-              onClick={() => {
-                setCtx((v) => [
-                  {
-                    content: "",
-                    role: undefined,
-                    key: getUuid(),
-                    checked: true,
-                  },
-                  ...v,
-                ]);
-              }}
-              block
-              icon={
-                <SkipExport>
-                  <PlusOutlined />
-                </SkipExport>
-              }
-            >
-              {"增加设定"}
-            </Button>
-          </Form.Item>
+          <Hidden hidden={ctx.length < 3}>
+            <Form.Item>
+              <Button
+                type="dashed"
+                onClick={() => {
+                  setCtx((v) => [
+                    {
+                      content: "",
+                      role: undefined,
+                      key: getUuid(),
+                      checked: true,
+                    },
+                    ...v,
+                  ]);
+                }}
+                block
+                icon={
+                  <SkipExport>
+                    <PlusOutlined />
+                  </SkipExport>
+                }
+              >
+                {"增加设定"}
+              </Button>
+            </Form.Item>
+          </Hidden>
           <DragList
             data={ctx}
             onChange={(data) => {

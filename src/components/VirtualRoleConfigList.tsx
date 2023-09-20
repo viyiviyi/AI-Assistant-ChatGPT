@@ -1,6 +1,6 @@
 import { ChatContext } from "@/core/ChatManagement";
 import { getUuid } from "@/core/utils";
-import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
+import { VirtualRoleSetting } from "@/Models/DataBase";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -12,7 +12,7 @@ import {
   Space,
   Tag,
   theme,
-  Typography,
+  Typography
 } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { DragItem, DragList } from "./common/DragList";
@@ -117,9 +117,7 @@ export const VirtualRoleConfigList = ({
         if (autoSave) saveFunc(next_setting);
         if (save)
           save(
-            next_setting.filter(
-              (f) => f && (f.ctx.filter((_f) => _f.content).length || f.title)
-            )
+            next_setting
           );
         return next_setting;
       });
@@ -144,7 +142,7 @@ export const VirtualRoleConfigList = ({
             visible={item.edit}
             onCancel={() => {
               item.edit = false;
-              saveSettings((v) => [...v]);
+              setVirtualRole_settings((v) => [...v]);
             }}
             onSave={(_item) => {
               _item.edit = false;
@@ -157,7 +155,7 @@ export const VirtualRoleConfigList = ({
             style={{ flex: 1, width: 0 }}
             onClick={() => {
               item.edit = true;
-              saveSettings((v) => [...v]);
+              setVirtualRole_settings((v) => [...v]);
             }}
           >
             {item.title || item.tags.length ? (
@@ -280,7 +278,7 @@ export const VirtualRoleConfigList = ({
             ghost
             type="dashed"
             onClick={() => {
-              saveSettings((v) => [
+              setVirtualRole_settings((v) => [
                 ...v,
                 {
                   checked: true,
@@ -325,7 +323,7 @@ export const VirtualRoleConfigList = ({
             ghost
             type="dashed"
             onClick={() => {
-              saveSettings((v) => [
+              setVirtualRole_settings((v) => [
                 ...v,
                 {
                   postposition: true,

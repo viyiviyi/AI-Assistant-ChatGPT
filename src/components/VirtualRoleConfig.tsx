@@ -53,7 +53,7 @@ export const VirtualRoleConfig = ({
     );
     chatMgt.virtualRole.settings = virtualRole_settings
       .filter((f) => f && (f.ctx.filter((_f) => _f.content).length || f.title))
-      .map((v) => ({ ...v, key: undefined, edit: undefined }));
+      .map((v) => ({ ...v, edit: undefined }));
     chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
     chatMgt.virtualRole.enName = values.virtualRole_en_name;
     chatMgt.saveVirtualRoleBio();

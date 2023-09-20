@@ -39,12 +39,12 @@ export default function App({ Component, pageProps }: AppProps) {
           },
           components: {
             Segmented: {
-              itemHoverColor: isDark ? "#00b96b" : "#00b96b",
+              itemSelectedColor: isDark ? "#00b96b" : "#00b96b",
+              itemHoverColor: isDark ? "#00B96CA0" : "#00b96bA0",
             },
             Modal: {
               padding: 12,
             },
-            
           },
           algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,
         }}

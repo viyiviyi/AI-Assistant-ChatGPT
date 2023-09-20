@@ -85,9 +85,9 @@ export class ChatGLM_API implements IAiService {
     let assistant = "";
     for (const item of data) {
       if (item.role === "user" || item.role === "system") {
-        user = item.content;
+        user = item.content||'';
       } else if (item.role === "assistant") {
-        assistant = item.content;
+        assistant = item.content||'';
       }
       if (assistant) {
         messages.push([user, assistant]);
