@@ -19,6 +19,7 @@ export const TextEditor = React.forwardRef(
         onChange={(e) => {
           props.input.text = e.target.value;
           setText(props.input.text);
+          if (props.onChange) props.onChange(e);
         }}
         ref={ref}
       />

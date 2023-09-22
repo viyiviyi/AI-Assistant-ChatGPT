@@ -4,7 +4,7 @@ import {
   activityScroll,
   onTextareaTab,
   scrollToBotton,
-  scrollToTop
+  scrollToTop,
 } from "@/core/utils";
 import { CtxRole } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -15,10 +15,10 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from "@ant-design/icons";
 import { Button, Drawer, theme, Typography } from "antd";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MemoBackgroundImage } from "../common/BackgroundImage";
 import { SkipExport } from "../common/SkipExport";
 import { TextEditor } from "../common/TextEditor";
@@ -52,6 +52,7 @@ export function InputUtil() {
   const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
   const screenSize = useScreenSize();
   const { pushMessage } = usePushMessage(chat);
+  const [showCtxRoleButton, setShowCtxRoleButton] = useState(false);
   objs.setInput = (input: string | ((s: string) => string)) => {
     let next_input = inputText.text;
     if (typeof input == "function") {
@@ -96,7 +97,6 @@ export function InputUtil() {
     },
     [chat, inputText, role, reloadNav, setActivityTopic, pushMessage]
   );
-
   return (
     <>
       <div className={styleCss.loading}>
@@ -133,7 +133,7 @@ export function InputUtil() {
             position: "relative",
           }}
         >
-          {inputText && (
+          {showCtxRoleButton && (
             <CtxRoleButton
               value={role}
               onChange={setRole}
@@ -288,6 +288,13 @@ export function InputUtil() {
                 block: "end",
               })
             }
+            onChange={(e) => {
+              if (e.target.value) {
+                setShowCtxRoleButton(true);
+              } else {
+                setShowCtxRoleButton(false);
+              }
+            }}
             input={inputText}
             autoFocus={false}
             onKeyUp={(e) =>
