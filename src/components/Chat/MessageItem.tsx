@@ -12,7 +12,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -24,7 +24,7 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip
+  Tooltip,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -36,12 +36,13 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 import { MarkdownView } from "../common/MarkdownView";
 import { SkipExport } from "../common/SkipExport";
 import { TextEditor } from "../common/TextEditor";
 import { reloadTopic } from "./MessageList";
+import { Hidden } from "../common/Hidden";
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -69,18 +70,17 @@ export const MessageItem = ({
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState({ text: "" });
   const [inputRef] = useState(createRef<TextAreaRef>());
-  const [none, setNone] = useState([]);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
   useEffect(() => {
     renderMessage[msg.id] = createThrottleAndDebounce(() => {
-      setNone([]);
+      setMessage({ text: msg.text });
     }, 200);
     return () => {
       delete renderMessage[msg.id];
     };
-  }, [renderMessage, msg.id]);
+  }, [renderMessage, msg.id, msg]);
 
   const saveMsg = useCallback(
     async (
@@ -99,7 +99,7 @@ export const MessageItem = ({
         }
         reloadTopic(msg.topicId, msg.id);
         setEdit(false);
-        setNone([]);
+        setMessage({ text: res.text });
       });
     },
     [chat, reloadNav]
@@ -144,13 +144,15 @@ export const MessageItem = ({
         )}
         <span style={{ marginLeft: "16px" }}></span>
         <SkipExport>
-          <EditOutlined
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (!edit) setMessage({ text: msg.text });
-              setEdit(!edit);
-            }}
-          />
+          <Hidden hidden={!!loadingMsgs[msg.id]}>
+            <EditOutlined
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                if (!edit) setMessage({ text: msg.text });
+                setEdit(!edit);
+              }}
+            />
+          </Hidden>
         </SkipExport>
         <span style={{ marginLeft: "16px" }}></span>
         <SkipExport>
@@ -184,7 +186,6 @@ export const MessageItem = ({
                 if (typeof loadingMsgs[msg.id]?.stop == "function")
                   loadingMsgs[msg.id]?.stop();
                 delete loadingMsgs[msg.id];
-                setNone([]);
               }}
             >
               <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
@@ -411,7 +412,6 @@ export const MessageItem = ({
                         if (typeof loadingMsgs[msg.id]?.stop == "function")
                           loadingMsgs[msg.id]?.stop();
                         delete loadingMsgs[msg.id];
-                        setNone([]);
                       }}
                     >
                       <PauseOutlined
@@ -542,7 +542,6 @@ export const MessageItem = ({
                           if (typeof loadingMsgs[msg.id]?.stop == "function")
                             loadingMsgs[msg.id]?.stop();
                           delete loadingMsgs[msg.id];
-                          setNone([]);
                         }}
                       >
                         <PauseOutlined></PauseOutlined>
@@ -664,7 +663,6 @@ export const MessageItem = ({
                     if (typeof loadingMsgs[msg.id]?.stop == "function")
                       loadingMsgs[msg.id]?.stop();
                     delete loadingMsgs[msg.id];
-                    setNone([]);
                   }}
                 >
                   <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
