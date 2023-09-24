@@ -56,12 +56,12 @@ export class QWen implements IAiService {
     let history: Array<{ user: string; bot: string }> = [];
     let lastItem: ChatCompletionRequestMessage | undefined = undefined;
     context.forEach((v) => {
-      if (v.role != "user") {
+      if (v.role == "assistant") {
         history.push({ bot: v.content || "", user: lastItem?.content || "" });
         lastItem = undefined;
       } else {
         if (lastItem) {
-          history.push({ bot: "", user: lastItem?.content || "" });
+          history.push({ bot: "无", user: lastItem?.content || "" });
         }
         lastItem = v;
       }
