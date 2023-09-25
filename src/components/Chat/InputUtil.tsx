@@ -63,6 +63,13 @@ export function InputUtil() {
     setInputText({ text: ChatManagement.parseText(next_input) });
     setRole([ChatManagement.parseTextToRole(next_input), role[1]]);
   };
+  useEffect(() => {
+    if (inputText.text) {
+      setShowCtxRoleButton(true);
+    } else {
+      setShowCtxRoleButton(false);
+    }
+  }, [inputText]);
   /**
    * 提交内容
    * @param isNewTopic 是否开启新话题
