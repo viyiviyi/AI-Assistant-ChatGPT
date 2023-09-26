@@ -12,7 +12,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -24,7 +24,7 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip,
+  Tooltip
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -36,13 +36,13 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useState
 } from "react";
+import { Hidden } from "../common/Hidden";
 import { MarkdownView } from "../common/MarkdownView";
 import { SkipExport } from "../common/SkipExport";
 import { TextEditor } from "../common/TextEditor";
 import { reloadTopic } from "./MessageList";
-import { Hidden } from "../common/Hidden";
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -113,7 +113,7 @@ export const MessageItem = ({
           checked={msg.checked || false}
           onChange={(e) => {
             msg.checked = e.target.checked;
-            chat.pushMessage(msg).then(() => reloadTopic(msg.topicId, msg.id));
+            setMessage({ text: messageText.text });
           }}
         >
           <span>
@@ -210,12 +210,11 @@ export const MessageItem = ({
     );
   }, [
     aiService?.customContext,
-    chat,
     ctxRole,
     edit,
     loadingMsgs,
     messageApi,
-    messageText.text,
+    messageText,
     msg,
     onDel,
     rBak,
