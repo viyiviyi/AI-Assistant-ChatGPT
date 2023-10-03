@@ -1,9 +1,10 @@
 import { aiServiceType } from "@/core/AiService/ServiceProvider";
+import { CtxRole } from "@/Models/CtxRole";
 import {
   ChatCompletionRequestMessage,
   CreateChatCompletionRequest
 } from "openai";
-import { CtxRole, Message } from "../../Models/DataBase";
+import { Message } from "../../Models/DataBase";
 import { ServiceTokens } from "./ServiceProvider";
 export interface IAiService {
   baseUrl: string;

@@ -1,20 +1,24 @@
-import { IndexedDB } from "@/core/IndexDb";
+import { IndexedDB } from "@/core/db/IndexDb";
 import { Extensions } from "@/extensions/Extensions";
+import { CtxRole } from "@/Models/CtxRole";
 import {
-  CtxRole,
   GptConfig,
   Group,
   GroupConfig,
   Message,
   Topic,
   User,
-  VirtualRole,
-  VirtualRoleSetting
+  VirtualRole
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
+import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
+import { VirtualRoleSettingItem } from "@/Models/VirtualRoleSettingItem";
 import React from "react";
 import { BgConfig } from "./BgImageStore";
-import { getDbInstance as getInstance, setSkipDbSave } from "./IndexDbInstance";
+import {
+  getDbInstance as getInstance,
+  setSkipDbSave
+} from "./db/IndexDbInstance";
 import { getUuid } from "./utils";
 
 const defaultChat: IChat = {
@@ -120,9 +124,11 @@ export class ChatManagement {
           if (typeof v == "string") {
             return {
               checked: true,
+              key: getUuid(),
               tags: [],
               ctx: [
                 {
+                  key: getUuid(),
                   role: this.parseTextToRole(v),
                   content: this.parseText(v),
                   checked: true,
@@ -294,7 +300,18 @@ export class ChatManagement {
           : []),
         // 助理设定
         ...ChatManagement.parseSetting(
-          virtualRole.settings.filter((v) => !v.postposition)
+          virtualRole.settings.filter((v) => !v.postposition),
+          topic.overrideVirtualRole
+        ).map((v) => {
+          return {
+            role: v.role,
+            content: v.content,
+            name: this.getNameByRole(v.role, virtualRole),
+          };
+        }),
+        // 话题内设定
+        ...ChatManagement.parseSetting(
+          topic.virtualRole?.filter((v) => !v.postposition)
         ).map((v) => {
           return {
             role: v.role,
@@ -304,9 +321,20 @@ export class ChatManagement {
         }),
         // 上下文
         ...ctx,
+        // 话题内后置设定
+        ...ChatManagement.parseSetting(
+          topic.virtualRole?.filter((v) => v.postposition)
+        ).map((v) => {
+          return {
+            role: v.role,
+            content: v.content,
+            name: this.getNameByRole(v.role, virtualRole),
+          };
+        }),
         // 后置设定
         ...ChatManagement.parseSetting(
-          virtualRole.settings.filter((v) => v.postposition)
+          virtualRole.settings.filter((v) => v.postposition),
+          topic.overrideVirtualRole
         ).map((v) => {
           return {
             role: v.role,
@@ -319,46 +347,64 @@ export class ChatManagement {
     return ctx;
   }
 
-  getNameByRole(role: CtxRole, virtualRole?: VirtualRole) {
+  getNameByRole(role?: CtxRole, virtualRole?: VirtualRole) {
     return role === "system"
       ? "system"
       : role === "assistant"
       ? (virtualRole || this.virtualRole).enName || "assistant"
       : this.user.enName || "user";
   }
-  static parseSetting(inputSettings: VirtualRoleSetting[]): {
+  static parseSetting(
+    inputSettings?: VirtualRoleSetting[],
+    overrideCheck?: { key: string; ctx: { key: string }[] }[]
+  ): {
     role: CtxRole;
     content: string;
+    checked?: boolean | undefined;
   }[] {
-    let lastSetting:
-      | undefined
-      | {
-          role: CtxRole;
-          content: string;
-          checked?: boolean;
-        } = undefined;
+    if (inputSettings == undefined) return [];
+    let lastSetting: VirtualRoleSettingItem | undefined = undefined;
     let settings: {
       role: CtxRole;
       content: string;
+      checked?: boolean | undefined;
     }[] = [];
     lastSetting = undefined;
     inputSettings
-      .filter((v) => v.checked)
-      .map((v) => {
-        return v.extensionId
-          ? Extensions.getExtension(v.extensionId)?.getSettings() || v
-          : v;
-      })
+      .filter((v) =>
+        overrideCheck
+          ? overrideCheck.findIndex((f) => f.key == v.key) >= 0
+          : v.checked
+      )
+      .map(
+        (v) =>
+          (v.extensionId
+            ? Extensions.getExtension(v.extensionId)?.getSettings() || v
+            : v) as VirtualRoleSetting
+      )
       .forEach((v) => {
+        let overrideCtx = overrideCheck?.find((f) => f.key == v.key);
         v.ctx.forEach((c) => {
           if (c.role) {
-            if (lastSetting && lastSetting.checked) {
-              settings.push(lastSetting);
+            if (
+              lastSetting &&
+              lastSetting.checked &&
+              (overrideCtx
+                ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
+                : true)
+            ) {
+              settings.push(lastSetting as any);
             }
             lastSetting = { ...c, role: c.role! };
           } else {
-            if (c.checked && lastSetting) {
-              lastSetting.content += "\n\n" + c.content;
+            if (
+              c.checked &&
+              lastSetting &&
+              (overrideCtx
+                ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
+                : true)
+            ) {
+              lastSetting.content += "\n" + c.content;
             }
           }
         });

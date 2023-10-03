@@ -1,8 +1,9 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
+import { useScreenSize } from "@/core/hooks/hooks";
 import { createThrottleAndDebounce, onTextareaTab } from "@/core/utils";
-import { CtxRole, Message } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
+import { Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
 import {
   CopyOutlined,
@@ -38,10 +39,10 @@ import React, {
   useMemo,
   useState
 } from "react";
-import { Hidden } from "../common/Hidden";
-import { MarkdownView } from "../common/MarkdownView";
-import { SkipExport } from "../common/SkipExport";
-import { TextEditor } from "../common/TextEditor";
+import { Hidden } from "../../common/Hidden";
+import { MarkdownView } from "../../common/MarkdownView";
+import { SkipExport } from "../../common/SkipExport";
+import { TextEditor } from "../../common/TextEditor";
 import { reloadTopic } from "./MessageList";
 
 const MemoMarkdownView = React.memo(MarkdownView);

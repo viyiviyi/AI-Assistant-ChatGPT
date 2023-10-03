@@ -1,10 +1,11 @@
-import { reloadTopic } from "@/components/Chat/MessageList";
+import { reloadTopic } from "@/components/Chat/Message/MessageList";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { CtxRole, Message } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
+import { Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { TopicMessage } from "./../Models/Topic";
-import { aiServices } from "./AiService/ServiceProvider";
-import { createThrottleAndDebounce, getUuid, scrollToBotton } from "./utils";
+import { TopicMessage } from "../../Models/Topic";
+import { aiServices } from "../AiService/ServiceProvider";
+import { createThrottleAndDebounce, getUuid, scrollToBotton } from "../utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{

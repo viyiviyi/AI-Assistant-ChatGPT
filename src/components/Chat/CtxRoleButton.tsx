@@ -1,4 +1,4 @@
-import { CtxRole } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
 import { Segmented, Space } from "antd";
 import { CSSProperties } from "react";
 

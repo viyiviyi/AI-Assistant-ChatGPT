@@ -1,12 +1,12 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { usePushMessage, useScreenSize } from "@/core/hooks";
+import { usePushMessage, useScreenSize } from "@/core/hooks/hooks";
 import {
   activityScroll,
   onTextareaTab,
   scrollToBotton,
-  scrollToTop,
+  scrollToTop
 } from "@/core/utils";
-import { CtxRole } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
 import styleCss from "@/styles/index.module.css";
 import {
   AlignLeftOutlined,
@@ -15,16 +15,16 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined,
+  VerticalAlignTopOutlined
 } from "@ant-design/icons";
 import { Button, Drawer, theme, Typography } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { MemoBackgroundImage } from "../common/BackgroundImage";
 import { SkipExport } from "../common/SkipExport";
 import { TextEditor } from "../common/TextEditor";
+import { MemoNavigation } from "../Nav/Navigation";
 import { MessageContext } from "./Chat";
 import { CtxRoleButton } from "./CtxRoleButton";
-import { MemoNavigation } from "./Navigation";
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };

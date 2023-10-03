@@ -4,8 +4,8 @@ import style from "@/styles/index.module.css";
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Switch, theme, Tooltip, Typography } from "antd";
 import React, { useContext, useState } from "react";
+import { reloadTopic } from "../Chat/Message/MessageList";
 import { SkipExport } from "../common/SkipExport";
-import { reloadTopic } from "./MessageList";
 const Navigation = () => {
   const { chatMgt: chat, activityTopic, setActivityTopic } = useContext(ChatContext);
   const { token } = theme.useToken();

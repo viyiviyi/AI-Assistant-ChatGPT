@@ -1,5 +1,5 @@
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
-import { useSendMessage } from "@/core/hooks";
+import { useSendMessage } from "@/core/hooks/hooks";
 import { TopicMessage } from "@/Models/Topic";
 import {
   CaretRightOutlined,
@@ -26,9 +26,9 @@ import React, {
   useRef,
   useState
 } from "react";
-import { SkipExport } from "../common/SkipExport";
-import { MessageContext } from "./Chat";
-import { MemoInsertInput } from "./InsertInput";
+import { SkipExport } from "../../common/SkipExport";
+import { MessageContext } from "../Chat";
+import { MemoInsertInput } from "../InsertInput";
 import { MessageList, reloadTopic } from "./MessageList";
 
 const { Panel } = Collapse;

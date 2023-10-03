@@ -1,5 +1,5 @@
 import { ChatContext } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
+import { useScreenSize } from "@/core/hooks/hooks";
 import {
   SearchOutlined,
   SettingOutlined,
@@ -9,14 +9,14 @@ import {
 import { Avatar, Drawer, Layout, theme, Typography } from "antd";
 import Image from "next/image";
 import React, { useContext, useState } from "react";
-import { ChatList } from "../ChatList";
-import { MemoBackgroundImage } from "../common/BackgroundImage";
-import { Modal } from "../common/Modal";
-import { SkipExport } from "../common/SkipExport";
-import { Setting } from "../Setting";
-import { VirtualRoleConfig } from "../VirtualRoleConfig";
-import { reloadTopic } from "./MessageList";
-import { MemoSearchWrap } from "./Search";
+import { reloadTopic } from "./Chat/Message/MessageList";
+import { ChatList } from "./ChatList";
+import { MemoBackgroundImage } from "./common/BackgroundImage";
+import { Modal } from "./common/Modal";
+import { SkipExport } from "./common/SkipExport";
+import { MemoSearchWrap } from "./Search/Search";
+import { Setting } from "./Setting/Setting";
+import { VirtualRoleConfig } from "./VirtualRoleConfig/VirtualRoleConfig";
 
 export const ChatHeader = () => {
   const { chatMgt: chat, activityTopic } = useContext(ChatContext);

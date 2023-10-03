@@ -1,12 +1,12 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
-import { KeyValueData } from "@/core/KeyValueData";
+import { KeyValueData } from "@/core/db/KeyValueData";
+import { useScreenSize } from "@/core/hooks/hooks";
 import { getUuid } from "@/core/utils";
 import { VirtualRole } from "@/Models/DataBase";
 import { Button, Form, Input, Space, Switch, Tabs, theme } from "antd";
 import { CSSProperties, useContext, useState } from "react";
-import ImageUpload from "./common/ImageUpload";
-import { Modal, ModalCallback } from "./common/Modal";
+import ImageUpload from "../common/ImageUpload";
+import { Modal, ModalCallback } from "../common/Modal";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
 import { VirtualRoleConfigList } from "./VirtualRoleConfigList";
 

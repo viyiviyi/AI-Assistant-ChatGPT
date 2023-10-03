@@ -1,4 +1,4 @@
-import { useScreenSize } from "@/core/hooks";
+import { useScreenSize } from "@/core/hooks/hooks";
 import { CloseOutlined } from "@ant-design/icons";
 import { Button, Drawer, theme, Typography } from "antd";
 import React, {

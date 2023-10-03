@@ -7,9 +7,9 @@ import {
   ChatContext,
   ChatManagement,
   IChat,
-  noneChat,
+  noneChat
 } from "@/core/ChatManagement";
-import { KeyValueData } from "@/core/KeyValueData";
+import { KeyValueData } from "@/core/db/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
 import { scrollToBotton } from "@/core/utils";
 import { TopicMessage } from "@/Models/Topic";

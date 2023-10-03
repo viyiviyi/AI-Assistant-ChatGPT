@@ -1,5 +1,5 @@
 import { ChatManagement, IChat } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
+import { useScreenSize } from "@/core/hooks/hooks";
 
 import { Button, theme, Typography } from "antd";
 import { useRouter } from "next/router";

@@ -1,7 +1,7 @@
 import { ChatManagement } from "@/core/ChatManagement";
-import { usePushMessage } from "@/core/hooks";
+import { usePushMessage } from "@/core/hooks/hooks";
 import { activityScroll, onTextareaTab } from "@/core/utils";
-import { CtxRole } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
 import { TopicMessage } from "@/Models/Topic";
 import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
 import { Button, Input, theme } from "antd";

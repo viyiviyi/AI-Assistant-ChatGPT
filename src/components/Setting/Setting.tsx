@@ -7,11 +7,11 @@ import {
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
-import { KeyValueData } from "@/core/KeyValueData";
+import { KeyValueData } from "@/core/db/KeyValueData";
+import { useScreenSize } from "@/core/hooks/hooks";
 import { getToken, saveToken } from "@/core/tokens";
 import { downloadJson } from "@/core/utils";
-import { CtxRole } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
 import {
   CaretRightOutlined,
   DownloadOutlined,
@@ -36,10 +36,10 @@ import {
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { downloadTopic } from "./Chat/ChatMessage";
-import ImageUpload from "./common/ImageUpload";
-import { ModalCallback } from "./common/Modal";
-import { SkipExport } from "./common/SkipExport";
+import { downloadTopic } from "../Chat/Message/ChatMessage";
+import ImageUpload from "../common/ImageUpload";
+import { ModalCallback } from "../common/Modal";
+import { SkipExport } from "../common/SkipExport";
 
 export const Setting = ({
   chatMgt,

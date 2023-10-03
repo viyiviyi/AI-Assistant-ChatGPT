@@ -1,5 +1,6 @@
 import { getUuid } from "@/core/utils";
-import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
+import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
@@ -15,10 +16,10 @@ import {
 } from "antd";
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
-import { DragItem, DragList } from "./common/DragList";
-import { Hidden } from "./common/Hidden";
-import { Modal } from "./common/Modal";
-import { SkipExport } from "./common/SkipExport";
+import { DragItem, DragList } from "../common/DragList";
+import { Hidden } from "../common/Hidden";
+import { Modal } from "../common/Modal";
+import { SkipExport } from "../common/SkipExport";
 const ContentItem = ({
   item,
   idx,
@@ -136,9 +137,14 @@ export function EditVirtualRoleSetting({
   const [tags, setTags] = useState<string[]>(item.tags);
   const { token } = theme.useToken();
   const [filterText, setFilterText] = useState("");
-  const [ctx, setCtx] = useState(
-    item.ctx.filter((f) => f.content).map((v) => ({ ...v, key: getUuid() }))
-  );
+  const [ctx, setCtx] = useState<
+    {
+      key: string;
+      role?: CtxRole | undefined;
+      content: string;
+      checked?: boolean | undefined;
+    }[]
+  >(item.ctx.filter((f) => f.content));
   const [messageApi, contextHolder] = message.useMessage();
   const renderItem = useCallback(
     (
@@ -210,9 +216,10 @@ export function EditVirtualRoleSetting({
                     if (!res) return;
                     setTags(res.tags);
                     setTitle(res.title);
-                    setCtx(res.ctx.map((v) => ({ ...v, key: getUuid() })));
+                    setCtx(res.ctx);
                   } catch (err) {
                     item.ctx.push({
+                      key: getUuid(),
                       role: "system",
                       content: text,
                       checked: true,

@@ -1,8 +1,8 @@
 import { aiServiceType } from "@/core/AiService/ServiceProvider";
 import { getInstance } from "ts-indexdb";
 import { aiServerList } from "./AiService/ServiceProvider";
-import { KeyValue } from "./IndexDb";
-import { KeyValueData } from "./KeyValueData";
+import { KeyValue } from "./db/IndexDb";
+import { KeyValueData } from "./db/KeyValueData";
 
 export type TokenStore = {
   current: string;

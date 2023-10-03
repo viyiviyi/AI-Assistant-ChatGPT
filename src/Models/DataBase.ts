@@ -1,4 +1,6 @@
 import { aiServiceType } from "@/core/AiService/ServiceProvider";
+import { CtxRole } from "./CtxRole";
+import { VirtualRoleSetting } from "./VirtualRoleSetting";
 
 // 用户表
 export interface User {
@@ -43,7 +45,6 @@ export interface GroupConfig {
   extensions?: string[];
 }
 
-export type CtxRole = "assistant" | "system" | "user";
 // 聊天消息表
 export interface Message {
   id: string; // 消息ID
@@ -69,16 +70,13 @@ export interface Topic {
   cloudTopicId?: string;
   updateTime?: number;
   deleteTime?: number;
+  overrideVirtualRole?: { key: string; ctx: { key: string }[] }[];
+  virtualRole?: VirtualRoleSetting[];
+  overrideSettings?: {
+    renderType?: "default" | "document";
+    msgCount?: number; // >=0
+  };
 }
-
-export type VirtualRoleSetting = {
-  extensionId?: string;
-  title?: string;
-  postposition?: boolean;
-  checked: boolean;
-  tags: string[];
-  ctx: { role?: CtxRole; content: string; checked?: boolean }[];
-};
 
 // 虚拟角色表
 export interface VirtualRole {

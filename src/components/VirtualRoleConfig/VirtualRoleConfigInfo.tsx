@@ -1,7 +1,8 @@
 import { ChatManagement } from "@/core/ChatManagement";
-import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
+import { CtxRole } from "@/Models/CtxRole";
+import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { Space, Tag, Typography } from "antd";
-import { MarkdownView } from "./common/MarkdownView";
+import { MarkdownView } from "../common/MarkdownView";
 
 export const VirtualRoleConfigInfo = ({
   settings,

@@ -1,6 +1,6 @@
 import { IChat } from "@/core/ChatManagement";
-import { IndexedDB } from "@/core/IndexDb";
-import { CtxRole, VirtualRoleSetting } from "@/Models/DataBase";
+import { IndexedDB } from "@/core/db/IndexDb";
+import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { useEffect, useState } from "react";
 import { getInstance } from "ts-indexdb";
 import { ArgumentDefine } from "./models/Argument";
@@ -13,11 +13,7 @@ export class Extensions implements ExtensionsDefine {
   readonly name: string;
   readonly tags: string[];
   readonly permissions: string[];
-  readonly prompts: {
-    title?: string | undefined;
-    checked: boolean;
-    ctx: { role: CtxRole; content: string }[];
-  };
+  readonly prompts: VirtualRoleSetting;
   readonly args: ArgumentDefine[];
   readonly onSendBefore: Interceptor[];
   readonly onSend: Interceptor[];
@@ -40,10 +36,10 @@ export class Extensions implements ExtensionsDefine {
 
   getSettings(): VirtualRoleSetting {
     return {
+      key: this.prompts.key,
       checked: true,
       ctx: this.prompts.ctx.map((v) => ({
-        role: v.role,
-        content: v.content,
+        ...v,
       })),
       title: this.prompts.title,
       extensionId: this.id,

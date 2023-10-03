@@ -4,7 +4,7 @@ import { TitleTree, TopicMessage } from "@/Models/Topic";
 import style from "@/styles/index.module.css";
 import { Input, theme, Typography } from "antd";
 import React, { useContext, useState } from "react";
-import { reloadTopic } from "./MessageList";
+import { reloadTopic } from "../Chat/Message/MessageList";
 const SearchWrap = () => {
   const { setActivityTopic, chatMgt: chat } = useContext(ChatContext);
   const [searchText, setSearchText] = useState("");

@@ -1,10 +1,10 @@
 import { ChatGPT } from "@/core/AiService/ChatGPT";
-import { KeyValueData } from "./../KeyValueData";
+import { KeyValueData } from "../db/KeyValueData";
 import { ChatGLM_API } from "./ChatGLM_API";
 import { Kamiya } from "./Kamiya API";
 
 import { useCallback, useState } from "react";
-import { env } from "../hooks";
+import { env } from "../hooks/hooks";
 import { getToken } from "../tokens";
 import { IChat } from "./../ChatManagement";
 import { ChatGLM_GPT } from "./ChatGLM_GPT";
@@ -74,11 +74,11 @@ export const aiServerList: {
     name: "Slack(Claude)",
     hasToken: false,
   },
-  {
-    key: "Kamiya",
-    name: "众神之谷",
-    hasToken: true,
-  },
+  // {
+  //   key: "Kamiya",
+  //   name: "众神之谷",
+  //   hasToken: true,
+  // },
   {
     key: "QWen",
     name: "通义千问",

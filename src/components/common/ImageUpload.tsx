@@ -1,4 +1,4 @@
-import { useScreenSize } from "@/core/hooks";
+import { useScreenSize } from "@/core/hooks/hooks";
 import { Avatar, Modal, Space, Upload } from "antd";
 import React, { useEffect, useState } from "react";
 import AvatarEditor from "react-avatar-editor";

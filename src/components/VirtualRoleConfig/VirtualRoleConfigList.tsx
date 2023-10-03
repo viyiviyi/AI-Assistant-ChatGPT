@@ -1,6 +1,6 @@
 import { ChatContext } from "@/core/ChatManagement";
 import { getUuid } from "@/core/utils";
-import { VirtualRoleSetting } from "@/Models/DataBase";
+import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -15,8 +15,8 @@ import {
   Typography
 } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { DragItem, DragList } from "./common/DragList";
-import { SkipExport } from "./common/SkipExport";
+import { DragItem, DragList } from "../common/DragList";
+import { SkipExport } from "../common/SkipExport";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 
 type SettingItem = Array<VirtualRoleSetting & { key: string; edit: boolean }>;

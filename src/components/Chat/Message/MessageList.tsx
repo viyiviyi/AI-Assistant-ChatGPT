@@ -1,5 +1,5 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useSendMessage } from "@/core/hooks";
+import { useSendMessage } from "@/core/hooks/hooks";
 import {
   activityScroll,
   createThrottleAndDebounce,
@@ -9,10 +9,10 @@ import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { Button } from "antd";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Hidden } from "../common/Hidden";
-import { MessageContext } from "./Chat";
-import { useInput } from "./InputUtil";
-import { MemoInsertInput } from "./InsertInput";
+import { Hidden } from "../../common/Hidden";
+import { MessageContext } from "../Chat";
+import { useInput } from "../InputUtil";
+import { MemoInsertInput } from "../InsertInput";
 import { MemoMessageItem } from "./MessageItem";
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除

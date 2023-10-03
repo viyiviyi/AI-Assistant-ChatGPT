@@ -4,14 +4,14 @@ import { SkipExport } from "@/components/common/SkipExport";
 import { useService } from "@/core/AiService/ServiceProvider";
 import { BgConfig } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
-import { KeyValueData } from "@/core/KeyValueData";
+import { KeyValueData } from "@/core/db/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
 import { TopicMessage } from "@/Models/Topic";
 import { Layout, theme } from "antd";
 import Head from "next/head";
 import React, { useContext, useEffect, useState } from "react";
-import chatConfig from "../../public/使用示例.json";
 import appManifest from "../../public/manifest.json";
+import chatConfig from "../../public/使用示例.json";
 
 const MemoChat = React.memo(Chat);
 

@@ -1,19 +1,19 @@
-import { ChatMessage } from "@/components/Chat/ChatMessage";
+import { ChatMessage } from "@/components/Chat/Message/ChatMessage";
 import { ChatContext } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks";
-import { KeyValueData } from "@/core/KeyValueData";
+import { KeyValueData } from "@/core/db/KeyValueData";
+import { useScreenSize } from "@/core/hooks/hooks";
 import { activityScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Form, Layout, message, Modal, theme } from "antd";
 import React, { useContext, useEffect, useState } from "react";
+import { MemoChatHeader } from "../ChatHeader";
 import { Hidden } from "../common/Hidden";
 import { MarkdownView } from "../common/MarkdownView";
 import { SkipExport } from "../common/SkipExport";
-import { VirtualRoleConfigList } from "../VirtualRoleConfigList";
-import { MemoChatHeader } from "./ChatHeader";
+import { MemoNavigation } from "../Nav/Navigation";
+import { VirtualRoleConfigList } from "../VirtualRoleConfig/VirtualRoleConfigList";
 import { MemoInputUtil } from "./InputUtil";
-import { MemoNavigation } from "./Navigation";
 
 const { Content, Footer } = Layout;
 const MemoChatMessage = React.memo(ChatMessage);

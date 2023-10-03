@@ -1,4 +1,4 @@
-import { useDark } from "@/core/hooks";
+import { useDark } from "@/core/hooks/hooks";
 import {
   legacyLogicalPropertiesTransformer,
   StyleProvider
