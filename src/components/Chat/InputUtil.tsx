@@ -13,6 +13,7 @@ import {
   CaretLeftOutlined,
   CommentOutlined,
   MessageOutlined,
+  PlusOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
@@ -248,10 +249,18 @@ export function InputUtil() {
             }}
           >
             <SkipExport>
-              <CommentOutlined />
-            </SkipExport>
-            <SkipExport>
               <VerticalAlignMiddleOutlined />
+            </SkipExport>
+          </Button>
+          <span style={{ marginLeft: 10 }}></span>
+          <Button
+            shape="circle"
+            size="large"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {}}
+          >
+            <SkipExport>
+              <PlusOutlined />
             </SkipExport>
           </Button>
           <span style={{ marginLeft: 10 }}></span>
