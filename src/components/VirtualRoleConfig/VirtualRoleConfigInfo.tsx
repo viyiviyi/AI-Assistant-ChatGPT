@@ -7,9 +7,11 @@ import { MarkdownView } from "../common/MarkdownView";
 export const VirtualRoleConfigInfo = ({
   settings,
   bio,
+  topicVirtualRole,
 }: {
   settings: VirtualRoleSetting[];
   bio: string;
+  topicVirtualRole?: VirtualRoleSetting[];
 }) => {
   const getTag = (role: CtxRole) => {
     switch (role) {
@@ -35,9 +37,19 @@ export const VirtualRoleConfigInfo = ({
         )}
         {ChatManagement.parseSetting(
           settings.filter((v) => !v.postposition)
-        ).map((v,idx) => {
+        ).map((v, idx) => {
           return (
-            <div key={idx+'_settint_info_item_p'}>
+            <div key={idx + "_settint_info_item_p"}>
+              {getTag(v.role)}
+              <MarkdownView markdown={v.content} />
+            </div>
+          );
+        })}
+        {ChatManagement.parseSetting(
+          (topicVirtualRole || []).filter((v) => !v.postposition)
+        ).map((v, idx) => {
+          return (
+            <div key={idx + "_settint_info_item_p"}>
               {getTag(v.role)}
               <MarkdownView markdown={v.content} />
             </div>
@@ -45,10 +57,20 @@ export const VirtualRoleConfigInfo = ({
         })}
         <Typography.Text type="secondary">{"... 上下文"}</Typography.Text>
         {ChatManagement.parseSetting(
-          settings.filter((v) => v.postposition)
-        ).map((v,idx) => {
+          (topicVirtualRole || []).filter((v) => v.postposition)
+        ).map((v, idx) => {
           return (
-            <div key={idx+'_settint_info_item_e'}>
+            <div key={idx + "_settint_info_item_e"}>
+              {getTag(v.role)}
+              <MarkdownView markdown={v.content} />
+            </div>
+          );
+        })}
+        {ChatManagement.parseSetting(
+          settings.filter((v) => v.postposition)
+        ).map((v, idx) => {
+          return (
+            <div key={idx + "_settint_info_item_e"}>
               {getTag(v.role)}
               <MarkdownView markdown={v.content} />
             </div>

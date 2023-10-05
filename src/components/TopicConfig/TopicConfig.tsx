@@ -91,7 +91,7 @@ export const TopicConfig = ({
       });
       return [...settings];
     });
-  }, [chatMgt.virtualRole.settings, overrideVirtualRole]);
+  }, [chatMgt, overrideVirtualRole]);
   const [virtualRole, setVirtualRole] = useState(
     topic.virtualRole?.map((v, i) => ({
       ...v,
@@ -249,7 +249,8 @@ export const TopicConfig = ({
               <div style={{ ...tabItemStyle }}>
                 <VirtualRoleConfigInfo
                   bio={chatMgt.virtualRole.bio}
-                  settings={virtualRoleSetting.concat(virtualRole || [])}
+                  settings={virtualRoleSetting}
+                  topicVirtualRole={virtualRole}
                 />
               </div>
             ),
