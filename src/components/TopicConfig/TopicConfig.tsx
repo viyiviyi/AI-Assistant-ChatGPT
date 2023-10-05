@@ -138,69 +138,71 @@ export const TopicConfig = ({
             label: "话题设置",
             key: "overrideSettings",
             children: (
-              <Form.Item label={"这些设置会覆盖会话的设置"}>
-                <Form.Item label="上下文数量">
-                  <InputNumber
-                    value={
-                      countCtx === undefined
-                        ? chatMgt.gptConfig.msgCount
-                        : countCtx
-                    }
-                    onChange={(e) => {
-                      setCountCtx(e || undefined);
-                    }}
-                    step="1"
-                    min={0}
-                    autoComplete="off"
-                  />
-                  <Button
-                    style={{ marginLeft: 14 }}
-                    onClick={() => setCountCtx(undefined)}
-                  >
-                    {"恢复默认"}
-                  </Button>
+              <div style={{ ...tabItemStyle }}>
+                <Form.Item label={"这些设置会覆盖会话的设置"}>
+                  <Form.Item label="上下文数量">
+                    <InputNumber
+                      value={
+                        countCtx === undefined
+                          ? chatMgt.gptConfig.msgCount
+                          : countCtx
+                      }
+                      onChange={(e) => {
+                        setCountCtx(e || undefined);
+                      }}
+                      step="1"
+                      min={0}
+                      autoComplete="off"
+                    />
+                    <Button
+                      style={{ marginLeft: 14 }}
+                      onClick={() => setCountCtx(undefined)}
+                    >
+                      {"恢复默认"}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item label="渲染方式">
+                    <Segmented
+                      value={
+                        renderType === undefined
+                          ? chatMgt.config.renderType
+                          : renderType
+                      }
+                      onChange={(e) => {
+                        setRenderType(e as "default" | "document" | undefined);
+                      }}
+                      options={[
+                        { label: "对话", value: "default" },
+                        { label: "文档", value: "document" },
+                      ]}
+                    />
+                    <Button
+                      style={{ marginLeft: 14 }}
+                      onClick={() => setRenderType(undefined)}
+                    >
+                      {"恢复默认"}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item label="是否启用设定">
+                    <Switch
+                      checked={
+                        useConfig === undefined
+                          ? chatMgt.config.enableVirtualRole
+                          : useConfig
+                      }
+                      onChange={(e) => {
+                        setUseConfig(e);
+                      }}
+                    />
+                    <Button
+                      style={{ marginLeft: 14 }}
+                      onClick={() => setUseConfig(undefined)}
+                    >
+                      {"恢复默认"}
+                    </Button>
+                  </Form.Item>
                 </Form.Item>
-                <Form.Item label="渲染方式">
-                  <Segmented
-                    value={
-                      renderType === undefined
-                        ? chatMgt.config.renderType
-                        : renderType
-                    }
-                    onChange={(e) => {
-                      setRenderType(e as "default" | "document" | undefined);
-                    }}
-                    options={[
-                      { label: "对话", value: "default" },
-                      { label: "文档", value: "document" },
-                    ]}
-                  />
-                  <Button
-                    style={{ marginLeft: 14 }}
-                    onClick={() => setRenderType(undefined)}
-                  >
-                    {"恢复默认"}
-                  </Button>
-                </Form.Item>
-                <Form.Item label="是否启用设定">
-                  <Switch
-                    checked={
-                      useConfig === undefined
-                        ? chatMgt.config.enableVirtualRole
-                        : useConfig
-                    }
-                    onChange={(e) => {
-                      setUseConfig(e);
-                    }}
-                  />
-                  <Button
-                    style={{ marginLeft: 14 }}
-                    onClick={() => setUseConfig(undefined)}
-                  >
-                    {"恢复默认"}
-                  </Button>
-                </Form.Item>
-              </Form.Item>
+              </div>
             ),
           },
           {
@@ -220,32 +222,36 @@ export const TopicConfig = ({
             label: "会话设定",
             key: "overrideVirtualRole",
             children: (
-              <VirtualRoleConfigList
-                save={(setting) => {
-                  setOverrideVirtualRole(
-                    setting
-                      .filter((f) => f.checked)
-                      .map((v) => ({
-                        key: v.key,
-                        edit: false,
-                        ctx: v.ctx.map((c) => ({ key: c.key })),
-                      }))
-                  );
-                }}
-                disabledEdit={true}
-                autoSave={false}
-                inputSettings={virtualRoleSetting}
-              />
+              <div style={{ ...tabItemStyle }}>
+                <VirtualRoleConfigList
+                  save={(setting) => {
+                    setOverrideVirtualRole(
+                      setting
+                        .filter((f) => f.checked)
+                        .map((v) => ({
+                          key: v.key,
+                          edit: false,
+                          ctx: v.ctx.map((c) => ({ key: c.key })),
+                        }))
+                    );
+                  }}
+                  disabledEdit={true}
+                  autoSave={false}
+                  inputSettings={virtualRoleSetting}
+                />
+              </div>
             ),
           },
           {
             label: "设定预览",
             key: "virtualRolePreview",
             children: (
-              <VirtualRoleConfigInfo
-                bio={chatMgt.virtualRole.bio}
-                settings={virtualRoleSetting.concat(virtualRole || [])}
-              />
+              <div style={{ ...tabItemStyle }}>
+                <VirtualRoleConfigInfo
+                  bio={chatMgt.virtualRole.bio}
+                  settings={virtualRoleSetting.concat(virtualRole || [])}
+                />
+              </div>
             ),
           },
         ]}
