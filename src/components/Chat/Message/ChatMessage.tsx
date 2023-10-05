@@ -1,3 +1,4 @@
+import { TopicConfigModal } from "@/components/TopicConfig/TopicConfig";
 import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
 import { useSendMessage } from "@/core/hooks/hooks";
 import { TopicMessage } from "@/Models/Topic";
@@ -232,6 +233,8 @@ function TopUtil({
             sendMessage((firstMsgIdxRef.current ?? 0) - 1, v);
           }}
         ></Button>
+        <span style={{ flex: 1 }}></span>
+        <TopicConfigModal topic={v}></TopicConfigModal>
         <span style={{ flex: 1 }}></span>
         <Space size={10}>
           <Typography.Title

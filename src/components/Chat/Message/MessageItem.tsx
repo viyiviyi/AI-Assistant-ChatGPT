@@ -66,6 +66,10 @@ export const MessageItem = ({
   style?: CSSProperties | undefined;
 }) => {
   const { chatMgt: chat, loadingMsgs, reloadNav } = useContext(ChatContext);
+  const topic = useMemo(
+    () => chat.topics.find((f) => f.id == msg.topicId)!,
+    [chat.topics, msg.topicId]
+  );
   const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
@@ -74,6 +78,18 @@ export const MessageItem = ({
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
+  const [renderType, setRenderType] = useState(
+    topic?.overrideSettings?.renderType === undefined
+      ? chat.config.renderType
+      : topic.overrideSettings.renderType
+  );
+  useEffect(() => {
+    setRenderType(
+      topic?.overrideSettings?.renderType === undefined
+        ? chat.config.renderType
+        : topic.overrideSettings.renderType
+    );
+  }, [chat.config.renderType, topic.overrideSettings?.renderType]);
   useEffect(() => {
     renderMessage[msg.id] = createThrottleAndDebounce(() => {
       setMessage({ text: msg.text });
@@ -306,9 +322,7 @@ export const MessageItem = ({
               </Button.Group>
             </div>
             <TextEditor
-              autoSize={
-                chat.config.renderType == "document" ? true : { maxRows: 10 }
-              }
+              autoSize={renderType == "document" ? true : { maxRows: 10 }}
               input={messageText}
               onKeyDown={(e) => {
                 if (e.key === "s" && e.ctrlKey) {
@@ -355,7 +369,7 @@ export const MessageItem = ({
     );
   }, [
     chat.config.disableStrikethrough,
-    chat.config.renderType,
+    renderType,
     ctxRole,
     edit,
     inputRef,
@@ -364,7 +378,7 @@ export const MessageItem = ({
     onSned,
     saveMsg,
   ]);
-  if (chat.config.renderType == "document") {
+  if (renderType == "document") {
     return (
       <>
         {contextHolder}

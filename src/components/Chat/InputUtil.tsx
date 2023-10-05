@@ -49,9 +49,9 @@ export function InputUtil() {
   } = useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
     useContext(MessageContext);
+  const screenSize = useScreenSize();
   const { token } = theme.useToken();
   const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
-  const screenSize = useScreenSize();
   const { pushMessage } = usePushMessage(chat);
   const [showCtxRoleButton, setShowCtxRoleButton] = useState(false);
   objs.setInput = (input: string | ((s: string) => string)) => {
@@ -243,6 +243,16 @@ export function InputUtil() {
           <Button
             shape="round"
             onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {}}
+          >
+            <SkipExport>
+              <PlusOutlined />
+            </SkipExport>
+          </Button>
+          <span style={{ marginLeft: 10 }}></span>
+          <Button
+            shape="round"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={(e) => {
               setOnlyOne(false);
               setCloasAll(!closeAll);
@@ -250,17 +260,6 @@ export function InputUtil() {
           >
             <SkipExport>
               <VerticalAlignMiddleOutlined />
-            </SkipExport>
-          </Button>
-          <span style={{ marginLeft: 10 }}></span>
-          <Button
-            shape="circle"
-            size="large"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {}}
-          >
-            <SkipExport>
-              <PlusOutlined />
             </SkipExport>
           </Button>
           <span style={{ marginLeft: 10 }}></span>

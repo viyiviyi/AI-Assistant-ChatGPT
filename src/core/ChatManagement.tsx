@@ -254,13 +254,14 @@ export class ChatManagement {
       let messages = topic.messages;
       if (index > -1) messages = messages.slice(0, index);
       else messages = [];
-      if (
-        this.gptConfig.msgCount > 0 &&
-        messages.length > this.gptConfig.msgCount
-      ) {
+      let ctxCount =
+        topic.overrideSettings?.msgCount === undefined
+          ? this.gptConfig.msgCount
+          : topic.overrideSettings?.msgCount;
+      if (ctxCount > 0 && messages.length > ctxCount) {
         // 不在记忆范围内 且勾选了的消息
         messages
-          .slice(0, messages.length - this.gptConfig.msgCount)
+          .slice(0, messages.length - ctxCount)
           .filter((v) => v.checked)
           .forEach((v) => {
             let virtualRole = this.virtualRole;
@@ -272,7 +273,7 @@ export class ChatManagement {
           });
       }
       // 记忆范围内的消息
-      messages.slice(-this.gptConfig.msgCount).forEach((v) => {
+      messages.slice(-ctxCount).forEach((v) => {
         let virtualRole = this.virtualRole;
         ctx.push({
           role: v.ctxRole,
@@ -282,7 +283,11 @@ export class ChatManagement {
       });
     }
     // 置顶助理全局配置
-    if (this.config.enableVirtualRole) {
+    if (
+      topic.overrideSettings?.useConfig === undefined
+        ? this.config.enableVirtualRole
+        : topic.overrideSettings?.useConfig
+    ) {
       let virtualRole = this.virtualRole;
       ctx = [
         // 助理简介
@@ -430,7 +435,19 @@ export class ChatManagement {
   async newTopic(name: string) {
     let topic = await ChatManagement.createTopic(
       this.group.id,
-      name.substring(0, 100) || new Date().toLocaleString()
+      name.substring(0, 100) || new Date().toLocaleString(),
+      {
+        id: getUuid(),
+        groupId: this.group.id,
+        name: name.substring(0, 100) || new Date().toLocaleString(),
+        createdAt: Date.now(),
+        overrideVirtualRole: this.virtualRole.settings
+          .filter((f) => f.checked)
+          .map((v) => ({
+            key: v.key,
+            ctx: v.ctx.filter((f) => f.checked).map((c) => ({ key: c.key })),
+          })),
+      }
     );
     let _topic: TopicMessage = {
       ...topic,
@@ -458,7 +475,6 @@ export class ChatManagement {
         tableName: "Topic",
         value: t.id,
         handle: (r) => {
-          t.updateTime = Date.now();
           return Object.assign(r, t, {
             messages: [],
             messageMap: {},

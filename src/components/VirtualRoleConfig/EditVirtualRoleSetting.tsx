@@ -24,6 +24,7 @@ const ContentItem = ({
   item,
   idx,
   del,
+  disabledEdit,
 }: {
   item: {
     key: string;
@@ -33,6 +34,8 @@ const ContentItem = ({
   };
   idx: number;
   del: (key: string) => void;
+
+  disabledEdit?: boolean;
 }) => {
   const [text, setText] = useState(item.content);
   const [role, setRole] = useState(item.role);
@@ -58,34 +61,39 @@ const ContentItem = ({
           marginBottom: 6,
         }}
       >
-        <Form.Item noStyle>
-          <Segmented
-            size="small"
-            value={role ? role : "null"}
-            onChange={(val) => {
-              item.role = val != "null" ? (val as CtxRole) : undefined;
-              setRole(item.role);
-            }}
-            options={[
-              { label: "助理", value: "assistant" },
-              { label: "系统", value: "system" },
-              { label: "用户", value: "user" },
-              ...(idx > 0 ? [{ label: "向上合并", value: "null" }] : []),
-            ]}
-          />
-        </Form.Item>
+        <Hidden hidden={disabledEdit}>
+          <Form.Item noStyle>
+            <Segmented
+              size="small"
+              value={role ? role : "null"}
+              onChange={(val) => {
+                item.role = val != "null" ? (val as CtxRole) : undefined;
+                setRole(item.role);
+              }}
+              options={[
+                { label: "助理", value: "assistant" },
+                { label: "系统", value: "system" },
+                { label: "用户", value: "user" },
+                ...(idx > 0 ? [{ label: "向上合并", value: "null" }] : []),
+              ]}
+            />
+          </Form.Item>
+        </Hidden>
+        <span></span>
         <span>
           <SkipExport>
-            <Popconfirm
-              overlayInnerStyle={{ whiteSpace: "nowrap" }}
-              title="确定删除？"
-              placement="topRight"
-              onConfirm={() => {
-                del(item.key);
-              }}
-            >
-              <DeleteOutlined></DeleteOutlined>
-            </Popconfirm>
+            <Hidden hidden={disabledEdit}>
+              <Popconfirm
+                overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                title="确定删除？"
+                placement="topRight"
+                onConfirm={() => {
+                  del(item.key);
+                }}
+              >
+                <DeleteOutlined></DeleteOutlined>
+              </Popconfirm>
+            </Hidden>
           </SkipExport>
           <span style={{ marginLeft: "15px" }}></span>
           <Form.Item noStyle>
@@ -105,6 +113,7 @@ const ContentItem = ({
         noStyle
       >
         <Input.TextArea
+          readOnly={disabledEdit}
           placeholder="追加内容"
           autoSize={{ maxRows: 10 }}
           value={text}
@@ -127,12 +136,15 @@ export function EditVirtualRoleSetting({
   visible,
   onCancel,
   allTags,
+  disabledEdit,
 }: {
   item: VirtualRoleSetting & DragItem & { edit: boolean };
   visible: boolean;
   onSave: (item: VirtualRoleSetting & DragItem & { edit: boolean }) => void;
   onCancel: () => void;
   allTags: string[];
+
+  disabledEdit?: boolean;
 }) {
   const [tags, setTags] = useState<string[]>(item.tags);
   const { token } = theme.useToken();
@@ -159,6 +171,7 @@ export function EditVirtualRoleSetting({
       if (filterText && !item.content.includes(filterText)) return undefined;
       return (
         <ContentItem
+          disabledEdit={disabledEdit}
           item={item}
           idx={idx}
           del={(key) => {
@@ -167,7 +180,7 @@ export function EditVirtualRoleSetting({
         />
       );
     },
-    [filterText]
+    [disabledEdit, filterText]
   );
   const [title, setTitle] = useState(item.title);
   if (!visible) return <></>;
@@ -207,29 +220,32 @@ export function EditVirtualRoleSetting({
             >
               {"复制"}
             </Button>
-            <Button
-              onClick={() => {
-                navigator?.clipboard.readText().then((text) => {
-                  try {
-                    if (!text) return;
-                    let res = JSON.parse(text) as VirtualRoleSetting;
-                    if (!res) return;
-                    setTags(res.tags);
-                    setTitle(res.title);
-                    setCtx(res.ctx);
-                  } catch (err) {
-                    item.ctx.push({
-                      key: getUuid(),
-                      role: "system",
-                      content: text,
-                      checked: true,
-                    });
-                  }
-                });
-              }}
-            >
-              {"粘贴"}
-            </Button>
+
+            <Hidden hidden={disabledEdit}>
+              <Button
+                onClick={() => {
+                  navigator?.clipboard.readText().then((text) => {
+                    try {
+                      if (!text) return;
+                      let res = JSON.parse(text) as VirtualRoleSetting;
+                      if (!res) return;
+                      setTags(res.tags);
+                      setTitle(res.title);
+                      setCtx(res.ctx);
+                    } catch (err) {
+                      item.ctx.push({
+                        key: getUuid(),
+                        role: "system",
+                        content: text,
+                        checked: true,
+                      });
+                    }
+                  });
+                }}
+              >
+                {"粘贴"}
+              </Button>
+            </Hidden>
           </Button.Group>
         </Form.Item>
         <Form.Item style={{ marginBottom: 10 }}>
@@ -244,6 +260,7 @@ export function EditVirtualRoleSetting({
         </Form.Item>
         <Form.Item validateTrigger={["onChange", "onBlur"]}>
           <Input.TextArea
+            readOnly={disabledEdit}
             placeholder="标题，不影响上下文，可不填"
             autoSize
             value={title}
@@ -259,6 +276,7 @@ export function EditVirtualRoleSetting({
         <Form.Item>
           <Select
             placeholder={"tag 按下Enter新增新tag"}
+            disabled={disabledEdit}
             mode="tags"
             style={{ width: "100%" }}
             value={tags}
@@ -269,8 +287,9 @@ export function EditVirtualRoleSetting({
             options={allTags.map((v) => ({ label: v, value: v }))}
           />
         </Form.Item>
+
         <div style={{ overflow: "auto" }}>
-          <Hidden hidden={ctx.length < 3}>
+          <Hidden hidden={ctx.length < 3 || disabledEdit}>
             <Form.Item>
               <Button
                 type="dashed"
@@ -298,6 +317,7 @@ export function EditVirtualRoleSetting({
           </Hidden>
           <DragList
             data={ctx}
+            readonly={disabledEdit}
             onChange={(data) => {
               data.forEach((item, idx) => {
                 if (idx == 0 && !item.role) item.role = "system";
@@ -313,30 +333,32 @@ export function EditVirtualRoleSetting({
             }}
             itemDom={renderItem}
           ></DragList>
-          <Form.Item>
-            <Button
-              type="dashed"
-              onClick={() => {
-                setCtx((v) => [
-                  ...v,
-                  {
-                    content: "",
-                    role: v.length == 0 ? "system" : undefined,
-                    key: getUuid(),
-                    checked: true,
-                  },
-                ]);
-              }}
-              block
-              icon={
-                <SkipExport>
-                  <PlusOutlined />
-                </SkipExport>
-              }
-            >
-              {"增加设定"}
-            </Button>
-          </Form.Item>
+          <Hidden hidden={disabledEdit}>
+            <Form.Item>
+              <Button
+                type="dashed"
+                onClick={() => {
+                  setCtx((v) => [
+                    ...v,
+                    {
+                      content: "",
+                      role: v.length == 0 ? "system" : undefined,
+                      key: getUuid(),
+                      checked: true,
+                    },
+                  ]);
+                }}
+                block
+                icon={
+                  <SkipExport>
+                    <PlusOutlined />
+                  </SkipExport>
+                }
+              >
+                {"增加设定"}
+              </Button>
+            </Form.Item>
+          </Hidden>
         </div>
       </div>
     </Modal>

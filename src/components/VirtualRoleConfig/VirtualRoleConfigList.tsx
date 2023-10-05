@@ -16,6 +16,7 @@ import {
 } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { DragItem, DragList } from "../common/DragList";
+import { Hidden } from "../common/Hidden";
 import { SkipExport } from "../common/SkipExport";
 import { EditVirtualRoleSetting } from "./EditVirtualRoleSetting";
 
@@ -25,10 +26,12 @@ export const VirtualRoleConfigList = ({
   autoSave = false,
   save,
   inputSettings,
+  disabledEdit,
 }: {
   autoSave?: boolean;
   save?: (settings: SettingItem) => void;
   inputSettings?: SettingItem;
+  disabledEdit?: boolean;
 }) => {
   const { chatMgt } = useContext(ChatContext);
   const [tags, setTags] = useState<string[]>([]);
@@ -46,7 +49,7 @@ export const VirtualRoleConfigList = ({
       setVirtualRole_settings(
         chatMgt.virtualRole.settings.map((v) => ({
           ...v,
-          key: (v as any).key || getUuid(),
+          key: v.key,
           edit: false,
         }))
       );
@@ -115,10 +118,7 @@ export const VirtualRoleConfigList = ({
           next_setting = setting;
         }
         if (autoSave) saveFunc(next_setting);
-        if (save)
-          save(
-            next_setting
-          );
+        if (save) save(next_setting);
         return next_setting;
       });
     },
@@ -140,6 +140,7 @@ export const VirtualRoleConfigList = ({
             item={item}
             allTags={tags}
             visible={item.edit}
+            disabledEdit={disabledEdit}
             onCancel={() => {
               item.edit = false;
               setVirtualRole_settings((v) => [...v]);
@@ -207,24 +208,28 @@ export const VirtualRoleConfigList = ({
                   saveSettings((v) => [...v]);
                 }}
               ></Checkbox>
-              <SkipExport>
-                <Popconfirm
-                  placement="topRight"
-                  overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                  title="确定删除？"
-                  onConfirm={() => {
-                    saveSettings((v) => v.filter((f) => f != item));
-                  }}
-                >
-                  <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
-                </Popconfirm>
-              </SkipExport>
+              <Hidden hidden={disabledEdit}>
+                <SkipExport>
+                  <Popconfirm
+                    placement="topRight"
+                    overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                    title="确定删除？"
+                    onConfirm={() => {
+                      saveSettings((v) => v.filter((f) => f != item));
+                    }}
+                  >
+                    <DeleteOutlined
+                      style={{ color: "#ff8d8f" }}
+                    ></DeleteOutlined>
+                  </Popconfirm>
+                </SkipExport>
+              </Hidden>
             </Space>
           </div>
         </div>
       ) : undefined;
     },
-    [isShow, tags, saveSettings]
+    [isShow, tags, disabledEdit, saveSettings]
   );
   return (
     <>
@@ -263,6 +268,7 @@ export const VirtualRoleConfigList = ({
             padding: 5,
             marginBottom: 8,
           }}
+          readonly={disabledEdit}
           centenDrag={true}
           data={virtualRole_settings.filter((f) => !f.postposition)}
           onChange={(data) => {
@@ -303,6 +309,7 @@ export const VirtualRoleConfigList = ({
       <Divider orientation="left">后置内容</Divider>
       <Form.Item extra="当助理模式开启时，这些内容将追加在上下文后面">
         <DragList
+          readonly={disabledEdit}
           style={{
             borderRadius: 8,
             border: "1px solid " + token.colorBorder,

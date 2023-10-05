@@ -6,10 +6,11 @@ import {
   arrayMove,
   SortableContext,
   useSortable,
-  verticalListSortingStrategy,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import React, { useEffect, useState } from "react";
+import { Hidden } from "./Hidden";
 import { SkipExport } from "./SkipExport";
 
 export type DragItem = { key: string };
@@ -20,12 +21,14 @@ export function DragList<T>({
   onChange,
   style,
   centenDrag = false,
+  readonly,
 }: {
   data: Array<T & DragItem>;
   itemDom: (item: T, index: number) => React.ReactElement | undefined;
   onChange: (data: T[]) => void;
   style?: React.CSSProperties;
   centenDrag?: boolean;
+  readonly?: boolean;
 }) {
   const [dataSource, setDataSource] = useState<Array<T & DragItem>>(data);
   useEffect(() => {
@@ -53,7 +56,12 @@ export function DragList<T>({
           let dom = itemDom(v, idx);
           if (!dom) return undefined;
           return (
-            <Row style={style} key={v.key} data-row-key={v.key}>
+            <Row
+              readonly={readonly}
+              style={style}
+              key={v.key}
+              data-row-key={v.key}
+            >
               {dom}
             </Row>
           );
@@ -66,7 +74,11 @@ interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   "data-row-key": string;
   centenDrag?: boolean;
 }
-function Row({ children, ...props }: RowProps) {
+function Row({
+  children,
+  readonly,
+  ...props
+}: RowProps & { readonly?: boolean }) {
   const {
     attributes,
     listeners,
@@ -96,13 +108,15 @@ function Row({ children, ...props }: RowProps) {
         style={{ display: "flex", width: "100%" }}
         ref={props.centenDrag ? setActivatorNodeRef : undefined}
       >
-        <SkipExport>
-          <MenuOutlined
-            ref={props.centenDrag ? undefined : setActivatorNodeRef}
-            style={{ touchAction: "none", cursor: "move" }}
-            {...listeners}
-          />
-        </SkipExport>
+        <Hidden hidden={readonly}>
+          <SkipExport>
+            <MenuOutlined
+              ref={props.centenDrag ? undefined : setActivatorNodeRef}
+              style={{ touchAction: "none", cursor: "move" }}
+              {...listeners}
+            />
+          </SkipExport>
+        </Hidden>
         {children}
       </div>
     </div>
