@@ -48,7 +48,7 @@ export interface GroupConfig {
 // 聊天消息表
 export interface Message {
   id: string; // 消息ID
-  cate: "sd-txt2img" | "sd-img2img" | undefined;
+  cate?: "sd-txt2img" | "sd-img2img" | undefined;
   groupId: string; // 分组ID
   topicId: string; // 话题ID
   ctxRole: CtxRole;
