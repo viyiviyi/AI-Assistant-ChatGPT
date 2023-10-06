@@ -41,7 +41,6 @@ export default function App({ Component, pageProps }: AppProps) {
             Segmented: {
               itemSelectedColor: isDark ? "#00b96b" : "#00b96b",
               itemHoverColor: isDark ? "#00B96CA0" : "#00b96bA0",
-              colorTextDisabled: isDark ? "#00B96CA0" : "#00b96bA0",
             },
             Tabs: {
               colorBgContainer: "#0000",
