@@ -27,9 +27,11 @@ export const VirtualRoleConfigList = ({
   inputSettings,
   currentSettings,
   disabledEdit,
+  onChange,
 }: {
   autoSave?: boolean;
   currentSettings?: { current?: SettingItem };
+  onChange?: (setting: SettingItem) => void;
   inputSettings?: SettingItem;
   disabledEdit?: boolean;
 }) => {
@@ -110,7 +112,11 @@ export const VirtualRoleConfigList = ({
         .filter(
           (f) => f && (f.ctx.filter((_f) => _f.content).length || f.title)
         )
-        .map((v) => ({ ...v, edit: undefined }));
+        .map((v) => ({
+          ...v,
+          ctx: v.ctx.map((c) => ({ ...c, edit: undefined })),
+          edit: undefined,
+        }));
       chatMgt.saveVirtualRoleBio();
     },
     [chatMgt]
@@ -125,10 +131,11 @@ export const VirtualRoleConfigList = ({
           next_setting = setting;
         }
         if (autoSave) saveFunc(next_setting);
+        if (onChange) onChange(next_setting);
         return next_setting;
       });
     },
-    [autoSave, saveFunc]
+    [autoSave, onChange, saveFunc]
   );
   const dragItem = useCallback(
     (item: VirtualRoleSetting & DragItem & { edit: boolean }) => {

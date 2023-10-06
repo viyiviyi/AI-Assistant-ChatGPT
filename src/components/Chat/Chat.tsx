@@ -5,14 +5,14 @@ import { useScreenSize } from "@/core/hooks/hooks";
 import { activityScroll } from "@/core/utils";
 import { Message } from "@/Models/DataBase";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button, Form, Layout, message, Modal, theme } from "antd";
+import { Button, Layout, message, Modal, theme } from "antd";
 import React, { useContext, useEffect, useState } from "react";
 import { MemoChatHeader } from "../ChatHeader";
 import { Hidden } from "../common/Hidden";
 import { MarkdownView } from "../common/MarkdownView";
 import { SkipExport } from "../common/SkipExport";
 import { MemoNavigation } from "../Nav/Navigation";
-import { VirtualRoleConfigList } from "../VirtualRoleConfig/VirtualRoleConfigList";
+import { QuickEditConfig } from "../VirtualRoleConfig/QuickEditConfig";
 import { MemoInputUtil } from "./InputUtil";
 
 const { Content, Footer } = Layout;
@@ -198,11 +198,7 @@ export const Chat = () => {
                       padding: 10,
                     }}
                   >
-                    <Form style={{ height: "100%", overflow: "auto" }}>
-                      <VirtualRoleConfigList
-                        autoSave={true}
-                      />
-                    </Form>
+                    <QuickEditConfig />
                   </div>
                 </Hidden>
               </Content>

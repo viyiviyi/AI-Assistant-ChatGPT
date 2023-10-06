@@ -157,7 +157,13 @@ export const TopicConfig = ({
     } else {
       topic.overrideVirtualRole = undefined;
     }
-    topic.virtualRole = currentSettings.current;
+    topic.virtualRole = currentSettings.current
+      .filter((f) => f && (f.ctx.filter((_f) => _f.content).length || f.title))
+      .map((v) => ({
+        ...v,
+        ctx: v.ctx.map((c) => ({ ...c, edit: undefined })),
+        edit: undefined,
+      }));
     chatMgt.saveTopic(topic.id, topic.name);
     reloadTopic(topic.id);
   }, [
