@@ -147,7 +147,7 @@ export const VirtualRoleConfigList = ({
             }}
             onSave={(_item) => {
               _item.edit = false;
-              saveSettings((v) =>
+              setVirtualRole_settings((v) =>
                 v.map((a) => (a.key == _item.key ? _item : a))
               );
             }}

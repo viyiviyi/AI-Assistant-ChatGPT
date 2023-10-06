@@ -38,6 +38,7 @@ export const VirtualRoleConfig = ({
   const [virtualRole_settings, setVirtualRole_settings] = useState(
     chatMgt?.virtualRole.settings?.map((v, i) => ({
       ...v,
+      ctx: v.ctx.map((c) => ({ ...c })),
       edit: false,
     })) || []
   );

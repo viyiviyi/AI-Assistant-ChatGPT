@@ -143,7 +143,6 @@ export function EditVirtualRoleSetting({
   onSave: (item: VirtualRoleSetting & DragItem & { edit: boolean }) => void;
   onCancel: () => void;
   allTags: string[];
-
   disabledEdit?: boolean;
 }) {
   const [tags, setTags] = useState<string[]>(item.tags);

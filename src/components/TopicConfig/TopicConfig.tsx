@@ -60,16 +60,29 @@ export const TopicConfig = ({
   );
   const [useConfig, setUseConfig] = useState(topic.overrideSettings?.useConfig);
   const [overrideVirtualRole, setOverrideVirtualRole] = useState(
-    topic.overrideVirtualRole?.map((v) => ({ ...v, edit: false }))
+    topic.overrideVirtualRole?.map((v) => ({
+      ...v,
+      edit: false,
+    }))
   );
   const [virtualRoleSetting, setVirtualRoleSetting] = useState(
     chatMgt.virtualRole.settings?.map((v, i) => ({
       ...v,
+      ctx: v.ctx.map((c) => ({ ...c })),
       edit: false,
     })) || []
   );
   useEffect(() => {
     setVirtualRoleSetting((settings) => {
+      if (!overrideVirtualRole) {
+        return (
+          chatMgt.virtualRole.settings?.map((v, i) => ({
+            ...v,
+            ctx: v.ctx.map((c) => ({ ...c })),
+            edit: false,
+          })) || []
+        );
+      }
       settings.forEach((v, idx) => {
         if (overrideVirtualRole) {
           let override = overrideVirtualRole.find((f) => f.key == v.key);
@@ -81,12 +94,6 @@ export const TopicConfig = ({
           } else {
             v.checked = false;
           }
-        } else {
-          v.checked == chatMgt.virtualRole.settings[idx].checked;
-          v.ctx = v.ctx.map((c, i) => ({
-            ...c,
-            checked: chatMgt.virtualRole.settings[idx].ctx[i].checked,
-          }));
         }
       });
       return [...settings];
@@ -95,6 +102,7 @@ export const TopicConfig = ({
   const [virtualRole, setVirtualRole] = useState(
     topic.virtualRole?.map((v, i) => ({
       ...v,
+      ctx: v.ctx.map((c) => ({ ...c })),
       edit: false,
     })) || []
   );
@@ -223,6 +231,14 @@ export const TopicConfig = ({
             key: "overrideVirtualRole",
             children: (
               <div style={{ ...tabItemStyle }}>
+                <Button
+                  style={{ marginBottom: 14 }}
+                  onClick={() => {
+                    setOverrideVirtualRole(undefined);
+                  }}
+                >
+                  {"恢复默认"}
+                </Button>
                 <VirtualRoleConfigList
                   save={(setting) => {
                     setOverrideVirtualRole(
