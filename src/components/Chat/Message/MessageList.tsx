@@ -244,7 +244,7 @@ export function MessageList({
 
       <Hidden
         hidden={
-          chat.config.renderType != "document" || topic.messages.length < 2
+          chat.config.renderType != "document" || topic.messages.length < 1
         }
       >
         <div style={{ fontSize: ".8em", textAlign: "center", opacity: 0.5 }}>

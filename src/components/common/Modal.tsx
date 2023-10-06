@@ -107,14 +107,20 @@ export const Modal = ({
               }}
               type="text"
               icon={<CloseOutlined />}
-              style={{ position: "absolute", top: 8, right: 8, opacity: 0.5 }}
+              style={{
+                position: "absolute",
+                zIndex: 999,
+                top: 8,
+                right: 8,
+                opacity: 0.5,
+              }}
             ></Button>
           </Hidden>
           <Hidden hidden={!title}>
             <Typography.Title level={4}>{title}</Typography.Title>
           </Hidden>
           <div style={{ ...bodyStyle }}>{children || items(callback)}</div>
-          <Button.Group style={{ width: "100%" }}>
+          <Button.Group style={{ width: "100%", marginTop: 12 }}>
             <Hidden hidden={cancelText === null}>
               <Button
                 block
@@ -173,12 +179,10 @@ export const Modal = ({
           style={{
             paddingLeft: token.paddingLG,
             paddingRight: token.paddingLG,
-            paddingTop: token.paddingSM * 2,
+            paddingTop: token.paddingSM * 3,
             paddingBottom: token.paddingSM * 2,
             backgroundColor: token.colorBgElevated,
             borderRadius: token.borderRadiusLG,
-            // maxHeight: maxHight ? maxHight : "calc(100% - 40px)",
-            // overflow: "auto",
             width: width || "min(100%, 500px)",
             position: "relative",
           }}
@@ -190,7 +194,13 @@ export const Modal = ({
               }}
               type="text"
               icon={<CloseOutlined />}
-              style={{ position: "absolute", top: 8, right: 8, opacity: 0.5 }}
+              style={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                opacity: 0.5,
+                zIndex: 999,
+              }}
             ></Button>
           </Hidden>
           <Hidden hidden={!title}>
@@ -202,6 +212,7 @@ export const Modal = ({
               width: "100%",
               display: "flex",
               justifyContent: "flex-end",
+              marginTop: 12,
             }}
           >
             <Hidden hidden={cancelText === null}>

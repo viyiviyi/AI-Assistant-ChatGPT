@@ -27,6 +27,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <ConfigProvider
         locale={zhCN}
         theme={{
+          hashed: false,
           token: {
             colorPrimary: "#00b96b",
             colorInfoBg: isDark ? "#3338" : "#eee8",
@@ -34,8 +35,30 @@ export default function App({ Component, pageProps }: AppProps) {
             colorBgElevated: isDark ? "#222" : "#eee",
             colorLink: "#59ccccd5",
             colorLinkActive: "#41CECED5",
-            fontSize: 16,
+            fontSize: isDark ? 14 : 16,
             colorLinkHover: "#66E6E6D5",
+            padding: isDark ? 12 : 10,
+            paddingSM: isDark ? 8 : 10,
+            paddingMD: isDark ? 10 : 12,
+            paddingLG: isDark ? 12 : 14,
+            paddingXL: isDark ? 14 : 16,
+            paddingXS: isDark ? 16 : 18,
+            paddingXXS: isDark ? 18 : 20,
+            paddingContentHorizontal: isDark ? 10 : 12,
+            paddingContentHorizontalLG: isDark ? 10 : 12,
+            paddingContentHorizontalSM: isDark ? 10 : 12,
+            paddingContentVertical: isDark ? 12 : 14,
+            paddingContentVerticalLG: isDark ? 12 : 14,
+            paddingContentVerticalSM: isDark ? 12 : 14,
+            controlPaddingHorizontal: isDark ? 10 : 12,
+            controlPaddingHorizontalSM: isDark ? 10 : 12,
+            margin: isDark ? 12 : 10,
+            marginSM: isDark ? 8 : 10,
+            marginMD: isDark ? 10 : 12,
+            marginLG: isDark ? 12 : 14,
+            marginXL: isDark ? 14 : 16,
+            marginXS: isDark ? 16 : 18,
+            marginXXS: isDark ? 18 : 20,
           },
           components: {
             Segmented: {
