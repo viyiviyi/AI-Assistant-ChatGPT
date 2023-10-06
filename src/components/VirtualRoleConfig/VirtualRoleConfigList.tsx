@@ -24,12 +24,12 @@ type SettingItem = Array<VirtualRoleSetting & { key: string; edit: boolean }>;
 
 export const VirtualRoleConfigList = ({
   autoSave = false,
-  save,
   inputSettings,
+  currentSettings,
   disabledEdit,
 }: {
   autoSave?: boolean;
-  save?: (settings: SettingItem) => void;
+  currentSettings?: { current?: SettingItem };
   inputSettings?: SettingItem;
   disabledEdit?: boolean;
 }) => {
@@ -42,6 +42,13 @@ export const VirtualRoleConfigList = ({
   const [virtualRole_settings, setVirtualRole_settings] = useState(
     inputSettings || []
   );
+  useEffect(() => {
+    if (!currentSettings) return;
+    currentSettings.current = virtualRole_settings;
+    return () => {
+      currentSettings.current = undefined;
+    };
+  }, [currentSettings, virtualRole_settings]);
   useEffect(() => {
     // 从两个地方获取数据更新 设定列表，以inputSettings的优先
     if (inputSettings) setVirtualRole_settings(inputSettings);
@@ -118,11 +125,10 @@ export const VirtualRoleConfigList = ({
           next_setting = setting;
         }
         if (autoSave) saveFunc(next_setting);
-        if (save) save(next_setting);
         return next_setting;
       });
     },
-    [autoSave, save, saveFunc]
+    [autoSave, saveFunc]
   );
   const dragItem = useCallback(
     (item: VirtualRoleSetting & DragItem & { edit: boolean }) => {
@@ -147,7 +153,7 @@ export const VirtualRoleConfigList = ({
             }}
             onSave={(_item) => {
               _item.edit = false;
-              setVirtualRole_settings((v) =>
+              saveSettings((v) =>
                 v.map((a) => (a.key == _item.key ? _item : a))
               );
             }}
@@ -260,7 +266,7 @@ export const VirtualRoleConfigList = ({
           <span style={{ opacity: 0.8 }}>{"没有tag"}</span>
         )}
       </Form.Item>
-      <Form.Item>
+      <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
         <DragList
           style={{
             borderRadius: 8,
@@ -279,32 +285,34 @@ export const VirtualRoleConfigList = ({
           }}
           itemDom={dragItem}
         />
-        <Form.Item extra="当助理模式开启时，这些内容将追加在设定后面">
-          <Button
-            ghost
-            type="dashed"
-            onClick={() => {
-              setVirtualRole_settings((v) => [
-                ...v,
-                {
-                  checked: true,
-                  tags: [],
-                  ctx: [],
-                  key: getUuid(),
-                  edit: false,
-                },
-              ]);
-            }}
-            block
-          >
-            <Typography.Text>
-              <SkipExport>
-                <PlusOutlined />
-              </SkipExport>
-              {"增加设定"}
-            </Typography.Text>
-          </Button>
-        </Form.Item>
+        <Hidden hidden={disabledEdit}>
+          <Form.Item>
+            <Button
+              ghost
+              type="dashed"
+              onClick={() => {
+                setVirtualRole_settings((v) => [
+                  ...v,
+                  {
+                    checked: true,
+                    tags: [],
+                    ctx: [],
+                    key: getUuid(),
+                    edit: false,
+                  },
+                ]);
+              }}
+              block
+            >
+              <Typography.Text>
+                <SkipExport>
+                  <PlusOutlined />
+                </SkipExport>
+                {"增加设定"}
+              </Typography.Text>
+            </Button>
+          </Form.Item>
+        </Hidden>
       </Form.Item>
       <Divider orientation="left">后置内容</Divider>
       <Form.Item extra="当助理模式开启时，这些内容将追加在上下文后面">
@@ -325,33 +333,36 @@ export const VirtualRoleConfigList = ({
           }}
           itemDom={dragItem}
         />
-        <Form.Item>
-          <Button
-            ghost
-            type="dashed"
-            onClick={() => {
-              setVirtualRole_settings((v) => [
-                ...v,
-                {
-                  postposition: true,
-                  checked: true,
-                  tags: [],
-                  ctx: [],
-                  key: getUuid(),
-                  edit: false,
-                },
-              ]);
-            }}
-            block
-          >
-            <Typography.Text>
-              <SkipExport>
-                <PlusOutlined />
-              </SkipExport>
-              {"增加设定"}
-            </Typography.Text>
-          </Button>
-        </Form.Item>
+
+        <Hidden hidden={disabledEdit}>
+          <Form.Item>
+            <Button
+              ghost
+              type="dashed"
+              onClick={() => {
+                setVirtualRole_settings((v) => [
+                  ...v,
+                  {
+                    postposition: true,
+                    checked: true,
+                    tags: [],
+                    ctx: [],
+                    key: getUuid(),
+                    edit: false,
+                  },
+                ]);
+              }}
+              block
+            >
+              <Typography.Text>
+                <SkipExport>
+                  <PlusOutlined />
+                </SkipExport>
+                {"增加设定"}
+              </Typography.Text>
+            </Button>
+          </Form.Item>
+        </Hidden>
       </Form.Item>
     </>
   );

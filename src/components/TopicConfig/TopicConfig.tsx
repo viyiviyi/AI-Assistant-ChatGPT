@@ -8,6 +8,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState
 } from "react";
 import { reloadTopic } from "../Chat/Message/MessageList";
@@ -19,7 +20,6 @@ import { VirtualRoleConfigList } from "../VirtualRoleConfig/VirtualRoleConfigLis
 export const TopicConfigModal = ({ topic }: { topic: TopicMessage }) => {
   const screenSize = useScreenSize();
   const [isShow, setIsShow] = useState(false);
-
   return (
     <>
       <SkipExport>
@@ -59,18 +59,24 @@ export const TopicConfig = ({
     topic.overrideSettings?.renderType
   );
   const [useConfig, setUseConfig] = useState(topic.overrideSettings?.useConfig);
+  // 覆盖会话的设定的开关
   const [overrideVirtualRole, setOverrideVirtualRole] = useState(
     topic.overrideVirtualRole?.map((v) => ({
       ...v,
       edit: false,
     }))
   );
+  // 会话的设定
   const [virtualRoleSetting, setVirtualRoleSetting] = useState(
     chatMgt.virtualRole.settings?.map((v, i) => ({
       ...v,
       ctx: v.ctx.map((c) => ({ ...c })),
       edit: false,
     })) || []
+  );
+  const currentvirtualRoleSettings = useMemo(
+    () => ({ current: virtualRoleSetting }),
+    [virtualRoleSetting]
   );
   useEffect(() => {
     setVirtualRoleSetting((settings) => {
@@ -99,12 +105,17 @@ export const TopicConfig = ({
       return [...settings];
     });
   }, [chatMgt, overrideVirtualRole]);
-  const [virtualRole, setVirtualRole] = useState(
+  // 话题内设定
+  const [virtualRole] = useState(
     topic.virtualRole?.map((v, i) => ({
       ...v,
       ctx: v.ctx.map((c) => ({ ...c })),
       edit: false,
     })) || []
+  );
+  const currentSettings = useMemo(
+    () => ({ current: virtualRole }),
+    [virtualRole]
   );
   const tabItemStyle: CSSProperties = {
     maxHeight: screenSize.height - 300,
@@ -116,18 +127,47 @@ export const TopicConfig = ({
       renderType: renderType,
       useConfig: useConfig,
     };
-    topic.overrideVirtualRole = overrideVirtualRole;
-    topic.virtualRole = virtualRole;
+    let settingHasChange = false;
+    if (currentvirtualRoleSettings.current) {
+      for (let i = 0; i < currentvirtualRoleSettings.current.length; i++) {
+        let v = currentvirtualRoleSettings.current[i];
+        let s = chatMgt.virtualRole.settings[i];
+        if (s.checked != v.checked) {
+          settingHasChange = true;
+          break;
+        }
+        for (let j = 0; j < v.ctx.length; j++) {
+          let c = v.ctx[j];
+          let c1 = s.ctx[j];
+          if (c.checked != c1.checked) {
+            settingHasChange = true;
+            break;
+          }
+        }
+        if (settingHasChange) break;
+      }
+    }
+    if (settingHasChange) {
+      topic.overrideVirtualRole = currentvirtualRoleSettings.current
+        .filter((f) => f.checked)
+        .map((v) => ({
+          key: v.key,
+          ctx: v.ctx.filter((f) => f.checked).map((c) => ({ key: c.key })),
+        }));
+    } else {
+      topic.overrideVirtualRole = undefined;
+    }
+    topic.virtualRole = currentSettings.current;
     chatMgt.saveTopic(topic.id, topic.name);
     reloadTopic(topic.id);
   }, [
     chatMgt,
     countCtx,
-    overrideVirtualRole,
+    currentSettings,
+    currentvirtualRoleSettings,
     renderType,
     topic,
     useConfig,
-    virtualRole,
   ]);
 
   if (modalCb.current) {
@@ -219,7 +259,7 @@ export const TopicConfig = ({
             children: (
               <div style={{ ...tabItemStyle }}>
                 <VirtualRoleConfigList
-                  save={setVirtualRole}
+                  currentSettings={currentSettings}
                   autoSave={false}
                   inputSettings={virtualRole}
                 />
@@ -240,17 +280,7 @@ export const TopicConfig = ({
                   {"恢复默认"}
                 </Button>
                 <VirtualRoleConfigList
-                  save={(setting) => {
-                    setOverrideVirtualRole(
-                      setting
-                        .filter((f) => f.checked)
-                        .map((v) => ({
-                          key: v.key,
-                          edit: false,
-                          ctx: v.ctx.map((c) => ({ key: c.key })),
-                        }))
-                    );
-                  }}
+                  currentSettings={currentvirtualRoleSettings}
                   disabledEdit={true}
                   autoSave={false}
                   inputSettings={virtualRoleSetting}

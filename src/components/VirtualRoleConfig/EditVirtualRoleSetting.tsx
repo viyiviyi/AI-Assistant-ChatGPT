@@ -61,24 +61,23 @@ const ContentItem = ({
           marginBottom: 6,
         }}
       >
-        <Hidden hidden={disabledEdit}>
-          <Form.Item noStyle>
-            <Segmented
-              size="small"
-              value={role ? role : "null"}
-              onChange={(val) => {
-                item.role = val != "null" ? (val as CtxRole) : undefined;
-                setRole(item.role);
-              }}
-              options={[
-                { label: "助理", value: "assistant" },
-                { label: "系统", value: "system" },
-                { label: "用户", value: "user" },
-                ...(idx > 0 ? [{ label: "向上合并", value: "null" }] : []),
-              ]}
-            />
-          </Form.Item>
-        </Hidden>
+        <Form.Item noStyle>
+          <Segmented
+            disabled={disabledEdit}
+            size="small"
+            value={role ? role : "null"}
+            onChange={(val) => {
+              item.role = val != "null" ? (val as CtxRole) : undefined;
+              setRole(item.role);
+            }}
+            options={[
+              { label: "助理", value: "assistant" },
+              { label: "系统", value: "system" },
+              { label: "用户", value: "user" },
+              ...(idx > 0 ? [{ label: "向上合并", value: "null" }] : []),
+            ]}
+          />
+        </Form.Item>
         <span></span>
         <span>
           <SkipExport>

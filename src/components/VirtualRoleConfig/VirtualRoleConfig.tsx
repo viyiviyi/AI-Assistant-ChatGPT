@@ -4,7 +4,7 @@ import { useScreenSize } from "@/core/hooks/hooks";
 import { getUuid } from "@/core/utils";
 import { VirtualRole } from "@/Models/DataBase";
 import { Button, Form, Input, Space, Switch, Tabs, theme } from "antd";
-import { CSSProperties, useContext, useState } from "react";
+import { CSSProperties, useContext, useMemo, useState } from "react";
 import ImageUpload from "../common/ImageUpload";
 import { Modal, ModalCallback } from "../common/Modal";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
@@ -42,16 +42,22 @@ export const VirtualRoleConfig = ({
       edit: false,
     })) || []
   );
+  const currentSettings = useMemo(
+    () => ({ current: virtualRole_settings }),
+    [virtualRole_settings]
+  );
 
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
     chatMgt.virtualRole.name = values.virtualRole_name;
     chatMgt.virtualRole.bio = values.virtualRole_bio;
-    virtualRole_settings.forEach((v) =>
+    (currentSettings.current || virtualRole_settings).forEach((v) =>
       v.ctx.forEach((c) => (c.content = c.content?.trim()))
     );
-    chatMgt.virtualRole.settings = virtualRole_settings
+    chatMgt.virtualRole.settings = (
+      currentSettings.current || virtualRole_settings
+    )
       .filter((f) => f && (f.ctx.filter((_f) => _f.content).length || f.title))
       .map((v) => ({ ...v, edit: undefined }));
     chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
@@ -261,7 +267,7 @@ export const VirtualRoleConfig = ({
                 children: (
                   <div style={{ ...tabItemStyle }}>
                     <VirtualRoleConfigList
-                      save={setVirtualRole_settings}
+                      currentSettings={currentSettings}
                       inputSettings={virtualRole_settings}
                     />
                   </div>
