@@ -89,7 +89,7 @@ export const MessageItem = ({
         ? chat.config.renderType
         : topic.overrideSettings.renderType
     );
-  }, [chat.config.renderType, topic.overrideSettings?.renderType]);
+  }, [chat.config.renderType, topic?.overrideSettings?.renderType]);
   useEffect(() => {
     renderMessage[msg.id] = createThrottleAndDebounce(() => {
       setMessage({ text: msg.text });
