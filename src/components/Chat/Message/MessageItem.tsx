@@ -13,7 +13,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -25,7 +25,7 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip
+  Tooltip,
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -37,7 +37,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 import { Hidden } from "../../common/Hidden";
 import { MarkdownView } from "../../common/MarkdownView";
@@ -122,121 +122,114 @@ export const MessageItem = ({
     [chat, reloadNav]
   );
   // 下方工具条
-  const utilsEle = useMemo(() => {
-    return (
-      <>
-        <Checkbox
-          disabled={!aiService?.customContext}
-          checked={msg.checked || false}
-          onChange={(e) => {
-            msg.checked = e.target.checked;
-            setMessage({ text: messageText.text });
-          }}
-        >
+  const utilsEle = (
+    <>
+      <Checkbox
+        disabled={!aiService?.customContext}
+        checked={msg.checked || false}
+        onChange={(e) => {
+          msg.checked = e.target.checked;
+          setMessage({ text: messageText.text });
+        }}
+      >
+        <Hidden hidden={renderType != "document"}>
+          <span>
+            {"字数："}
+            {msg.text.length}
+          </span>
+        </Hidden>
+        <Hidden hidden={renderType == "document"}>
           <span>
             {new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}
           </span>
-        </Checkbox>
-        <span
+        </Hidden>
+      </Checkbox>
+      <span
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          setEdit(false);
+        }}
+        style={{ flex: 1 }}
+      ></span>
+      <Hidden hidden={!edit}>
+        <SkipExport>
+          <SaveOutlined
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() =>
+              setTimeout(() => {
+                saveMsg(msg, messageText.text, ctxRole);
+              }, 50)
+            }
+            style={{ paddingLeft: 16 }}
+          />
+        </SkipExport>
+      </Hidden>
+      <span style={{ marginLeft: 16 }}></span>
+      <SkipExport>
+        <Hidden hidden={!!loadingMsgs[msg.id]}>
+          <EditOutlined
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              if (!edit) setMessage({ text: msg.text });
+              setEdit(!edit);
+            }}
+          />
+        </Hidden>
+      </SkipExport>
+      <span style={{ marginLeft: 16 }}></span>
+      <SkipExport>
+        <CopyOutlined
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
-            setEdit(false);
+            if (copy(msg.text.toString())) {
+              messageApi.success("已复制");
+            }
           }}
-          style={{ flex: 1 }}
-        ></span>
-        {edit ? (
-          <SkipExport>
-            <SaveOutlined
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() =>
-                setTimeout(() => {
-                  saveMsg(msg, messageText.text, ctxRole);
-                }, 50)
-              }
-              style={{ marginLeft: "16px" }}
-            />
-          </SkipExport>
-        ) : (
-          <></>
-        )}
-        <span style={{ marginLeft: "16px" }}></span>
+        />
+      </SkipExport>
+      <span style={{ marginLeft: 16 }}></span>
+      <SkipExport>
+        <RollbackOutlined
+          onMouseDown={(e) => e.preventDefault()}
+          style={{ cursor: "pointer" }}
+          onClick={() => {
+            rBak(msg);
+          }}
+        />
+      </SkipExport>
+      <span style={{ marginLeft: "30px" }}></span>
+      {loadingMsgs[msg.id] ? (
         <SkipExport>
-          <Hidden hidden={!!loadingMsgs[msg.id]}>
-            <EditOutlined
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                if (!edit) setMessage({ text: msg.text });
-                setEdit(!edit);
-              }}
-            />
-          </Hidden>
-        </SkipExport>
-        <span style={{ marginLeft: "16px" }}></span>
-        <SkipExport>
-          <CopyOutlined
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (copy(msg.text.toString())) {
-                messageApi.success("已复制");
-              }
+          <Popconfirm
+            placement="topRight"
+            overlayInnerStyle={{ whiteSpace: "nowrap" }}
+            title={"确定停止？"}
+            onConfirm={() => {
+              if (typeof loadingMsgs[msg.id]?.stop == "function")
+                loadingMsgs[msg.id]?.stop();
+              delete loadingMsgs[msg.id];
             }}
-          />
+          >
+            <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+          </Popconfirm>
         </SkipExport>
-        <span style={{ marginLeft: "16px" }}></span>
+      ) : (
         <SkipExport>
-          <RollbackOutlined
-            onMouseDown={(e) => e.preventDefault()}
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              rBak(msg);
+          <Popconfirm
+            placement="topRight"
+            overlayInnerStyle={{ whiteSpace: "nowrap" }}
+            okType="danger"
+            title="确定删除此消息？"
+            onConfirm={() => {
+              onDel(msg);
             }}
-          />
+          >
+            <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
+          </Popconfirm>
         </SkipExport>
-        <span style={{ marginLeft: "30px" }}></span>
-        {loadingMsgs[msg.id] ? (
-          <SkipExport>
-            <Popconfirm
-              placement="topRight"
-              overlayInnerStyle={{ whiteSpace: "nowrap" }}
-              title={"确定停止？"}
-              onConfirm={() => {
-                if (typeof loadingMsgs[msg.id]?.stop == "function")
-                  loadingMsgs[msg.id]?.stop();
-                delete loadingMsgs[msg.id];
-              }}
-            >
-              <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
-            </Popconfirm>
-          </SkipExport>
-        ) : (
-          <SkipExport>
-            <Popconfirm
-              placement="topRight"
-              overlayInnerStyle={{ whiteSpace: "nowrap" }}
-              okType="danger"
-              title="确定删除此消息？"
-              onConfirm={() => {
-                onDel(msg);
-              }}
-            >
-              <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
-            </Popconfirm>
-          </SkipExport>
-        )}
-      </>
-    );
-  }, [
-    aiService?.customContext,
-    ctxRole,
-    edit,
-    loadingMsgs,
-    messageApi,
-    messageText,
-    msg,
-    onDel,
-    rBak,
-    saveMsg,
-  ]);
+      )}
+    </>
+  );
 
   // 下方悬浮按钮
   const Extend = useMemo(() => {
@@ -271,56 +264,62 @@ export const MessageItem = ({
       </div>
     );
   }, [aiService?.customContext, onPush, onSned, style]);
+  const EditUtil = useMemo(
+    () => (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 5,
+          maxWidth: "100%",
+          flexWrap: "wrap",
+        }}
+      >
+        <Segmented
+          size="small"
+          value={ctxRole}
+          onChange={(val) => {
+            setCtxRole(val as CtxRole);
+          }}
+          options={[
+            { label: "助理", value: "assistant" },
+            { label: "系统", value: "system" },
+            { label: "用户", value: "user" },
+          ]}
+        />
+        <Button.Group size="small">
+          <Button
+            onClick={() => {
+              setTimeout(() => {
+                saveMsg(msg, messageText.text, ctxRole);
+              }, 50);
+            }}
+          >
+            {"保存"}
+          </Button>
+          <Button
+            onClick={() => {
+              setTimeout(() => {
+                saveMsg(msg, messageText.text, ctxRole).then(() => {
+                  onSned();
+                });
+              }, 50);
+            }}
+          >
+            {"提交"}
+          </Button>
+        </Button.Group>
+      </div>
+    ),
+    [ctxRole, messageText, msg, onSned, saveMsg]
+  );
   // 内容显示
   const Content = useMemo(() => {
     return (
       <div>
         {edit ? (
           <>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 5,
-                overflow: "auto",
-                maxWidth: "100%",
-              }}
-            >
-              <Segmented
-                size="small"
-                value={ctxRole}
-                onChange={(val) => {
-                  setCtxRole(val as CtxRole);
-                }}
-                options={[
-                  { label: "助理", value: "assistant" },
-                  { label: "系统", value: "system" },
-                  { label: "用户", value: "user" },
-                ]}
-              />
-              <Button.Group size="small">
-                <Button
-                  onClick={() => {
-                    setTimeout(() => {
-                      saveMsg(msg, messageText.text, ctxRole);
-                    }, 50);
-                  }}
-                >
-                  {"保存"}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setTimeout(() => {
-                      saveMsg(msg, messageText.text, ctxRole).then(() => {
-                        onSned();
-                      });
-                    }, 50);
-                  }}
-                >
-                  {"提交"}
-                </Button>
-              </Button.Group>
-            </div>
+            <Hidden hidden={!edit}>{EditUtil}</Hidden>
             <TextEditor
               autoSize={renderType == "document" ? true : { maxRows: 10 }}
               input={messageText}
@@ -368,15 +367,15 @@ export const MessageItem = ({
       </div>
     );
   }, [
-    chat.config.disableStrikethrough,
-    renderType,
-    ctxRole,
     edit,
-    inputRef,
+    EditUtil,
+    renderType,
     messageText,
+    inputRef,
+    chat.config.disableStrikethrough,
     msg,
-    onSned,
     saveMsg,
+    ctxRole,
   ]);
   if (renderType == "document") {
     return (
@@ -483,99 +482,15 @@ export const MessageItem = ({
                 </Tooltip>
                 {Content}
                 <div
-                  className={styleCss.item_utils}
                   style={{
                     display: "flex",
+                    borderTop: "1px solid #ccc3",
                     justifyContent: "flex-end",
+                    padding: "5px 5px",
+                    opacity: 0.6,
                   }}
                 >
-                  <Checkbox
-                    disabled={!aiService?.customContext}
-                    checked={msg.checked || false}
-                    onChange={(e) => {
-                      msg.checked = e.target.checked;
-                      chat
-                        .pushMessage(msg)
-                        .then(() => reloadTopic(msg.topicId, msg.id));
-                    }}
-                  >
-                    <span>
-                      {"字数："}
-                      {msg.text.length}
-                    </span>
-                  </Checkbox>
-                  <span
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      setEdit(false);
-                    }}
-                    style={{ flex: 1 }}
-                  ></span>
-                  {edit ? (
-                    <SkipExport>
-                      <SaveOutlined
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => {
-                          saveMsg(msg, messageText.text, ctxRole);
-                        }}
-                        style={{ marginLeft: "16px" }}
-                      />
-                    </SkipExport>
-                  ) : (
-                    <></>
-                  )}
-                  <span style={{ marginLeft: "16px" }}></span>
-                  <SkipExport>
-                    <EditOutlined
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => {
-                        if (!edit) setMessage({ text: msg.text });
-                        setEdit(!edit);
-                      }}
-                    />
-                  </SkipExport>
-                  <span style={{ marginLeft: "16px" }}></span>
-                  <SkipExport>
-                    <CopyOutlined
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => {
-                        if (copy(msg.text.toString())) {
-                          messageApi.success("已复制");
-                        }
-                      }}
-                    />
-                  </SkipExport>
-                  <span style={{ marginLeft: "30px" }}></span>
-                  {loadingMsgs[msg.id] ? (
-                    <SkipExport>
-                      <Popconfirm
-                        placement="topRight"
-                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                        title="确定停止？"
-                        onConfirm={() => {
-                          if (typeof loadingMsgs[msg.id]?.stop == "function")
-                            loadingMsgs[msg.id]?.stop();
-                          delete loadingMsgs[msg.id];
-                        }}
-                      >
-                        <PauseOutlined></PauseOutlined>
-                      </Popconfirm>
-                    </SkipExport>
-                  ) : (
-                    <SkipExport>
-                      <Popconfirm
-                        placement="topRight"
-                        overlayInnerStyle={{ whiteSpace: "nowrap" }}
-                        okType="danger"
-                        title="确定删除此内容？"
-                        onConfirm={() => {
-                          onDel(msg);
-                        }}
-                      >
-                        <DeleteOutlined></DeleteOutlined>
-                      </Popconfirm>
-                    </SkipExport>
-                  )}
+                  {utilsEle}
                 </div>
               </div>
             </div>
@@ -589,7 +504,7 @@ export const MessageItem = ({
     return (
       <div
         style={{
-          padding: "1em 42px 0",
+          padding: "1em 42px 10px",
           textAlign: "center",
         }}
         id={msg.id}
@@ -667,7 +582,7 @@ export const MessageItem = ({
                 : chat.user?.name}
             </span>
             <span style={{ marginLeft: "30px" }}></span>
-            {loadingMsgs[msg.id] ? (
+            <Hidden hidden={loadingMsgs[msg.id] == undefined}>
               <SkipExport>
                 <Popconfirm
                   placement="topRight"
@@ -682,9 +597,7 @@ export const MessageItem = ({
                   <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
                 </Popconfirm>
               </SkipExport>
-            ) : (
-              <></>
-            )}
+            </Hidden>
           </div>
           <div
             style={{
@@ -715,7 +628,7 @@ export const MessageItem = ({
           </div>
         </div>
       </div>
-      {!loadingMsgs[msg.id] && Extend}
+      <Hidden hidden={!!loadingMsgs[msg.id]}>{Extend}</Hidden>
     </div>
   );
 };
