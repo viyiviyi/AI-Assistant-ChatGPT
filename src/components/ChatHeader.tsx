@@ -39,6 +39,7 @@ export const ChatHeader = () => {
         padding: "10px",
         height: 52,
         position: "relative",
+        color:token.colorText,
         borderRadius:
           "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",
         backgroundColor: token.colorFillContent,
