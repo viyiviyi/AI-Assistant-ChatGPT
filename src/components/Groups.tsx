@@ -3,39 +3,35 @@ import { Avatar, Card, theme } from "antd";
 
 export const Groups = ({ onClick }: { onClick: (chat: IChat) => void }) => {
   const { token } = theme.useToken();
-  // const [groups, setGroups] = useState<IChat[]>(ChatManagement.getGroups());
-  // useEffect(() => {
-  //   ChatManagement.load().then(() => {
-  //     const groups = ChatManagement.getGroups();
-  //     setGroups([...groups]);
-  //   });
-  // }, []);
   return (
     <>
       {ChatManagement.getGroups().map((v, idx) => (
         <Card
+          size={"small"}
           key={v.group.id}
           style={{
             marginBottom: "20px",
             backgroundColor: token.colorFillContent,
           }}
           bordered={false}
-          bodyStyle={{ padding: "16px" }}
+          bodyStyle={{ padding: 10 }}
           onClick={() => {
             onClick(v);
           }}
         >
-          <Card.Meta
-            avatar={
-              <Avatar
-                shape="square"
-                size={52}
-                src={v.group.avatar || v.virtualRole.avatar || undefined}
-              />
-            }
-            title={v.group.name}
-            description={v.virtualRole.name}
-          />
+          <div style={{ display: "flex" }}>
+            <Avatar
+              shape="square"
+              size={52}
+              src={v.group.avatar || v.virtualRole.avatar || undefined}
+            />
+            <div style={{marginLeft:8}}>
+              <h3>{v.group.name}</h3>
+              <h4 style={{ color: token.colorTextDescription }}>
+                {v.virtualRole.name}
+              </h4>
+            </div>
+          </div>
         </Card>
       ))}
     </>

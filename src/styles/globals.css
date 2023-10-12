@@ -75,26 +75,26 @@ h2,
 h3,
 h4,
 h5 {
-  margin-bottom: 0.5em;
+  /* margin-bottom: 0.5em; */
   font-weight: 600;
 }
 h1 {
-  font-size: 2em;
+  /* font-size: 2em; */
   line-height: 1.2105263157894737;
 }
 h2 {
-  font-size: 1.8em;
+  /* font-size: 1.8em; */
   line-height: 1.2666666666666666;
 }
 h3 {
-  font-size: 1.5em;
+  /* font-size: 1.5em; */
   line-height: 1.3333333333333333;
 }
 h4 {
-  font-size: 1.25;
+  /* font-size: 1.25; */
   line-height: 1.4;
 }
 h5 {
-  font-size: 16px;
+  /* font-size: 16px; */
   line-height: 1.5;
 }
