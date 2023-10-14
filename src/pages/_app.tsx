@@ -10,15 +10,11 @@ import "antd/dist/reset.css";
 import zhCN from "antd/locale/zh_CN";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { useEffect, useState } from "react";
 import "../styles/atom-one-dark.css";
 
 export default function App({ Component, pageProps }: AppProps) {
   const isDark = useDark();
-  const [holderStyle, setHolderStyle] = useState(true);
-  useEffect(() => {
-    setHolderStyle(false);
-  }, []);
+
   return (
     <StyleProvider
       hashPriority="high"
@@ -80,16 +76,7 @@ export default function App({ Component, pageProps }: AppProps) {
             name="viewport"
             content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
           />
-          {holderStyle ? (
-            <style
-              id="holderStyle"
-              dangerouslySetInnerHTML={{
-                __html: `/* https://github.com/ant-design/ant-design/issues/16037#issuecomment-483140458 */
-/* Not only antd, but also any other style if you want to use ssr. */
-*, *::before, *::after {transition: none!important;}`,
-              }}
-            />
-          ) : undefined}
+
         </Head>
         <Component {...pageProps} />
       </ConfigProvider>
