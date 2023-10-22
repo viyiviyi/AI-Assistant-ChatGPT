@@ -20,7 +20,7 @@
     "@slack/web-api": "^6.8.1",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
-    "antd": "^5.10.0",
+    "antd": "^5.10.2",
     "axios": "^1.4.0",
     "copy-to-clipboard": "^3.3.3",
     "date-fns": "^2.30.0",
