@@ -95,7 +95,7 @@ export const TopicConfig = ({
           if (override) {
             v.checked = true;
             v.ctx.forEach((c, i) => {
-              c.checked == override!.ctx.findIndex((f) => f.key == c.key) > -1;
+              c.checked = override!.ctx.findIndex((f) => f.key == c.key) > -1;
             });
           } else {
             v.checked = false;
