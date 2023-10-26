@@ -3,7 +3,18 @@ import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
 import { getUuid } from "@/core/utils";
 import { VirtualRole } from "@/Models/DataBase";
-import { Button, Form, Input, Space, Switch, Tabs, theme } from "antd";
+import {
+  Button,
+  Dropdown,
+  Form,
+  Input,
+  message,
+  Space,
+  Switch,
+  Tabs,
+  theme
+} from "antd";
+import copy from "copy-to-clipboard";
 import { CSSProperties, useContext, useMemo, useState } from "react";
 import ImageUpload from "../common/ImageUpload";
 import { Modal, ModalCallback } from "../common/Modal";
@@ -35,6 +46,7 @@ export const VirtualRoleConfig = ({
     user_name: string;
     user_en_name: string;
   }>();
+  const [messageApi, contextHolder] = message.useMessage();
   const [virtualRole_settings, setVirtualRole_settings] = useState(
     chatMgt?.virtualRole.settings?.map((v, i) => ({
       ...v,
@@ -169,6 +181,7 @@ export const VirtualRoleConfig = ({
           user_en_name: chatMgt?.user.enName,
         }}
       >
+        {contextHolder}
         <div>
           <div
             style={{
@@ -223,6 +236,70 @@ export const VirtualRoleConfig = ({
                 >
                   {"预览"}
                 </Button>
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: "1",
+                        label: (
+                          <a
+                            onClick={() => {
+                              if (
+                                copy(
+                                  JSON.stringify(
+                                    JSON.stringify(chatMgt?.virtualRole)
+                                  )
+                                )
+                              ) {
+                                messageApi.success("已复制");
+                              }
+                            }}
+                          >
+                            {"复制到剪切板"}
+                          </a>
+                        ),
+                      },
+                      {
+                        key: "2",
+                        label: (
+                          <a
+                            onClick={() => {
+                              navigator?.clipboard.readText().then((text) => {
+                                try {
+                                  if (!text) return;
+                                  let res: VirtualRole = JSON.parse(text);
+                                  if (typeof res == "string")
+                                    res = JSON.parse(res);
+                                  form.setFieldValue(
+                                    "virtualRole_name",
+                                    res?.name
+                                  );
+                                  form.setFieldValue(
+                                    "virtualRole_bio",
+                                    res?.bio
+                                  );
+                                  setVirtualRole_Avatar(res?.avatar);
+                                  setVirtualRole_settings(
+                                    res?.settings?.map((v, i) => ({
+                                      ...v,
+                                      key: getUuid(),
+                                      edit: false,
+                                    })) || []
+                                  );
+                                } catch (err) {}
+                              });
+                            }}
+                          >
+                            {"从剪切板读取"}
+                          </a>
+                        ),
+                      },
+                    ],
+                  }}
+                  placement="bottomRight"
+                >
+                  <Button>{"更多"}</Button>
+                </Dropdown>
               </Button.Group>
             </Form.Item>
             <Form.Item name={"VirtualRoleConfigInfo"}>

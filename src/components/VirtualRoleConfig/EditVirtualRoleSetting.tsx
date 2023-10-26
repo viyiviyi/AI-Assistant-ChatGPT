@@ -225,8 +225,9 @@ export function EditVirtualRoleSetting({
                   navigator?.clipboard.readText().then((text) => {
                     try {
                       if (!text) return;
-                      let res = JSON.parse(text) as VirtualRoleSetting;
-                      if (!res) return;
+                      let res: VirtualRoleSetting = JSON.parse(text);
+                      if (typeof res == "string") res = JSON.parse(res);
+                      if (!res || !res.ctx) return;
                       setTags(res.tags);
                       setTitle(res.title);
                       setCtx(res.ctx);
