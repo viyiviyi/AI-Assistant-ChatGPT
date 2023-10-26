@@ -55,6 +55,18 @@ export class KeyValueData {
       save ? val : ""
     );
   }
+  private _apiTransferUrl = "";
+  getApiTransferUrl(): string {
+    if (this._apiTransferUrl) return this._apiTransferUrl;
+    return this.provider.getItem(this.dataKeyPrefix + "ApiTransfer") || "";
+  }
+  setApiTransferUrl(val: string, save: boolean = true) {
+    this._apiTransferUrl = val;
+    this.provider.setItem(
+      this.dataKeyPrefix + "ApiTransfer",
+      save ? val : ""
+    );
+  }
   private _UIConfig: UIConfig = {};
   getUIConfig(): UIConfig {
     if (this._slackProxyUrl) return this._UIConfig;

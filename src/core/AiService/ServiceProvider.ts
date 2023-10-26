@@ -11,6 +11,7 @@ import { ChatGLM_GPT } from "./ChatGLM_GPT";
 import { IAiService } from "./IAiService";
 import { QWen } from "./QWen";
 import { SlackClaude } from "./SlackClaude";
+import { APICenter } from "./APICenter";
 export interface ServiceTokens {
   openai?: { apiKey: string };
   slack?: {
@@ -45,6 +46,8 @@ export const DevBaseUrl: BaseUrlScheam = {
   dashscope_alyun: "https://dashscope-proxy.yiyiooo.workers.dev",
 };
 
+export const httpProxyUrl = "https://proxy.eaias.com/";
+
 export type aiServiceType =
   | "None"
   | "ChatGPT"
@@ -53,6 +56,7 @@ export type aiServiceType =
   | "Kamiya"
   | "ChatGLM"
   | "QWen"
+  | "APICenter"
   | "Oauther";
 export const aiServerList: {
   key: aiServiceType;
@@ -73,6 +77,11 @@ export const aiServerList: {
     key: "Slack",
     name: "Slack(Claude)",
     hasToken: false,
+  },
+  {
+    key: "APICenter",
+    name: "API中转",
+    hasToken: true,
   },
   // {
   //   key: "Kamiya",
@@ -128,6 +137,11 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat) {
       return new ChatGLM_API(chat.config.userServerUrl || "", tokens);
     case "QWen":
       return new QWen(chat.config.userServerUrl || baseUrl.dashscope_alyun);
+    case "APICenter":
+      return new APICenter(
+        KeyValueData.instance().getApiTransferUrl() || "",
+        tokens
+      );
     case "None":
       return undefined;
   }

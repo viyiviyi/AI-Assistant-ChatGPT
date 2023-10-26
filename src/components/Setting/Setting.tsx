@@ -3,7 +3,7 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService
+  useService,
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -17,7 +17,7 @@ import {
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -32,7 +32,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload
+  Upload,
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -92,6 +92,7 @@ export const Setting = ({
     slack_claude_id: string;
     group_name: string;
     setting_slack_proxy_url: string;
+    setting_api_transfer_url: string;
     slack_user_token: string;
     config_disable_renderType: string;
   }>();
@@ -125,6 +126,7 @@ export const Setting = ({
         .getSlackProxyUrl()
         .trim()
         ?.replace(/\/$/, ""),
+      setting_api_transfer_url: KeyValueData.instance().getApiTransferUrl(),
       group_name: chatMgt?.group.name,
       ...(() => {
         let d: { [key: string]: string[] } = {};
@@ -195,6 +197,10 @@ export const Setting = ({
     );
     KeyValueData.instance().setSlackProxyUrl(
       values.setting_slack_proxy_url?.trim()?.replace(/\/$/, ""),
+      values.config_saveKey
+    );
+    KeyValueData.instance().setApiTransferUrl(
+      values.setting_api_transfer_url?.trim()?.replace(/\/$/, ""),
       values.config_saveKey
     );
     aiServerList.forEach((v) => {
@@ -818,6 +824,17 @@ export const Setting = ({
                       name="setting_user_server_url"
                       label="自定义服务地址"
                       extra="用于访问自建AI服务的地址，比如ChatGLM"
+                    >
+                      <Input
+                        type="text"
+                        placeholder="https://xxxx.xx.xx"
+                        autoComplete="off"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="setting_api_transfer_url"
+                      label="API中转服务地址 (全局生效)"
+                      extra="如果使用API中转服务，可以将地址设置在这里，比如 https://oneapi.huinong.co ; 如果中转地址不允许跨域访问，可以在地址前面拼接 https://proxy.eaias.com/ ; 如： https://proxy.eaias.com/https://oneapi.huinong.co"
                     >
                       <Input
                         type="text"
