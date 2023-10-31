@@ -480,8 +480,8 @@ export const Setting = ({
             <Select
               style={{ width: "100%" }}
               onChange={(value, o) => {
+                setModels([]);
                 let server = getServiceInstance(value, chatMgt!.getChat());
-                if (!server) setModels([]);
                 server?.models().then((res) => {
                   setModels(res);
                   if (
