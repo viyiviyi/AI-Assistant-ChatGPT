@@ -8,7 +8,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -17,7 +17,7 @@ import React from "react";
 import { BgConfig } from "./BgImageStore";
 import {
   getDbInstance as getInstance,
-  setSkipDbSave
+  setSkipDbSave,
 } from "./db/IndexDbInstance";
 import { getUuid } from "./utils";
 
@@ -441,12 +441,6 @@ export class ChatManagement {
         groupId: this.group.id,
         name: name.substring(0, 100) || new Date().toLocaleString(),
         createdAt: Date.now(),
-        overrideVirtualRole: this.virtualRole.settings
-          .filter((f) => f.checked)
-          .map((v) => ({
-            key: v.key,
-            ctx: v.ctx.filter((f) => f.checked).map((c) => ({ key: c.key })),
-          })),
       }
     );
     let _topic: TopicMessage = {
