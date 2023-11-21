@@ -11,7 +11,6 @@ export type InterceptorHandleType =
 export interface Interceptor {
   handleType: InterceptorHandleType;
   args: ArgumentVal[];
-  children: Interceptor[];
 }
 
 export const InterceptorHandleList: {

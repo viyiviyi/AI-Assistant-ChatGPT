@@ -56,8 +56,7 @@ export class Extensions implements ExtensionsDefine {
       const extensions = await getInstance().queryAll<ExtensionsDefine>({
         tableName: "Extensions",
       });
-      if (Array.isArray(extensions))
-        this.extensions.push(...extensions.map((v) => new Extensions(v)));
+      if (Array.isArray(extensions)) extensions.map((v) => new Extensions(v));
     });
   }
   static getExtension(id: string): Extensions | undefined {

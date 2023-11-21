@@ -43,7 +43,9 @@ export async function useSendBeforeInterceptor() {
       config: InputConfig;
     }) => void
   ) {
-    extensions.forEach((v) => {});
+    extensions.forEach((v) => {
+    v.onSendBefore.forEach(fun=>fun.handleType)
+    });
   }
 
   return { onSendBeforeInterceptor };
