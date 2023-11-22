@@ -48,7 +48,7 @@ export const MiddlewareConfig = ({
         changeSetting(nextSettings);
       }
     },
-    [changeSetting, inputSettings]
+    [changeSetting, inputSettings, setMiddlewares]
   );
   return (
     <>
@@ -85,13 +85,13 @@ export const MiddlewareConfig = ({
                 }}
               />
             </div>
-            <Typography.Text
+            <Typography.Paragraph
               style={{ width: "100%" }}
               type="secondary"
-              ellipsis={true}
+              ellipsis={{ rows: 2, expandable: true, symbol: "more" }}
             >
               {item.description}
-            </Typography.Text>
+            </Typography.Paragraph>
           </div>
         );
       })}

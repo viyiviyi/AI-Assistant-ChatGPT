@@ -7,9 +7,9 @@ import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 
 export class CurrentTime implements IMiddleware {
   readonly key = "3578cd80-9ef2-428e-ae3c-b68ba234fcf5";
-  readonly name: string = "工具词条";
+  readonly name: string = "当前时间";
   readonly tags = [];
-  readonly description: string = "将在当前上下文最前面增加一个当前时间的上下文";
+  readonly description: string = "可以将{{currentTime}}字符串替换为大千世界";
   readonly setting: VirtualRoleSetting[] | undefined = [
     {
       key: getUuid(),

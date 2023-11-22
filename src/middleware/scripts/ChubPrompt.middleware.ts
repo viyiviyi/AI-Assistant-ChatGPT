@@ -6,7 +6,7 @@ export class ChubPrompt implements IMiddleware {
   readonly key = "bf5ca75a-162c-4850-9884-09a73a83ae86";
   readonly name: string = "角色扮演提示词";
   readonly tags = [];
-  readonly description: string = "来自";
+  readonly description: string = "从SillyTavern项目抄过来的角色扮演基本提示词";
   readonly setting: VirtualRoleSetting[] | undefined = [
     {
       key: getUuid(),
