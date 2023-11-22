@@ -8,6 +8,6 @@ export class ReplaceHalfWidthSymbols implements IMiddleware {
   readonly description: string =
     `将结果中的这些半角符号[ . ~ ! , ... ]替换为全角符号`;
   readonly onReader = (chat: IChat, result: string) => {
-    return result.replaceAll("~", "～").replaceAll(".", "。").replaceAll(",", "，").replaceAll("...", "…").replaceAll("!", "！");
+    return result.replaceAll("~", "～").replaceAll("...", "…").replaceAll(".", "。").replaceAll(",", "，").replaceAll("!", "！");
   };
 }
