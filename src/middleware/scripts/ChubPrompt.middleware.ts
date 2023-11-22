@@ -76,7 +76,7 @@ export class ChubPrompt implements IMiddleware {
         {
           key: getUuid(),
           role: "system",
-          content: `Request all response content in Chinese.`,
+          content: `[System note: Requires all responses to be displayed in Simplified Chinese.]`,
           checked: true,
         },
       ],
