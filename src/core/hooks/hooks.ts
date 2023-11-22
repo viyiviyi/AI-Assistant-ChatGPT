@@ -6,6 +6,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "../../Models/Topic";
 import { aiServices } from "../AiService/ServiceProvider";
 import { createThrottleAndDebounce, getUuid, scrollToBotton } from "../utils";
+import { onReader, onReaderAfter, onSendBefore } from "@/middleware/execMiddleware";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{
@@ -56,7 +57,7 @@ export function useDark() {
     retrieved.current = true;
     setObj(
       window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
+      window.matchMedia("(prefers-color-scheme: dark)").matches
     );
     if (window.matchMedia) {
       window.matchMedia("(prefers-color-scheme: dark)").onchange = function () {
@@ -132,15 +133,28 @@ export function useSendMessage(chat: ChatManagement) {
         current: chat,
       };
       let isFirst = true;
-      let save = createThrottleAndDebounce(async (text) => {
+      let save = createThrottleAndDebounce(async (text, isEnd) => {
         result.text = text;
         chat.pushMessage(result, idx + 1).then((r) => {
           result = r;
         });
+        if (isEnd) {
+          onReaderAfter(chat.getChat(), [result]).forEach((res, idx) => {
+            chat.pushMessage(res, idx + 1 + idx).then((r) => {
+              result = r;
+            });
+          })
+        }
       }, 1000);
+      let ctx = currentChat.current!.getAskContext(topic, idx + 1)
+      ctx = onSendBefore(chat.getChat(), ctx) as {
+        role: CtxRole;
+        content: string;
+        name: string;
+      }[];
       aiService.sendMessage({
         msg: topic.messages[idx],
-        context: currentChat.current!.getAskContext(topic, idx + 1),
+        context: ctx,
         async onMessage(res) {
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
@@ -153,6 +167,7 @@ export function useSendMessage(chat: ChatManagement) {
             );
           }
           result.text = res.text + (res.end ? "" : "\n\nloading...");
+          result.text = onReader(chat.getChat(), result.text)
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           loadingMsgs[result.id] = {
             stop: res.stop,

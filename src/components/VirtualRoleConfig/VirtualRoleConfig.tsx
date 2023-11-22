@@ -12,7 +12,7 @@ import {
   Space,
   Switch,
   Tabs,
-  theme
+  theme,
 } from "antd";
 import copy from "copy-to-clipboard";
 import { CSSProperties, useContext, useMemo, useState } from "react";
@@ -20,6 +20,7 @@ import ImageUpload from "../common/ImageUpload";
 import { Modal, ModalCallback } from "../common/Modal";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
 import { VirtualRoleConfigList } from "./VirtualRoleConfigList";
+import { MiddlewareConfig } from "./MiddlewareConfig";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
 
@@ -58,7 +59,9 @@ export const VirtualRoleConfig = ({
     () => ({ current: virtualRole_settings }),
     [virtualRole_settings]
   );
-
+  const [middlewares, setMiddlewares] = useState<string[]>(
+    chatMgt?.config.middleware ?? []
+  );
   function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
@@ -77,6 +80,7 @@ export const VirtualRoleConfig = ({
     chatMgt.saveVirtualRoleBio();
 
     chatMgt.config.enableVirtualRole = values.virtualRole_enable;
+    chatMgt.config.middleware = middlewares;
     chatMgt.saveConfig();
 
     chatMgt.user.name = values.user_name;
@@ -351,10 +355,27 @@ export const VirtualRoleConfig = ({
                 ),
               },
               {
-                label: `插件列表`,
-                key: "extensions_cloud",
-                forceRender: true,
-                children: <div>功能未完成，占个地</div>,
+                label: `扩展功能`,
+                key: "middleware",
+                forceRender: false,
+                children: (
+                  <div style={{ ...tabItemStyle }}>
+                    <MiddlewareConfig
+                      middlewares={middlewares}
+                      setMiddlewares={setMiddlewares}
+                      inputSettings={virtualRole_settings}
+                      changeSetting={(val) => {
+                        setVirtualRole_settings(
+                          val.map((v, i) => ({
+                            ...v,
+                            ctx: v.ctx.map((c) => ({ ...c })),
+                            edit: false,
+                          }))
+                        );
+                      }}
+                    />
+                  </div>
+                ),
               },
             ]}
           />

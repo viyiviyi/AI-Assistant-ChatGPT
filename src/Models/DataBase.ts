@@ -43,6 +43,7 @@ export interface GroupConfig {
   updateTime?: number;
   enableSync?: boolean;
   extensions?: string[];
+  middleware?: string[]
 }
 
 // 聊天消息表

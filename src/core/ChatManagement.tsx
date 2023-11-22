@@ -8,7 +8,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -17,7 +17,7 @@ import React from "react";
 import { BgConfig } from "./BgImageStore";
 import {
   getDbInstance as getInstance,
-  setSkipDbSave
+  setSkipDbSave,
 } from "./db/IndexDbInstance";
 import { getUuid } from "./utils";
 
@@ -54,7 +54,6 @@ export interface IChat {
   group: Group;
   config: GroupConfig;
   gptConfig: GptConfig;
-  middleware?: string[];
 }
 
 export class ChatManagement {

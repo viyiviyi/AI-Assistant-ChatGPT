@@ -18,8 +18,9 @@ import React, {
   createElement,
   Fragment,
   MouseEventHandler,
+  useContext,
   useMemo,
-  useState
+  useState,
 } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
@@ -33,6 +34,9 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { SkipExport } from "./SkipExport";
+import markdownStyle from "../../styles/markdown.module.css";
+import { onRender } from "@/middleware/execMiddleware";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 function toTxt(node: React.ReactNode): string {
   let str = "";
   if (Array.isArray(node)) {
@@ -101,7 +105,7 @@ let processor = unified()
             <SkipExport>
               <CopyOutlined
                 onClick={() => {
-                  if (copy(toTxt(children))) {
+                  if (copy(toTxt(children).replaceAll(/\s\s\n/g, "\n"))) {
                     message.success("已复制");
                   }
                 }}
@@ -125,14 +129,15 @@ const _MarkdownView = ({
   menu?: MenuProps;
   doubleClick?: React.MouseEventHandler<HTMLDivElement>;
 }) => {
+  const { chatMgt } = useContext(ChatContext);
   const renderedContent = useMemo(() => {
-    return processor.processSync(pipe(markdown)).result;
-  }, [markdown]);
+    return processor.processSync(pipe(markdown, chatMgt)).result;
+  }, [chatMgt, markdown]);
   const [checkTimes, setChrckTimes] = useState(0);
   const [timer, setTimer] = useState(setTimeout(() => {}, 0));
   const click: MouseEventHandler<HTMLDivElement> = (e) => {
     clearTimeout(timer);
-    if (checkTimes+1 >= 4 && doubleClick) {
+    if (checkTimes + 1 >= 4 && doubleClick) {
       doubleClick!(e);
       setChrckTimes(0);
     } else {
@@ -144,7 +149,11 @@ const _MarkdownView = ({
       }, 500)
     );
   };
-  return <div onClick={click}>{renderedContent}</div>;
+  return (
+    <div className={markdownStyle.markdown} onClick={click}>
+      {renderedContent}
+    </div>
+  );
 };
 
 export const MarkdownView = React.memo(_MarkdownView);
@@ -158,7 +167,7 @@ export function isXML(str: string) {
   }
 }
 
-const renderPipes: Array<(input: string) => string> = [
+const renderPipes: Array<(input: string, chatMgt: ChatManagement) => string> = [
   // (input) => {
   //   if (/^</.test(input) && isXML(input)) {
   //     // 让xml显示为xml代码
@@ -167,14 +176,18 @@ const renderPipes: Array<(input: string) => string> = [
   //   return input;
   // },
   (input) => {
-    return input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2");
+    return input.replace(/\n/g, "  \n");
+    // return input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2");
+  },
+  (input, chatMgt: ChatManagement) => {
+    return onRender(chatMgt as any, input);
   },
 ];
 
-function pipe(input: string): string {
+function pipe(input: string, chatMgt: ChatManagement): string {
   let output = input;
   renderPipes.forEach((func) => {
-    output = func(output);
+    output = func(output, chatMgt);
   });
   return output;
 }

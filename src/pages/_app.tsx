@@ -11,10 +11,14 @@ import zhCN from "antd/locale/zh_CN";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import "../styles/atom-one-dark.css";
+import { useEffect } from "react";
+import { registerMiddleware } from "@/middleware/execMiddleware";
 
 export default function App({ Component, pageProps }: AppProps) {
   const isDark = useDark();
-
+  useEffect(() => {
+    registerMiddleware()
+  })
   return (
     <StyleProvider
       hashPriority="high"

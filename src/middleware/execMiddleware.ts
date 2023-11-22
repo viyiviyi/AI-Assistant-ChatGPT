@@ -2,16 +2,21 @@ import { IChat } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
 import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "./IMiddleware";
+import { ChubPrompt } from "./scripts/ChubPrompt.middleware";
+import { CurrentTime } from "./scripts/CurrentTime.middleware";
+import { NameMacrosPrompt } from "./scripts/NameMacrosPrompt.middleware";
+import { ReplaceHalfWidthSymbols } from "./scripts/ReplaceHalfWidthSymbols.middleware";
+import { UserMessagePrdfix } from "./scripts/UserMessagePrdfix.middleware";
 
 const middlewareIndex: { [key: string]: IMiddleware } = {};
 const middlewareList: Array<IMiddleware> = [];
-const middlewareArr: Array<new () => IMiddleware> = [];
+const middlewareArr: Array<new () => IMiddleware> = [NameMacrosPrompt, ChubPrompt, CurrentTime, ReplaceHalfWidthSymbols, UserMessagePrdfix];
 
 export function onSendBefore(
   chat: IChat,
   context: Array<ChatCompletionRequestMessage>
 ): Array<ChatCompletionRequestMessage> {
-  let m = chat.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
   if (!m) return context;
   let r = context;
   for (let i = 0; i < m.length; i++) {
@@ -22,7 +27,7 @@ export function onSendBefore(
 }
 
 export function onReader(chat: IChat, result: string): string {
-  let m = chat.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
@@ -32,7 +37,7 @@ export function onReader(chat: IChat, result: string): string {
 }
 
 export function onReaderAfter(chat: IChat, resule: Message[]): Message[] {
-  let m = chat.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
   if (!m) return resule;
   let r = resule;
   for (let i = 0; i < m.length; i++) {
@@ -42,7 +47,19 @@ export function onReaderAfter(chat: IChat, resule: Message[]): Message[] {
   return r;
 }
 
+export function onRender(chat: IChat, result: string): string {
+  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
+  if (!m) return result;
+  let r = result;
+  for (let i = 0; i < m.length; i++) {
+    r = m[i].onRender ? m[i].onRender!(chat, r) || "" : r;
+  }
+  return r;
+}
+let register = false;
 export function registerMiddleware() {
+  if (register) return
+  register = true
   middlewareArr.forEach((middleware) => {
     let m = new middleware();
     middlewareList.push(m);
