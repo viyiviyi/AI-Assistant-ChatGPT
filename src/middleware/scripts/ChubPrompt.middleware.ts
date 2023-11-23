@@ -46,7 +46,7 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       key: getUuid(),
-      checked: false,
+      checked: true,
       title: "角色主要设定",
       extensionId: this.key,
       tags: ["角色扮演提示词扩展", "角色"],
@@ -138,22 +138,6 @@ export class ChubPrompt implements IMiddleware {
       ],
     },
     {
-      postposition: false,
-      extensionId: this.key,
-      checked: false,
-      tags: ["角色扮演提示词扩展"],
-      key: getUuid(),
-      title: "要求输出中文",
-      ctx: [
-        {
-          content: "[System note: 必须使用中文输出除人名外的所有内容！]",
-          role: "system",
-          key: getUuid(),
-          checked: true,
-        },
-      ],
-    },
-    {
       postposition: true,
       extensionId: this.key,
       checked: false,
@@ -164,6 +148,23 @@ export class ChubPrompt implements IMiddleware {
         {
           content:
             "[Continue the previous message. Do not include ANY parts of the previous message. require reply as a follow-up to the previous message.]",
+          role: "system",
+          key: getUuid(),
+          checked: true,
+        },
+      ],
+    },
+    {
+      postposition: true,
+      extensionId: this.key,
+      checked: true,
+      tags: ["角色扮演提示词扩展"],
+      key: getUuid(),
+      title: "要求输出中文",
+      ctx: [
+        {
+          content:
+            "[Your reply requires Simplified Chinese.]",
           role: "system",
           key: getUuid(),
           checked: true,
@@ -198,29 +199,6 @@ export class ChubPrompt implements IMiddleware {
           role: "system",
           key: getUuid(),
           checked: false,
-        },
-      ],
-    },
-    {
-      postposition: true,
-      extensionId: this.key,
-      checked: true,
-      tags: ["角色扮演提示词扩展"],
-      key: getUuid(),
-      title: "要求输出中文",
-      ctx: [
-        {
-          content:
-            "[System note: Requires all responses to be displayed in Simplified Chinese. ]",
-          role: "system",
-          key: getUuid(),
-          checked: false,
-        },
-        {
-          content: "[System note: 必须使用中文输出除人名外的所有内容！]",
-          role: "system",
-          key: getUuid(),
-          checked: true,
         },
       ],
     },
