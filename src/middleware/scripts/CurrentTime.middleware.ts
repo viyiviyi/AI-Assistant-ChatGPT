@@ -20,7 +20,7 @@ export class CurrentTime implements IMiddleware {
           checked: true,
           role: "system",
           content:
-            "System note: The current time is {{currentTime}}."
+            "[System note: The current time is {{currentTime}}.]"
           ,
         },
       ],

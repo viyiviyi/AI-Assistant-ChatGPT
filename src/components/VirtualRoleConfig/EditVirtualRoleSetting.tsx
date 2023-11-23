@@ -12,7 +12,7 @@ import {
   Popconfirm,
   Segmented,
   Select,
-  theme
+  theme,
 } from "antd";
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
@@ -211,7 +211,15 @@ export function EditVirtualRoleSetting({
           <Button.Group>
             <Button
               onClick={() => {
-                if (copy(JSON.stringify(item))) {
+                if (
+                  copy(
+                    JSON.stringify(
+                      Object.assign({}, item, {
+                        extensionId: undefined,
+                      })
+                    )
+                  )
+                ) {
                   messageApi.success("已复制");
                 }
               }}
