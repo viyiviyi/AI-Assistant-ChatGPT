@@ -48,7 +48,8 @@ export class APICenter implements IAiService {
               f.toLowerCase().includes("code") ||
               f.toLowerCase().includes("claude")
           );
-      });
+      })
+      .catch((err) => []);
   };
   async sendMessage({
     context,

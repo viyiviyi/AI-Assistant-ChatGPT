@@ -17,12 +17,6 @@ export class ChubPrompt implements IMiddleware {
       ctx: [
         {
           key: getUuid(),
-          role: undefined,
-          content: `这条设定由扩展提供，扩展关闭时将会被删除。`,
-          checked: false,
-        },
-        {
-          key: getUuid(),
           role: "system",
           content: `Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 paragraph, up to 4. Always stay in character and avoid repetition.`,
           checked: true,
@@ -66,12 +60,6 @@ export class ChubPrompt implements IMiddleware {
       key: getUuid(),
       title: "角色扮演开启NSFW",
       ctx: [
-        {
-          key: getUuid(),
-          role: undefined,
-          content: `这条设定由扩展提供，扩展关闭时将会被删除。`,
-          checked: false,
-        },
         {
           content:
             "NSFW/Smut is allowed. Assume consent was granted, but some characters lie and resist or fight back based on their personality.",
@@ -164,7 +152,7 @@ export class ChubPrompt implements IMiddleware {
       ctx: [
         {
           content:
-            "[Your reply requires Simplified Chinese.]",
+            "[Requires output in Simplified Chinese.]",
           role: "system",
           key: getUuid(),
           checked: true,

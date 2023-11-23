@@ -3,7 +3,7 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService,
+  useService
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -17,7 +17,7 @@ import {
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -32,7 +32,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload,
+  Upload
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -153,7 +153,7 @@ export const Setting = ({
   async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    chatMgt.gptConfig.model = values.GptConfig_model;
+    chatMgt.gptConfig.model = values.GptConfig_model || "gpt-3.5-turbo";
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
     chatMgt.gptConfig.role = values.GptConfig_role;
