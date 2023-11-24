@@ -1,10 +1,10 @@
-import { getMiddlewareList } from "@/middleware/execMiddleware";
-import { useCallback, useContext, useState } from "react";
-import { Space, Switch, Tag, Typography, theme } from "antd";
-import { IMiddleware } from "@/middleware/IMiddleware";
 import { ChatContext } from "@/core/ChatManagement";
-import { getUuid } from "@/core/utils";
+import { getUuid } from "@/core/utils/utils";
+import { getMiddlewareList } from "@/middleware/execMiddleware";
+import { IMiddleware } from "@/middleware/IMiddleware";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
+import { Switch, Tag, theme, Typography } from "antd";
+import { useCallback, useContext } from "react";
 
 export const MiddlewareConfig = ({
   middlewares,

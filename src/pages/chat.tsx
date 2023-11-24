@@ -11,7 +11,7 @@ import {
 } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/db/KeyValueData";
 import { initTokenStore } from "@/core/tokens";
-import { scrollToBotton } from "@/core/utils";
+import { scrollToBotton } from "@/core/utils/utils";
 import { TopicMessage } from "@/Models/Topic";
 import { Layout, Spin, theme } from "antd";
 import Head from "next/head";

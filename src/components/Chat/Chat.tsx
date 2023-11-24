@@ -2,7 +2,7 @@ import { ChatMessage } from "@/components/Chat/Message/ChatMessage";
 import { ChatContext } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
-import { activityScroll } from "@/core/utils";
+import { activityScroll } from "@/core/utils/utils";
 import { Message } from "@/Models/DataBase";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, message, Modal, theme } from "antd";

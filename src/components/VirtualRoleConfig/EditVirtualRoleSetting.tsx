@@ -1,4 +1,4 @@
-import { getUuid } from "@/core/utils";
+import { getUuid } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
@@ -12,7 +12,7 @@ import {
   Popconfirm,
   Segmented,
   Select,
-  theme,
+  theme
 } from "antd";
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";

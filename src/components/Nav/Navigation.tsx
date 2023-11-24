@@ -1,5 +1,5 @@
 import { ChatContext } from "@/core/ChatManagement";
-import { activityScroll, scrollToBotton } from "@/core/utils";
+import { activityScroll, scrollToBotton } from "@/core/utils/utils";
 import style from "@/styles/index.module.css";
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Switch, theme, Tooltip, Typography } from "antd";

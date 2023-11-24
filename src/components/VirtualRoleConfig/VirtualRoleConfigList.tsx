@@ -1,5 +1,5 @@
 import { ChatContext } from "@/core/ChatManagement";
-import { getUuid } from "@/core/utils";
+import { getUuid } from "@/core/utils/utils";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import {

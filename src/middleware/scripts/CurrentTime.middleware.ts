@@ -1,9 +1,9 @@
 import { IChat } from "@/core/ChatManagement";
+import { getUuid } from "@/core/utils/utils";
+import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { format } from "date-fns";
 import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "../IMiddleware";
-import { getUuid } from "@/core/utils";
-import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 
 export class CurrentTime implements IMiddleware {
   readonly key = "3578cd80-9ef2-428e-ae3c-b68ba234fcf5";

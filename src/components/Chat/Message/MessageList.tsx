@@ -4,7 +4,7 @@ import {
   activityScroll,
   createThrottleAndDebounce,
   pagesUtil
-} from "@/core/utils";
+} from "@/core/utils/utils";
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { Button } from "antd";

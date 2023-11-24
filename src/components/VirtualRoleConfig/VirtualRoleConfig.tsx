@@ -1,7 +1,8 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
-import { getUuid } from "@/core/utils";
+import { jsonToSetting } from "@/core/utils/chub";
+import { getUuid } from "@/core/utils/utils";
 import { VirtualRole } from "@/Models/DataBase";
 import {
   Button,
@@ -13,14 +14,15 @@ import {
   Switch,
   Tabs,
   theme,
+  Upload
 } from "antd";
 import copy from "copy-to-clipboard";
 import { CSSProperties, useContext, useMemo, useState } from "react";
 import ImageUpload from "../common/ImageUpload";
 import { Modal, ModalCallback } from "../common/Modal";
+import { MiddlewareConfig } from "./MiddlewareConfig";
 import { VirtualRoleConfigInfo } from "./VirtualRoleConfigInfo";
 import { VirtualRoleConfigList } from "./VirtualRoleConfigList";
-import { MiddlewareConfig } from "./MiddlewareConfig";
 
 let copyRoleVal: VirtualRole | undefined = undefined;
 
@@ -296,6 +298,46 @@ export const VirtualRoleConfig = ({
                           >
                             {"从剪切板读取"}
                           </a>
+                        ),
+                      },
+                      {
+                        key: "3",
+                        label: (
+                          <Upload
+                            accept=".json"
+                            {...{
+                              beforeUpload(file, FileList) {
+                                const fr = new FileReader();
+                                fr.onloadend = (e) => {
+                                  if (e.target?.result) {
+                                    let jsonData = JSON.parse(
+                                      e.target.result.toString()
+                                    );
+                                    let charData = jsonToSetting(jsonData);
+                                    if (charData) {
+                                      setUser_Avatar(charData.avatar);
+                                      form.setFieldValue(
+                                        "virtualRole_name",
+                                        charData.name
+                                      );
+                                      setVirtualRole_settings(
+                                        charData.setting.map((v) => ({
+                                          ...v,
+                                          edit: false,
+                                        }))
+                                      );
+                                    }
+                                  }
+                                };
+                                fr.readAsText(file);
+                                return false;
+                              },
+                              defaultFileList: [],
+                              showUploadList: false,
+                            }}
+                          >
+                            {"导入酒馆角色卡json"}
+                          </Upload>
                         ),
                       },
                     ],

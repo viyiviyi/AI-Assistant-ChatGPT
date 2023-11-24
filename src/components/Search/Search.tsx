@@ -1,5 +1,5 @@
 import { ChatContext } from "@/core/ChatManagement";
-import { activityScroll, scrollToBotton } from "@/core/utils";
+import { activityScroll, scrollToBotton } from "@/core/utils/utils";
 import { TitleTree, TopicMessage } from "@/Models/Topic";
 import style from "@/styles/index.module.css";
 import { Input, theme, Typography } from "antd";

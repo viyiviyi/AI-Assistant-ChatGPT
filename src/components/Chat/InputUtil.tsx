@@ -5,7 +5,7 @@ import {
   onTextareaTab,
   scrollToBotton,
   scrollToTop
-} from "@/core/utils";
+} from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import styleCss from "@/styles/index.module.css";
 import {

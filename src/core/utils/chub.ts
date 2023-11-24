@@ -1,19 +1,34 @@
-import { getUuid } from "@/core/utils/utils";
+import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { IMiddleware } from "../IMiddleware";
-
-export class ChubPrompt implements IMiddleware {
-  readonly key = "bf5ca75a-162c-4850-9884-09a73a83ae86";
-  readonly name: string = "角色扮演提示词";
-  readonly tags = [];
-  readonly description: string = "从SillyTavern项目抄过来的角色扮演基本提示词";
-  readonly setting: VirtualRoleSetting[] | undefined = [
+import { getUuid } from "./utils";
+export function jsonToSetting(jsonData: {
+  alternate_greetings?: string[];
+  character_book?: {
+    entries?: {
+      content: string;
+      keys?: string[];
+      position?: "after_char" | "before_char";
+      extensions: { position: number };
+    }[];
+  };
+  description?: string;
+  first_mes?: string;
+  personality?: string;
+  world_scenario?: string;
+  char_greeting?: string;
+  char_persona?: string;
+  scenario?: string;
+  system_prompt?: string;
+  example_dialogue?: string;
+  name?: string;
+  avatar?: string;
+}): { setting: VirtualRoleSetting[]; avatar: string; name: string } {
+  let ls: VirtualRoleSetting[] = [
     {
       key: getUuid(),
       checked: true,
-      title: "主要提示词",
-      extensionId: this.key,
-      tags: ["角色扮演提示词扩展"],
+      title: "主要功能提示词",
+      tags: ["Chub"],
       ctx: [
         {
           key: getUuid(),
@@ -25,9 +40,8 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       key: getUuid(),
-      extensionId: this.key,
       checked: true,
-      tags: ["角色扮演提示词扩展"],
+      tags: ["Chub"],
       title: "角色扮演质量提示词",
       ctx: [
         {
@@ -40,9 +54,8 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       key: getUuid(),
-      extensionId: this.key,
-      checked: false,
-      tags: ["角色扮演提示词扩展"],
+      checked: true,
+      tags: ["Chub"],
       title: "世界设定集",
       ctx: [
         {
@@ -51,12 +64,15 @@ export class ChubPrompt implements IMiddleware {
           content: `[Details of the fictional world the RP is set in:`,
           checked: true,
         },
-        {
-          key: getUuid(),
-          role: undefined,
-          content: `在此之前添加世界设定集`,
-          checked: false,
-        },
+        ...(jsonData.character_book?.entries
+          ?.filter((f) => f.position == "before_char")
+          .sort((l, r) => l.extensions.position - r.extensions.position)
+          .map((v) => ({
+            key: getUuid(),
+            role: undefined,
+            content: v.content,
+            checked: !v.keys || !v.keys.length,
+          })) || []),
         {
           key: getUuid(),
           role: undefined,
@@ -67,9 +83,8 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       key: getUuid(),
-      extensionId: this.key,
-      checked: false,
-      tags: ["角色扮演提示词扩展"],
+      checked: true,
+      tags: ["Chub"],
       title: "用户",
       ctx: [
         {
@@ -82,23 +97,73 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       key: getUuid(),
-      checked: false,
+      checked: true,
       title: "角色主要设定",
-      extensionId: this.key,
-      tags: ["角色扮演提示词扩展", "角色"],
+      tags: ["Chub", "角色"],
       ctx: [
         {
           key: getUuid(),
           role: undefined,
-          content: `角色设定写这 `,
-          checked: false,
+          content: jsonData.description || jsonData.char_persona || "",
+          checked: true,
+        },
+      ],
+    },
+    {
+      key: getUuid(),
+      checked: true,
+      title: "角色个性",
+      tags: ["Chub"],
+      ctx: [
+        {
+          key: getUuid(),
+          role: "system",
+          content: `[MaidoDism's personality: `,
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          role: undefined,
+          content: jsonData.personality || "",
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          role: undefined,
+          content: `]`,
+          checked: true,
+        },
+      ],
+    },
+    {
+      key: getUuid(),
+      checked: true,
+      title: "场景和背景设定",
+      tags: ["Chub"],
+      ctx: [
+        {
+          key: getUuid(),
+          role: "system",
+          content: `[Circumstances and context of the dialogue: `,
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          role: undefined,
+          content: jsonData.scenario || jsonData.world_scenario || "",
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          role: undefined,
+          content: `]`,
+          checked: true,
         },
       ],
     },
     {
       checked: true,
-      extensionId: this.key,
-      tags: ["角色扮演提示词扩展"],
+      tags: ["Chub"],
       key: getUuid(),
       title: "角色扮演允许NSFW",
       ctx: [
@@ -139,9 +204,8 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       key: getUuid(),
-      extensionId: this.key,
-      checked: false,
-      tags: ["角色扮演提示词扩展"],
+      checked: true,
+      tags: ["Chub"],
       title: "后置世界设定集",
       ctx: [
         {
@@ -150,12 +214,15 @@ export class ChubPrompt implements IMiddleware {
           content: `[Details of the fictional world the RP is set in:`,
           checked: true,
         },
-        {
-          key: getUuid(),
-          role: undefined,
-          content: `在此之前添加世界设定集`,
-          checked: false,
-        },
+        ...(jsonData.character_book?.entries
+          ?.filter((f) => f.position == "after_char")
+          .sort((l, r) => l.extensions.position - r.extensions.position)
+          .map((v) => ({
+            key: getUuid(),
+            role: undefined,
+            content: v.content,
+            checked: !v.keys || !v.keys.length,
+          })) || []),
         {
           key: getUuid(),
           role: undefined,
@@ -168,8 +235,7 @@ export class ChubPrompt implements IMiddleware {
       key: getUuid(),
       checked: true,
       title: "角色扮演开始",
-      extensionId: this.key,
-      tags: ["角色扮演提示词扩展"],
+      tags: ["Chub"],
       ctx: [
         {
           key: getUuid(),
@@ -181,24 +247,30 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       key: getUuid(),
-      checked: true,
+      checked: false,
       title: "第一条消息",
-      extensionId: this.key,
-      tags: ["角色扮演提示词扩展"],
+      tags: ["Chub"],
       ctx: [
         {
           key: getUuid(),
-          role: "system",
-          content: `第一条消息写这`,
-          checked: false,
+          role: "assistant",
+          content: jsonData.first_mes || "",
+          checked: true,
         },
+        ...(jsonData.alternate_greetings?.map((v) => {
+          return {
+            key: getUuid(),
+            role: "assistant" as CtxRole,
+            content: v,
+            checked: false,
+          };
+        }) || []),
       ],
     },
     {
       postposition: true,
-      extensionId: this.key,
       checked: false,
-      tags: ["角色扮演提示词扩展"],
+      tags: ["Chub"],
       key: getUuid(),
       title: "控制连续输出内容",
       ctx: [
@@ -213,9 +285,8 @@ export class ChubPrompt implements IMiddleware {
     },
     {
       postposition: true,
-      extensionId: this.key,
       checked: true,
-      tags: ["角色扮演提示词扩展"],
+      tags: ["Chub"],
       key: getUuid(),
       title: "要求输出中文",
       ctx: [
@@ -230,8 +301,7 @@ export class ChubPrompt implements IMiddleware {
     {
       postposition: true,
       checked: true,
-      tags: ["角色扮演提示词扩展"],
-      extensionId: this.key,
+      tags: ["Chub"],
       key: getUuid(),
       title: "角色扮演越狱提示词",
       ctx: [
@@ -259,4 +329,9 @@ export class ChubPrompt implements IMiddleware {
       ],
     },
   ];
+  return {
+    avatar: jsonData.avatar || "",
+    name: jsonData.name || "助理",
+    setting: ls,
+  };
 }

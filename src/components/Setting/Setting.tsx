@@ -10,7 +10,7 @@ import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
 import { getToken, saveToken } from "@/core/tokens";
-import { downloadJson } from "@/core/utils";
+import { downloadJson } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import {
   CaretRightOutlined,

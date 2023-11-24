@@ -1,7 +1,7 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks/hooks";
-import { createThrottleAndDebounce, onTextareaTab } from "@/core/utils";
+import { createThrottleAndDebounce, onTextareaTab } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -13,7 +13,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -25,7 +25,7 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip,
+  Tooltip
 } from "antd";
 import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
@@ -37,7 +37,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useState
 } from "react";
 import { Hidden } from "../../common/Hidden";
 import { MarkdownView } from "../../common/MarkdownView";

@@ -10,7 +10,7 @@ import { Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "../../Models/Topic";
 import { aiServices } from "../AiService/ServiceProvider";
-import { createThrottleAndDebounce, getUuid, scrollToBotton } from "../utils";
+import { createThrottleAndDebounce, getUuid, scrollToBotton } from "../utils/utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{
