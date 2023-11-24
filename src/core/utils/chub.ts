@@ -23,6 +23,26 @@ export function jsonToSetting(jsonData: {
   name?: string;
   avatar?: string;
 }): { setting: VirtualRoleSetting[]; avatar: string; name: string } {
+  let word_befor_char =
+    jsonData.character_book?.entries
+      ?.filter((f) => f.position == "before_char")
+      .sort((l, r) => l.extensions.position - r.extensions.position)
+      .map((v) => ({
+        key: getUuid(),
+        role: undefined,
+        content: v.content,
+        checked: !v.keys || !v.keys.length,
+      })) || [];
+  let word_after_char =
+    jsonData.character_book?.entries
+      ?.filter((f) => f.position == "after_char")
+      .sort((l, r) => l.extensions.position - r.extensions.position)
+      .map((v) => ({
+        key: getUuid(),
+        role: undefined,
+        content: v.content,
+        checked: !v.keys || !v.keys.length,
+      })) || [];
   let ls: VirtualRoleSetting[] = [
     {
       key: getUuid(),
@@ -54,7 +74,9 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      checked: true,
+      checked:
+        word_befor_char.length > 0 &&
+        word_befor_char.filter((f) => f.checked).length > 0,
       tags: ["Chub"],
       title: "世界设定集",
       ctx: [
@@ -64,15 +86,7 @@ export function jsonToSetting(jsonData: {
           content: `[Details of the fictional world the RP is set in:`,
           checked: true,
         },
-        ...(jsonData.character_book?.entries
-          ?.filter((f) => f.position == "before_char")
-          .sort((l, r) => l.extensions.position - r.extensions.position)
-          .map((v) => ({
-            key: getUuid(),
-            role: undefined,
-            content: v.content,
-            checked: !v.keys || !v.keys.length,
-          })) || []),
+        ...word_befor_char,
         {
           key: getUuid(),
           role: undefined,
@@ -111,7 +125,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      checked: true,
+      checked: !!jsonData.personality,
       title: "角色个性",
       tags: ["Chub"],
       ctx: [
@@ -137,7 +151,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      checked: true,
+      checked: !!jsonData.scenario && !!jsonData.world_scenario,
       title: "场景和背景设定",
       tags: ["Chub"],
       ctx: [
@@ -204,7 +218,9 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      checked: true,
+      checked:
+        word_after_char.length > 0 &&
+        word_after_char.filter((f) => f.checked).length > 0,
       tags: ["Chub"],
       title: "后置世界设定集",
       ctx: [
@@ -214,15 +230,7 @@ export function jsonToSetting(jsonData: {
           content: `[Details of the fictional world the RP is set in:`,
           checked: true,
         },
-        ...(jsonData.character_book?.entries
-          ?.filter((f) => f.position == "after_char")
-          .sort((l, r) => l.extensions.position - r.extensions.position)
-          .map((v) => ({
-            key: getUuid(),
-            role: undefined,
-            content: v.content,
-            checked: !v.keys || !v.keys.length,
-          })) || []),
+        ...word_after_char,
         {
           key: getUuid(),
           role: undefined,
