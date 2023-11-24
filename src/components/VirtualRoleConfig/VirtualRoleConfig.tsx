@@ -315,7 +315,7 @@ export const VirtualRoleConfig = ({
                                     );
                                     let charData = jsonToSetting(jsonData);
                                     if (charData) {
-                                      setUser_Avatar(charData.avatar);
+                                      setVirtualRole_Avatar(charData.avatar);
                                       form.setFieldValue(
                                         "virtualRole_name",
                                         charData.name
