@@ -68,14 +68,14 @@ export class ChubPrompt implements IMiddleware {
     {
       key: getUuid(),
       extensionId: this.key,
-      checked: false,
+      checked: true,
       tags: ["角色扮演提示词扩展"],
       title: "用户",
       ctx: [
         {
           key: getUuid(),
           role: "system",
-          content: `{{user}} is an 18 year old man.`,
+          content: `{{user_info}}`,
           checked: true,
         },
       ],
@@ -220,7 +220,7 @@ export class ChubPrompt implements IMiddleware {
       title: "要求输出中文",
       ctx: [
         {
-          content: "[Requires output in Simplified Chinese.]",
+          content: "[Requires use Simplified Chinese writing all output.]",
           role: "system",
           key: getUuid(),
           checked: true,

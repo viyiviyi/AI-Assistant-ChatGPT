@@ -48,6 +48,7 @@ export const VirtualRoleConfig = ({
     virtualRole_en_name: string;
     user_name: string;
     user_en_name: string;
+    user_en_bio: string;
   }>();
   const [messageApi, contextHolder] = message.useMessage();
   const [virtualRole_settings, setVirtualRole_settings] = useState(
@@ -88,6 +89,7 @@ export const VirtualRoleConfig = ({
     chatMgt.user.name = values.user_name;
     chatMgt.user.enName = values.user_en_name;
     chatMgt.user.avatar = user_Avatar || "";
+    chatMgt.user.bio = values.user_en_bio;
     chatMgt.saveUser();
     setChat(chatMgt.getChat());
   }
@@ -169,6 +171,13 @@ export const VirtualRoleConfig = ({
       >
         <Input.TextArea autoSize />
       </Form.Item>
+      <Form.Item
+        name="user_en_bio"
+        label="用户设定"
+        extra="当导入角色卡片时，这个内容将作为用户设定导入，其他时候此内容无效。"
+      >
+        <Input.TextArea autoSize />
+      </Form.Item>
     </div>
   );
   return (
@@ -185,6 +194,7 @@ export const VirtualRoleConfig = ({
           virtualRole_en_name: chatMgt?.virtualRole.enName,
           user_name: chatMgt?.user.name,
           user_en_name: chatMgt?.user.enName,
+          user_en_bio: chatMgt?.user.bio,
         }}
       >
         {contextHolder}
@@ -313,7 +323,10 @@ export const VirtualRoleConfig = ({
                                     let jsonData = JSON.parse(
                                       e.target.result.toString()
                                     );
-                                    let charData = jsonToSetting(jsonData);
+                                    let charData = jsonToSetting(
+                                      jsonData,
+                                      chatMgt!.getChat()
+                                    );
                                     if (charData) {
                                       setVirtualRole_Avatar(charData.avatar);
                                       form.setFieldValue(

@@ -1,28 +1,32 @@
+import { IChat } from "@/core/ChatManagement";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { getUuid } from "./utils";
-export function jsonToSetting(jsonData: {
-  alternate_greetings?: string[];
-  character_book?: {
-    entries?: {
-      content: string;
-      keys?: string[];
-      position?: "after_char" | "before_char";
-      extensions: { position: number };
-    }[];
-  };
-  description?: string;
-  first_mes?: string;
-  personality?: string;
-  world_scenario?: string;
-  char_greeting?: string;
-  char_persona?: string;
-  scenario?: string;
-  system_prompt?: string;
-  example_dialogue?: string;
-  name?: string;
-  avatar?: string;
-}): { setting: VirtualRoleSetting[]; avatar: string; name: string } {
+export function jsonToSetting(
+  jsonData: {
+    alternate_greetings?: string[];
+    character_book?: {
+      entries?: {
+        content: string;
+        keys?: string[];
+        position?: "after_char" | "before_char";
+        extensions: { position: number };
+      }[];
+    };
+    description?: string;
+    first_mes?: string;
+    personality?: string;
+    world_scenario?: string;
+    char_greeting?: string;
+    char_persona?: string;
+    scenario?: string;
+    system_prompt?: string;
+    example_dialogue?: string;
+    name?: string;
+    avatar?: string;
+  },
+  chat: IChat
+): { setting: VirtualRoleSetting[]; avatar: string; name: string } {
   let word_befor_char =
     jsonData.character_book?.entries
       ?.filter((f) => f.position == "before_char")
@@ -104,7 +108,7 @@ export function jsonToSetting(jsonData: {
         {
           key: getUuid(),
           role: "system",
-          content: `{{user}} is an 18 year old man.`,
+          content: `{{user_info}}`,
           checked: true,
         },
       ],
@@ -117,7 +121,7 @@ export function jsonToSetting(jsonData: {
       ctx: [
         {
           key: getUuid(),
-          role: undefined,
+          role: "system",
           content: jsonData.description || jsonData.char_persona || "",
           checked: true,
         },
@@ -299,7 +303,7 @@ export function jsonToSetting(jsonData: {
       title: "要求输出中文",
       ctx: [
         {
-          content: "[Requires output in Simplified Chinese.]",
+          content: "[Requires use Simplified Chinese writing all output.]",
           role: "system",
           key: getUuid(),
           checked: true,

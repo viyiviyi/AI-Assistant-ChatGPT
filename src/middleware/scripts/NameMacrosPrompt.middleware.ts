@@ -7,7 +7,7 @@ export class NameMacrosPrompt implements IMiddleware {
   readonly name: string = "角色名替换";
   readonly tags = [];
   readonly description: string =
-    "替换上下文中的{{char}}和{{user}}为助理名称和用户名称";
+    "替换上下文中的{{char}}和{{user}}为助理名称和用户名称, {{user_info}}被替换为用户设定";
   readonly onSendBefore: (
     chat: IChat,
     context: ChatCompletionRequestMessage[]
@@ -17,7 +17,8 @@ export class NameMacrosPrompt implements IMiddleware {
   ) => {
     context.forEach((v) => {
       v.content = v.content
-        ?.replaceAll("{{char}}", chat.virtualRole.name)
+        ?.replaceAll("{{user_info}}", chat.user.bio || "")
+        .replaceAll("{{char}}", chat.virtualRole.name)
         .replaceAll("{{user}}", chat.user.name);
     });
     return context;

@@ -368,13 +368,11 @@ export class ChatManagement {
     checked?: boolean | undefined;
   }[] {
     if (inputSettings == undefined) return [];
-    let lastSetting: VirtualRoleSettingItem | undefined = undefined;
     let settings: {
       role: CtxRole;
       content: string;
       checked?: boolean | undefined;
     }[] = [];
-    lastSetting = undefined;
     inputSettings
       .filter((v) =>
         overrideCheck
@@ -389,6 +387,7 @@ export class ChatManagement {
       )
       .forEach((v) => {
         let overrideCtx = overrideCheck?.find((f) => f.key == v.key);
+        let lastSetting: VirtualRoleSettingItem | undefined = undefined;
         v.ctx.forEach((c) => {
           if (c.role) {
             if (
@@ -413,8 +412,9 @@ export class ChatManagement {
             }
           }
         });
+        if (lastSetting && (lastSetting as any).checked)
+          settings.push(lastSetting);
       });
-    if (lastSetting && (lastSetting as any).checked) settings.push(lastSetting);
     return settings;
   }
   static parseText(text: string): string {

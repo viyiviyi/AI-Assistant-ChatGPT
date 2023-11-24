@@ -10,6 +10,7 @@ export interface User {
   enName?: string;
   avatar?: string; // 用户头像
   updateTime?: number;
+  bio?: string;
 }
 
 // 分组表
@@ -43,7 +44,7 @@ export interface GroupConfig {
   updateTime?: number;
   enableSync?: boolean;
   extensions?: string[];
-  middleware?: string[]
+  middleware?: string[];
 }
 
 // 聊天消息表
