@@ -3,7 +3,8 @@ import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "../IMiddleware";
 
 export class NameMacrosPrompt implements IMiddleware {
-  readonly key = "d003e366-4609-4535-b2d8-4c742ae829b1";
+  static readonly key ="d003e366-4609-4535-b2d8-4c742ae829b1"
+  readonly key = NameMacrosPrompt.key;
   readonly name: string = "角色名替换";
   readonly tags = [];
   readonly description: string =

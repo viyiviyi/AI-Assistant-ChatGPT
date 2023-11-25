@@ -1,5 +1,6 @@
 import { IndexedDB } from "@/core/db/IndexDb";
 import { Extensions } from "@/extensions/Extensions";
+import { NameMacrosPrompt } from "@/middleware/scripts/NameMacrosPrompt.middleware";
 import { CtxRole } from "@/Models/CtxRole";
 import {
   GptConfig,
@@ -558,6 +559,7 @@ export class ChatManagement {
       baseUrl: "",
       activityTopicId: "",
       botType: "ChatGPT",
+      middleware: [NameMacrosPrompt.key],
     };
     await getInstance().insert<GroupConfig>({ tableName: "GroupConfig", data });
     return data;

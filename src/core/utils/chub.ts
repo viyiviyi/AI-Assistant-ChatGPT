@@ -1,32 +1,28 @@
-import { IChat } from "@/core/ChatManagement";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { getUuid } from "./utils";
-export function jsonToSetting(
-  jsonData: {
-    alternate_greetings?: string[];
-    character_book?: {
-      entries?: {
-        content: string;
-        keys?: string[];
-        position?: "after_char" | "before_char";
-        extensions: { position: number };
-      }[];
-    };
-    description?: string;
-    first_mes?: string;
-    personality?: string;
-    world_scenario?: string;
-    char_greeting?: string;
-    char_persona?: string;
-    scenario?: string;
-    system_prompt?: string;
-    example_dialogue?: string;
-    name?: string;
-    avatar?: string;
-  },
-  chat: IChat
-): { setting: VirtualRoleSetting[]; avatar: string; name: string } {
+export function jsonToSetting(jsonData: {
+  alternate_greetings?: string[];
+  character_book?: {
+    entries?: {
+      content: string;
+      keys?: string[];
+      position?: "after_char" | "before_char";
+      extensions: { position: number };
+    }[];
+  };
+  description?: string;
+  first_mes?: string;
+  personality?: string;
+  world_scenario?: string;
+  char_greeting?: string;
+  char_persona?: string;
+  scenario?: string;
+  system_prompt?: string;
+  example_dialogue?: string;
+  name?: string;
+  avatar?: string;
+}): { setting: VirtualRoleSetting[]; avatar: string; name: string } {
   let word_befor_char =
     jsonData.character_book?.entries
       ?.filter((f) => f.position == "before_char")
@@ -50,6 +46,7 @@ export function jsonToSetting(
   let ls: VirtualRoleSetting[] = [
     {
       key: getUuid(),
+      extensionId: "chub.mainPrompt",
       checked: true,
       title: "主要功能提示词",
       tags: ["Chub"],
@@ -64,6 +61,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.enhanceDefinitions',
       checked: true,
       tags: ["Chub"],
       title: "角色扮演质量提示词",
@@ -78,6 +76,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.worldInfoBefore',
       checked:
         word_befor_char.length > 0 &&
         word_befor_char.filter((f) => f.checked).length > 0,
@@ -101,6 +100,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.userInfo',
       checked: true,
       tags: ["Chub"],
       title: "用户",
@@ -115,6 +115,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.charDescription',
       checked: true,
       title: "角色主要设定",
       tags: ["Chub", "角色"],
@@ -129,6 +130,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.charPersonality',
       checked: !!jsonData.personality,
       title: "角色个性",
       tags: ["Chub"],
@@ -155,6 +157,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.scenario',
       checked: !!jsonData.scenario && !!jsonData.world_scenario,
       title: "场景和背景设定",
       tags: ["Chub"],
@@ -181,6 +184,7 @@ export function jsonToSetting(
     },
     {
       checked: true,
+      extensionId:'chub.NSFWPrompt',
       tags: ["Chub"],
       key: getUuid(),
       title: "角色扮演允许NSFW",
@@ -222,6 +226,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.worldInfoAfter',
       checked:
         word_after_char.length > 0 &&
         word_after_char.filter((f) => f.checked).length > 0,
@@ -245,6 +250,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.Start',
       checked: true,
       title: "角色扮演开始",
       tags: ["Chub"],
@@ -259,6 +265,7 @@ export function jsonToSetting(
     },
     {
       key: getUuid(),
+      extensionId:'chub.FirstMes',
       checked: false,
       title: "第一条消息",
       tags: ["Chub"],
@@ -281,6 +288,7 @@ export function jsonToSetting(
     },
     {
       postposition: true,
+      extensionId:'chub.Continue',
       checked: false,
       tags: ["Chub"],
       key: getUuid(),
@@ -297,21 +305,7 @@ export function jsonToSetting(
     },
     {
       postposition: true,
-      checked: true,
-      tags: ["Chub"],
-      key: getUuid(),
-      title: "要求输出中文",
-      ctx: [
-        {
-          content: "[Requires use Simplified Chinese writing all output.]",
-          role: "system",
-          key: getUuid(),
-          checked: true,
-        },
-      ],
-    },
-    {
-      postposition: true,
+      extensionId:'chub.jailbreak',
       checked: true,
       tags: ["Chub"],
       key: getUuid(),
@@ -337,6 +331,35 @@ export function jsonToSetting(
           role: "system",
           key: getUuid(),
           checked: false,
+        },
+      ],
+    },
+    {
+      postposition: true,
+      extensionId:'chub.RequiresChinese',
+      checked: true,
+      tags: ["Chub"],
+      key: getUuid(),
+      title: "要求输出中文",
+      ctx: [
+        {
+          content: "[Requires use Simplified Chinese writing all output.]",
+          role: "system",
+          key: getUuid(),
+          checked: false,
+        },
+        {
+          content:
+            "[System note: Requires the use of Simplified Chinese to depict all content, but names may be excluded. ]",
+          role: "system",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "[System note: 要求使用简体中文描述除名称之外的所有内容。]",
+          role: "system",
+          key: getUuid(),
+          checked: true,
         },
       ],
     },

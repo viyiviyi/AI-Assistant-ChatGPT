@@ -3,7 +3,9 @@ import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
 import { jsonToSetting } from "@/core/utils/chub";
 import { getUuid } from "@/core/utils/utils";
+import { NameMacrosPrompt } from "@/middleware/scripts/NameMacrosPrompt.middleware";
 import { VirtualRole } from "@/Models/DataBase";
+import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import {
   Button,
   Dropdown,
@@ -17,7 +19,13 @@ import {
   Upload
 } from "antd";
 import copy from "copy-to-clipboard";
-import { CSSProperties, useContext, useMemo, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useContext,
+  useMemo,
+  useState
+} from "react";
 import ImageUpload from "../common/ImageUpload";
 import { Modal, ModalCallback } from "../common/Modal";
 import { MiddlewareConfig } from "./MiddlewareConfig";
@@ -64,6 +72,84 @@ export const VirtualRoleConfig = ({
   );
   const [middlewares, setMiddlewares] = useState<string[]>(
     chatMgt?.config.middleware ?? []
+  );
+  const loadChubData = useCallback(
+    (charData: {
+      setting: VirtualRoleSetting[];
+      avatar: string;
+      name: string;
+    }) => {
+      if (charData) {
+        // setVirtualRole_Avatar(charData.avatar);
+        form.setFieldValue("virtualRole_name", charData.name);
+        if (
+          chatMgt?.config.middleware &&
+          !chatMgt?.config.middleware?.includes(NameMacrosPrompt.key)
+        )
+          chatMgt.config.middleware.push(NameMacrosPrompt.key);
+        let previousPosition: {
+          [topId: string]: VirtualRoleSetting[];
+        } = {};
+        let userVariableSetting: {
+          [extensionId: string]: VirtualRoleSetting;
+        } = {};
+        let lastChubId = "";
+        virtualRole_settings.forEach((v) => {
+          if (v.extensionId?.startsWith("chub.")) {
+            lastChubId = v.extensionId;
+            if (
+              [
+                "chub.mainPrompt",
+                "chub.enhanceDefinitions",
+                "chub.userInfo",
+                "chub.NSFWPrompt",
+                "chub.Start",
+                "chub.Continue",
+                "chub.jailbreak",
+                "chub.RequiresChinese",
+              ].includes(v.extensionId)
+            ) {
+              userVariableSetting[v.extensionId] = v;
+            }
+          } else if (lastChubId) {
+            if (previousPosition[lastChubId])
+              previousPosition[lastChubId].push(v);
+            else previousPosition[lastChubId] = [v];
+          }
+        });
+        let nextSetting: VirtualRoleSetting[] = [];
+        charData.setting.forEach((v) => {
+          if (v.extensionId) {
+            if (userVariableSetting[v.extensionId]) {
+              v.checked = userVariableSetting[v.extensionId].checked;
+              let newCtx = v.ctx.filter(
+                (c) =>
+                  userVariableSetting[v.extensionId!].ctx.findIndex(
+                    (f) => f.content == c.content
+                  ) == -1
+              );
+              v.ctx = userVariableSetting[v.extensionId].ctx;
+              newCtx.forEach((v) => (v.checked = false));
+              v.ctx.push(...newCtx);
+            }
+            if (previousPosition[v.extensionId]) {
+              nextSetting.push(...[v, ...previousPosition[v.extensionId]]);
+            } else {
+              nextSetting.push(v);
+            }
+          } else {
+            nextSetting.push(v);
+          }
+        });
+        setVirtualRole_settings(
+          nextSetting.map((v) => ({
+            ...v,
+            edit: false,
+          }))
+        );
+      }
+    },
+    [chatMgt, form, virtualRole_settings]
   );
   function onSave() {
     let values = form.getFieldsValue();
@@ -323,23 +409,8 @@ export const VirtualRoleConfig = ({
                                     let jsonData = JSON.parse(
                                       e.target.result.toString()
                                     );
-                                    let charData = jsonToSetting(
-                                      jsonData,
-                                      chatMgt!.getChat()
-                                    );
-                                    if (charData) {
-                                      setVirtualRole_Avatar(charData.avatar);
-                                      form.setFieldValue(
-                                        "virtualRole_name",
-                                        charData.name
-                                      );
-                                      setVirtualRole_settings(
-                                        charData.setting.map((v) => ({
-                                          ...v,
-                                          edit: false,
-                                        }))
-                                      );
-                                    }
+                                    let charData = jsonToSetting(jsonData);
+                                    loadChubData(charData);
                                   }
                                 };
                                 fr.readAsText(file);

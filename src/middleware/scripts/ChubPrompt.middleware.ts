@@ -225,6 +225,12 @@ export class ChubPrompt implements IMiddleware {
           key: getUuid(),
           checked: true,
         },
+        {
+          content: "[System note: Requires the use of Simplified Chinese to depict all content, but names may be excluded. ]",
+          role: "system",
+          key: getUuid(),
+          checked: true,
+        },
       ],
     },
     {
