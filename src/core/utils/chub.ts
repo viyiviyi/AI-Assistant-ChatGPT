@@ -61,7 +61,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.enhanceDefinitions',
+      extensionId: "chub.enhanceDefinitions",
       checked: true,
       tags: ["Chub"],
       title: "角色扮演质量提示词",
@@ -76,7 +76,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.worldInfoBefore',
+      extensionId: "chub.worldInfoBefore",
       checked:
         word_befor_char.length > 0 &&
         word_befor_char.filter((f) => f.checked).length > 0,
@@ -100,7 +100,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.userInfo',
+      extensionId: "chub.userInfo",
       checked: true,
       tags: ["Chub"],
       title: "用户",
@@ -115,7 +115,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.charDescription',
+      extensionId: "chub.charDescription",
       checked: true,
       title: "角色主要设定",
       tags: ["Chub", "角色"],
@@ -130,7 +130,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.charPersonality',
+      extensionId: "chub.charPersonality",
       checked: !!jsonData.personality,
       title: "角色个性",
       tags: ["Chub"],
@@ -157,7 +157,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.scenario',
+      extensionId: "chub.scenario",
       checked: !!jsonData.scenario && !!jsonData.world_scenario,
       title: "场景和背景设定",
       tags: ["Chub"],
@@ -184,7 +184,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       checked: true,
-      extensionId:'chub.NSFWPrompt',
+      extensionId: "chub.NSFWPrompt",
       tags: ["Chub"],
       key: getUuid(),
       title: "角色扮演允许NSFW",
@@ -226,7 +226,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.worldInfoAfter',
+      extensionId: "chub.worldInfoAfter",
       checked:
         word_after_char.length > 0 &&
         word_after_char.filter((f) => f.checked).length > 0,
@@ -250,7 +250,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.Start',
+      extensionId: "chub.Start",
       checked: true,
       title: "角色扮演开始",
       tags: ["Chub"],
@@ -265,7 +265,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
-      extensionId:'chub.FirstMes',
+      extensionId: "chub.FirstMes",
       checked: false,
       title: "第一条消息",
       tags: ["Chub"],
@@ -276,7 +276,10 @@ export function jsonToSetting(jsonData: {
           content: jsonData.first_mes || "",
           checked: true,
         },
-        ...(jsonData.alternate_greetings?.map((v) => {
+        ...((Array.isArray(jsonData.alternate_greetings)
+          ? jsonData.alternate_greetings
+          : []
+        ).map((v) => {
           return {
             key: getUuid(),
             role: "assistant" as CtxRole,
@@ -288,7 +291,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       postposition: true,
-      extensionId:'chub.Continue',
+      extensionId: "chub.Continue",
       checked: false,
       tags: ["Chub"],
       key: getUuid(),
@@ -305,7 +308,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       postposition: true,
-      extensionId:'chub.jailbreak',
+      extensionId: "chub.jailbreak",
       checked: true,
       tags: ["Chub"],
       key: getUuid(),
@@ -336,7 +339,7 @@ export function jsonToSetting(jsonData: {
     },
     {
       postposition: true,
-      extensionId:'chub.RequiresChinese',
+      extensionId: "chub.RequiresChinese",
       checked: true,
       tags: ["Chub"],
       key: getUuid(),
