@@ -353,7 +353,7 @@ export function jsonToSetting(jsonData: {
             "[System note: Requires the use of Simplified Chinese to depict all content, but names may be excluded. ]",
           role: "system",
           key: getUuid(),
-          checked: true,
+          checked: false,
         },
         {
           content: "[System note: 要求使用简体中文描述除名称之外的所有内容。]",
