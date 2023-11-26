@@ -7,8 +7,8 @@
     "distDir": "../out"
   },
   "package": {
-    "productName": "AI助理",
-    "version": "0.1.0"
+    "productName": "ChatAI Tool",
+    "version": "1.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/favicon.ico"
       ],
-      "identifier": "site.22733.chat",
+      "identifier": "com.eaias.chat",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -61,7 +61,7 @@
         "fullscreen": false,
         "height": 800,
         "resizable": true,
-        "title": "AI助理",
+        "title": "ChatAI Tool",
         "width": 1280
       }
     ]
