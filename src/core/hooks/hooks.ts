@@ -3,6 +3,7 @@ import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import {
   onReader,
   onReaderAfter,
+  onReaderFirst,
   onSendBefore
 } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
@@ -10,7 +11,11 @@ import { Message } from "@/Models/DataBase";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "../../Models/Topic";
 import { aiServices } from "../AiService/ServiceProvider";
-import { createThrottleAndDebounce, getUuid, scrollToBotton } from "../utils/utils";
+import {
+  createThrottleAndDebounce,
+  getUuid,
+  scrollToBotton
+} from "../utils/utils";
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{
@@ -111,7 +116,9 @@ export function useSendMessage(chat: ChatManagement) {
     async (idx: number, topic: TopicMessage) => {
       const aiService = aiServices.current;
       if (!aiService) return;
-      if (idx > topic.messages.length) return;
+      if (idx >= topic.messages.length) {
+        idx = topic.messages.length - 1;
+      }
       let time = Date.now();
       if (idx < 0 && topic.messages.length)
         time = topic.messages[0].timestamp - 1;
@@ -125,6 +132,7 @@ export function useSendMessage(chat: ChatManagement) {
         timestamp: time,
         topicId: topic.id,
       };
+      result = onReaderFirst(chat.getChat(), topic.messages[idx], result);
       if (
         topic.messages
           .slice(Math.max(0, idx - chat.gptConfig.msgCount), idx + 1)
@@ -150,8 +158,11 @@ export function useSendMessage(chat: ChatManagement) {
           });
         }
       }, 1000);
-      let ctx = currentChat.current!.getAskContext(topic, idx + 1);
-      ctx = onSendBefore(chat.getChat(), ctx) as {
+      let { allCtx: ctx, history } = currentChat.current!.getAskContext(
+        topic,
+        idx + 1
+      );
+      ctx = onSendBefore(chat.getChat(), { allCtx: ctx, history }) as {
         role: CtxRole;
         content: string;
         name: string;

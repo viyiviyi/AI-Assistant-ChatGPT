@@ -10,21 +10,21 @@ export class UserMessagePrdfix implements IMiddleware {
   readonly description: string =
     "将用户名和助理名增加在消息前面，同时删除响应数据里的角色名前缀。（也许会导致内容出现错误）";
   setting: VirtualRoleSetting[] | undefined;
-  readonly onSendBefore: (
+  readonly onSendBefore = (
     chat: IChat,
-    context: ChatCompletionRequestMessage[]
-  ) => ChatCompletionRequestMessage[] | undefined = (
-    chat: IChat,
-    context: ChatCompletionRequestMessage[]
-  ) => {
-    context.forEach((v) => {
+    context: {
+      allCtx: Array<ChatCompletionRequestMessage>;
+      history: Array<ChatCompletionRequestMessage>;
+    }
+  ): ChatCompletionRequestMessage[] => {
+    context.allCtx.forEach((v) => {
       if (v.role == "user") {
         v.content = chat.user.name + "：" + v.content;
       } else if (v.role == "assistant") {
         v.content = chat.virtualRole.name + "：" + v.content;
       }
     });
-    return context;
+    return context.allCtx;
   };
   readonly onReader: (chat: IChat, result: string) => string = (
     chat: IChat,

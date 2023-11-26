@@ -241,12 +241,19 @@ export class ChatManagement {
   getAskContext(
     topic: TopicMessage,
     index: number = -1
-  ): Array<{
-    role: CtxRole;
-    content: string;
-    name: string;
-  }> {
-    let ctx: Array<{
+  ): {
+    allCtx: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
+    history: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
+  } {
+    let history: Array<{
       role: CtxRole;
       content: string;
       name: string;
@@ -266,7 +273,7 @@ export class ChatManagement {
           .filter((v) => v.checked)
           .forEach((v) => {
             let virtualRole = this.virtualRole;
-            ctx.push({
+            history.push({
               role: v.ctxRole,
               content: v.text,
               name: this.getNameByRole(v.ctxRole, virtualRole),
@@ -276,7 +283,7 @@ export class ChatManagement {
       // 记忆范围内的消息
       messages.slice(-ctxCount).forEach((v) => {
         let virtualRole = this.virtualRole;
-        ctx.push({
+        history.push({
           role: v.ctxRole,
           content: v.text,
           name: this.getNameByRole(v.ctxRole, virtualRole),
@@ -284,6 +291,11 @@ export class ChatManagement {
       });
     }
     // 置顶助理全局配置
+    let ctx: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }> = [];
     if (
       topic.overrideSettings?.useConfig === undefined
         ? this.config.enableVirtualRole
@@ -326,7 +338,7 @@ export class ChatManagement {
           };
         }),
         // 上下文
-        ...ctx,
+        ...history,
         // 话题内后置设定
         ...ChatManagement.parseSetting(
           topic.virtualRole?.filter((v) => v.postposition)
@@ -350,7 +362,7 @@ export class ChatManagement {
         }),
       ];
     }
-    return ctx;
+    return { allCtx: ctx, history };
   }
 
   getNameByRole(role?: CtxRole, virtualRole?: VirtualRole) {
@@ -366,13 +378,11 @@ export class ChatManagement {
   ): {
     role: CtxRole;
     content: string;
-    checked?: boolean | undefined;
   }[] {
     if (inputSettings == undefined) return [];
     let settings: {
       role: CtxRole;
       content: string;
-      checked?: boolean | undefined;
     }[] = [];
     inputSettings
       .filter((v) =>

@@ -1,27 +1,34 @@
 import { IChat } from "@/core/ChatManagement";
+import { format } from "date-fns";
 import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "../IMiddleware";
 
 export class NameMacrosPrompt implements IMiddleware {
-  static readonly key ="d003e366-4609-4535-b2d8-4c742ae829b1"
+  static readonly key = "d003e366-4609-4535-b2d8-4c742ae829b1";
   readonly key = NameMacrosPrompt.key;
-  readonly name: string = "角色名替换";
+  readonly name: string = "参数替换";
   readonly tags = [];
-  readonly description: string =
-    "替换上下文中的{{char}}和{{user}}为助理名称和用户名称, {{user_info}}被替换为用户设定";
-  readonly onSendBefore: (
+  readonly description: string = `{{char}}->助理名；
+{{user}}->用户名；
+{{user_info}}->用户设定；
+{{current_time}}->当前时间`;
+  readonly onSendBefore = (
     chat: IChat,
-    context: ChatCompletionRequestMessage[]
-  ) => ChatCompletionRequestMessage[] | undefined = (
-    chat: IChat,
-    context: ChatCompletionRequestMessage[]
-  ) => {
-    context.forEach((v) => {
+    context: {
+      allCtx: Array<ChatCompletionRequestMessage>;
+      history: Array<ChatCompletionRequestMessage>;
+    }
+  ): ChatCompletionRequestMessage[] => {
+    context.allCtx.forEach((v) => {
       v.content = v.content
         ?.replaceAll("{{user_info}}", chat.user.bio || "")
+        .replaceAll(
+          "{{current_time}}",
+          format(new Date(), "yyyy-MM-dd HH:mm:ss")
+        )
         .replaceAll("{{char}}", chat.virtualRole.name)
         .replaceAll("{{user}}", chat.user.name);
     });
-    return context;
+    return context.allCtx;
   };
 }

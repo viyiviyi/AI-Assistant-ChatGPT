@@ -1,7 +1,9 @@
-import { ChatManagement } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { onSendBefore } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { Space, Tag, Typography } from "antd";
+import { Tag, Typography } from "antd";
+import { useContext } from "react";
 import { MarkdownView } from "../common/MarkdownView";
 
 export const VirtualRoleConfigInfo = ({
@@ -13,6 +15,21 @@ export const VirtualRoleConfigInfo = ({
   bio: string;
   topicVirtualRole?: VirtualRoleSetting[];
 }) => {
+  const { chatMgt } = useContext(ChatContext);
+  const renderContext = (
+    ctx: Array<{
+      role: CtxRole;
+      content: string;
+    }>
+  ): {
+    role: CtxRole;
+    content: string;
+  }[] => {
+    return onSendBefore(chatMgt.getChat(), { allCtx: ctx, history: [] }) as {
+      role: CtxRole;
+      content: string;
+    }[];
+  };
   const getTag = (role: CtxRole) => {
     switch (role) {
       case "assistant":
@@ -25,18 +42,27 @@ export const VirtualRoleConfigInfo = ({
   };
 
   return (
-    <div>
-      <Space direction="vertical">
+    <div style={{ wordWrap: "break-word", padding: 8 }}>
+      <div>
         {bio ? (
           <>
             {getTag(ChatManagement.parseTextToRole(bio, "system"))}
-            <MarkdownView markdown={bio} />
+            <MarkdownView
+              markdown={
+                renderContext([
+                  {
+                    content: bio,
+                    role: ChatManagement.parseTextToRole(bio, "system"),
+                  },
+                ])[0].content
+              }
+            />
           </>
         ) : (
           <></>
         )}
-        {ChatManagement.parseSetting(
-          settings.filter((v) => !v.postposition)
+        {renderContext(
+          ChatManagement.parseSetting(settings.filter((v) => !v.postposition))
         ).map((v, idx) => {
           return (
             <div key={idx + "_settint_info_item_p"}>
@@ -45,8 +71,10 @@ export const VirtualRoleConfigInfo = ({
             </div>
           );
         })}
-        {ChatManagement.parseSetting(
-          (topicVirtualRole || []).filter((v) => !v.postposition)
+        {renderContext(
+          ChatManagement.parseSetting(
+            (topicVirtualRole || []).filter((v) => !v.postposition)
+          )
         ).map((v, idx) => {
           return (
             <div key={idx + "_settint_info_item_p"}>
@@ -56,8 +84,10 @@ export const VirtualRoleConfigInfo = ({
           );
         })}
         <Typography.Text type="secondary">{"... 上下文"}</Typography.Text>
-        {ChatManagement.parseSetting(
-          (topicVirtualRole || []).filter((v) => v.postposition)
+        {renderContext(
+          ChatManagement.parseSetting(
+            (topicVirtualRole || []).filter((v) => v.postposition)
+          )
         ).map((v, idx) => {
           return (
             <div key={idx + "_settint_info_item_e"}>
@@ -66,8 +96,8 @@ export const VirtualRoleConfigInfo = ({
             </div>
           );
         })}
-        {ChatManagement.parseSetting(
-          settings.filter((v) => v.postposition)
+        {renderContext(
+          ChatManagement.parseSetting(settings.filter((v) => v.postposition))
         ).map((v, idx) => {
           return (
             <div key={idx + "_settint_info_item_e"}>
@@ -76,7 +106,7 @@ export const VirtualRoleConfigInfo = ({
             </div>
           );
         })}
-      </Space>
+      </div>
     </div>
   );
 };

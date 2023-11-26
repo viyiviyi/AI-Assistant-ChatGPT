@@ -11,8 +11,15 @@ export interface IMiddleware {
   readonly onSendBefore?:
     | ((
         chat: IChat,
-        context: Array<ChatCompletionRequestMessage>
+        context: {
+          allCtx: Array<ChatCompletionRequestMessage>;
+          history: Array<ChatCompletionRequestMessage>;
+        }
       ) => undefined | Array<ChatCompletionRequestMessage>)
+    | undefined;
+
+  readonly onReaderFirst?:
+    | ((chat: IChat, send: Message, result: Message) => Message)
     | undefined;
   readonly onReader?: ((chat: IChat, result: string) => string) | undefined;
   readonly onReaderAfter?:

@@ -32,6 +32,7 @@ export class IndexedDB {
         this.getTableConfig("Background"),
         this.getTableConfig("GlobalTokens"),
         this.getTableConfig("Extensions"),
+        this.getTableConfig("Favorite"),
       ],
     });
   }

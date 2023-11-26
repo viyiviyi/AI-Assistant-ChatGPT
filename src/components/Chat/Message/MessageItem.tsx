@@ -103,7 +103,7 @@ export const MessageItem = ({
     async (
       msg: Message,
       messageText: string,
-      ctxRole: "assistant" | "system" | "user"
+      ctxRole: CtxRole
     ) => {
       const isReloadNav =
         /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);

@@ -93,7 +93,7 @@ export const VirtualRoleConfig = ({
         let userVariableSetting: {
           [extensionId: string]: VirtualRoleSetting;
         } = {};
-        let lastChubId = "";
+        let lastChubId = "None";
         virtualRole_settings.forEach((v) => {
           if (v.extensionId?.startsWith("chub.")) {
             lastChubId = v.extensionId;
@@ -117,7 +117,9 @@ export const VirtualRoleConfig = ({
             else previousPosition[lastChubId] = [v];
           }
         });
-        let nextSetting: VirtualRoleSetting[] = [];
+        let nextSetting: VirtualRoleSetting[] = [
+          ...(previousPosition["None"] || []),
+        ];
         charData.setting.forEach((v) => {
           if (v.extensionId) {
             if (userVariableSetting[v.extensionId]) {
@@ -125,7 +127,7 @@ export const VirtualRoleConfig = ({
               let newCtx = v.ctx.filter(
                 (c) =>
                   userVariableSetting[v.extensionId!].ctx.findIndex(
-                    (f) => f.content == c.content
+                    (f) => f.content.toLowerCase().trim().replaceAll(' ','') == c.content.toLowerCase().trim().replaceAll(' ','')
                   ) == -1
               );
               v.ctx = userVariableSetting[v.extensionId].ctx;

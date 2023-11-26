@@ -65,7 +65,7 @@ export function MessageList({
         charCount += m.text.length;
       });
       let ctxCountChar = 0;
-      chat.getAskContext(topic, topic.messages.length).forEach((v) => {
+      chat.getAskContext(topic, topic.messages.length).allCtx.forEach((v) => {
         ctxCountChar += v.content.length;
       });
       setCountChar(charCount);
