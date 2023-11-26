@@ -14,11 +14,11 @@ const middlewareList: Array<IMiddleware> = [];
 
 const middlewareArr: Array<new () => IMiddleware> = [
   NameMacrosPrompt,
-  UserMessagePrdfix,
   ContinueLastMsg,
   CreataMessageForUser,
   ChubPrompt,
   ReplaceHalfWidthSymbols,
+  UserMessagePrdfix,
 ];
 
 /**
