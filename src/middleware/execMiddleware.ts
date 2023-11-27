@@ -34,12 +34,11 @@ export function onSendBefore(
     history: Array<ChatCompletionRequestMessage>;
   }
 ): Array<ChatCompletionRequestMessage> {
-  let m = chat.config.middleware
-    ?.map((v) => middlewareIndex[v])
-    .filter((f) => f);
+  let m = middlewareList.filter((f) => chat.config.middleware?.includes(f.key));
   if (!m) return context.allCtx;
   let r = context;
   for (let i = 0; i < m.length; i++) {
+    console.log(m[i].name, context.allCtx);
     let next = m[i].onSendBefore ? m[i].onSendBefore!(chat, r) : r.allCtx;
     if (!next) return r.allCtx;
     else {
@@ -61,9 +60,7 @@ export function onReaderFirst(
   send: Message,
   result: Message
 ): Message {
-  let m = chat.config.middleware
-    ?.map((v) => middlewareIndex[v])
-    .filter((f) => f);
+  let m = middlewareList.filter((f) => chat.config.middleware?.includes(f.key));
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
@@ -74,9 +71,7 @@ export function onReaderFirst(
   return r;
 }
 export function onReader(chat: IChat, result: string): string {
-  let m = chat.config.middleware
-    ?.map((v) => middlewareIndex[v])
-    .filter((f) => f);
+  let m = middlewareList.filter((f) => chat.config.middleware?.includes(f.key));
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
@@ -86,9 +81,7 @@ export function onReader(chat: IChat, result: string): string {
 }
 
 export function onReaderAfter(chat: IChat, result: Message[]): Message[] {
-  let m = chat.config.middleware
-    ?.map((v) => middlewareIndex[v])
-    .filter((f) => f);
+  let m = middlewareList.filter((f) => chat.config.middleware?.includes(f.key));
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
@@ -100,9 +93,7 @@ export function onReaderAfter(chat: IChat, result: Message[]): Message[] {
 }
 
 export function onRender(chat: IChat, result: string): string {
-  let m = chat.config.middleware
-    ?.map((v) => middlewareIndex[v])
-    .filter((f) => f);
+  let m = middlewareList.filter((f) => chat.config.middleware?.includes(f.key));
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
@@ -110,7 +101,6 @@ export function onRender(chat: IChat, result: string): string {
   }
   return r;
 }
-
 
 let register = false;
 export function registerMiddleware() {
