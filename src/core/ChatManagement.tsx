@@ -295,7 +295,7 @@ export class ChatManagement {
       role: CtxRole;
       content: string;
       name: string;
-    }> = [];
+    }> = [...history];
     if (
       topic.overrideSettings?.useConfig === undefined
         ? this.config.enableVirtualRole
