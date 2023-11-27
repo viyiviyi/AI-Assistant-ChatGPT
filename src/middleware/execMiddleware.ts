@@ -13,12 +13,12 @@ const middlewareIndex: { [key: string]: IMiddleware } = {};
 const middlewareList: Array<IMiddleware> = [];
 
 const middlewareArr: Array<new () => IMiddleware> = [
-  NameMacrosPrompt,
   ContinueLastMsg,
   CreataMessageForUser,
-  ChubPrompt,
-  ReplaceHalfWidthSymbols,
+  NameMacrosPrompt,
   UserMessagePrdfix,
+  ReplaceHalfWidthSymbols,
+  ChubPrompt,
 ];
 
 /**
