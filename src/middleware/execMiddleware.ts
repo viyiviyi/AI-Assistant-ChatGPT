@@ -15,17 +15,17 @@ const middlewareList: Array<IMiddleware> = [];
 const middlewareArr: Array<new () => IMiddleware> = [
   ContinueLastMsg,
   CreataMessageForUser,
-  NameMacrosPrompt,
   UserMessagePrdfix,
+  NameMacrosPrompt,
   ReplaceHalfWidthSymbols,
   ChubPrompt,
 ];
 
 /**
  * 内容发送之前
- * @param chat 
- * @param context 
- * @returns 
+ * @param chat
+ * @param context
+ * @returns
  */
 export function onSendBefore(
   chat: IChat,
@@ -34,7 +34,9 @@ export function onSendBefore(
     history: Array<ChatCompletionRequestMessage>;
   }
 ): Array<ChatCompletionRequestMessage> {
-  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware
+    ?.map((v) => middlewareIndex[v])
+    .filter((f) => f);
   if (!m) return context.allCtx;
   let r = context;
   for (let i = 0; i < m.length; i++) {
@@ -49,28 +51,32 @@ export function onSendBefore(
 
 /**
  * 响应内容被创建的时候
- * @param chat 
+ * @param chat
  * @param send 响应的内容的前一条内容
- * @param result 
- * @returns 
+ * @param result
+ * @returns
  */
 export function onReaderFirst(
   chat: IChat,
   send: Message,
   result: Message
 ): Message {
-  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware
+    ?.map((v) => middlewareIndex[v])
+    .filter((f) => f);
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
     let next = m[i].onReaderFirst ? m[i].onReaderFirst!(chat, send, r) : r;
     if (!next) return r;
-    r = next
+    r = next;
   }
   return r;
 }
 export function onReader(chat: IChat, result: string): string {
-  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware
+    ?.map((v) => middlewareIndex[v])
+    .filter((f) => f);
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
@@ -80,19 +86,23 @@ export function onReader(chat: IChat, result: string): string {
 }
 
 export function onReaderAfter(chat: IChat, result: Message[]): Message[] {
-  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware
+    ?.map((v) => middlewareIndex[v])
+    .filter((f) => f);
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
     let next = m[i].onReaderAfter ? m[i].onReaderAfter!(chat, r) : r;
     if (!next) return r;
-    r = next
+    r = next;
   }
   return r;
 }
 
 export function onRender(chat: IChat, result: string): string {
-  let m = chat.config.middleware?.map((v) => middlewareIndex[v]);
+  let m = chat.config.middleware
+    ?.map((v) => middlewareIndex[v])
+    .filter((f) => f);
   if (!m) return result;
   let r = result;
   for (let i = 0; i < m.length; i++) {
@@ -100,6 +110,8 @@ export function onRender(chat: IChat, result: string): string {
   }
   return r;
 }
+
+
 let register = false;
 export function registerMiddleware() {
   if (register) return;
