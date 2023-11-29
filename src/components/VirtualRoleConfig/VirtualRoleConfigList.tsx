@@ -303,7 +303,14 @@ export const VirtualRoleConfigList = ({
                   {
                     checked: true,
                     tags: [],
-                    ctx: [],
+                    ctx: [
+                      {
+                        content: "",
+                        checked: true,
+                        role: "system",
+                        key: getUuid(),
+                      },
+                    ],
                     key: getUuid(),
                     edit: false,
                   },

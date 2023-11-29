@@ -154,7 +154,7 @@ export function EditVirtualRoleSetting({
       content: string;
       checked?: boolean | undefined;
     }[]
-  >(item.ctx.filter((f) => f.content));
+  >(item.ctx);
   const [messageApi, contextHolder] = message.useMessage();
   const renderItem = useCallback(
     (
@@ -187,6 +187,7 @@ export function EditVirtualRoleSetting({
       open={visible}
       onOk={() => {
         setCtx((ctx) => {
+          ctx.forEach((v) => (v.content = v.content?.trim()));
           let next_ctx = ctx.filter((f) => f.content);
           onSave({
             ...item,

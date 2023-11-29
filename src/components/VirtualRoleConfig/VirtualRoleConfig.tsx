@@ -74,11 +74,14 @@ export const VirtualRoleConfig = ({
     chatMgt?.config.middleware ?? []
   );
   const loadChubData = useCallback(
-    (charData: {
-      setting: VirtualRoleSetting[];
-      avatar: string;
-      name: string;
-    }) => {
+    (
+      charData: {
+        setting: VirtualRoleSetting[];
+        avatar: string;
+        name: string;
+      },
+      replace = false
+    ) => {
       if (charData) {
         // setVirtualRole_Avatar(charData.avatar);
         form.setFieldValue("virtualRole_name", charData.name);
@@ -94,7 +97,7 @@ export const VirtualRoleConfig = ({
           [extensionId: string]: VirtualRoleSetting;
         } = {};
         let lastChubId = "None";
-        virtualRole_settings.forEach((v) => {
+        (currentSettings.current || virtualRole_settings).forEach((v) => {
           if (v.extensionId?.startsWith("chub.")) {
             lastChubId = v.extensionId;
             if (
@@ -122,12 +125,14 @@ export const VirtualRoleConfig = ({
         ];
         charData.setting.forEach((v) => {
           if (v.extensionId) {
-            if (userVariableSetting[v.extensionId]) {
+            if (userVariableSetting[v.extensionId] && !replace) {
               v.checked = userVariableSetting[v.extensionId].checked;
               let newCtx = v.ctx.filter(
                 (c) =>
                   userVariableSetting[v.extensionId!].ctx.findIndex(
-                    (f) => f.content.toLowerCase().trim().replaceAll(' ','') == c.content.toLowerCase().trim().replaceAll(' ','')
+                    (f) =>
+                      f.content.toLowerCase().trim().replaceAll(" ", "") ==
+                      c.content.toLowerCase().trim().replaceAll(" ", "")
                   ) == -1
               );
               v.ctx = userVariableSetting[v.extensionId].ctx;
@@ -423,6 +428,34 @@ export const VirtualRoleConfig = ({
                             }}
                           >
                             {"导入酒馆角色卡json"}
+                          </Upload>
+                        ),
+                      },
+                      {
+                        key: "4",
+                        label: (
+                          <Upload
+                            accept=".json"
+                            {...{
+                              beforeUpload(file, FileList) {
+                                const fr = new FileReader();
+                                fr.onloadend = (e) => {
+                                  if (e.target?.result) {
+                                    let jsonData = JSON.parse(
+                                      e.target.result.toString()
+                                    );
+                                    let charData = jsonToSetting(jsonData);
+                                    loadChubData(charData, true);
+                                  }
+                                };
+                                fr.readAsText(file);
+                                return false;
+                              },
+                              defaultFileList: [],
+                              showUploadList: false,
+                            }}
+                          >
+                            {"重置酒馆角色卡json"}
                           </Upload>
                         ),
                       },
