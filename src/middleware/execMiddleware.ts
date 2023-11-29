@@ -8,6 +8,7 @@ import { CreataMessageForUser } from "./scripts/CreataMessageForUser";
 import { NameMacrosPrompt } from "./scripts/NameMacrosPrompt.middleware";
 import { ReplaceHalfWidthSymbols } from "./scripts/ReplaceHalfWidthSymbols.middleware";
 import { UserMessagePrdfix } from "./scripts/UserMessagePrdfix.middleware";
+import { AssistantMessagePrdfix } from "./scripts/AssistantMessagePrdfix.middleware";
 
 const middlewareIndex: { [key: string]: IMiddleware } = {};
 const middlewareList: Array<IMiddleware> = [];
@@ -16,6 +17,7 @@ const middlewareArr: Array<new () => IMiddleware> = [
   ContinueLastMsg,
   CreataMessageForUser,
   UserMessagePrdfix,
+  AssistantMessagePrdfix,
   NameMacrosPrompt,
   ReplaceHalfWidthSymbols,
   ChubPrompt,

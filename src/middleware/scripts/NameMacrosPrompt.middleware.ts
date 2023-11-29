@@ -20,15 +20,15 @@ export class NameMacrosPrompt implements IMiddleware {
     }
   ): ChatCompletionRequestMessage[] => {
     context.allCtx.forEach((v) => {
-      v.content = v.content
-        ?.replaceAll("{{user_info}}", chat.user.bio || "")
-        .replaceAll(
-          "{{current_time}}",
-          format(new Date(), "yyyy-MM-dd HH:mm:ss")
-        )
-        .replaceAll("{{char}}", chat.virtualRole.name)
-        .replaceAll("{{user}}", chat.user.name);
+      v.content = NameMacrosPrompt.format(chat, v.content);
     });
     return context.allCtx;
   };
+  static format(chat: IChat, input: string | undefined): string | undefined {
+    return input
+      ?.replaceAll("{{user_info}}", chat.user.bio || "")
+      .replaceAll("{{current_time}}", format(new Date(), "yyyy-MM-dd HH:mm:ss"))
+      .replaceAll("{{char}}", chat.virtualRole.name)
+      .replaceAll("{{user}}", chat.user.name);
+  }
 }

@@ -4,14 +4,14 @@ import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "../IMiddleware";
 import { NameMacrosPrompt } from "./NameMacrosPrompt.middleware";
 
-export class UserMessagePrdfix implements IMiddleware {
-  readonly key = "c2a40193-6fe5-4cb0-8664-71b3e121c72d";
-  readonly name: string = "消息前缀";
+export class AssistantMessagePrdfix implements IMiddleware {
+  readonly key = "middleware.AssistantMessagePrdfix";
+  readonly name: string = "助理消息前缀";
   readonly tags = [];
   readonly description: string =
-    "发送消息时将用户名增加在用户消息前面，同时删除响应数据里的助理名前缀。";
+    "助理名增加在AI的消息前面，同时删除响应数据里的助理名前缀。";
   setting: VirtualRoleSetting[] | undefined;
-  prompt = "{{user}}：{{message}}";
+  prompt = "{{char}}：{{message}}";
   readonly onSendBefore = (
     chat: IChat,
     context: {
@@ -19,9 +19,9 @@ export class UserMessagePrdfix implements IMiddleware {
       history: Array<ChatCompletionRequestMessage>;
     }
   ): ChatCompletionRequestMessage[] => {
-    let reg = new RegExp(`(^)(${chat.user.name})(:|：)\s*`, "g");
+    let reg = new RegExp(`(^)(${chat.virtualRole.name})(:|：)\s*`, "g");
     context.allCtx.forEach((v) => {
-      if (v.role == "user" && !reg.test(v.content || "")) {
+      if (v.role == "assistant" && !reg.test(v.content || "")) {
         v.content = NameMacrosPrompt.format(chat, this.prompt)?.replaceAll(
           "{{message}}",
           v.content || ""
