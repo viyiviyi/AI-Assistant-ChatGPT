@@ -399,30 +399,25 @@ export class ChatManagement {
       .forEach((v) => {
         let overrideCtx = overrideCheck?.find((f) => f.key == v.key);
         let lastSetting: VirtualRoleSettingItem | undefined = undefined;
-        v.ctx.forEach((c) => {
-          if (c.role) {
-            if (
-              lastSetting &&
-              lastSetting.checked &&
-              (overrideCtx
-                ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
-                : true)
-            ) {
-              settings.push(lastSetting as any);
+        v.ctx
+          .map((c) => ({
+            ...c,
+            checked: overrideCtx
+              ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
+              : c.checked,
+          }))
+          .forEach((c) => {
+            if (c.role) {
+              if (lastSetting && lastSetting.checked) {
+                settings.push(lastSetting as any);
+              }
+              lastSetting = { ...c, role: c.role! };
+            } else {
+              if (c.checked && lastSetting) {
+                lastSetting.content += "\n" + c.content;
+              }
             }
-            lastSetting = { ...c, role: c.role! };
-          } else {
-            if (
-              c.checked &&
-              lastSetting &&
-              (overrideCtx
-                ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
-                : true)
-            ) {
-              lastSetting.content += "\n" + c.content;
-            }
-          }
-        });
+          });
         if (lastSetting && (lastSetting as any).checked)
           settings.push(lastSetting);
       });
