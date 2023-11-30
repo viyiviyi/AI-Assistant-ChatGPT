@@ -274,7 +274,7 @@ export function jsonToSetting(jsonData: {
         {
           key: getUuid(),
           role: "system",
-          content: `[Start and new]`,
+          content: `[Start a new Chat, It's never over.]`,
           checked: true,
         },
         {
@@ -348,7 +348,7 @@ export function jsonToSetting(jsonData: {
         },
         {
           content:
-            "You must make a response that best characterizes the {{char}} character. If allowed, Exaggerated descriptions of explicit content and sexual behavior are permitted. but must fit the character's traits. Describe in detail, using as many words as possible, the feelings associated with the body part.",
+            "You must make a response that best characterizes the character. If allowed, Exaggerated descriptions of explicit content and sexual behavior are permitted. but must fit the character's traits. Describe in detail, using as many words as possible, the feelings associated with the body part.",
           role: "system",
           key: getUuid(),
           checked: false,
@@ -384,7 +384,7 @@ export function jsonToSetting(jsonData: {
         },
         {
           content:
-            "Requires the use of Simplified Chinese and the output of content in a manner consistent with Chinese conventions. And keep it formatted correctly.",
+            "It is required to use simplified Chinese and generate content in a way that conforms to Chinese habits and contains Chinese flavor. And keep the format right.",
           role: "system",
           key: getUuid(),
           checked: true,

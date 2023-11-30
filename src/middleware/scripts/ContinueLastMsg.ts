@@ -21,23 +21,27 @@ export class ContinueLastMsg implements IMiddleware {
   ): ChatCompletionRequestMessage[] | undefined => {
     if (chat.config.middleware?.includes(CreataMessageForUser.key))
       return context.allCtx;
-    if (
-      context.history.length &&
-      context.history.slice(-1)[0].role == "assistant" &&
-      context.history.slice(-1)[0].content
-    ) {
-      let last = context.history.slice(-1)[0];
-      let idx = context.allCtx.lastIndexOf(last);
+    let lastCtx: ChatCompletionRequestMessage | undefined = undefined;
+    for (let i = context.allCtx.length - 1; i >= 0; i--) {
+      if (
+        context.allCtx[i].role == "assistant" ||
+        context.allCtx[i].role == "user"
+      ) {
+        lastCtx = context.allCtx[i];
+      }
+    }
+    if (lastCtx && lastCtx.role == "assistant" && lastCtx.content) {
+      let idx = context.allCtx.lastIndexOf(lastCtx);
       if (idx != -1) {
         context.allCtx.splice(idx, 1);
       }
-      last.role = "system";
-      last.name = "system";
-      last.content = this.prompt.replaceAll(
+      lastCtx.role = "system";
+      lastCtx.name = "system";
+      lastCtx.content = this.prompt.replaceAll(
         "{{lastChatMessage}}",
-        last.content!
+        lastCtx.content!
       );
-      context.allCtx.push(last)
+      context.allCtx.push(lastCtx);
     }
     return context.allCtx;
   };
