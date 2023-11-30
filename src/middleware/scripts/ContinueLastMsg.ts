@@ -21,15 +21,10 @@ export class ContinueLastMsg implements IMiddleware {
   ): ChatCompletionRequestMessage[] | undefined => {
     if (chat.config.middleware?.includes(CreataMessageForUser.key))
       return context.allCtx;
-    let lastCtx: ChatCompletionRequestMessage | undefined = undefined;
-    for (let i = context.allCtx.length - 1; i >= 0; i--) {
-      if (
-        context.allCtx[i].role == "assistant" ||
-        context.allCtx[i].role == "user"
-      ) {
-        lastCtx = context.allCtx[i];
-      }
-    }
+    let lastCtx: ChatCompletionRequestMessage | undefined = context.history
+      .length
+      ? context.history.slice(-1)[0]
+      : undefined;
     if (lastCtx && lastCtx.role == "assistant" && lastCtx.content) {
       let idx = context.allCtx.lastIndexOf(lastCtx);
       if (idx != -1) {

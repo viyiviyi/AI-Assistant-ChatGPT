@@ -40,7 +40,6 @@ export function onSendBefore(
   if (!m) return context.allCtx;
   let r = context;
   for (let i = 0; i < m.length; i++) {
-    console.log(m[i].name, context.allCtx);
     let next = m[i].onSendBefore ? m[i].onSendBefore!(chat, r) : r.allCtx;
     if (!next) return r.allCtx;
     else {

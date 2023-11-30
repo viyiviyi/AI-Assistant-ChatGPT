@@ -19,10 +19,11 @@ export class CreataMessageForUser implements IMiddleware {
       history: Array<ChatCompletionRequestMessage>;
     }
   ): ChatCompletionRequestMessage[] | undefined => {
-    if (
-      context.history.length &&
-      context.history.slice(-1)[0].role == "assistant"
-    ) {
+    let lastCtx: ChatCompletionRequestMessage | undefined = context.history
+      .length
+      ? context.history.slice(-1)[0]
+      : undefined;
+    if (lastCtx && lastCtx.role == "assistant") {
       context.allCtx.push({
         content: this.prompt,
         role: "system",
