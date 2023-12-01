@@ -136,7 +136,6 @@ export function jsonToSetting(jsonData: {
         },
         {
           content: "性别=女\n三围=[]\n性格=[]\n特点=[]",
-          role: "system",
           key: getUuid(),
           checked: false,
         },
