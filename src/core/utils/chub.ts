@@ -177,7 +177,7 @@ export function jsonToSetting(jsonData: {
         {
           key: getUuid(),
           role: "system",
-          content: `[MaidoDism's personality: `,
+          content: `[{{char}}'s personality: `,
           checked: true,
         },
         {
