@@ -7,7 +7,7 @@ export function jsonToSetting(jsonData: {
     entries?: {
       content: string;
       keys?: string[];
-      position?: "after_char" | "before_char";
+      position?: "after_char" | "before_char" | "0";
       extensions: { position: number };
     }[];
   };
@@ -36,6 +36,16 @@ export function jsonToSetting(jsonData: {
   let word_after_char =
     jsonData.character_book?.entries
       ?.filter((f) => f.position == "after_char")
+      .sort((l, r) => l.extensions.position - r.extensions.position)
+      .map((v) => ({
+        key: getUuid(),
+        role: undefined,
+        content: v.content,
+        checked: !v.keys || !v.keys.length,
+      })) || [];
+  let lorebooks =
+    jsonData.character_book?.entries
+      ?.filter((f) => f.position == "0")
       .sort((l, r) => l.extensions.position - r.extensions.position)
       .map((v) => ({
         key: getUuid(),

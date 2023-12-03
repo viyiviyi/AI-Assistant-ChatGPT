@@ -2,7 +2,7 @@ import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
 import { jsonToSetting } from "@/core/utils/chub";
-import { getUuid } from "@/core/utils/utils";
+import { downloadJson, getUuid } from "@/core/utils/utils";
 import { NameMacrosPrompt } from "@/middleware/scripts/NameMacrosPrompt.middleware";
 import { VirtualRole } from "@/Models/DataBase";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -12,6 +12,7 @@ import {
   Form,
   Input,
   message,
+  Popconfirm,
   Space,
   Switch,
   Tabs,
@@ -72,6 +73,30 @@ export const VirtualRoleConfig = ({
   );
   const [middlewares, setMiddlewares] = useState<string[]>(
     chatMgt?.config.middleware ?? []
+  );
+  const loadChubBook = useCallback(
+    (charData: {
+      setting: VirtualRoleSetting[];
+      avatar: string;
+      name: string;
+    }) => {
+      setVirtualRole_settings((v) => {
+        return (currentSettings.current || v).map((s) => {
+          if (s.extensionId == "chub.lorebooks") {
+            let book = charData.setting.find(
+              (d) => d.extensionId == s.extensionId
+            );
+            if (book) {
+              return { ...book, edit: false };
+            } else {
+              return s;
+            }
+          }
+          return s;
+        });
+      });
+    },
+    [currentSettings]
   );
   const loadChubData = useCallback(
     (
@@ -156,7 +181,7 @@ export const VirtualRoleConfig = ({
         );
       }
     },
-    [chatMgt, form, virtualRole_settings]
+    [chatMgt, currentSettings, form, virtualRole_settings]
   );
   function onSave() {
     let values = form.getFieldsValue();
@@ -273,6 +298,7 @@ export const VirtualRoleConfig = ({
       </Form.Item>
     </div>
   );
+
   return (
     <>
       <Form
@@ -353,13 +379,7 @@ export const VirtualRoleConfig = ({
                         label: (
                           <a
                             onClick={() => {
-                              if (
-                                copy(
-                                  JSON.stringify(
-                                    JSON.stringify(chatMgt?.virtualRole)
-                                  )
-                                )
-                              ) {
+                              if (copy(JSON.stringify(chatMgt?.virtualRole))) {
                                 messageApi.success("已复制");
                               }
                             }}
@@ -395,7 +415,9 @@ export const VirtualRoleConfig = ({
                                       edit: false,
                                     })) || []
                                   );
-                                } catch (err) {}
+                                } catch (err) {
+                                  messageApi.error("内容格式错误");
+                                }
                               });
                             }}
                           >
@@ -413,11 +435,17 @@ export const VirtualRoleConfig = ({
                                 const fr = new FileReader();
                                 fr.onloadend = (e) => {
                                   if (e.target?.result) {
-                                    let jsonData = JSON.parse(
-                                      e.target.result.toString()
-                                    );
-                                    let charData = jsonToSetting(jsonData);
-                                    loadChubData(charData);
+                                    try {
+                                      let jsonData = JSON.parse(
+                                        e.target.result.toString()
+                                      );
+                                      if (typeof jsonData == "string")
+                                        jsonData = JSON.parse(jsonData);
+                                      let charData = jsonToSetting(jsonData);
+                                      loadChubData(charData);
+                                    } catch (error) {
+                                      messageApi.error("文件格式错误");
+                                    }
                                   }
                                 };
                                 fr.readAsText(file);
@@ -431,8 +459,76 @@ export const VirtualRoleConfig = ({
                           </Upload>
                         ),
                       },
+                      // {
+                      //   key: "4",
+                      //   label: (
+                      //     <Upload
+                      //       accept=".json"
+                      //       {...{
+                      //         beforeUpload(file, FileList) {
+                      //           const fr = new FileReader();
+                      //           fr.onloadend = (e) => {
+                      //             if (e.target?.result) {
+                      //               try {
+                      //                 let jsonData = JSON.parse(
+                      //                   e.target.result.toString()
+                      //                 );
+                      //                 if (typeof jsonData == "string")
+                      //                   jsonData = JSON.parse(jsonData);
+                      //                 let charData = jsonToSetting(jsonData);
+                      //                 loadChubData(charData, true);
+                      //               } catch (error) {
+                      //                 messageApi.error("文件格式错误");
+                      //               }
+                      //             }
+                      //           };
+                      //           fr.readAsText(file);
+                      //           return false;
+                      //         },
+                      //         defaultFileList: [],
+                      //         showUploadList: false,
+                      //       }}
+                      //     >
+                      //       {"重置酒馆角色卡json"}
+                      //     </Upload>
+                      //   ),
+                      // },
+                      // {
+                      //   key: "5",
+                      //   label: (
+                      //     <Upload
+                      //       accept=".json"
+                      //       {...{
+                      //         beforeUpload(file, FileList) {
+                      //           const fr = new FileReader();
+                      //           fr.onloadend = (e) => {
+                      //             if (e.target?.result) {
+                      //               try {
+                      //                 let jsonData = JSON.parse(
+                      //                   e.target.result.toString()
+                      //                 );
+                      //                 if (typeof jsonData == "string")
+                      //                   jsonData = JSON.parse(jsonData);
+                      //                 let charData = jsonToSetting(jsonData);
+                      //                 loadChubBook(charData);
+                      //               } catch (error) {
+                      //                 messageApi.error("文件格式错误");
+                      //               }
+                      //             }
+                      //           };
+                      //           fr.readAsText(file);
+                      //           return false;
+                      //         },
+                      //         defaultFileList: [],
+                      //         showUploadList: false,
+                      //       }}
+                      //     >
+                      //       {"导入世界书json"}
+                      //     </Upload>
+                      //   ),
+                      // },
                       {
-                        key: "4",
+                        key: "6",
                         label: (
                           <Upload
                             accept=".json"
@@ -441,11 +537,31 @@ export const VirtualRoleConfig = ({
                                 const fr = new FileReader();
                                 fr.onloadend = (e) => {
                                   if (e.target?.result) {
-                                    let jsonData = JSON.parse(
-                                      e.target.result.toString()
-                                    );
-                                    let charData = jsonToSetting(jsonData);
-                                    loadChubData(charData, true);
+                                    try {
+                                      let jsonData: VirtualRole = JSON.parse(
+                                        e.target.result.toString()
+                                      );
+                                      if (typeof jsonData == "string")
+                                        jsonData = JSON.parse(jsonData);
+                                      form.setFieldValue(
+                                        "virtualRole_name",
+                                        jsonData?.name
+                                      );
+                                      form.setFieldValue(
+                                        "virtualRole_bio",
+                                        jsonData?.bio
+                                      );
+                                      setVirtualRole_Avatar(jsonData?.avatar);
+                                      setVirtualRole_settings(
+                                        jsonData?.settings?.map((v, i) => ({
+                                          ...v,
+                                          key: getUuid(),
+                                          edit: false,
+                                        })) || []
+                                      );
+                                    } catch (error) {
+                                      messageApi.error("文件格式错误");
+                                    }
                                   }
                                 };
                                 fr.readAsText(file);
@@ -455,8 +571,38 @@ export const VirtualRoleConfig = ({
                               showUploadList: false,
                             }}
                           >
-                            {"重置酒馆角色卡json"}
+                            {"导入设定json文件"}
                           </Upload>
+                        ),
+                      },
+                      {
+                        key: "7",
+                        label: (
+                          <a
+                            onClick={() => {
+                              downloadJson(
+                                JSON.stringify(chatMgt?.virtualRole),
+                                chatMgt?.group.name + "setting_eaias.com.json"
+                              );
+                            }}
+                          >
+                            {"导出设定到json文件"}
+                          </a>
+                        ),
+                      },
+                      {
+                        key: "8",
+                        label: (
+                          <Popconfirm
+                            overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                            title="确定清空？"
+                            placement="topRight"
+                            onConfirm={() => {
+                              setVirtualRole_settings([]);
+                            }}
+                          >
+                            {"清空全部设定"}
+                          </Popconfirm>
                         ),
                       },
                     ],
