@@ -196,6 +196,49 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
+      extensionId: "chub.charFormat",
+      checked: false,
+      title: "内容格式",
+      tags: ["Chub"],
+      ctx: [
+        {
+          key: getUuid(),
+          role: "system",
+          content: `Content must follow this format:[`,
+          checked: false,
+        },
+        {
+          key: getUuid(),
+          role: "system",
+          content: `Messages must follow this format:[`,
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          role: undefined,
+          content: `*详细描述行为动作或场景*
+「生动的描述{{char}}的对话和语音」*生动的表达和描述{{char}}的情绪和行为动作*
+*描述好感度或堕落值的变化，以及{{char}}身体的变化*`,
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          role: undefined,
+          content: `*Describe behavioral actions or scenes in detail
+"*Vividly describes {{char}}'s dialog and speech. *Vividly expresses and describes {{char}}'s emotions and behavioral actions.
+*Describing changes in favorability or depravity values, and changes in {{char}}'s body`,
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          role: undefined,
+          content: `]`,
+          checked: true,
+        },
+      ],
+    },
+    {
+      key: getUuid(),
       extensionId: "chub.scenario",
       checked: !!jsonData.scenario && !!jsonData.world_scenario,
       title: "场景和背景设定",
@@ -369,6 +412,13 @@ export function jsonToSetting(jsonData: {
         {
           content:
             "[Write {{char}}'s next actions. Must best characterizes the character. If allowed, Describe explicit content and sexual behavior. but must fit the character's traits. Describe in detail the feelings associated with the body part, Consider the character's current state.]",
+          role: "system",
+          key: getUuid(),
+          checked: false,
+        },
+        {
+          content:
+            "Long detailed write of {{char}}'s next Emotions or actions or scenario. Consider the character's current state. Use spoken rather than written language whenever possible.Describe the details of the action rather than the result of the action whenever possible.",
           role: "system",
           key: getUuid(),
           checked: true,
