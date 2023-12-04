@@ -459,40 +459,40 @@ export const VirtualRoleConfig = ({
                           </Upload>
                         ),
                       },
-                      // {
-                      //   key: "4",
-                      //   label: (
-                      //     <Upload
-                      //       accept=".json"
-                      //       {...{
-                      //         beforeUpload(file, FileList) {
-                      //           const fr = new FileReader();
-                      //           fr.onloadend = (e) => {
-                      //             if (e.target?.result) {
-                      //               try {
-                      //                 let jsonData = JSON.parse(
-                      //                   e.target.result.toString()
-                      //                 );
-                      //                 if (typeof jsonData == "string")
-                      //                   jsonData = JSON.parse(jsonData);
-                      //                 let charData = jsonToSetting(jsonData);
-                      //                 loadChubData(charData, true);
-                      //               } catch (error) {
-                      //                 messageApi.error("文件格式错误");
-                      //               }
-                      //             }
-                      //           };
-                      //           fr.readAsText(file);
-                      //           return false;
-                      //         },
-                      //         defaultFileList: [],
-                      //         showUploadList: false,
-                      //       }}
-                      //     >
-                      //       {"重置酒馆角色卡json"}
-                      //     </Upload>
-                      //   ),
-                      // },
+                      {
+                        key: "4",
+                        label: (
+                          <Upload
+                            accept=".json"
+                            {...{
+                              beforeUpload(file, FileList) {
+                                const fr = new FileReader();
+                                fr.onloadend = (e) => {
+                                  if (e.target?.result) {
+                                    try {
+                                      let jsonData = JSON.parse(
+                                        e.target.result.toString()
+                                      );
+                                      if (typeof jsonData == "string")
+                                        jsonData = JSON.parse(jsonData);
+                                      let charData = jsonToSetting(jsonData);
+                                      loadChubData(charData, true);
+                                    } catch (error) {
+                                      messageApi.error("文件格式错误");
+                                    }
+                                  }
+                                };
+                                fr.readAsText(file);
+                                return false;
+                              },
+                              defaultFileList: [],
+                              showUploadList: false,
+                            }}
+                          >
+                            {"重置酒馆角色卡json"}
+                          </Upload>
+                        ),
+                      },
                       // {
                       //   key: "5",
                       //   label: (

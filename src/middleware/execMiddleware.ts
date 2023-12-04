@@ -2,13 +2,14 @@ import { IChat } from "@/core/ChatManagement";
 import { Message } from "@/Models/DataBase";
 import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "./IMiddleware";
+import { AssistantMessagePrdfix } from "./scripts/AssistantMessagePrdfix.middleware";
 import { ChubPrompt } from "./scripts/ChubPrompt.middleware";
 import { ContinueLastMsg } from "./scripts/ContinueLastMsg";
 import { CreataMessageForUser } from "./scripts/CreataMessageForUser";
 import { NameMacrosPrompt } from "./scripts/NameMacrosPrompt.middleware";
+import { RemoveNamePrdfix } from "./scripts/RemoveNamePrdfix.middleware";
 import { ReplaceHalfWidthSymbols } from "./scripts/ReplaceHalfWidthSymbols.middleware";
 import { UserMessagePrdfix } from "./scripts/UserMessagePrdfix.middleware";
-import { AssistantMessagePrdfix } from "./scripts/AssistantMessagePrdfix.middleware";
 
 const middlewareIndex: { [key: string]: IMiddleware } = {};
 const middlewareList: Array<IMiddleware> = [];
@@ -18,6 +19,7 @@ const middlewareArr: Array<new () => IMiddleware> = [
   CreataMessageForUser,
   UserMessagePrdfix,
   AssistantMessagePrdfix,
+  RemoveNamePrdfix,
   NameMacrosPrompt,
   ReplaceHalfWidthSymbols,
   ChubPrompt,

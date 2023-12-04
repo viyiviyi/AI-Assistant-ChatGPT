@@ -9,7 +9,7 @@ export class UserMessagePrdfix implements IMiddleware {
   readonly name: string = "用户消息前缀";
   readonly tags = [];
   readonly description: string =
-    "发送消息时将用户名增加在用户消息前面，同时删除响应数据里的助理名前缀。";
+    "发送消息时将用户名增加在用户消息前面。";
   setting: VirtualRoleSetting[] | undefined;
   prompt = "{{user}}：{{message}}";
   readonly onSendBefore = (
@@ -29,12 +29,5 @@ export class UserMessagePrdfix implements IMiddleware {
       }
     });
     return context.allCtx;
-  };
-  readonly onReader: (chat: IChat, result: string) => string = (
-    chat: IChat,
-    result: string
-  ) => {
-    let reg = new RegExp(`(^)(${chat.virtualRole.name})(:|：)\s*`, "g");
-    return result.replace(reg, "$1");
   };
 }
