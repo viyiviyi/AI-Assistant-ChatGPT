@@ -74,7 +74,7 @@ export const MessageItem = ({
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState({ text: "" });
-  const [inputRef] = useState(createRef<TextAreaRef>());
+  // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
@@ -347,7 +347,7 @@ export const MessageItem = ({
                 e.target.selectionStart = msg.text.length;
                 e.target.selectionEnd = msg.text.length;
               }}
-              ref={inputRef}
+              // ref={inputRef}
               autoFocus={true}
             />
           </>
@@ -371,7 +371,7 @@ export const MessageItem = ({
     EditUtil,
     renderType,
     messageText,
-    inputRef,
+    // inputRef,
     chat.config.disableStrikethrough,
     msg,
     saveMsg,
