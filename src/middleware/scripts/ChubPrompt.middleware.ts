@@ -39,6 +39,72 @@ export class ChubPrompt implements IMiddleware {
       ],
     },
     {
+      checked: true,
+      tags: ["Chub"],
+      ctx: [
+        {
+          content: "[Content tone:",
+          role: "system",
+          key: getUuid(),
+          checked: false,
+        },
+        {
+          content: "[tone of dialogue:",
+          role: "system",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "immersive,",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Descriptive,",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Spoken language.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Emotive,",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Gripping, Touching, Captivating,",
+          key: getUuid(),
+          checked: false,
+        },
+        {
+          content: "Chinese habits and contains Chinese flavor.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content:
+            "Describe the details of the action, rather than the result of the action, whenever possible.",
+          key: getUuid(),
+          checked: false,
+        },
+        {
+          content: "Describe as many of the actions of {{char}} as possible.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "]",
+          key: getUuid(),
+          checked: true,
+        },
+      ],
+      key: getUuid(),
+      title: "语气",
+    },
+    {
       key: getUuid(),
       extensionId: this.key,
       checked: false,

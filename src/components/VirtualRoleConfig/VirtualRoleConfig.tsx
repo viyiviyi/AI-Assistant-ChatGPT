@@ -605,6 +605,18 @@ export const VirtualRoleConfig = ({
                           </Popconfirm>
                         ),
                       },
+                      {
+                        key: "9",
+                        label: (
+                          <a
+                            onClick={() => {
+                              loadChubData(jsonToSetting({}), true);
+                            }}
+                          >
+                            {"默认角色扮演提示词"}
+                          </a>
+                        ),
+                      },
                     ],
                   }}
                   placement="bottomRight"
