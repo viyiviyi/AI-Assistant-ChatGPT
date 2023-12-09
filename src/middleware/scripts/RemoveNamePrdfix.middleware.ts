@@ -13,7 +13,7 @@ export class RemoveNamePrdfix implements IMiddleware {
     chat: IChat,
     result: string
   ) => {
-    let reg = new RegExp(`(^)(${chat.virtualRole.name})(:|：)\s*`, "g");
+    let reg = new RegExp(`(^|\n)(${chat.virtualRole.name})(:|：)\s*`, "g");
     return result.replace(reg, "$1");
   };
 }

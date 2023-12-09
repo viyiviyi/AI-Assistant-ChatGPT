@@ -106,6 +106,12 @@ export function jsonToSetting(jsonData: {
           content: `If you have more knowledge of {{char}}, add to the character's lore and personality to enhance them but keep the Character Sheet's definitions absolute.`,
           checked: true,
         },
+        {
+          key: getUuid(),
+          role: "system",
+          content: `Your article should include the characters' voices, actions, and dialogues, including any possible sounds that may occur. At the same time, convey the characters' emotions through their tone of speech and use onomatopoeia and adjectives to describe these sounds in detail. Additionally, it is necessary to describe each action of the characters in great detail so that readers can vividly imagine how these actions are performed.`,
+          checked: false,
+        },
       ],
     },
     {
@@ -117,21 +123,15 @@ export function jsonToSetting(jsonData: {
           content: "[Content tone:",
           role: "system",
           key: getUuid(),
-          checked: false,
+          checked: true,
         },
         {
-          content: "[tone of dialogue:",
-          role: "system",
+          content: "immersive",
           key: getUuid(),
           checked: true,
         },
         {
-          content: "immersive,",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "Descriptive,",
+          content: "Descriptive",
           key: getUuid(),
           checked: true,
         },
@@ -141,28 +141,17 @@ export function jsonToSetting(jsonData: {
           checked: true,
         },
         {
-          content: "Emotive,",
+          content: "Emotive",
           key: getUuid(),
           checked: true,
         },
         {
-          content: "Gripping, Touching, Captivating,",
-          key: getUuid(),
-          checked: false,
-        },
-        {
-          content: "Chinese habits and contains Chinese flavor.",
+          content: "vivid",
           key: getUuid(),
           checked: true,
         },
         {
-          content:
-            "Describe the details of the action, rather than the result of the action, whenever possible.",
-          key: getUuid(),
-          checked: false,
-        },
-        {
-          content: "Describe as many of the actions of {{char}} as possible.",
+          content: "chinese stylistics.",
           key: getUuid(),
           checked: true,
         },
@@ -484,14 +473,7 @@ export function jsonToSetting(jsonData: {
           checked: false,
         },
         {
-          content:
-            "Long detailed write of {{char}}'s next Emotions or actions or scenario. Consider the character's current state. Use spoken rather than written language whenever possible.Describe the details of the action rather than the result of the action whenever possible.",
-          role: "system",
-          key: getUuid(),
-          checked: false,
-        },
-        {
-          content:`Describes in detail the Emotions, actions or scenario following {{char}}. Follow the current state of the character. Maintains the role definition of {{char}}.`,
+          content:`Describe in detail the next {{char}} sound, action, or image. Follow the current state of the character. Maintains the role definition of {{char}}.`,
           role: "system",
           key: getUuid(),
           checked: true,

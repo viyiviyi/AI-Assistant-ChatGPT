@@ -135,6 +135,7 @@ export const VirtualRoleConfig = ({
                 "chub.Continue",
                 "chub.jailbreak",
                 "chub.RequiresChinese",
+                "chub.ContentTone"
               ].includes(v.extensionId)
             ) {
               userVariableSetting[v.extensionId] = v;
