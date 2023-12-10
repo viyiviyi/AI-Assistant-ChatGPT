@@ -55,6 +55,92 @@ export function jsonToSetting(jsonData: {
       })) || [];
   let ls: VirtualRoleSetting[] = [
     {
+      checked: false,
+      extensionId: "chub.TagsPrompt",
+      tags: ["质量标签"],
+      ctx: [
+        {
+          content: "[TAGS:",
+          checked: true,
+          role: "system",
+          key: getUuid(),
+        },
+        {
+          content:
+            "Highly Favorite, Highly Loved, Highly Rated, Highly Quality,",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Highly NSFW",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "]",
+          key: getUuid(),
+          checked: true,
+        },
+      ],
+      key: getUuid(),
+      title: "标签",
+    },
+    {
+      checked: true,
+      extensionId: "chub.ContentTone",
+      tags: ["Chub", "质量"],
+      ctx: [
+        {
+          content: "[Content TONE:",
+          role: "system",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Be Descriptive.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Be Vivid.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Be immersive.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Be Spoken language.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Be Chinese Stylistics.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Be Emotive.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "Be Audible.",
+          key: getUuid(),
+          checked: true,
+        },
+        {
+          content: "]",
+          key: getUuid(),
+          checked: true,
+        },
+      ],
+      key: getUuid(),
+      title: "内容基调",
+    },
+    {
       key: getUuid(),
       extensionId: "chub.mainPrompt",
       checked: true,
@@ -64,32 +150,40 @@ export function jsonToSetting(jsonData: {
         {
           key: getUuid(),
           role: "system",
-          content: `Write {{char}}'s next actions in a Role-Play. Write 1 Chinese reply only in internet Role-Play style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 paragraph, up to 4. Always stay in character and avoid repetition.`,
+          content: `Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}.`,
           checked: false,
         },
         {
           key: getUuid(),
           role: "system",
-          content: `Write {{char}}'s next reply in a real Interaction between {{char}} and {{user}}. Write 1 reply only in internet Chinese RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, detailed, and drive the plot and conversation forward. The content is clear and does not use vague and generalized descriptions. Write the present rather than the future. Write at least 1 paragraph, up to 4. Always stay in character and avoid repetition.`,
+          content: `Write {{char}}'s next actions in a Private Role-Play.`,
           checked: false,
         },
         {
           key: getUuid(),
           role: "system",
-          content: `Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}. Write 1 reply only in internet Chinese RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, detailed, and drive the plot and conversation forward. Write at least 1 paragraph, up to 4. Always stay in character and avoid repetition.`,
-          checked: false,
-        },
-        {
-          key: getUuid(),
-          role: "system",
-          content: `Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 paragraph, up to 4. Always stay in character and avoid repetition.`,
+          content: `Write {{char}}'s next reply in a real Interaction between {{char}} and {{user}}.`,
           checked: true,
         },
         {
           key: getUuid(),
-          role: "system",
-          content: `Write {{char}}'s next actions in a Private Role-Play. Write 1 Chinese reply only in internet Role-Play style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 paragraph, up to 4. Always stay in character and avoid repetition.`,
+          content: `Write 1 reply only in internet Role-Play style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. `,
+          checked: true,
+        },
+        {
+          key: getUuid(),
+          content: `The content is clear and does not use vague and generalized descriptions.`,
           checked: false,
+        },
+        {
+          key: getUuid(),
+          content: ` Write the present rather than the future.`,
+          checked: false,
+        },
+        {
+          key: getUuid(),
+          content: ` Write at least 1 paragraph, up to 4. Always stay in character and avoid repetition.`,
+          checked: true,
         },
       ],
     },
@@ -113,56 +207,6 @@ export function jsonToSetting(jsonData: {
           checked: false,
         },
       ],
-    },
-    {
-      checked: true,
-      extensionId: "chub.ContentTone",
-      tags: ["Chub", "质量"],
-      ctx: [
-        {
-          content: "[Content tone:",
-          role: "system",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "immersive",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "Descriptive",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "Spoken language.",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "Emotive",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "vivid",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "chinese stylistics.",
-          key: getUuid(),
-          checked: true,
-        },
-        {
-          content: "]",
-          key: getUuid(),
-          checked: true,
-        },
-      ],
-      key: getUuid(),
-      title: "语气",
     },
     {
       key: getUuid(),
@@ -200,16 +244,6 @@ export function jsonToSetting(jsonData: {
           role: "system",
           key: getUuid(),
           checked: true,
-        },
-        {
-          key: getUuid(),
-          content: `性别=男\n性格=[]\n特点=[]`,
-          checked: true,
-        },
-        {
-          content: "性别=女\n三围=[]\n性格=[]\n特点=[]",
-          key: getUuid(),
-          checked: false,
         },
         {
           content: "]",
@@ -443,7 +477,7 @@ export function jsonToSetting(jsonData: {
       checked: true,
       tags: ["Chub"],
       key: getUuid(),
-      title: "后置提示",
+      title: "续写提示",
       ctx: [
         {
           content: "❤「♪♪」",
@@ -473,10 +507,15 @@ export function jsonToSetting(jsonData: {
           checked: false,
         },
         {
-          content:`Describe in detail the next {{char}} sound, action, or image. Follow the current state of the character. Maintains the role definition of {{char}}.`,
+          content: `Describe in detail the next {{char}} sound, action, or image. Follow the current state of the character. Maintains the role definition of {{char}}.`,
           role: "system",
           key: getUuid(),
           checked: true,
+        },
+        {
+          content: `Cannot describe {{user}}'s speech or actions.`,
+          key: getUuid(),
+          checked: false,
         },
       ],
     },
@@ -496,8 +535,7 @@ export function jsonToSetting(jsonData: {
           checked: false,
         },
         {
-          content:
-            "注意！接下来要求全程使用汉语交流和描述动作！",
+          content: "注意！接下来要求全程使用汉语交流和描述动作！",
           role: "system",
           key: getUuid(),
           checked: true,

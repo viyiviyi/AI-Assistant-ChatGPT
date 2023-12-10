@@ -127,6 +127,7 @@ export const VirtualRoleConfig = ({
             lastChubId = v.extensionId;
             if (
               [
+                "chub.TagsPrompt",
                 "chub.mainPrompt",
                 "chub.enhanceDefinitions",
                 "chub.userInfo",
