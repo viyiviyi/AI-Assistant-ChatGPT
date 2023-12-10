@@ -162,12 +162,18 @@ export function jsonToSetting(jsonData: {
         {
           key: getUuid(),
           role: "system",
+          content: `Describe what comes next in a real simulation of {{char}}.`,
+          checked: false,
+        },
+        {
+          key: getUuid(),
+          role: "system",
           content: `Write {{char}}'s next reply in a real Interaction between {{char}} and {{user}}.`,
           checked: true,
         },
         {
           key: getUuid(),
-          content: `Write 1 reply only in internet Role-Play style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. `,
+          content: `Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. `,
           checked: true,
         },
         {
@@ -513,7 +519,7 @@ export function jsonToSetting(jsonData: {
           checked: true,
         },
         {
-          content: `Cannot describe {{user}}'s speech or actions.`,
+          content: `Don't decide {{user}}'s lines, dialogue or actions.`,
           key: getUuid(),
           checked: false,
         },
