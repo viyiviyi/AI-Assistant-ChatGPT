@@ -9,7 +9,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -18,7 +18,7 @@ import React from "react";
 import { BgConfig } from "./BgImageStore";
 import {
   getDbInstance as getInstance,
-  setSkipDbSave
+  setSkipDbSave,
 } from "./db/IndexDbInstance";
 import { getUuid } from "./utils/utils";
 
@@ -258,8 +258,67 @@ export class ChatManagement {
       content: string;
       name: string;
     }> = [];
+    let virtualRole = this.virtualRole;
     if (topic) {
-      let messages = topic.messages;
+      let messages = [...topic.messages];
+      messages.unshift(
+        ...ChatManagement.parseSetting(
+          topic.virtualRole?.filter((v) => !v.postposition && v.autoCtx)
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
+      messages.unshift(
+        ...ChatManagement.parseSetting(
+          virtualRole.settings.filter((v) => !v.postposition && v.autoCtx),
+          topic.overrideVirtualRole
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
+      messages.push(
+        ...ChatManagement.parseSetting(
+          topic.virtualRole?.filter((v) => v.postposition && v.autoCtx)
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
+      messages.push(
+        ...ChatManagement.parseSetting(
+          virtualRole.settings.filter((v) => v.postposition && v.autoCtx),
+          topic.overrideVirtualRole
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
       if (index > -1) messages = messages.slice(0, index);
       else messages = [];
       let ctxCount =
@@ -272,7 +331,6 @@ export class ChatManagement {
           .slice(0, messages.length - ctxCount)
           .filter((v) => v.checked)
           .forEach((v) => {
-            let virtualRole = this.virtualRole;
             history.push({
               role: v.ctxRole,
               content: v.text,
@@ -282,7 +340,6 @@ export class ChatManagement {
       }
       // 记忆范围内的消息
       messages.slice(-ctxCount).forEach((v) => {
-        let virtualRole = this.virtualRole;
         history.push({
           role: v.ctxRole,
           content: v.text,
@@ -301,7 +358,6 @@ export class ChatManagement {
         ? this.config.enableVirtualRole
         : topic.overrideSettings?.useConfig
     ) {
-      let virtualRole = this.virtualRole;
       ctx = [
         // 助理简介
         ...(virtualRole.bio
@@ -374,7 +430,8 @@ export class ChatManagement {
   }
   static parseSetting(
     inputSettings?: VirtualRoleSetting[],
-    overrideCheck?: { key: string; ctx: { key: string }[] }[]
+    overrideCheck?: { key: string; ctx: { key: string }[] }[],
+    ctxTxt?: string
   ): {
     role: CtxRole;
     content: string;
@@ -396,9 +453,17 @@ export class ChatManagement {
             ? Extensions.getExtension(v.extensionId)?.getSettings() || v
             : v) as VirtualRoleSetting
       )
+      .filter((f) => {
+        if (f.autoCtx) {
+          return false;
+        } else {
+          return true;
+        }
+      })
       .forEach((v) => {
         let overrideCtx = overrideCheck?.find((f) => f.key == v.key);
         let lastSetting: VirtualRoleSettingItem | undefined = undefined;
+        let hasDynamicItem = false;
         v.ctx
           .map((c) => ({
             ...c,
@@ -406,7 +471,16 @@ export class ChatManagement {
               ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
               : c.checked,
           }))
+          .filter((f) => {
+            if (!ctxTxt) return;
+            if (!v.dynamic) return true;
+            if (!f.keyWords || f.keyWords.length == 0) return true;
+            let isDynamic = new RegExp(f.keyWords.join("|")).test(ctxTxt);
+            hasDynamicItem = hasDynamicItem || isDynamic;
+            return isDynamic;
+          })
           .forEach((c) => {
+            if (v.dynamic && !hasDynamicItem) return;
             if (c.role) {
               if (lastSetting && lastSetting.checked) {
                 settings.push(lastSetting as any);
