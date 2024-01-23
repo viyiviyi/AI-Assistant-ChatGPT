@@ -2,10 +2,7 @@ import { getUuid } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { VirtualRoleSettingItem } from "@/Models/VirtualRoleSettingItem";
-import {
-  DeleteOutlined,
-  PlusOutlined
-} from "@ant-design/icons";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
   Button,
@@ -134,12 +131,14 @@ const ContentItem = ({
             }}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onPressEnter={(e) => {
-              e.preventDefault()
-              Array.isArray(item.keyWords)
-                ? item.keyWords.push(inputValue)
-                : (item.keyWords = [inputValue]);
-              setInputValue("");
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                Array.isArray(item.keyWords)
+                  ? item.keyWords.push(inputValue)
+                  : (item.keyWords = [inputValue]);
+                setInputValue("");
+              }
             }}
           />
           {/* <Tag.CheckableTag
