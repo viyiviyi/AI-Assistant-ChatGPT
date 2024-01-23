@@ -135,6 +135,7 @@ const ContentItem = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onPressEnter={(e) => {
+              e.preventDefault()
               Array.isArray(item.keyWords)
                 ? item.keyWords.push(inputValue)
                 : (item.keyWords = [inputValue]);
