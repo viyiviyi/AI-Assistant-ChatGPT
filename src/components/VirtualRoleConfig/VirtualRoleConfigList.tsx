@@ -1,7 +1,11 @@
 import { ChatContext } from "@/core/ChatManagement";
 import { getUuid } from "@/core/utils/utils";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  QuestionOutlined
+} from "@ant-design/icons";
 import {
   Button,
   Checkbox,
@@ -12,6 +16,7 @@ import {
   Space,
   Tag,
   theme,
+  Tooltip,
   Typography
 } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
@@ -172,27 +177,58 @@ export const VirtualRoleConfigList = ({
               setVirtualRole_settings((v) => [...v]);
             }}
           >
-            {item.title || item.tags.length ? (
-              <div
-                style={{
-                  borderBottom: "1px solid #ccc2",
-                  paddingBottom: 2,
+            <div
+              style={{
+                borderBottom: "1px solid #ccc2",
+                paddingBottom: 2,
+                display: "flex",
+              }}
+            >
+              <Typography.Text ellipsis style={{ width: "100%" }}>
+                {item.tags.slice(0, Math.min(item.tags.length, 3)).map((v) => (
+                  <Tag key={"setting_tag_" + v} color="green">
+                    {v}
+                  </Tag>
+                ))}
+                {item.title}
+              </Typography.Text>
+              <Tag.CheckableTag
+                onClick={(e) => e.stopPropagation()}
+                checked={item.autoCtx || false}
+                onChange={(checked: boolean) => {
+                  item.autoCtx = checked;
+                  saveSettings((v) => [...v]);
                 }}
               >
-                <Typography.Text ellipsis style={{ width: "100%" }}>
-                  {item.tags
-                    .slice(0, Math.min(item.tags.length, 3))
-                    .map((v) => (
-                      <Tag key={"setting_tag_" + v} color="green">
-                        {v}
-                      </Tag>
-                    ))}{" "}
-                  {item.title}
-                </Typography.Text>
-              </div>
-            ) : (
-              <></>
-            )}
+                {"自动"}
+                <span onClick={(e) => e.stopPropagation()}>
+                  <Tooltip
+                    trigger={"click"}
+                    title="开启后将会作为上下文，受到上下文数量限制，一般用于第一条引导性设定。"
+                  >
+                    <QuestionOutlined />
+                  </Tooltip>
+                </span>
+              </Tag.CheckableTag>
+              <Tag.CheckableTag
+                onClick={(e) => e.stopPropagation()}
+                checked={item.dynamic || false}
+                onChange={(checked: boolean) => {
+                  item.dynamic = checked;
+                  saveSettings((v) => [...v]);
+                }}
+              >
+                {"动态"}
+                <span onClick={(e) => e.stopPropagation()}>
+                  <Tooltip
+                    trigger={"click"}
+                    title="开启动态设定后，仅当设定明细内至少能匹配到一个关键词时设定才会被发送。"
+                  >
+                    <QuestionOutlined />
+                  </Tooltip>
+                </span>
+              </Tag.CheckableTag>
+            </div>
             <Typography.Text
               style={{ width: "100%" }}
               type="secondary"

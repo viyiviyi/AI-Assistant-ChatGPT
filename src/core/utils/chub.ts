@@ -32,6 +32,7 @@ export function jsonToSetting(jsonData: {
         role: undefined,
         content: v.content,
         checked: !v.keys || !v.keys.length,
+        keyWords: v.keys,
       })) || [];
   let word_after_char =
     jsonData.character_book?.entries
@@ -42,6 +43,7 @@ export function jsonToSetting(jsonData: {
         role: undefined,
         content: v.content,
         checked: !v.keys || !v.keys.length,
+        keyWords: v.keys,
       })) || [];
   let lorebooks =
     jsonData.character_book?.entries
@@ -52,6 +54,7 @@ export function jsonToSetting(jsonData: {
         role: undefined,
         content: v.content,
         checked: !v.keys || !v.keys.length,
+        keyWords: v.keys,
       })) || [];
   let ls: VirtualRoleSetting[] = [
     {
@@ -228,6 +231,7 @@ export function jsonToSetting(jsonData: {
         word_befor_char.filter((f) => f.checked).length > 0,
       tags: ["Chub"],
       title: "世界设定集",
+      dynamic: true,
       ctx: [
         {
           key: getUuid(),
@@ -420,6 +424,7 @@ export function jsonToSetting(jsonData: {
         word_after_char.filter((f) => f.checked).length > 0,
       tags: ["Chub"],
       title: "后置世界设定集",
+      dynamic: true,
       ctx: [
         {
           key: getUuid(),
@@ -499,6 +504,7 @@ export function jsonToSetting(jsonData: {
       checked: false,
       title: "第一条消息",
       tags: ["Chub"],
+      autoCtx: true,
       ctx: [
         {
           key: getUuid(),

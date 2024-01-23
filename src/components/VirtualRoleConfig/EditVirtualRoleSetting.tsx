@@ -1,7 +1,11 @@
 import { getUuid } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { VirtualRoleSettingItem } from "@/Models/VirtualRoleSettingItem";
+import {
+  DeleteOutlined,
+  PlusOutlined
+} from "@ant-design/icons";
 
 import {
   Button,
@@ -12,6 +16,8 @@ import {
   Popconfirm,
   Segmented,
   Select,
+  Space,
+  Tag,
   theme
 } from "antd";
 import copy from "copy-to-clipboard";
@@ -26,12 +32,7 @@ const ContentItem = ({
   del,
   disabledEdit,
 }: {
-  item: {
-    key: string;
-    role?: CtxRole | undefined;
-    content: string;
-    checked?: boolean | undefined;
-  };
+  item: VirtualRoleSettingItem;
   idx: number;
   del: (key: string) => void;
 
@@ -40,6 +41,8 @@ const ContentItem = ({
   const [text, setText] = useState(item.content);
   const [role, setRole] = useState(item.role);
   const [checked, setChecked] = useState(item.checked);
+  const [inputValue, setInputValue] = useState("");
+  const [zone, setZone] = useState([]);
   useEffect(() => {
     setText(item.content);
     setRole(item.role);
@@ -105,6 +108,58 @@ const ContentItem = ({
             ></Checkbox>
           </Form.Item>
         </span>
+      </div>
+      <div style={{ marginBottom: 5 }}>
+        <Space size={[0, 8]} wrap>
+          {item.keyWords?.map((v, idx) => (
+            <Tag
+              key={v}
+              closable={true}
+              onClose={(e) => {
+                item.keyWords?.splice(idx, 1);
+              }}
+            >
+              {v}
+            </Tag>
+          ))}
+          <Input
+            type="text"
+            size="small"
+            placeholder={"关键词"}
+            style={{
+              width: 64,
+              height: 22,
+              marginInlineEnd: 8,
+              verticalAlign: "top",
+            }}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onPressEnter={(e) => {
+              Array.isArray(item.keyWords)
+                ? item.keyWords.push(inputValue)
+                : (item.keyWords = [inputValue]);
+              setInputValue("");
+            }}
+          />
+          {/* <Tag.CheckableTag
+            onClick={(e) => e.stopPropagation()}
+            checked={Array.isArray(item.keyWords)}
+            onChange={(checked: boolean) => {
+              item.keyWords = checked ? [] : undefined;
+              setZone([]);
+            }}
+          >
+            {"关键词"}
+            <span onClick={(e) => e.stopPropagation()}>
+              <Tooltip
+                trigger={"click"}
+                title="关键词用于自动选中设定，仅在设定开启【自动】且勾选时生效"
+              >
+                <QuestionOutlined />
+              </Tooltip>
+            </span>
+          </Tag.CheckableTag> */}
+        </Space>
       </div>
       <Form.Item
         valuePropName="content"
