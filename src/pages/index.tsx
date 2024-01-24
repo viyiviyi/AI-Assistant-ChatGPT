@@ -17,7 +17,8 @@ const MemoChat = React.memo(Chat);
 
 export default function Page() {
   const { token } = theme.useToken();
-  const { bgConfig, loadingMsgs } = useContext(ChatContext);
+  const { bgConfig, loadingMsgs, currentGroup, setCurrentGroup } =
+    useContext(ChatContext);
   const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(
     new ChatManagement(chatConfig as any)
@@ -51,6 +52,8 @@ export default function Page() {
   return (
     <ChatContext.Provider
       value={{
+        currentGroup,
+        setCurrentGroup,
         chatMgt: chatMgt,
         setChat: (chat: IChat) => {
           setChatMgt(new ChatManagement(chat));
