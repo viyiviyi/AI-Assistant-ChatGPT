@@ -1,13 +1,15 @@
-import { ChatManagement, IChat } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks/hooks";
 
 import { Button, theme, Typography } from "antd";
 import { useRouter } from "next/router";
+import { useContext } from "react";
 
 import { Groups } from "./Groups";
 
 export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
   const router = useRouter();
+  const { setCurrentGroup } = useContext(ChatContext);
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
 
@@ -34,6 +36,7 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
           <Groups
             onClick={(chat: IChat) => {
               ChatManagement.toFirst(chat.group).then(() => {
+                setCurrentGroup && setCurrentGroup(chat.group.id);
                 router.replace("/chat?id=" + chat.group.id);
                 onCacle();
               });
@@ -46,6 +49,7 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
           onClick={(e) => {
             e.stopPropagation();
             ChatManagement.createChat().then((v) => {
+              setCurrentGroup && setCurrentGroup(v.group.id);
               router.replace("/chat?id=" + v.group.id);
               onCacle();
             });

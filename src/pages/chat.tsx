@@ -25,16 +25,23 @@ export default function Page() {
   const router = useRouter();
   const { id: groupId } = router.query;
   const { token } = theme.useToken();
-  const { bgConfig, loadingMsgs } = useContext(ChatContext);
+  const { bgConfig, loadingMsgs, currentGroup } = useContext(ChatContext);
   const [loading, setLoading] = useState(false);
   const [navList, setNavList] = useState([]);
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
+  const [currGroupId, setGroupId] = useState(groupId);
   const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
     chatMgt.getActivityTopic()
   );
   const { reloadService } = useService();
 
+  useEffect(() => {
+    setGroupId(groupId);
+  }, [groupId]);
+  useEffect(() => {
+    setGroupId(currentGroup);
+  }, [currentGroup]);
   useEffect(() => {
     if (typeof window == "undefined") return;
     setLoading(true);
@@ -42,8 +49,8 @@ export default function Page() {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return setLoading(false);
       let selectChat = chats[0];
-      if (groupId)
-        selectChat = chats.find((f) => f.group.id == groupId) || selectChat;
+      if (currGroupId)
+        selectChat = chats.find((f) => f.group.id == currGroupId) || selectChat;
       BgImageStore.getInstance()
         .getBgImage()
         .then((res) => {
@@ -55,7 +62,7 @@ export default function Page() {
       initTokenStore().then(() => {
         reloadService(selectChat, KeyValueData.instance());
       });
-      if (chatMgt.group.id == groupId) return setLoading(false);
+      if (chatMgt.group.id == currGroupId) return setLoading(false);
       if (!selectChat.topics.length)
         await ChatManagement.loadTopics(selectChat);
       const newChatMgt = new ChatManagement(selectChat);
@@ -74,12 +81,13 @@ export default function Page() {
         setLoading(false);
       }, 500);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId]);
+  }, [chatMgt.group.id, currGroupId, reloadService]);
 
   return (
     <ChatContext.Provider
       value={{
+        currentGroup: chatMgt.group.id,
+        setCurrentGroup: setGroupId,
         chatMgt: chatMgt,
         setChat: (chat: IChat) => {
           setChatMgt(new ChatManagement(chat));
@@ -136,7 +144,7 @@ export default function Page() {
         </SkipExport>
         <Head>
           <title>
-            {appManifest.name} {chatMgt.group.name}
+            {(appManifest.name || "") + " " + (chatMgt.group.name || "")}
           </title>
         </Head>
         <Spin

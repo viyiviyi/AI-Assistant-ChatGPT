@@ -27,11 +27,9 @@ import {
   theme,
   Tooltip
 } from "antd";
-import { TextAreaRef } from "antd/es/input/TextArea";
 import copy from "copy-to-clipboard";
 import Image from "next/image";
 import React, {
-  createRef,
   CSSProperties,
   useCallback,
   useContext,
@@ -100,11 +98,7 @@ export const MessageItem = ({
   }, [renderMessage, msg.id, msg]);
 
   const saveMsg = useCallback(
-    async (
-      msg: Message,
-      messageText: string,
-      ctxRole: CtxRole
-    ) => {
+    async (msg: Message, messageText: string, ctxRole: CtxRole) => {
       const isReloadNav =
         /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
       msg.text = messageText;
@@ -155,11 +149,7 @@ export const MessageItem = ({
         <SkipExport>
           <SaveOutlined
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              setTimeout(() => {
-                saveMsg(msg, messageText.text, ctxRole);
-              }, 50)
-            }
+            onClick={() => saveMsg(msg, messageText.text, ctxRole)}
             style={{ paddingLeft: 16 }}
           />
         </SkipExport>
@@ -290,9 +280,7 @@ export const MessageItem = ({
         <Button.Group size="small">
           <Button
             onClick={() => {
-              setTimeout(() => {
-                saveMsg(msg, messageText.text, ctxRole);
-              }, 50);
+              saveMsg(msg, messageText.text, ctxRole);
             }}
           >
             {"保存"}
@@ -326,9 +314,7 @@ export const MessageItem = ({
               onKeyDown={(e) => {
                 if (e.key === "s" && e.ctrlKey) {
                   e.preventDefault();
-                  setTimeout(() => {
-                    saveMsg(msg, messageText.text, ctxRole);
-                  }, 50);
+                  saveMsg(msg, messageText.text, ctxRole);
                 }
                 if (e.key === "Tab") {
                   e.preventDefault();

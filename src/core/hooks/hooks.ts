@@ -145,7 +145,7 @@ export function useSendMessage(chat: ChatManagement) {
         current: chat,
       };
       let isFirst = true;
-      let save = createThrottleAndDebounce(async (text, isEnd) => {
+      let save = createThrottleAndDebounce((text, isEnd) => {
         result.text = text;
         chat.pushMessage(result, idx + 1).then((r) => {
           result = r;
@@ -235,7 +235,7 @@ export function usePushMessage(chat: ChatManagement) {
      * @param text 内容
      * @param idx 目标索引
      * @param topic
-     * @param role
+     * @param role [消息的角色，是否发送网络请求]
      * @param pushCallback
      * @returns
      */
@@ -250,6 +250,7 @@ export function usePushMessage(chat: ChatManagement) {
       text = text.trim();
       const aiService = aiServices.current;
       if (!text && !aiService?.customContext && aiService?.history) {
+        // 当历史记录由服务器保存，且没有上下文时，获取历史记录
         await getHistory(topic);
         return;
       }

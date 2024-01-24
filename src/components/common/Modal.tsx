@@ -83,7 +83,7 @@ export const Modal = ({
           ...style,
         }}
         width={width}
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
         open={open}
       >
         <div

@@ -207,7 +207,7 @@ export function InputUtil() {
             closable={false}
             width={Math.min(screenSize.width - 40, 400)}
             key={"nav_drawer"}
-            bodyStyle={{ padding: "1em 0" }}
+            styles={{ body: { padding: "1em 0" } }}
             open={showNav}
             onClose={() => {
               setShowNav(false);

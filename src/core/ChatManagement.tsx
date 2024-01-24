@@ -261,6 +261,8 @@ export class ChatManagement {
     let virtualRole = this.virtualRole;
     if (topic) {
       let messages = [...topic.messages];
+      if (index > -1) messages = messages.slice(0, index);
+      else messages = [];
       messages.unshift(
         ...ChatManagement.parseSetting(
           topic.virtualRole?.filter((v) => !v.postposition && v.autoCtx)
@@ -319,8 +321,6 @@ export class ChatManagement {
           };
         })
       );
-      if (index > -1) messages = messages.slice(0, index);
-      else messages = [];
       let ctxCount =
         topic.overrideSettings?.msgCount === undefined
           ? this.gptConfig.msgCount
@@ -347,6 +347,7 @@ export class ChatManagement {
         });
       });
     }
+    let ctxContent = history.map((v) => v.content).join(" \n");
     // 置顶助理全局配置
     let ctx: Array<{
       role: CtxRole;
@@ -374,8 +375,9 @@ export class ChatManagement {
           : []),
         // 助理设定
         ...ChatManagement.parseSetting(
-          virtualRole.settings.filter((v) => !v.postposition),
-          topic.overrideVirtualRole
+          virtualRole.settings.filter((v) => !v.postposition && !v.autoCtx),
+          topic.overrideVirtualRole,
+          ctxContent
         ).map((v) => {
           return {
             role: v.role,
@@ -385,7 +387,9 @@ export class ChatManagement {
         }),
         // 话题内设定
         ...ChatManagement.parseSetting(
-          topic.virtualRole?.filter((v) => !v.postposition)
+          topic.virtualRole?.filter((v) => !v.postposition && !v.autoCtx),
+          undefined,
+          ctxContent
         ).map((v) => {
           return {
             role: v.role,
@@ -397,7 +401,9 @@ export class ChatManagement {
         ...history,
         // 话题内后置设定
         ...ChatManagement.parseSetting(
-          topic.virtualRole?.filter((v) => v.postposition)
+          topic.virtualRole?.filter((v) => v.postposition && !v.autoCtx),
+          undefined,
+          ctxContent
         ).map((v) => {
           return {
             role: v.role,
@@ -407,8 +413,9 @@ export class ChatManagement {
         }),
         // 后置设定
         ...ChatManagement.parseSetting(
-          virtualRole.settings.filter((v) => v.postposition),
-          topic.overrideVirtualRole
+          virtualRole.settings.filter((v) => v.postposition && !v.autoCtx),
+          topic.overrideVirtualRole,
+          ctxContent
         ).map((v) => {
           return {
             role: v.role,
@@ -441,6 +448,12 @@ export class ChatManagement {
       role: CtxRole;
       content: string;
     }[] = [];
+    function calcChecked(item: VirtualRoleSettingItem): boolean {
+      if (!ctxTxt) return true;
+      if (!item.keyWords || item.keyWords.length == 0) return true;
+      let isDynamic = new RegExp(item.keyWords.join("|")).test(ctxTxt);
+      return isDynamic;
+    }
     inputSettings
       .filter((v) =>
         overrideCheck
@@ -453,17 +466,9 @@ export class ChatManagement {
             ? Extensions.getExtension(v.extensionId)?.getSettings() || v
             : v) as VirtualRoleSetting
       )
-      .filter((f) => {
-        if (f.autoCtx) {
-          return false;
-        } else {
-          return true;
-        }
-      })
       .forEach((v) => {
         let overrideCtx = overrideCheck?.find((f) => f.key == v.key);
         let lastSetting: VirtualRoleSettingItem | undefined = undefined;
-        let hasDynamicItem = false;
         v.ctx
           .map((c) => ({
             ...c,
@@ -471,28 +476,23 @@ export class ChatManagement {
               ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
               : c.checked,
           }))
-          .filter((f) => {
-            if (!ctxTxt) return;
-            if (!v.dynamic) return true;
-            if (!f.keyWords || f.keyWords.length == 0) return true;
-            let isDynamic = new RegExp(f.keyWords.join("|")).test(ctxTxt);
-            hasDynamicItem = hasDynamicItem || isDynamic;
-            return isDynamic;
-          })
           .forEach((c) => {
-            if (v.dynamic && !hasDynamicItem) return;
             if (c.role) {
               if (lastSetting && lastSetting.checked) {
                 settings.push(lastSetting as any);
               }
               lastSetting = { ...c, role: c.role! };
             } else {
-              if (c.checked && lastSetting) {
+              if (c.checked && (!v.dynamic || calcChecked(c)) && lastSetting) {
                 lastSetting.content += "\n" + c.content;
               }
             }
           });
-        if (lastSetting && (lastSetting as any).checked)
+        if (
+          lastSetting &&
+          (lastSetting as any).checked &&
+          (!v.dynamic || calcChecked(lastSetting))
+        )
           settings.push(lastSetting);
       });
     return settings;
@@ -975,6 +975,8 @@ let context = {
   loadingMsgs: {} as { [key: string]: { stop: () => void } },
   navList: [],
   reloadNav: (topic: TopicMessage) => {},
+  currentGroup: "",
+  setCurrentGroup: (groupId: string) => {},
   /**
   这个参数是用来让首页正常渲染的，请不要随便将值设置为 true , 因为会导致渲染全部的消息（包括隐藏的）
   */

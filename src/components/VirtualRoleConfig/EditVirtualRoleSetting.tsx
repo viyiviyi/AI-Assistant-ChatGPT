@@ -2,7 +2,11 @@ import { getUuid } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { VirtualRoleSettingItem } from "@/Models/VirtualRoleSettingItem";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  QuestionOutlined
+} from "@ant-design/icons";
 
 import {
   Button,
@@ -15,7 +19,8 @@ import {
   Select,
   Space,
   Tag,
-  theme
+  theme,
+  Tooltip
 } from "antd";
 import copy from "copy-to-clipboard";
 import { useCallback, useEffect, useState } from "react";
@@ -39,7 +44,6 @@ const ContentItem = ({
   const [role, setRole] = useState(item.role);
   const [checked, setChecked] = useState(item.checked);
   const [inputValue, setInputValue] = useState("");
-  const [zone, setZone] = useState([]);
   useEffect(() => {
     setText(item.content);
     setRole(item.role);
@@ -110,6 +114,7 @@ const ContentItem = ({
         <Space size={[0, 8]} wrap>
           {item.keyWords?.map((v, idx) => (
             <Tag
+              onMouseDown={(e) => e.preventDefault()}
               key={v}
               closable={true}
               onClose={(e) => {
@@ -120,45 +125,40 @@ const ContentItem = ({
             </Tag>
           ))}
           <Input
-            type="text"
+            type="search"
+            enterKeyHint={"enter"}
             size="small"
+            autoCorrect="off"
+            autoCapitalize="off"
             placeholder={"关键词"}
+            autoFocus={true}
             style={{
-              width: 64,
-              height: 22,
-              marginInlineEnd: 8,
-              verticalAlign: "top",
+              height: 30,
             }}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
+                if (!inputValue) return;
                 Array.isArray(item.keyWords)
                   ? item.keyWords.push(inputValue)
                   : (item.keyWords = [inputValue]);
+                item.keyWords = Array.from(new Set(item.keyWords));
                 setInputValue("");
               }
             }}
           />
-          {/* <Tag.CheckableTag
-            onClick={(e) => e.stopPropagation()}
-            checked={Array.isArray(item.keyWords)}
-            onChange={(checked: boolean) => {
-              item.keyWords = checked ? [] : undefined;
-              setZone([]);
-            }}
+          <Tooltip
+            trigger={"click"}
+            title="关键词用于自动选中设定，仅在设定开启【自动】且勾选时生效"
           >
-            {"关键词"}
-            <span onClick={(e) => e.stopPropagation()}>
-              <Tooltip
-                trigger={"click"}
-                title="关键词用于自动选中设定，仅在设定开启【自动】且勾选时生效"
-              >
-                <QuestionOutlined />
-              </Tooltip>
-            </span>
-          </Tag.CheckableTag> */}
+            <QuestionOutlined
+              style={{
+                paddingLeft: 10,
+              }}
+            />
+          </Tooltip>
         </Space>
       </div>
       <Form.Item
@@ -313,6 +313,8 @@ export function EditVirtualRoleSetting({
         </Form.Item>
         <Form.Item style={{ marginBottom: 10 }}>
           <Input.Search
+            type={"search"}
+            enterKeyHint="search"
             placeholder={"搜索关键字"}
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}

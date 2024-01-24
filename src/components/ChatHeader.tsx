@@ -39,7 +39,7 @@ export const ChatHeader = () => {
         padding: "10px",
         height: 52,
         position: "relative",
-        color:token.colorText,
+        color: token.colorText,
         borderRadius:
           "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",
         backgroundColor: token.colorFillContent,
@@ -70,7 +70,7 @@ export const ChatHeader = () => {
         closable={false}
         width={Math.min(screenSize.width - 40, 400)}
         key={"search_nav_drawer"}
-        bodyStyle={{ padding: "1em 0" }}
+        styles={{ body: { padding: "1em 0" } }}
         open={openSearch}
         maskStyle={{ backgroundColor: "#0000" }}
         onClose={() => {
