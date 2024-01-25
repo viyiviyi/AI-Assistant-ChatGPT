@@ -23,7 +23,7 @@ import {
   Tooltip
 } from "antd";
 import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DragItem, DragList } from "../common/DragList";
 import { Hidden } from "../common/Hidden";
 import { Modal } from "../common/Modal";
@@ -199,6 +199,7 @@ export function EditVirtualRoleSetting({
   allTags: string[];
   disabledEdit?: boolean;
 }) {
+  item = useMemo(() => ({ ...item }),[item]);
   const [tags, setTags] = useState<string[]>(item.tags);
   const { token } = theme.useToken();
   const [filterText, setFilterText] = useState("");
@@ -310,6 +311,43 @@ export function EditVirtualRoleSetting({
               </Button>
             </Hidden>
           </Button.Group>
+          <span style={{ marginLeft: 30 }}></span>
+          <Tag.CheckableTag
+            onClick={(e) => e.stopPropagation()}
+            checked={item.autoCtx || false}
+            onChange={(checked: boolean) => {
+              item.autoCtx = checked;
+              setTags([...tags]);
+            }}
+          >
+            {"自动"}
+            <span onClick={(e) => e.stopPropagation()}>
+              <Tooltip
+                trigger={"click"}
+                title="开启后将会作为上下文，受到上下文数量限制，一般用于第一条引导性设定。"
+              >
+                <QuestionOutlined />
+              </Tooltip>
+            </span>
+          </Tag.CheckableTag>
+          <Tag.CheckableTag
+            onClick={(e) => e.stopPropagation()}
+            checked={item.dynamic || false}
+            onChange={(checked: boolean) => {
+              item.dynamic = checked;
+              setTags([...tags]);
+            }}
+          >
+            {"动态"}
+            <span onClick={(e) => e.stopPropagation()}>
+              <Tooltip
+                trigger={"click"}
+                title="开启动态设定后，仅当设定明细内至少能匹配到一个关键词时设定才会被发送。"
+              >
+                <QuestionOutlined />
+              </Tooltip>
+            </span>
+          </Tag.CheckableTag>
         </Form.Item>
         <Form.Item style={{ marginBottom: 10 }}>
           <Input.Search

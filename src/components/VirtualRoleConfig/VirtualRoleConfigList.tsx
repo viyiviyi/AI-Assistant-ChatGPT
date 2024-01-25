@@ -3,8 +3,7 @@ import { getUuid } from "@/core/utils/utils";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import {
   DeleteOutlined,
-  PlusOutlined,
-  QuestionOutlined
+  PlusOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -15,9 +14,7 @@ import {
   Popconfirm,
   Space,
   Tag,
-  theme,
-  Tooltip,
-  Typography
+  theme, Typography
 } from "antd";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { DragItem, DragList } from "../common/DragList";
@@ -192,42 +189,6 @@ export const VirtualRoleConfigList = ({
                 ))}
                 {item.title}
               </Typography.Text>
-              <Tag.CheckableTag
-                onClick={(e) => e.stopPropagation()}
-                checked={item.autoCtx || false}
-                onChange={(checked: boolean) => {
-                  item.autoCtx = checked;
-                  saveSettings((v) => [...v]);
-                }}
-              >
-                {"自动"}
-                <span onClick={(e) => e.stopPropagation()}>
-                  <Tooltip
-                    trigger={"click"}
-                    title="开启后将会作为上下文，受到上下文数量限制，一般用于第一条引导性设定。"
-                  >
-                    <QuestionOutlined />
-                  </Tooltip>
-                </span>
-              </Tag.CheckableTag>
-              <Tag.CheckableTag
-                onClick={(e) => e.stopPropagation()}
-                checked={item.dynamic || false}
-                onChange={(checked: boolean) => {
-                  item.dynamic = checked;
-                  saveSettings((v) => [...v]);
-                }}
-              >
-                {"动态"}
-                <span onClick={(e) => e.stopPropagation()}>
-                  <Tooltip
-                    trigger={"click"}
-                    title="开启动态设定后，仅当设定明细内至少能匹配到一个关键词时设定才会被发送。"
-                  >
-                    <QuestionOutlined />
-                  </Tooltip>
-                </span>
-              </Tag.CheckableTag>
             </div>
             <Typography.Text
               style={{ width: "100%" }}
