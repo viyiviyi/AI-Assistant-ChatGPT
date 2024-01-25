@@ -31,7 +31,7 @@ export function jsonToSetting(jsonData: {
         key: getUuid(),
         role: undefined,
         content: v.content,
-        checked: !v.keys || !v.keys.length,
+        checked: true,
         keyWords: v.keys,
       })) || [];
   let word_after_char =
@@ -42,18 +42,18 @@ export function jsonToSetting(jsonData: {
         key: getUuid(),
         role: undefined,
         content: v.content,
-        checked: !v.keys || !v.keys.length,
+        checked: true,
         keyWords: v.keys,
       })) || [];
   let lorebooks =
     jsonData.character_book?.entries
-      ?.filter((f) => f.position == "0")
+      ?.filter((f) => f.position != "before_char" && f.position != "after_char")
       .sort((l, r) => l.extensions.position - r.extensions.position)
       .map((v) => ({
         key: getUuid(),
         role: undefined,
         content: v.content,
-        checked: !v.keys || !v.keys.length,
+        checked: true,
         keyWords: v.keys,
       })) || [];
   let ls: VirtualRoleSetting[] = [
@@ -225,10 +225,31 @@ export function jsonToSetting(jsonData: {
     },
     {
       key: getUuid(),
+      extensionId: "chub.worldOther",
+      checked: lorebooks.length > 0,
+      tags: ["Chub"],
+      title: "世界设定集",
+      dynamic: true,
+      ctx: [
+        {
+          key: getUuid(),
+          role: "system",
+          content: `[Details of the fictional world the RP is set in:`,
+          checked: true,
+        },
+        ...lorebooks,
+        {
+          key: getUuid(),
+          role: undefined,
+          content: `]`,
+          checked: true,
+        },
+      ],
+    },
+    {
+      key: getUuid(),
       extensionId: "chub.worldInfoBefore",
-      checked:
-        word_befor_char.length > 0 &&
-        word_befor_char.filter((f) => f.checked).length > 0,
+      checked: word_befor_char.length > 0,
       tags: ["Chub"],
       title: "世界设定集",
       dynamic: true,
@@ -419,9 +440,7 @@ export function jsonToSetting(jsonData: {
     {
       key: getUuid(),
       extensionId: "chub.worldInfoAfter",
-      checked:
-        word_after_char.length > 0 &&
-        word_after_char.filter((f) => f.checked).length > 0,
+      checked: word_after_char.length > 0,
       tags: ["Chub"],
       title: "后置世界设定集",
       dynamic: true,
@@ -501,7 +520,7 @@ export function jsonToSetting(jsonData: {
     {
       key: getUuid(),
       extensionId: "chub.FirstMes",
-      checked: false,
+      checked: true,
       title: "第一条消息",
       tags: ["Chub"],
       autoCtx: true,
@@ -608,4 +627,53 @@ export function jsonToSetting(jsonData: {
     name: jsonData.name || "助理",
     setting: ls,
   };
+}
+
+export function readLorebook(jsonData: {
+  entries: {
+    [key: string]: {
+      content: string;
+      disable: boolean;
+      keys?: [];
+      key?: [];
+      order: number;
+    };
+  };
+}): VirtualRoleSetting[] {
+  let lorebooks =
+    Object.values(jsonData.entries)
+      .sort((l, r) => l.order - r.order)
+      .map((v) => ({
+        key: getUuid(),
+        role: undefined,
+        content: v.content,
+        checked: true,
+        keyWords: v.keys || v.key,
+      })) || [];
+
+  return [
+    {
+      key: getUuid(),
+      extensionId: "chub.worldbooks",
+      checked: lorebooks.length > 0,
+      tags: ["Chub"],
+      title: "世界书",
+      dynamic: true,
+      ctx: [
+        {
+          key: getUuid(),
+          role: "system",
+          content: `[Details of the fictional world the RP is set in:`,
+          checked: true,
+        },
+        ...lorebooks,
+        {
+          key: getUuid(),
+          role: undefined,
+          content: `]`,
+          checked: true,
+        },
+      ],
+    },
+  ];
 }

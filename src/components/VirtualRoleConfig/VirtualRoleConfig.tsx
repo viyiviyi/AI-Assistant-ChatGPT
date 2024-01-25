@@ -1,7 +1,7 @@
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
-import { jsonToSetting } from "@/core/utils/chub";
+import { jsonToSetting, readLorebook } from "@/core/utils/chub";
 import { downloadJson, getUuid } from "@/core/utils/utils";
 import { NameMacrosPrompt } from "@/middleware/scripts/NameMacrosPrompt.middleware";
 import { VirtualRole } from "@/Models/DataBase";
@@ -136,7 +136,7 @@ export const VirtualRoleConfig = ({
                 "chub.Continue",
                 "chub.jailbreak",
                 "chub.RequiresChinese",
-                "chub.ContentTone"
+                "chub.ContentTone",
               ].includes(v.extensionId)
             ) {
               userVariableSetting[v.extensionId] = v;
@@ -495,40 +495,56 @@ export const VirtualRoleConfig = ({
                           </Upload>
                         ),
                       },
-                      // {
-                      //   key: "5",
-                      //   label: (
-                      //     <Upload
-                      //       accept=".json"
-                      //       {...{
-                      //         beforeUpload(file, FileList) {
-                      //           const fr = new FileReader();
-                      //           fr.onloadend = (e) => {
-                      //             if (e.target?.result) {
-                      //               try {
-                      //                 let jsonData = JSON.parse(
-                      //                   e.target.result.toString()
-                      //                 );
-                      //                 if (typeof jsonData == "string")
-                      //                   jsonData = JSON.parse(jsonData);
-                      //                 let charData = jsonToSetting(jsonData);
-                      //                 loadChubBook(charData);
-                      //               } catch (error) {
-                      //                 messageApi.error("文件格式错误");
-                      //               }
-                      //             }
-                      //           };
-                      //           fr.readAsText(file);
-                      //           return false;
-                      //         },
-                      //         defaultFileList: [],
-                      //         showUploadList: false,
-                      //       }}
-                      //     >
-                      //       {"导入世界书json"}
-                      //     </Upload>
-                      //   ),
-                      // },
+                      {
+                        key: "5",
+                        label: (
+                          <Upload
+                            accept=".json"
+                            {...{
+                              beforeUpload(file, FileList) {
+                                const fr = new FileReader();
+                                fr.onloadend = (e) => {
+                                  if (e.target?.result) {
+                                    try {
+                                      let jsonData = JSON.parse(
+                                        e.target.result.toString()
+                                      );
+                                      if (typeof jsonData == "string")
+                                        jsonData = JSON.parse(jsonData);
+                                      let charData = readLorebook(jsonData);
+                                      setVirtualRole_settings((settings) => {
+                                        charData.forEach((v) => {
+                                          var f = settings.find(
+                                            (f) =>
+                                              f.extensionId == v.extensionId
+                                          );
+                                          if (f) {
+                                            Object.assign(f, v);
+                                          } else {
+                                            settings.unshift({
+                                              ...v,
+                                              edit: false,
+                                            });
+                                          }
+                                        });
+                                        return [...settings];
+                                      });
+                                    } catch (error) {
+                                      messageApi.error("文件格式错误");
+                                    }
+                                  }
+                                };
+                                fr.readAsText(file);
+                                return false;
+                              },
+                              defaultFileList: [],
+                              showUploadList: false,
+                            }}
+                          >
+                            {"导入世界书json"}
+                          </Upload>
+                        ),
+                      },
                       {
                         key: "6",
                         label: (
