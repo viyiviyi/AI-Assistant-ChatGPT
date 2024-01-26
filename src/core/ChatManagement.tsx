@@ -9,7 +9,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -18,7 +18,7 @@ import React from "react";
 import { BgConfig } from "./BgImageStore";
 import {
   getDbInstance as getInstance,
-  setSkipDbSave
+  setSkipDbSave,
 } from "./db/IndexDbInstance";
 import { getUuid } from "./utils/utils";
 
@@ -247,7 +247,53 @@ export class ChatManagement {
       content: string;
       name: string;
     }>;
+    historyBefore: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
     history: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
+    historyAfter: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
+  } {
+    return ChatManagement.getAskContext(
+      this.virtualRole,
+      topic,
+      index,
+      this.gptConfig.msgCount,
+      this.config.enableVirtualRole
+    );
+  }
+  static getAskContext(
+    virtualRole: VirtualRole,
+    topic: TopicMessage,
+    index: number = -1,
+    historyLength: number,
+    enableVirtualRole: boolean
+  ): {
+    allCtx: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
+    historyBefore: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
+    history: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }>;
+    historyAfter: Array<{
       role: CtxRole;
       content: string;
       name: string;
@@ -258,7 +304,6 @@ export class ChatManagement {
       content: string;
       name: string;
     }> = [];
-    let virtualRole = this.virtualRole;
     if (topic) {
       let messages = [...topic.messages];
       if (index > -1) messages = messages.slice(0, index);
@@ -323,7 +368,7 @@ export class ChatManagement {
       );
       let ctxCount =
         topic.overrideSettings?.msgCount === undefined
-          ? this.gptConfig.msgCount
+          ? historyLength
           : topic.overrideSettings?.msgCount;
       if (ctxCount > 0 && messages.length > ctxCount) {
         // 不在记忆范围内 且勾选了的消息
@@ -354,13 +399,22 @@ export class ChatManagement {
       content: string;
       name: string;
     }> = [...history];
+    let historyBefore: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }> = [];
+    let historyAfter: Array<{
+      role: CtxRole;
+      content: string;
+      name: string;
+    }> = [];
     if (
       topic.overrideSettings?.useConfig === undefined
-        ? this.config.enableVirtualRole
+        ? enableVirtualRole
         : topic.overrideSettings?.useConfig
     ) {
-      ctx = [
-        // 助理简介
+      historyBefore = [
         ...(virtualRole.bio
           ? [
               {
@@ -397,9 +451,8 @@ export class ChatManagement {
             name: this.getNameByRole(v.role, virtualRole),
           };
         }),
-        // 上下文
-        ...history,
-        // 话题内后置设定
+      ];
+      historyAfter = [
         ...ChatManagement.parseSetting(
           topic.virtualRole?.filter((v) => v.postposition && !v.autoCtx),
           undefined,
@@ -420,20 +473,28 @@ export class ChatManagement {
           return {
             role: v.role,
             content: v.content,
-            name: this.getNameByRole(v.role, virtualRole),
+            name: ChatManagement.getNameByRole(v.role, virtualRole),
           };
         }),
       ];
+      ctx = [
+        // 助理简介
+        ...historyBefore,
+        // 上下文
+        ...history,
+        // 话题内后置设定
+        ...historyAfter,
+      ];
     }
-    return { allCtx: ctx, history };
+    return { allCtx: ctx, historyBefore, history, historyAfter };
   }
 
-  getNameByRole(role?: CtxRole, virtualRole?: VirtualRole) {
+  static getNameByRole(role?: CtxRole, virtualRole?: VirtualRole, user?: User) {
     return role === "system"
       ? "system"
       : role === "assistant"
-      ? (virtualRole || this.virtualRole).enName || "assistant"
-      : this.user.enName || "user";
+      ? virtualRole?.enName || "assistant"
+      : user?.enName || "user";
   }
   static parseSetting(
     inputSettings?: VirtualRoleSetting[],
