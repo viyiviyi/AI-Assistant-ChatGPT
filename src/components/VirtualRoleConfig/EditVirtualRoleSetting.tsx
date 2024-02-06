@@ -320,7 +320,7 @@ export function EditVirtualRoleSetting({
               setTags([...tags]);
             }}
           >
-            {"自动"}
+            {"受限"}
             <span onClick={(e) => e.stopPropagation()}>
               <Tooltip
                 trigger={"click"}
