@@ -131,7 +131,7 @@ const ContentItem = ({
             autoCorrect="off"
             autoCapitalize="off"
             placeholder={"关键词"}
-            autoFocus={true}
+            // autoFocus={true}
             style={{
               height: 30,
             }}
