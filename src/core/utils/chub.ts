@@ -23,6 +23,8 @@ export function jsonToSetting(jsonData: {
   name?: string;
   avatar?: string;
 }): { setting: VirtualRoleSetting[]; avatar: string; name: string } {
+  if (!jsonData.description && (jsonData as any)["data"])
+    jsonData = (jsonData as any)["data"];
   let word_befor_char =
     jsonData.character_book?.entries
       ?.filter((f) => f.position == "before_char")
@@ -623,7 +625,7 @@ export function jsonToSetting(jsonData: {
     },
   ];
   return {
-    avatar: jsonData.avatar || "",
+    avatar: "https://proxy.eaias.com/" + jsonData.avatar || "",
     name: jsonData.name || "助理",
     setting: ls,
   };

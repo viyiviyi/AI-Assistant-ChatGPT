@@ -108,7 +108,7 @@ export const VirtualRoleConfig = ({
       replace = false
     ) => {
       if (charData) {
-        // setVirtualRole_Avatar(charData.avatar);
+        setVirtualRole_Avatar(charData.avatar);
         form.setFieldValue("virtualRole_name", charData.name);
         if (
           chatMgt?.config.middleware &&
