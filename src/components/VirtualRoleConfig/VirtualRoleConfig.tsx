@@ -447,7 +447,7 @@ export const VirtualRoleConfig = ({
                                       if (typeof jsonData == "string")
                                         jsonData = JSON.parse(jsonData);
                                       let charData = jsonToSetting(jsonData);
-                                      if (!jsonData.name)
+                                      if (!charData.name)
                                         return messageApi.error("数据不正确");
                                       loadChubData(charData);
                                     } catch (error) {
@@ -484,7 +484,7 @@ export const VirtualRoleConfig = ({
                                       if (typeof jsonData == "string")
                                         jsonData = JSON.parse(jsonData);
                                       let charData = jsonToSetting(jsonData);
-                                      if (!jsonData.name)
+                                      if (!charData.name)
                                         return messageApi.error("数据不正确");
                                       loadChubData(charData, true);
                                     } catch (error) {

@@ -213,7 +213,7 @@ export class QWen implements IAiService {
                   }));
               } catch (error) {
                 console.error(error);
-                console.log("出错的内容：", line);
+                console.error("出错的内容：", line);
                 continue;
               }
             }
