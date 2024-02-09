@@ -137,6 +137,14 @@ const ContentItem = ({
             }}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onBlur={(e) => {
+              if (!inputValue) return;
+              Array.isArray(item.keyWords)
+                ? item.keyWords.push(inputValue)
+                : (item.keyWords = [inputValue]);
+              item.keyWords = Array.from(new Set(item.keyWords));
+              setInputValue("");
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
@@ -199,7 +207,7 @@ export function EditVirtualRoleSetting({
   allTags: string[];
   disabledEdit?: boolean;
 }) {
-  item = useMemo(() => ({ ...item }),[item]);
+  item = useMemo(() => ({ ...item }), [item]);
   const [tags, setTags] = useState<string[]>(item.tags);
   const { token } = theme.useToken();
   const [filterText, setFilterText] = useState("");

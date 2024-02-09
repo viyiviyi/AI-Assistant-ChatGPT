@@ -642,6 +642,13 @@ export function readLorebook(jsonData: {
     };
   };
 }): VirtualRoleSetting[] {
+  if (Array.isArray(jsonData.entries)) {
+    let entries = jsonData.entries;
+    jsonData.entries = {};
+    (entries as any as []).forEach((v, idx) => {
+      jsonData.entries["" + idx] = v;
+    });
+  }
   let lorebooks =
     Object.values(jsonData.entries)
       .sort((l, r) => l.order - r.order)

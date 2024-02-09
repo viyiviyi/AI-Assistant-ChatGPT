@@ -401,6 +401,8 @@ export const VirtualRoleConfig = ({
                                   let res: VirtualRole = JSON.parse(text);
                                   if (typeof res == "string")
                                     res = JSON.parse(res);
+                                  if (!res.name)
+                                    return messageApi.error("数据不正确");
                                   form.setFieldValue(
                                     "virtualRole_name",
                                     res?.name
@@ -418,6 +420,7 @@ export const VirtualRoleConfig = ({
                                     })) || []
                                   );
                                 } catch (err) {
+                                  console.error(err);
                                   messageApi.error("内容格式错误");
                                 }
                               });
@@ -444,8 +447,11 @@ export const VirtualRoleConfig = ({
                                       if (typeof jsonData == "string")
                                         jsonData = JSON.parse(jsonData);
                                       let charData = jsonToSetting(jsonData);
+                                      if (!jsonData.name)
+                                        return messageApi.error("数据不正确");
                                       loadChubData(charData);
                                     } catch (error) {
+                                      console.error(error);
                                       messageApi.error("文件格式错误");
                                     }
                                   }
@@ -478,8 +484,11 @@ export const VirtualRoleConfig = ({
                                       if (typeof jsonData == "string")
                                         jsonData = JSON.parse(jsonData);
                                       let charData = jsonToSetting(jsonData);
+                                      if (!jsonData.name)
+                                        return messageApi.error("数据不正确");
                                       loadChubData(charData, true);
                                     } catch (error) {
+                                      console.error(error);
                                       messageApi.error("文件格式错误");
                                     }
                                   }
@@ -491,7 +500,7 @@ export const VirtualRoleConfig = ({
                               showUploadList: false,
                             }}
                           >
-                            {"重置酒馆角色卡json"}
+                            {"使用酒馆角色卡json重置"}
                           </Upload>
                         ),
                       },
@@ -530,6 +539,7 @@ export const VirtualRoleConfig = ({
                                         return [...settings];
                                       });
                                     } catch (error) {
+                                      console.error(error);
                                       messageApi.error("文件格式错误");
                                     }
                                   }
@@ -561,6 +571,8 @@ export const VirtualRoleConfig = ({
                                       );
                                       if (typeof jsonData == "string")
                                         jsonData = JSON.parse(jsonData);
+                                      if (!jsonData.name)
+                                        return messageApi.error("数据不正确");
                                       form.setFieldValue(
                                         "virtualRole_name",
                                         jsonData?.name
