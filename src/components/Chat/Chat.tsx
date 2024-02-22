@@ -23,7 +23,7 @@ export const MessageContext = React.createContext({
   closeAll: false,
   cite: {} as Message | undefined,
   setOnlyOne: (b: boolean) => {},
-  setCloasAll: (b: boolean) => {},
+  setCloseAll: (b: boolean) => {},
   setCite: (msg: Message) => {},
 });
 
@@ -33,7 +33,7 @@ export const Chat = () => {
   const [cite, setCite] = useState<Message>();
   const [_, contextHolder] = message.useMessage();
   const [onlyOne, setOnlyOne] = useState(forceRender ? false : true);
-  const [closeAll, setCloasAll] = useState(false);
+  const [closeAll, setCloseAll] = useState(false);
   const screenSize = useScreenSize();
   const [showConfigs, setShowConfigs] = useState(false);
   const [showNav, setShowNav] = useState(true);
@@ -77,7 +77,7 @@ export const Chat = () => {
         onlyOne,
         setOnlyOne,
         closeAll,
-        setCloasAll,
+        setCloseAll: setCloseAll,
         cite,
         setCite,
       }}

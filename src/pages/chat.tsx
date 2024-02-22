@@ -95,14 +95,10 @@ export default function Page() {
         activityTopic,
         loadingMsgs,
         setActivityTopic: (topic?: TopicMessage) => {
-          if (topic) {
-            setActivityTopic(topic);
-            chatMgt.config.activityTopicId = topic.id;
-            chatMgt.saveConfig();
-          } else {
-            setActivityTopic(undefined);
-            chatMgt.config.activityTopicId = "";
-          }
+          if (topic?.id == activityTopic?.id) return;
+          setActivityTopic(topic);
+          chatMgt.config.activityTopicId = topic?.id || "";
+          chatMgt.saveConfig();
         },
         bgConfig: bgImg,
         setBgConfig(image) {

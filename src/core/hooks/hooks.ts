@@ -145,8 +145,8 @@ export function useSendMessage(chat: ChatManagement) {
         current: chat,
       };
       let isFirst = true;
-      let save = createThrottleAndDebounce((text, isEnd) => {
-        result.text = text;
+      let save = createThrottleAndDebounce((isEnd) => {
+        // result.text = text;
         chat.pushMessage(result, idx + 1).then((r) => {
           result = r;
         });
@@ -157,7 +157,7 @@ export function useSendMessage(chat: ChatManagement) {
             });
           });
         }
-      }, 1000);
+      }, 100);
       let { allCtx: ctx, history } = currentChat.current!.getAskContext(
         topic,
         idx + 1
@@ -200,12 +200,12 @@ export function useSendMessage(chat: ChatManagement) {
                 delete currentChat.current;
               });
           } else {
-            save(result.text);
+            save();
             reloadTopic(topic.id, result.id);
             scrollToBotton(currentPullMessage.id);
           }
           if (res.end) {
-            save(res.text);
+            save();
             delete loadingMsgs[result.id];
             delete loadingMessages[result.id];
             reloadTopic(topic.id, result.id);
@@ -277,7 +277,7 @@ export function usePushMessage(chat: ChatManagement) {
       }
       pushCallback(msg);
       if (skipRequest) return;
-      sendMessage(idx, topic);
+      await sendMessage(idx, topic);
     },
     [chat, reloadIndex, sendMessage, getHistory]
   );

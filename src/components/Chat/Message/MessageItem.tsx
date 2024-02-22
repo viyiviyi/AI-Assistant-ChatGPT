@@ -95,7 +95,7 @@ export const MessageItem = ({
     return () => {
       delete renderMessage[msg.id];
     };
-  }, [renderMessage, msg.id, msg]);
+  }, [renderMessage, msg]);
 
   const saveMsg = useCallback(
     async (msg: Message, messageText: string, ctxRole: CtxRole) => {

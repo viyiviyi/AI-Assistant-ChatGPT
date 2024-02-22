@@ -50,39 +50,42 @@ export const ChatMessage = () => {
   const [activityKey, setActivityKey] = useState<string[]>([
     chat.config.activityTopicId,
   ]);
-  const { onlyOne, closeAll, setCloasAll } = useContext(MessageContext);
+  const [topicId, setTopicId] = useState<string>();
+  const {
+    onlyOne,
+    closeAll,
+    setCloseAll: setCloasAll,
+  } = useContext(MessageContext);
   const [none, setNone] = useState([]);
   const onClickTopicTitle = useCallback(
     async (topic: TopicMessage) => {
-      let v = [...activityKey];
-      if (closeAll) {
-        v = [];
-        setCloasAll(false);
-      }
-      if (v.includes(topic.id)) {
-        v = v.filter((f) => f !== topic.id);
-        setActivityKey(v);
-        return;
-      }
-      v.push(topic.id);
-      setActivityKey(v);
+      setTopicId(topic.id);
       setActivityTopic(topic);
+      setCloasAll(false);
+      setActivityKey((v) => {
+        if (v.includes(topic.id)) {
+          return v.filter((v) => v != topic.id);
+        } else {
+          return [...v, topic.id];
+        }
+      });
     },
-    [activityKey, closeAll, setCloasAll, setActivityTopic]
+    [setActivityTopic, setCloasAll]
   );
-  const resetActivity = useCallback(
-    (activityTopic?: TopicMessage) => {
-      if (!activityTopic) return setNone([]);
-      if (closeAll) {
-        setCloasAll(false);
-        setActivityKey([activityTopic.id]);
-      } else if (!activityKey.includes(activityTopic.id)) {
-        setActivityKey((v) => [...v, activityTopic.id]);
-      }
-      if (onlyOne) reloadTopic(activityTopic.id);
-    },
-    [activityKey, closeAll, onlyOne, setCloasAll]
-  );
+  useEffect(() => {
+    if (closeAll) {
+      setActivityKey([]);
+    } else {
+      if (activityTopic && activityTopic.id != topicId)
+        setActivityKey((v) => {
+          if (v.includes(activityTopic.id)) {
+            return v.filter((v) => v != activityTopic.id);
+          } else {
+            return [...v, activityTopic.id];
+          }
+        });
+    }
+  }, [activityTopic, closeAll, topicId]);
   const handlerDelete = useCallback(
     (topic: TopicMessage) => {
       chat.removeTopic(topic!).then(() => {
@@ -100,10 +103,6 @@ export const ChatMessage = () => {
     },
     [activityKey, activityTopic, chat, reloadNav, setActivityTopic]
   );
-  useEffect(() => {
-    resetActivity(activityTopic);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activityTopic]);
 
   if (onlyOne) {
     let topic = activityTopic;

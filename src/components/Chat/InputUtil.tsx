@@ -12,9 +12,7 @@ import {
   AlignLeftOutlined,
   CaretLeftOutlined,
   CommentOutlined,
-  MessageOutlined,
-  PlusOutlined,
-  VerticalAlignBottomOutlined,
+  MessageOutlined, VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
 } from "@ant-design/icons";
@@ -47,8 +45,12 @@ export function InputUtil() {
     setActivityTopic,
     reloadNav,
   } = useContext(ChatContext);
-  const { onlyOne, setOnlyOne, closeAll, setCloasAll } =
-    useContext(MessageContext);
+  const {
+    onlyOne,
+    setOnlyOne,
+    closeAll,
+    setCloseAll: setCloasAll,
+  } = useContext(MessageContext);
   const screenSize = useScreenSize();
   const { token } = theme.useToken();
   const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
@@ -234,13 +236,17 @@ export function InputUtil() {
             ellipsis={true}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
-              setOnlyOne(!onlyOne);
+              if (onlyOne) {
+                setShowNav(true);
+              } else {
+                setOnlyOne(true);
+              }
             }}
           >
             {activityTopic?.name}
           </Typography.Text>
           <span style={{ flex: 1 }}></span>
-          <Button
+          {/* <Button
             shape="round"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {}}
@@ -248,7 +254,7 @@ export function InputUtil() {
             <SkipExport>
               <PlusOutlined />
             </SkipExport>
-          </Button>
+          </Button> */}
           <span style={{ marginLeft: 10 }}></span>
           <Button
             shape="round"

@@ -9,7 +9,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole,
+  VirtualRole
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -18,7 +18,7 @@ import React from "react";
 import { BgConfig } from "./BgImageStore";
 import {
   getDbInstance as getInstance,
-  setSkipDbSave,
+  setSkipDbSave
 } from "./db/IndexDbInstance";
 import { getUuid } from "./utils/utils";
 
@@ -97,16 +97,16 @@ export class ChatManagement {
       if (!groups.length) {
         await this.createGroup().then((v) => groups.push(v));
       }
-      const users = await getInstance().queryAll<User>({
+      const users = await getInstance()?.queryAll<User>({
         tableName: "User",
       });
-      const groupConfigs = await getInstance().queryAll<GroupConfig>({
+      const groupConfigs = await getInstance()?.queryAll<GroupConfig>({
         tableName: "GroupConfig",
       });
-      const virtualRoles = await getInstance().queryAll<VirtualRole>({
+      const virtualRoles = await getInstance()?.queryAll<VirtualRole>({
         tableName: "VirtualRole",
       });
-      const gptConfigs = await getInstance().queryAll<GptConfig>({
+      const gptConfigs = await getInstance()?.queryAll<GptConfig>({
         tableName: "GptConfig",
       });
       for (let i = 0; i < groups.length; i++) {
@@ -197,7 +197,7 @@ export class ChatManagement {
   static async loadMessage(topic: TopicMessage, onlyTitle = false) {
     // if (topic.loadAll) return;
     topic.loadAll = true;
-    let msgs = await getInstance().query<Message>({
+    let msgs = await getInstance()?.query<Message>({
       tableName: "Message",
       condition: (v) =>
         v.groupId == topic.groupId && v.topicId == topic.id && !v.deleteTime,
@@ -606,7 +606,7 @@ export class ChatManagement {
       t.name = name || t.name;
       t.cloudTopicId = cloudTopicId || t.cloudTopicId;
       t.updateTime = Date.now();
-      await getInstance().update_by_primaryKey<Topic>({
+      await getInstance()?.update_by_primaryKey<Topic>({
         tableName: "Topic",
         value: t.id,
         handle: (r) => {
@@ -620,7 +620,7 @@ export class ChatManagement {
     }
   }
   async saveConfig() {
-    await getInstance().update_by_primaryKey<GroupConfig>({
+    await getInstance()?.update_by_primaryKey<GroupConfig>({
       tableName: "GroupConfig",
       value: this.config.id,
       handle: (r) => {
@@ -631,7 +631,7 @@ export class ChatManagement {
     });
   }
   async saveUser() {
-    await getInstance().update_by_primaryKey<User>({
+    await getInstance()?.update_by_primaryKey<User>({
       tableName: "User",
       value: this.user.id,
       handle: (r) => {
@@ -642,7 +642,7 @@ export class ChatManagement {
     });
   }
   async saveGroup() {
-    await getInstance().update_by_primaryKey<Group>({
+    await getInstance()?.update_by_primaryKey<Group>({
       tableName: "Group",
       value: this.group.id,
       handle: (r) => {
@@ -653,7 +653,7 @@ export class ChatManagement {
     });
   }
   async saveVirtualRoleBio() {
-    await getInstance().update_by_primaryKey<VirtualRole>({
+    await getInstance()?.update_by_primaryKey<VirtualRole>({
       tableName: "VirtualRole",
       value: this.virtualRole.id,
       handle: (r) => {
@@ -664,7 +664,7 @@ export class ChatManagement {
     });
   }
   async saveGptConfig() {
-    await getInstance().update_by_primaryKey<GptConfig>({
+    await getInstance()?.update_by_primaryKey<GptConfig>({
       tableName: "GptConfig",
       value: this.gptConfig.id,
       handle: (r) => {
@@ -685,7 +685,7 @@ export class ChatManagement {
       name: name || "",
       createdAt: Date.now(),
     };
-    await getInstance().insert<Topic>({ tableName: "Topic", data });
+    await getInstance()?.insert<Topic>({ tableName: "Topic", data });
     return data;
   }
   static async createConfig(
@@ -701,7 +701,7 @@ export class ChatManagement {
       botType: "ChatGPT",
       middleware: [NameMacrosPrompt.key],
     };
-    await getInstance().insert<GroupConfig>({ tableName: "GroupConfig", data });
+    await getInstance()?.insert<GroupConfig>({ tableName: "GroupConfig", data });
     return data;
   }
   static async createUser(groupId: string, user?: User): Promise<User> {
@@ -710,7 +710,7 @@ export class ChatManagement {
       groupId,
       name: "用户",
     };
-    await getInstance().insert<User>({ tableName: "User", data });
+    await getInstance()?.insert<User>({ tableName: "User", data });
     return data;
   }
   static async createGroup(group?: Group): Promise<Group> {
@@ -721,7 +721,7 @@ export class ChatManagement {
       index: this.chatList.length,
       createTime: Date.now(),
     };
-    await getInstance().insert<Group>({ tableName: "Group", data });
+    await getInstance()?.insert<Group>({ tableName: "Group", data });
     return data;
   }
   static async createVirtualRoleBio(
@@ -735,7 +735,7 @@ export class ChatManagement {
       bio: ``,
       settings: [],
     };
-    await getInstance().insert<VirtualRole>({ tableName: "VirtualRole", data });
+    await getInstance()?.insert<VirtualRole>({ tableName: "VirtualRole", data });
     return data;
   }
   static async createGptConfig(
@@ -755,11 +755,11 @@ export class ChatManagement {
       presence_penalty: 0.7,
       frequency_penalty: 1.0,
     };
-    await getInstance().insert<GptConfig>({ tableName: "GptConfig", data });
+    await getInstance()?.insert<GptConfig>({ tableName: "GptConfig", data });
     return data;
   }
   static async createMessage(message: Message) {
-    await getInstance().insert<Message>({
+    await getInstance()?.insert<Message>({
       tableName: "Message",
       data: message,
     });
@@ -799,7 +799,7 @@ export class ChatManagement {
     if (message.id) {
       let msg = topic.messageMap[message.id]; //.messages.find((f) => f.id == message.id);
       if (msg) {
-        await getInstance().update_by_primaryKey<Message>({
+        await getInstance()?.update_by_primaryKey<Message>({
           tableName: "Message",
           value: msg.id,
           handle: (r) => {
@@ -831,7 +831,7 @@ export class ChatManagement {
       delete topic.messageMap[message.id];
     }
     if (this.config.enableSync) {
-      return getInstance().update_by_primaryKey<Message>({
+      return getInstance()?.update_by_primaryKey<Message>({
         tableName: "Message",
         value: message.id,
         handle: (r) => {
@@ -842,7 +842,7 @@ export class ChatManagement {
       });
     }
     if (message.id) {
-      return getInstance().delete_by_primaryKey({
+      return getInstance()?.delete_by_primaryKey({
         tableName: "Message",
         value: message.id,
       });
@@ -852,7 +852,7 @@ export class ChatManagement {
     const delIdx = this.topics.findIndex((f) => f.id == topic.id);
     if (delIdx > -1) {
       this.topics.splice(delIdx, 1);
-      await getInstance().delete_by_primaryKey({
+      await getInstance()?.delete_by_primaryKey({
         tableName: "Topic",
         value: topic.id,
       });
@@ -860,7 +860,7 @@ export class ChatManagement {
   }
   static async saveSort() {
     this.chatList.forEach((chat, idx) => {
-      getInstance().update_by_primaryKey<Group>({
+      getInstance()?.update_by_primaryKey<Group>({
         tableName: "Group",
         value: chat.group.id,
         handle: (r) => {
@@ -871,31 +871,31 @@ export class ChatManagement {
     });
   }
   static async remove(groupId: string, replace?: IChat) {
-    await getInstance().delete<User>({
+    await getInstance()?.delete<User>({
       tableName: "User",
       condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete<Group>({
+    await getInstance()?.delete<Group>({
       tableName: "Group",
       condition: (v) => v.id == groupId,
     });
-    await getInstance().delete<GroupConfig>({
+    await getInstance()?.delete<GroupConfig>({
       tableName: "GroupConfig",
       condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete<VirtualRole>({
+    await getInstance()?.delete<VirtualRole>({
       tableName: "VirtualRole",
       condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete<GptConfig>({
+    await getInstance()?.delete<GptConfig>({
       tableName: "GptConfig",
       condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete<Topic>({
+    await getInstance()?.delete<Topic>({
       tableName: "Topic",
       condition: (v) => v.groupId == groupId,
     });
-    await getInstance().delete<Message>({
+    await getInstance()?.delete<Message>({
       tableName: "Message",
       condition: (v) => v.groupId == groupId,
     });
