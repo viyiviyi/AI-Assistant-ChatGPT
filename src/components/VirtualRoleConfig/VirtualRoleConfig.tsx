@@ -47,7 +47,7 @@ export const VirtualRoleConfig = ({
   );
   const [user_Avatar, setUser_Avatar] = useState(chatMgt?.user.avatar);
   const { token } = theme.useToken();
-  const { setChat } = useContext(ChatContext);
+  const { setChat, activityTopic } = useContext(ChatContext);
   const [showInfo, setShowInfo] = useState(false);
   const screenSize = useScreenSize();
   const [form] = Form.useForm<{
@@ -74,30 +74,22 @@ export const VirtualRoleConfig = ({
   const [middlewares, setMiddlewares] = useState<string[]>(
     chatMgt?.config.middleware ?? []
   );
-  const loadChubBook = useCallback(
-    (charData: {
-      setting: VirtualRoleSetting[];
-      avatar: string;
-      name: string;
-    }) => {
-      setVirtualRole_settings((v) => {
-        return (currentSettings.current || v).map((s) => {
-          if (s.extensionId == "chub.lorebooks") {
-            let book = charData.setting.find(
-              (d) => d.extensionId == s.extensionId
-            );
-            if (book) {
-              return { ...book, edit: false };
-            } else {
-              return s;
-            }
-          }
-          return s;
-        });
+  const loadChubBook = useCallback((bookSettings: VirtualRoleSetting[]) => {
+    setVirtualRole_settings((settings) => {
+      bookSettings.forEach((v) => {
+        var f = settings.find((f) => f.extensionId == v.extensionId);
+        if (f) {
+          Object.assign(f, v);
+        } else {
+          settings.unshift({
+            ...v,
+            edit: false,
+          });
+        }
       });
-    },
-    [currentSettings]
-  );
+      return [...settings];
+    });
+  }, []);
   const loadChubData = useCallback(
     (
       charData: {
@@ -521,23 +513,7 @@ export const VirtualRoleConfig = ({
                                       if (typeof jsonData == "string")
                                         jsonData = JSON.parse(jsonData);
                                       let charData = readLorebook(jsonData);
-                                      setVirtualRole_settings((settings) => {
-                                        charData.forEach((v) => {
-                                          var f = settings.find(
-                                            (f) =>
-                                              f.extensionId == v.extensionId
-                                          );
-                                          if (f) {
-                                            Object.assign(f, v);
-                                          } else {
-                                            settings.unshift({
-                                              ...v,
-                                              edit: false,
-                                            });
-                                          }
-                                        });
-                                        return [...settings];
-                                      });
+                                      loadChubBook(charData);
                                     } catch (error) {
                                       console.error(error);
                                       messageApi.error("文件格式错误");
