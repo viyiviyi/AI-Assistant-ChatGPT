@@ -153,7 +153,7 @@ export const Setting = ({
   async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    chatMgt.gptConfig.model = values.GptConfig_model || "gpt-3.5-turbo";
+    chatMgt.gptConfig.model = values.GptConfig_model || chatMgt.gptConfig.model;
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
     chatMgt.gptConfig.role = values.GptConfig_role;

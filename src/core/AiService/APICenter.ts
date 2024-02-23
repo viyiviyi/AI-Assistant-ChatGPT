@@ -15,7 +15,9 @@ export class APICenter implements IAiService {
     this.client = new OpenAIApi();
   }
   serverType: aiServiceType = "APICenter";
+  static modelCache: string[] = [];
   models = async () => {
+    if (APICenter.modelCache.length) return APICenter.modelCache;
     var token = getToken(this.serverType);
     if (!token.current) {
       nextToken(token);
@@ -39,15 +41,17 @@ export class APICenter implements IAiService {
       .listModels()
       .then((res) => res.data)
       .then((res) => {
-        return res.data
+        APICenter.modelCache = (res.data || [])
           .map((m) => m.id)
           .filter(
             (f) =>
               f.toLowerCase().includes("gpt") ||
               f.toLowerCase().includes("text") ||
               f.toLowerCase().includes("code") ||
-              f.toLowerCase().includes("claude")
+              f.toLowerCase().includes("claude") ||
+              f.toLowerCase().includes("glm")
           );
+        return APICenter.modelCache;
       })
       .catch((err) => []);
   };
@@ -68,16 +72,20 @@ export class APICenter implements IAiService {
   }): Promise<void> {
     var token = getToken(this.serverType);
     if (context.length == 0) {
-      return onMessage({ error: true, end: true, text: "请勿发送空内容。" });
+      return await onMessage({
+        error: true,
+        end: true,
+        text: "请勿发送空内容。",
+      });
     }
     if (!token.current) {
-      return onMessage({
+      return await onMessage({
         error: true,
         end: true,
         text: "请填写API key后继续使用。",
       });
     }
-    onMessage({
+    await onMessage({
       end: false,
       error: false,
       text: "",
@@ -104,8 +112,8 @@ export class APICenter implements IAiService {
           timeout: 1000 * 60 * 5,
         },
       });
-      await this.client
-        .createCompletion({
+      try {
+        let res = await this.client.createCompletion({
           model: config.model,
           prompt: context.map((v) => v.content).join("\n"),
           stream: false,
@@ -116,40 +124,35 @@ export class APICenter implements IAiService {
           user: config.user,
           frequency_penalty: config.frequency_penalty || 0,
           presence_penalty: config.presence_penalty || 0,
-        })
-        .then((res) => {
-          onMessage &&
-            onMessage({
-              end: true,
-              error: false,
-              text: res.data.choices[0].text || "",
-            });
-          return res.data.choices[0].text || "";
-        })
-        .catch((error) => {
-          onMessage &&
-            onMessage({
-              end: true,
-              error: true,
-              text:
-                error.response && error.response.data
-                  ? "```json\n" +
-                    JSON.stringify(error.response.data, null, 4) +
-                    "\n```"
-                  : error.message || error,
-            });
         });
+        await onMessage({
+          end: true,
+          error: false,
+          text: res.data.choices[0].text || "",
+        });
+      } catch (error: any) {
+        await onMessage({
+          end: true,
+          error: true,
+          text:
+            error.response && error.response.data
+              ? "```json\n" +
+                JSON.stringify(error.response.data, null, 4) +
+                "\n```"
+              : error.message || error,
+        });
+      }
     }
   }
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
-    onMessage?: (msg: {
+    onMessage: (msg: {
       error: boolean;
       text: string;
       end: boolean;
       stop?: () => void;
-    }) => void
+    }) => Promise<void>
   ) {
     let full_response = "";
     const headers = {
@@ -169,123 +172,116 @@ export class APICenter implements IAiService {
       presence_penalty: config.presence_penalty || 0,
     };
     const controller = new AbortController();
-    await fetch(`${this.baseUrl}/v1/chat/completions`, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(data),
-      mode: "cors",
-      cache: "no-cache",
-      credentials: "same-origin",
-      redirect: "follow",
-      referrerPolicy: "no-referrer",
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          onMessage &&
-            (await onMessage({
-              error: true,
+    try {
+      let response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        await onMessage({
+          error: true,
+          end: true,
+          text:
+            "\n\n 请求发生错误。\n\n" +
+            "token: ... " +
+            headers.Authorization.slice(
+              Math.max(-headers.Authorization.length, -10)
+            ) +
+            "\n\n" +
+            response.status +
+            " " +
+            response.statusText +
+            "\n\n" +
+            (await response.text()),
+        });
+        return;
+      }
+      const reader = response.body?.getReader();
+      const stop = () => {
+        try {
+          controller.abort();
+        } catch (error) {}
+      };
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            await onMessage({
+              error: false,
               end: true,
-              text:
-                "\n\n 请求发生错误。\n\n" +
-                "token: ... " +
-                headers.Authorization.slice(
-                  Math.max(-headers.Authorization.length, -10)
-                ) +
-                "\n\n" +
-                response.status +
-                " " +
-                response.statusText +
-                "\n\n" +
-                (await response.text()),
-            }));
-          return;
-        }
-        const reader = response.body?.getReader();
-        const stop = () => {
-          try {
-            controller.abort();
-          } catch (error) {}
-        };
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              onMessage &&
-                (await onMessage({
-                  error: false,
-                  end: true,
-                  text: full_response,
-                }));
+              text: full_response,
+            });
+            break;
+          }
+          const decodedValue = new TextDecoder("utf-8").decode(value);
+          const lines = decodedValue.split("\n");
+          for (const line of lines) {
+            if (line.trim() === "") {
+              continue;
+            }
+            if (line.trim() === "data: [DONE]") {
+              await onMessage({
+                error: false,
+                end: true,
+                text: full_response,
+              });
               break;
             }
-            const decodedValue = new TextDecoder("utf-8").decode(value);
-            const lines = decodedValue.split("\n");
-            for (const line of lines) {
-              if (line.trim() === "") {
-                continue;
-              }
-              if (line.trim() === "data: [DONE]") {
-                onMessage &&
-                  (await onMessage({
-                    error: false,
-                    end: true,
-                    text: full_response,
-                  }));
-                break;
-              }
+            try {
+              let data;
               try {
-                let data;
-                try {
-                  data = JSON.parse(line.substring(6));
-                } catch (error) {
-                  continue;
-                }
-                const choices = data.choices;
-                if (!choices) {
-                  continue;
-                }
-                const delta = choices[0]?.delta;
-                if (!delta) {
-                  continue;
-                }
-                if ("content" in delta) {
-                  const content = delta.content;
-                  full_response += content;
-                  onMessage &&
-                    (await onMessage({
-                      error: false,
-                      end: false,
-                      text: full_response,
-                      stop: stop,
-                    }));
-                }
+                data = JSON.parse(line.substring(6));
               } catch (error) {
-                console.error(error);
-                console.error("出错的内容：", line);
                 continue;
               }
+              const choices = data.choices;
+              if (!choices) {
+                continue;
+              }
+              const delta = choices[0]?.delta;
+              if (!delta) {
+                continue;
+              }
+              if ("content" in delta) {
+                const content = delta.content;
+                full_response += content;
+                await onMessage({
+                  error: false,
+                  end: false,
+                  text: full_response,
+                  stop: stop,
+                });
+              }
+            } catch (error) {
+              console.error(error);
+              console.error("出错的内容：", line);
+              continue;
             }
           }
-          return full_response;
         }
-      })
-      .catch((error) => {
-        if (error.name === "AbortError") {
-          onMessage &&
-            onMessage({
-              error: true,
-              end: true,
-              text: full_response + "\n\n 请求已终止。",
-            });
-        } else {
-          onMessage &&
-            onMessage({
-              error: true,
-              end: true,
-              text: full_response + "\n\n 请求发生错误。\n\n" + error,
-            });
-        }
-      });
+        return full_response;
+      }
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        onMessage({
+          error: true,
+          end: true,
+          text: full_response + "\n\n 请求已终止。",
+        });
+      } else {
+        onMessage({
+          error: true,
+          end: true,
+          text: full_response + "\n\n 请求发生错误。\n\n" + error,
+        });
+      }
+    }
   }
 }

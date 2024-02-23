@@ -49,16 +49,20 @@ export class Kamiya implements IAiService {
   }): Promise<void> {
     var token = getToken(this.serverType);
     if (context.length == 0) {
-      return onMessage({ error: true, end: true, text: "请勿发送空内容。" });
+      return await onMessage({
+        error: true,
+        end: true,
+        text: "请勿发送空内容。",
+      });
     }
     if (!token.current) {
-      return onMessage({
+      return await onMessage({
         error: true,
         end: true,
         text: "请填写API key后继续使用。",
       });
     }
-    onMessage({
+    await onMessage({
       end: false,
       error: false,
       text: "",
@@ -71,12 +75,12 @@ export class Kamiya implements IAiService {
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
-    onMessage?: (msg: {
+    onMessage: (msg: {
       error: boolean;
       text: string;
       end: boolean;
       stop?: () => void;
-    }) => void
+    }) => Promise<void>
   ) {
     let full_response = "";
     const headers = {
@@ -109,23 +113,22 @@ export class Kamiya implements IAiService {
     })
       .then(async (response) => {
         if (!response.ok) {
-          onMessage &&
-            (await onMessage({
-              error: true,
-              end: true,
-              text:
-                "\n\n 请求发生错误。\n\n" +
-                "token: ... " +
-                headers.Authorization.slice(
-                  Math.max(-headers.Authorization.length, -10)
-                ) +
-                "\n\n" +
-                response.status +
-                " " +
-                response.statusText +
-                "\n\n" +
-                (await response.text()),
-            }));
+          await onMessage({
+            error: true,
+            end: true,
+            text:
+              "\n\n 请求发生错误。\n\n" +
+              "token: ... " +
+              headers.Authorization.slice(
+                Math.max(-headers.Authorization.length, -10)
+              ) +
+              "\n\n" +
+              response.status +
+              " " +
+              response.statusText +
+              "\n\n" +
+              (await response.text()),
+          });
           return;
         }
         const reader = response.body?.getReader();
@@ -138,12 +141,11 @@ export class Kamiya implements IAiService {
           while (true) {
             const { done, value } = await reader.read();
             if (done) {
-              onMessage &&
-                (await onMessage({
-                  error: false,
-                  end: true,
-                  text: full_response,
-                }));
+              await onMessage({
+                error: false,
+                end: true,
+                text: full_response,
+              });
               break;
             }
             const decodedValue = new TextDecoder("utf-8").decode(value);
@@ -153,22 +155,18 @@ export class Kamiya implements IAiService {
                 continue;
               }
               if (!line.startsWith("data")) {
-                return (
-                  onMessage &&
-                  (await onMessage({
-                    error: true,
-                    end: true,
-                    text: line,
-                  }))
-                );
+                return await onMessage({
+                  error: true,
+                  end: true,
+                  text: line,
+                });
               }
               if (line.trim() === "data: [DONE]") {
-                onMessage &&
-                  (await onMessage({
-                    error: false,
-                    end: true,
-                    text: full_response,
-                  }));
+                await onMessage({
+                  error: false,
+                  end: true,
+                  text: full_response,
+                });
                 break;
               }
               try {
@@ -189,13 +187,12 @@ export class Kamiya implements IAiService {
                 if ("content" in delta) {
                   const content = delta.content;
                   full_response += content;
-                  onMessage &&
-                    (await onMessage({
-                      error: false,
-                      end: false,
-                      text: full_response,
-                      stop: stop,
-                    }));
+                  await onMessage({
+                    error: false,
+                    end: false,
+                    text: full_response,
+                    stop: stop,
+                  });
                 }
               } catch (error) {
                 console.error(error);
@@ -209,19 +206,17 @@ export class Kamiya implements IAiService {
       })
       .catch((error) => {
         if (error.name === "AbortError") {
-          onMessage &&
-            onMessage({
-              error: true,
-              end: true,
-              text: full_response + "\n\n 请求已终止。",
-            });
+          onMessage({
+            error: true,
+            end: true,
+            text: full_response + "\n\n 请求已终止。",
+          });
         } else {
-          onMessage &&
-            onMessage({
-              error: true,
-              end: true,
-              text: full_response + "\n\n 请求发生错误。\n\n" + error,
-            });
+          onMessage({
+            error: true,
+            end: true,
+            text: full_response + "\n\n 请求发生错误。\n\n" + error,
+          });
         }
       });
   }
