@@ -459,43 +459,43 @@ export const VirtualRoleConfig = ({
                           </Upload>
                         ),
                       },
-                      {
-                        key: "4",
-                        label: (
-                          <Upload
-                            accept=".json"
-                            {...{
-                              beforeUpload(file, FileList) {
-                                const fr = new FileReader();
-                                fr.onloadend = (e) => {
-                                  if (e.target?.result) {
-                                    try {
-                                      let jsonData = JSON.parse(
-                                        e.target.result.toString()
-                                      );
-                                      if (typeof jsonData == "string")
-                                        jsonData = JSON.parse(jsonData);
-                                      let charData = jsonToSetting(jsonData);
-                                      if (!charData.name)
-                                        return messageApi.error("数据不正确");
-                                      loadChubData(charData, true);
-                                    } catch (error) {
-                                      console.error(error);
-                                      messageApi.error("文件格式错误");
-                                    }
-                                  }
-                                };
-                                fr.readAsText(file);
-                                return false;
-                              },
-                              defaultFileList: [],
-                              showUploadList: false,
-                            }}
-                          >
-                            {"使用酒馆角色卡json重置"}
-                          </Upload>
-                        ),
-                      },
+                      // {
+                      //   key: "4",
+                      //   label: (
+                      //     <Upload
+                      //       accept=".json"
+                      //       {...{
+                      //         beforeUpload(file, FileList) {
+                      //           const fr = new FileReader();
+                      //           fr.onloadend = (e) => {
+                      //             if (e.target?.result) {
+                      //               try {
+                      //                 let jsonData = JSON.parse(
+                      //                   e.target.result.toString()
+                      //                 );
+                      //                 if (typeof jsonData == "string")
+                      //                   jsonData = JSON.parse(jsonData);
+                      //                 let charData = jsonToSetting(jsonData);
+                      //                 if (!charData.name)
+                      //                   return messageApi.error("数据不正确");
+                      //                 loadChubData(charData, true);
+                      //               } catch (error) {
+                      //                 console.error(error);
+                      //                 messageApi.error("文件格式错误");
+                      //               }
+                      //             }
+                      //           };
+                      //           fr.readAsText(file);
+                      //           return false;
+                      //         },
+                      //         defaultFileList: [],
+                      //         showUploadList: false,
+                      //       }}
+                      //     >
+                      //       {"使用酒馆角色卡json重置"}
+                      //     </Upload>
+                      //   ),
+                      // },
                       {
                         key: "5",
                         label: (
