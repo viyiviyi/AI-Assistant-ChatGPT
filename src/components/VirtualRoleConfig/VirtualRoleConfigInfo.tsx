@@ -3,7 +3,7 @@ import { onSendBefore } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
 import { Tag, Typography } from "antd";
-import { useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
 import { MarkdownView } from "../common/MarkdownView";
 
 export const VirtualRoleConfigInfo = ({
@@ -23,8 +23,25 @@ export const VirtualRoleConfigInfo = ({
       virtualRole: { ...chatMgt.virtualRole, settings: settings },
     });
   }, [chatMgt, settings]);
+  const renderContext = useCallback(
+    (
+      ctx: Array<{
+        role: CtxRole;
+        content: string;
+      }>
+    ): {
+      role: CtxRole;
+      content: string;
+    }[] => {
+      return onSendBefore(_chatMgt.getChat(), { allCtx: ctx, history: [] }) as {
+        role: CtxRole;
+        content: string;
+      }[];
+    },
+    [_chatMgt]
+  );
   const { history, historyAfter, historyBefore } = useMemo(() => {
-    return _chatMgt!.getAskContext(
+    const { history, historyAfter, historyBefore } = _chatMgt!.getAskContext(
       {
         ...(activityTopic || {
           id: "",
@@ -39,21 +56,12 @@ export const VirtualRoleConfigInfo = ({
       },
       activityTopic?.messages?.length || 0
     );
-  }, [_chatMgt, activityTopic, topicVirtualRole]);
-  const renderContext = (
-    ctx: Array<{
-      role: CtxRole;
-      content: string;
-    }>
-  ): {
-    role: CtxRole;
-    content: string;
-  }[] => {
-    return onSendBefore(chatMgt.getChat(), { allCtx: ctx, history: [] }) as {
-      role: CtxRole;
-      content: string;
-    }[];
-  };
+    return {
+      history: renderContext(history),
+      historyAfter: renderContext(historyAfter),
+      historyBefore: renderContext(historyBefore),
+    };
+  }, [_chatMgt, activityTopic, topicVirtualRole, renderContext]);
   const getTag = (role: CtxRole) => {
     switch (role) {
       case "assistant":
