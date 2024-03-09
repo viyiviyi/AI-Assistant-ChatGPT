@@ -11,7 +11,7 @@ export class UserMessagePrdfix implements IMiddleware {
   readonly description: string =
     "发送消息时将用户名增加在用户消息前面。";
   setting: VirtualRoleSetting[] | undefined;
-  prompt = "{{user}}：{{message}}";
+  prompt = "{{user}}：\n{{message}}";
   readonly onSendBefore = (
     chat: IChat,
     context: {
