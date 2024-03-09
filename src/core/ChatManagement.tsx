@@ -213,6 +213,7 @@ export class ChatManagement {
     await this.loadTitleTree(topic);
   }
   static async loadTitleTree(topic: TopicMessage) {
+    if (!topic) return;
     const l = topic.messages.length;
     topic.titleTree = [];
     for (let idx = 0; idx < l; idx++) {
@@ -496,6 +497,34 @@ export class ChatManagement {
       ? virtualRole?.enName || "assistant"
       : user?.enName || "user";
   }
+  static mgSetting(
+    ctxList: VirtualRoleSettingItem[],
+    start: number
+  ): VirtualRoleSettingItem | undefined {
+    let lastSetting: VirtualRoleSettingItem | undefined = undefined;
+    if (ctxList.length <= start || start <= 0) return;
+    if (!ctxList[start].role) return;
+    let end = ctxList.slice(start).findIndex((f, i) => f.role && i);
+    let ls = ctxList.slice(start, end + start);
+    console.log(ls);
+    lastSetting = ls[0];
+    return lastSetting;
+  }
+  /**
+   * 关键词内包含all或者上下文中包含关键词才返回true
+   * @param item
+   * @returns
+   */
+  static calcChecked(
+    item: VirtualRoleSettingItem,
+    ctxTxt: string | undefined
+  ): boolean {
+    if (!ctxTxt) return false;
+    if (!item.keyWords || item.keyWords.length == 0) return false;
+    if (item.keyWords.includes("all")) return true;
+    let isDynamic = new RegExp(item.keyWords.join("|")).test(ctxTxt);
+    return isDynamic;
+  }
   static parseSetting(
     inputSettings?: VirtualRoleSetting[],
     overrideCheck?: { key: string; ctx: { key: string }[] }[],
@@ -509,17 +538,17 @@ export class ChatManagement {
       role: CtxRole;
       content: string;
     }[] = [];
-    function calcChecked(item: VirtualRoleSettingItem): boolean {
-      if (!ctxTxt) return true;
-      if (!item.keyWords || item.keyWords.length == 0) return true;
-      let isDynamic = new RegExp(item.keyWords.join("|")).test(ctxTxt);
-      return isDynamic;
-    }
+
     inputSettings
       .filter((v) =>
         overrideCheck
           ? overrideCheck.findIndex((f) => f.key == v.key) >= 0
           : v.checked
+      )
+      // 如果开启动态匹配，则整个设定至少需要有一项能匹配才会生效
+      .filter(
+        (v) =>
+          !v.dynamic || v.ctx.findIndex((f) => this.calcChecked(f, ctxTxt)) >= 0
       )
       .map(
         (v) =>
@@ -538,23 +567,29 @@ export class ChatManagement {
               : c.checked,
           }))
           .forEach((c) => {
+            let checked = this.calcChecked(c, ctxTxt);
             if (c.role) {
               if (lastSetting && lastSetting.checked) {
                 settings.push(lastSetting as any);
               }
-              lastSetting = { ...c, role: c.role! };
+              if (!v.dynamic || !c?.keyWords?.length || checked) {
+                lastSetting = { ...c, role: c.role! };
+                lastSetting.checked = c.checked && !v.dynamic; // 如果开启了动态匹配，先设置为false，因为可能出现向上合并的项一个都不能匹配到
+              }
             } else {
-              if (c.checked && (!v.dynamic || calcChecked(c)) && lastSetting) {
+              if (
+                lastSetting &&
+                c.checked &&
+                (!v.dynamic || !c?.keyWords?.length || checked)
+              ) {
                 lastSetting.content += "\n" + c.content;
+                if (checked) lastSetting.checked = true;
               }
             }
           });
-        if (
-          lastSetting &&
-          (lastSetting as any).checked &&
-          (!v.dynamic || calcChecked(lastSetting))
-        )
+        if (lastSetting && (lastSetting as VirtualRoleSettingItem).checked) {
           settings.push(lastSetting);
+        }
       });
     return settings;
   }
@@ -701,7 +736,10 @@ export class ChatManagement {
       botType: "ChatGPT",
       middleware: [NameMacrosPrompt.key],
     };
-    await getInstance()?.insert<GroupConfig>({ tableName: "GroupConfig", data });
+    await getInstance()?.insert<GroupConfig>({
+      tableName: "GroupConfig",
+      data,
+    });
     return data;
   }
   static async createUser(groupId: string, user?: User): Promise<User> {
@@ -735,7 +773,10 @@ export class ChatManagement {
       bio: ``,
       settings: [],
     };
-    await getInstance()?.insert<VirtualRole>({ tableName: "VirtualRole", data });
+    await getInstance()?.insert<VirtualRole>({
+      tableName: "VirtualRole",
+      data,
+    });
     return data;
   }
   static async createGptConfig(
@@ -805,6 +846,7 @@ export class ChatManagement {
           handle: (r) => {
             if (r.text != message.text) message.updateTime = Date.now();
             r = Object.assign(r, message);
+            Object.assign(msg, message);
             return r;
           },
         });

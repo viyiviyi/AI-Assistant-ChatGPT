@@ -23,9 +23,9 @@ export const VirtualRoleConfigInfo = ({
       virtualRole: { ...chatMgt.virtualRole, settings: settings },
     });
   }, [chatMgt, settings]);
-  const { history, historyAfter, historyBefore } = useMemo(
-    () =>
-      _chatMgt!.getAskContext({
+  const { history, historyAfter, historyBefore } = useMemo(() => {
+    return _chatMgt!.getAskContext(
+      {
         ...(activityTopic || {
           id: "",
           groupId: "",
@@ -36,9 +36,10 @@ export const VirtualRoleConfigInfo = ({
           titleTree: [],
         }),
         overrideVirtualRole: topicVirtualRole,
-      }),
-    [_chatMgt, activityTopic, topicVirtualRole]
-  );
+      },
+      activityTopic?.messages?.length || 0
+    );
+  }, [_chatMgt, activityTopic, topicVirtualRole]);
   const renderContext = (
     ctx: Array<{
       role: CtxRole;

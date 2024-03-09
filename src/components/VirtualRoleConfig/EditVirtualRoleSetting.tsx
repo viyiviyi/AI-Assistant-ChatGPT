@@ -350,7 +350,7 @@ export function EditVirtualRoleSetting({
             <span onClick={(e) => e.stopPropagation()}>
               <Tooltip
                 trigger={"click"}
-                title="开启动态设定后，仅当设定明细内至少能匹配到一个关键词时设定才会被发送。"
+                title="开启动态设定后，仅当设定明细内至少能匹配到一个关键词时设定才会被发送, 可使用关键词all让内容被永久匹配。"
               >
                 <QuestionOutlined />
               </Tooltip>
