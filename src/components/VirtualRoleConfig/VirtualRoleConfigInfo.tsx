@@ -93,7 +93,7 @@ export const VirtualRoleConfigInfo = ({
         ) : (
           <></>
         )}
-        {renderContext(historyBefore).map((v, idx) => {
+        {historyBefore.map((v, idx) => {
           return (
             <div key={idx + "_settint_info_item_p"}>
               {getTag(v.role)}
@@ -104,7 +104,7 @@ export const VirtualRoleConfigInfo = ({
         <Typography.Text type="secondary">
           {"...动态上下文开始"}
         </Typography.Text>
-        {renderContext(history).map((v, idx) => {
+        {history.map((v, idx) => {
           return (
             <div key={idx + "_settint_info_item_e"}>
               {getTag(v.role)}
@@ -115,7 +115,7 @@ export const VirtualRoleConfigInfo = ({
         <Typography.Text type="secondary">
           {"...动态上下文结束"}
         </Typography.Text>
-        {renderContext(historyAfter).map((v, idx) => {
+        {historyAfter.map((v, idx) => {
           return (
             <div key={idx + "_settint_info_item_e"}>
               {getTag(v.role)}
