@@ -7,11 +7,12 @@ import { useCallback, useState } from "react";
 import { env } from "../hooks/hooks";
 import { getToken } from "../tokens";
 import { IChat } from "./../ChatManagement";
+import { APICenter } from "./APICenter";
 import { ChatGLM_GPT } from "./ChatGLM_GPT";
+import { CohereAi } from "./cohere.ai";
 import { IAiService } from "./IAiService";
 import { QWen } from "./QWen";
 import { SlackClaude } from "./SlackClaude";
-import { APICenter } from "./APICenter";
 export interface ServiceTokens {
   openai?: { apiKey: string };
   slack?: {
@@ -25,6 +26,7 @@ export type BaseUrlScheam = {
   slackClaude: string;
   Kamiya: string;
   dashscope_alyun: string;
+  cohereAi: string;
 };
 
 export const DefaultBaseUrl: BaseUrlScheam = {
@@ -32,18 +34,21 @@ export const DefaultBaseUrl: BaseUrlScheam = {
   slackClaude: "https://slack.com",
   Kamiya: "https://p0.kamiya.dev",
   dashscope_alyun: "https://dashscope.aliyuncs.com",
+  cohereAi: "https://api.cohere.ai",
 };
 export const ProxyBaseUrl: BaseUrlScheam = {
   chatGPT: "https://chat.eaias.com",
   slackClaude: "https://slack.eaias.com",
   Kamiya: "https://p0.kamiya.dev",
   dashscope_alyun: "https://dashscope.alyun.proxy.eaias.com",
+  cohereAi: "https://api.cohere.ai",
 };
 export const DevBaseUrl: BaseUrlScheam = {
   chatGPT: ProxyBaseUrl.chatGPT,
   slackClaude: "http://slack.yiyiooo.com",
   Kamiya: ProxyBaseUrl.Kamiya,
   dashscope_alyun: "https://dashscope-proxy.yiyiooo.workers.dev",
+  cohereAi: "https://api.cohere.ai",
 };
 
 export const httpProxyUrl = "https://proxy.eaias.com/";
@@ -57,6 +62,7 @@ export type aiServiceType =
   | "ChatGLM"
   | "QWen"
   | "APICenter"
+  | "CohereAi"
   | "Oauther";
 export const aiServerList: {
   key: aiServiceType;
@@ -98,6 +104,11 @@ export const aiServerList: {
   //   name: "ChatGPT(免费)",
   // },
   {
+    key: "CohereAi",
+    name: "cohere.ai",
+    hasToken: true,
+  },
+  {
     key: "ChatGLM",
     name: "ChatGLM",
     hasToken: false,
@@ -137,6 +148,8 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat) {
       return new ChatGLM_API(chat.config.userServerUrl || "", tokens);
     case "QWen":
       return new QWen(chat.config.userServerUrl || baseUrl.dashscope_alyun);
+    case "CohereAi":
+      return new CohereAi(chat.config.userServerUrl || baseUrl.cohereAi, tokens);
     case "APICenter":
       return new APICenter(
         KeyValueData.instance().getApiTransferUrl() || "",

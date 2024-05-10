@@ -118,7 +118,7 @@ export default function Page() {
       <Layout
         style={{
           display: "flex",
-          height: "100%",
+          height: "100dvh",
           flexDirection: "row",
           maxHeight: "100%",
           flexWrap: "nowrap",

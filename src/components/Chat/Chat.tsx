@@ -89,7 +89,7 @@ export const Chat = () => {
           display: "flex",
           flex: 1,
           flexDirection: "column",
-          height: "100%",
+          height: "100dvh",
           width: "100%",
           maxHeight: "100%",
           margin: "0 auto",
