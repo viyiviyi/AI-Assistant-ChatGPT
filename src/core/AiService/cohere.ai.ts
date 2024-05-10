@@ -74,6 +74,13 @@ export class CohereAi implements IAiService {
         text: "请填写API key后继续使用。",
       });
     }
+    if (context.slice(-1)[0].role != "user") {
+      return onMessage({
+        error: true,
+        end: true,
+        text: "最后一条消息的身份必须是用户，请注意设定内的最后一条设定的身份。",
+      });
+    }
     onMessage({
       end: false,
       error: false,
