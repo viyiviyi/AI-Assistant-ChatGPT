@@ -11,6 +11,8 @@ export class ChatGLM_GPT implements IAiService {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
   }
+  severConfig: any;
+  setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = "ChatGLM";
   models = async () => [];
   async sendMessage({

@@ -14,6 +14,8 @@ export class APICenter implements IAiService {
     this.tokens = tokens;
     this.client = new OpenAIApi();
   }
+  severConfig: any;
+  setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = "APICenter";
   static modelCache: string[] = [];
   models = async () => {

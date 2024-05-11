@@ -21,6 +21,8 @@ export class SlackClaude implements IAiService {
       },
     });
   }
+  severConfig: any;
+  setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = "Slack";
 
   models = async () => [];

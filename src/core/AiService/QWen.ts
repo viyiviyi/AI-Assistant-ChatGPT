@@ -13,6 +13,8 @@ export class QWen implements IAiService {
     this.baseUrl = baseUrl;
     this.tokens = {};
   }
+  severConfig: any;
+  setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = "QWen";
   models = async () => ["qwen-turbo", "qwen-plus"];
   async sendMessage({

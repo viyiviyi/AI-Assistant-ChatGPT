@@ -5,17 +5,37 @@ import { ChatCompletionRequestMessage } from "openai";
 import { CtxRole } from "./../../Models/CtxRole";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
+import { KeyValueData } from "../db/KeyValueData";
 export class CohereAi implements IAiService {
   customContext = true;
   history = undefined;
   baseUrl: string;
   tokens: ServiceTokens;
+  severConfig: { connectors?: any[] } = {};
   constructor(baseUrl: string, tokens: ServiceTokens) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
+    this.severConfig =
+      KeyValueData.instance().getAiServerConfig(this.serverType) || {};
   }
   serverType: aiServiceType = "CohereAi";
   static modelCache: string[] = [];
+  setConfig = (config: any) => {
+    if (typeof config === "object" && "connectors" in config) {
+      if (Array.isArray(config.connectors)) {
+        this.severConfig.connectors = config.connectors
+          .filter((v: any) => v)
+          .map((v: any) => {
+            if ("id" in v) {
+              return { id: v.id };
+            }
+          });
+        KeyValueData.instance().setAiServerConfig({
+          [this.serverType]: this.severConfig,
+        });
+      }
+    }
+  };
   models = async () => {
     if (CohereAi.modelCache.length) return CohereAi.modelCache;
     var token = getToken(this.serverType);
@@ -48,6 +68,25 @@ export class CohereAi implements IAiService {
       .catch((err) => this.defaultModels);
   };
   defaultModels = ["command-r-plus"];
+  getCurrentConnectors = () => {
+    return this.severConfig.connectors || [];
+  };
+  async getConnectors(): Promise<{ name: string; id: string }[]> {
+    var token = getToken(this.serverType);
+    if (!token.current) {
+      nextToken(token);
+      return [];
+    }
+    return await axios
+      .get(this.baseUrl + "/v1/connectors", {
+        headers: { Authorization: `Bearer ${this.tokens.openai?.apiKey}` },
+      })
+      .then((res) => res.data)
+      .then((res: { connectors: any[] }) => {
+        return res.connectors;
+      })
+      .catch((err) => []);
+  }
   async sendMessage({
     context,
     onMessage,
@@ -118,7 +157,7 @@ export class CohereAi implements IAiService {
         message: ctx.content,
       })),
       message: context.slice(-1)[0].content,
-      connectors: [{ id: "web-search" }],
+      connectors: [...(this.severConfig.connectors || [])],
       model: config.model,
       stream: true,
     };

@@ -2,7 +2,7 @@ import { aiServiceType } from "@/core/AiService/ServiceProvider";
 import { CtxRole } from "@/Models/CtxRole";
 import {
   ChatCompletionRequestMessage,
-  CreateChatCompletionRequest
+  CreateChatCompletionRequest,
 } from "openai";
 import { Message } from "../../Models/DataBase";
 import { ServiceTokens } from "./ServiceProvider";
@@ -10,11 +10,15 @@ export interface IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
   serverType: aiServiceType;
+  severConfig: any;
   /**
    * 是否支持自定义上下文 如果不支持，表示上下文存在服务器
    */
   customContext: boolean;
   models: () => Promise<Array<string>>;
+  setConfig?: (config: any) => void;
+  getCurrentConnectors?: () => { name: string; id: string }[];
+  getConnectors?: () => Promise<{ name: string; id: string }[]>;
   sendMessage(input: {
     msg: Message;
     context: Array<ChatCompletionRequestMessage>;

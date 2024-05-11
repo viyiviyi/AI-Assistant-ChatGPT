@@ -12,6 +12,8 @@ export class Kamiya implements IAiService {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
   }
+  severConfig: any;
+  setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = "Kamiya";
   models = async () => [
     "openai:gpt-3.5-turbo",

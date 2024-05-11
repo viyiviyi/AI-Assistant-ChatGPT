@@ -28,6 +28,8 @@ export class ChatGLM_API implements IAiService {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
   }
+  severConfig: any;
+  setConfig?: ((config: any) => void) | undefined;
   models = async () => [];
 
   async sendMessage({

@@ -118,7 +118,10 @@ export const aiServerList: {
 export const aiServices: {
   current?: IAiService;
 } = {};
-export function getServiceInstance(botType: aiServiceType, chat: IChat) {
+export function getServiceInstance(
+  botType: aiServiceType,
+  chat: IChat
+): IAiService | undefined {
   let tokenStore = getToken(botType);
   let tokens: ServiceTokens = {
     openai: { apiKey: tokenStore.current },
@@ -149,7 +152,10 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat) {
     case "QWen":
       return new QWen(chat.config.userServerUrl || baseUrl.dashscope_alyun);
     case "CohereAi":
-      return new CohereAi(chat.config.userServerUrl || baseUrl.cohereAi, tokens);
+      return new CohereAi(
+        chat.config.userServerUrl || baseUrl.cohereAi,
+        tokens
+      );
     case "APICenter":
       return new APICenter(
         KeyValueData.instance().getApiTransferUrl() || "",

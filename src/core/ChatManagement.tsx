@@ -506,7 +506,6 @@ export class ChatManagement {
     if (!ctxList[start].role) return;
     let end = ctxList.slice(start).findIndex((f, i) => f.role && i);
     let ls = ctxList.slice(start, end + start);
-    console.log(ls);
     lastSetting = ls[0];
     return lastSetting;
   }

@@ -3,7 +3,7 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService
+  useService,
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -17,7 +17,7 @@ import {
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -32,7 +32,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload
+  Upload,
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -55,6 +55,9 @@ export const Setting = ({
   const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
   const [models, setModels] = useState<string[]>([]);
+  const [connectors, setConnectors] = useState<{ id: string; name: string }[]>(
+    []
+  );
   const screenSize = useScreenSize();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -91,6 +94,7 @@ export const Setting = ({
     setting_user_server_url: string;
     slack_claude_id: string;
     group_name: string;
+    chat_connectors: string[];
     setting_slack_proxy_url: string;
     setting_api_transfer_url: string;
     slack_user_token: string;
@@ -122,6 +126,9 @@ export const Setting = ({
       config_disable_renderType: chatMgt?.config.renderType,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
+      chat_connectors: aiServices.current?.getCurrentConnectors
+        ?.call(aiServices.current?.getCurrentConnectors)
+        .map((v) => v.id),
       setting_slack_proxy_url: KeyValueData.instance()
         .getSlackProxyUrl()
         .trim()
@@ -147,6 +154,13 @@ export const Setting = ({
         form.setFieldsValue(formValus);
       }
     });
+    aiServices.current?.getConnectors &&
+      aiServices.current?.getConnectors().then((res) => {
+        setConnectors(res);
+      });
+    // formValus.chat_connectors = aiServices.current?.getCurrentConnectors
+    //   ?.call(aiServices.current?.getCurrentConnectors)
+    //   .map((v) => v.id);
     form.setFieldsValue(formValus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -213,6 +227,10 @@ export const Setting = ({
       saveToken(v.key, t);
     });
     reloadService(chatMgt.getChat(), KeyValueData.instance());
+    aiServices.current?.setConfig &&
+      aiServices.current?.setConfig({
+        connectors: values.chat_connectors?.map((v) => ({ id: v })) ?? [],
+      });
     setChat(chatMgt.getChat());
   }
   const panlProp = {
@@ -491,6 +509,11 @@ export const Setting = ({
                     form.setFieldValue("GptConfig_model", res[0]);
                   }
                 });
+                setConnectors([]);
+                server?.getConnectors &&
+                  server?.getConnectors().then((res) => {
+                    setConnectors(res);
+                  });
               }}
             >
               {aiServerList.map((v) => (
@@ -501,8 +524,22 @@ export const Setting = ({
             </Select>
           </Form.Item>
           {models.length ? (
-            <Form.Item label="ChatGPT模型名称" name={"GptConfig_model"}>
+            <Form.Item label="Chat模型名称" name={"GptConfig_model"}>
               <Select options={models.map((v) => ({ value: v, label: v }))} />
+            </Form.Item>
+          ) : (
+            <></>
+          )}
+          {connectors.length ? (
+            <Form.Item label="Chat连接器" name={"chat_connectors"}>
+              <Select
+                allowClear
+                mode="multiple"
+                options={connectors.map((v) => ({
+                  value: v.id,
+                  label: v.name,
+                }))}
+              />
             </Form.Item>
           ) : (
             <></>

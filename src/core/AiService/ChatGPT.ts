@@ -27,6 +27,8 @@ export class ChatGPT implements IAiService {
       },
     });
   }
+  severConfig: any;
+  setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = "ChatGPT";
   static modelCache: string[] = [];
   models = async () => {

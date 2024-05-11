@@ -1,3 +1,5 @@
+import { aiServiceType } from "../AiService/ServiceProvider";
+
 export interface DatasetProvider {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -62,10 +64,7 @@ export class KeyValueData {
   }
   setApiTransferUrl(val: string, save: boolean = true) {
     this._apiTransferUrl = val;
-    this.provider.setItem(
-      this.dataKeyPrefix + "ApiTransfer",
-      save ? val : ""
-    );
+    this.provider.setItem(this.dataKeyPrefix + "ApiTransfer", save ? val : "");
   }
   private _UIConfig: UIConfig = {};
   getUIConfig(): UIConfig {
@@ -83,6 +82,27 @@ export class KeyValueData {
     this.provider.setItem(
       this.dataKeyPrefix + "UIConfig",
       save ? JSON.stringify(this._UIConfig) : "{}"
+    );
+  }
+  private _aiServerConfig: { [key in aiServiceType]?: any } = {};
+  getAiServerConfig(aiServerType: aiServiceType): any {
+    if (this._slackProxyUrl) return this._aiServerConfig[aiServerType];
+    try {
+      return JSON.parse(
+        this.provider.getItem(this.dataKeyPrefix + "AiServerConfig") || "{}"
+      )[aiServerType];
+    } catch {
+      return undefined;
+    }
+  }
+  setAiServerConfig(
+    val: { [key in aiServiceType]?: any },
+    save: boolean = true
+  ) {
+    this._aiServerConfig = { ...this._aiServerConfig, ...val };
+    this.provider.setItem(
+      this.dataKeyPrefix + "AiServerConfig",
+      save ? JSON.stringify(this._aiServerConfig) : "{}"
     );
   }
   static instance(): KeyValueData {
