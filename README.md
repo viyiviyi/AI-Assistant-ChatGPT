@@ -27,6 +27,7 @@
 - [一个购买key的商店（询问过卖家可以挂上来）,一个5刀的key就可以用半个月了。](https://gptnb.net)
 - [ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api)
 - 可以使用[Chub](https://chub.ai)的角色设定了，在设定的扩展里打开相关的功能即可，在用来角色扮演时会更好用，不过依然比不上类酒馆软件。
+- 支持使用[cohere.ai](https://dashboard.cohere.com/api-keys)的api key 来使用cohere.ai的模型，参数合设定写法有些差异，需要适当调整。
 
 ![主界面截图](./主界面预览.webp)
 

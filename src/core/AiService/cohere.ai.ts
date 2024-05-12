@@ -2,10 +2,10 @@ import { getToken, nextToken } from "@/core/tokens";
 import { Message } from "@/Models/DataBase";
 import axios from "axios";
 import { ChatCompletionRequestMessage } from "openai";
+import { KeyValueData } from "../db/KeyValueData";
 import { CtxRole } from "./../../Models/CtxRole";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
-import { KeyValueData } from "../db/KeyValueData";
 export class CohereAi implements IAiService {
   customContext = true;
   history = undefined;
@@ -158,7 +158,12 @@ export class CohereAi implements IAiService {
       })),
       message: context.slice(-1)[0].content,
       connectors: [...(this.severConfig.connectors || [])],
+      temperature: config.temperature,
+      max_tokens: config.max_tokens,
+      frequency_penalty: config.frequency_penalty,
+      presence_penalty: config.presence_penalty,
       model: config.model,
+      p: config.top_p,
       stream: true,
     };
     const controller = new AbortController();
