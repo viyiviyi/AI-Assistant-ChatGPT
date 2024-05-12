@@ -160,8 +160,12 @@ export class CohereAi implements IAiService {
       connectors: [...(this.severConfig.connectors || [])],
       temperature: config.temperature,
       max_tokens: config.max_tokens,
-      frequency_penalty: config.frequency_penalty,
-      presence_penalty: config.presence_penalty,
+      frequency_penalty: config.frequency_penalty
+        ? config.frequency_penalty
+        : undefined,
+      presence_penalty: config.frequency_penalty
+        ? undefined
+        : config.presence_penalty,
       model: config.model,
       p: config.top_p,
       stream: true,

@@ -3,7 +3,7 @@ import {
   aiServices,
   aiServiceType,
   getServiceInstance,
-  useService,
+  useService
 } from "@/core/AiService/ServiceProvider";
 import { BgImageStore } from "@/core/BgImageStore";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
@@ -17,7 +17,7 @@ import {
   DownloadOutlined,
   GithubOutlined,
   PlusOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
@@ -32,7 +32,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload,
+  Upload
 } from "antd";
 import { useRouter } from "next/router";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -709,7 +709,7 @@ export const Setting = ({
                       name="GptConfig_presence_penalty"
                       label="ChatGPT参数： presence_penalty"
                       extra={
-                        "减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多"
+                        "减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多。使用cohere.ai时，可以通过设置为0来关闭此参数，且当frequency_penalty有值时，此值无效。"
                       }
                     >
                       <InputNumber
@@ -723,7 +723,7 @@ export const Setting = ({
                       name="GptConfig_frequency_penalty"
                       label="ChatGPT参数： frequency_penalty"
                       extra={
-                        "减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词"
+                        "减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词。使用cohere.ai时，可以通过设置为0来关闭此参数。"
                       }
                     >
                       <InputNumber
