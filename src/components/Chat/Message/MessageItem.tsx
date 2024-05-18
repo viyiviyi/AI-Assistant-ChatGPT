@@ -1,7 +1,7 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks/hooks";
-import { createThrottleAndDebounce, onTextareaTab } from "@/core/utils/utils";
+import { onTextareaTab } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -90,9 +90,9 @@ export const MessageItem = ({
     );
   }, [chat.config.renderType, topic?.overrideSettings?.renderType]);
   useEffect(() => {
-    renderMessage[msg.id] = createThrottleAndDebounce(() => {
+    renderMessage[msg.id] = () => {
       setMessage({ text: msg.text });
-    }, 50);
+    };
     return () => {
       delete renderMessage[msg.id];
     };

@@ -167,9 +167,8 @@ export function MessageList({
     };
     return () => {
       delete topicRender[topic.id];
-      Object.keys(renderMessage).forEach((key) => delete renderMessage[key]);
     };
-  }, [renderMessage, topic, pageConf, resetCharCount]);
+  }, [renderMessage, topic.id, pageConf, resetCharCount]);
 
   return (
     <>
@@ -179,7 +178,11 @@ export function MessageList({
             block
             type="text"
             onClick={() => {
-              setPageConf({ ...pageConf,pageNumber:pageConf.pageNumber-1,repectInEnd:true });
+              setPageConf({
+                ...pageConf,
+                pageNumber: pageConf.pageNumber - 1,
+                repectInEnd: true,
+              });
             }}
           >
             上一页
@@ -225,7 +228,7 @@ export function MessageList({
                 topic={topic}
                 chat={chat}
                 onHidden={() => {
-                  setInsertIndex(-1)
+                  setInsertIndex(-1);
                 }}
               />
             )}
