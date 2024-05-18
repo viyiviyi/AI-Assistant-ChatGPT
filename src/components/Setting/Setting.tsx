@@ -121,7 +121,7 @@ export const Setting = ({
       config_bot_type: chatMgt?.config.botType,
       config_channel_id: chatMgt?.config.cloudChannelId?.trim(),
       config_page_size: chatMgt?.config.pageSize || 20,
-      config_page_repect: chatMgt?.config.pageRepect || 10,
+      config_page_repect: chatMgt?.config.pageRepect || 0,
       config_limit_pre_height: chatMgt?.config.limitPreHeight,
       config_disable_renderType: chatMgt?.config.renderType,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
@@ -176,6 +176,11 @@ export const Setting = ({
     chatMgt.gptConfig.top_p = values.GptConfig_top_p;
     chatMgt.gptConfig.presence_penalty = values.GptConfig_presence_penalty;
     chatMgt.gptConfig.frequency_penalty = values.GptConfig_frequency_penalty;
+    if (aiServices.current?.setConfig) {
+      chatMgt.gptConfig.aiServerConfig = aiServices.current?.setConfig({
+        connectors: values.chat_connectors?.map((v) => ({ id: v })) ?? [],
+      });
+    }
     chatMgt.saveGptConfig();
 
     chatMgt.config.baseUrl = values.setting_baseurl?.trim()?.replace(/\/$/, "");
@@ -227,10 +232,6 @@ export const Setting = ({
       saveToken(v.key, t);
     });
     reloadService(chatMgt.getChat(), KeyValueData.instance());
-    aiServices.current?.setConfig &&
-      aiServices.current?.setConfig({
-        connectors: values.chat_connectors?.map((v) => ({ id: v })) ?? [],
-      });
     setChat(chatMgt.getChat());
   }
   const panlProp = {

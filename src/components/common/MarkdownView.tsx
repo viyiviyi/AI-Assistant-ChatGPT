@@ -20,7 +20,7 @@ import React, {
   MouseEventHandler,
   useContext,
   useMemo,
-  useState,
+  useState
 } from "react";
 import rehypeHighlight from "rehype-highlight";
 import rehypeMathjax from "rehype-mathjax";
@@ -28,15 +28,15 @@ import rehypeReact from "rehype-react";
 // import rehypeStringify from "rehype-stringify";
 // import remarkFrontmatter from "remark-frontmatter";
 // import rehypeFormat from 'rehype-format';
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { onRender } from "@/middleware/execMiddleware";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
-import { SkipExport } from "./SkipExport";
 import markdownStyle from "../../styles/markdown.module.css";
-import { onRender } from "@/middleware/execMiddleware";
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
+import { SkipExport } from "./SkipExport";
 function toTxt(node: React.ReactNode): string {
   let str = "";
   if (Array.isArray(node)) {
@@ -124,15 +124,36 @@ const _MarkdownView = ({
   markdown,
   menu,
   doubleClick,
+  lastBlockLines = 0,
 }: {
   markdown: string;
   menu?: MenuProps;
   doubleClick?: React.MouseEventHandler<HTMLDivElement>;
+  lastBlockLines?: number;
 }) => {
   const { chatMgt } = useContext(ChatContext);
+  const firstBlock = useMemo(() => {
+    if (lastBlockLines) {
+      let lines = markdown.split("\n");
+      if (lines.length > lastBlockLines)
+        return lines.slice(0, lines.length - lastBlockLines).join("\n");
+    }
+    return markdown;
+  }, [lastBlockLines, markdown]);
+  const lastBlock = useMemo(() => {
+    if (lastBlockLines) {
+      let lines = markdown.split("\n");
+      if (lines.length > lastBlockLines)
+        return lines.slice(-lastBlockLines).join("\n");
+    }
+    return "";
+  }, [lastBlockLines, markdown]);
   const renderedContent = useMemo(() => {
-    return processor.processSync(pipe(markdown, chatMgt)).result;
-  }, [chatMgt, markdown]);
+    return processor.processSync(pipe(firstBlock, chatMgt)).result;
+  }, [chatMgt, firstBlock]);
+  const renderedLastContent = useMemo(() => {
+    return processor.processSync(pipe(lastBlock, chatMgt)).result;
+  }, [chatMgt, lastBlock]);
   const [checkTimes, setChrckTimes] = useState(0);
   const [timer, setTimer] = useState(setTimeout(() => {}, 0));
   const click: MouseEventHandler<HTMLDivElement> = (e) => {
@@ -152,6 +173,7 @@ const _MarkdownView = ({
   return (
     <div className={markdownStyle.markdown} onClick={click}>
       {renderedContent}
+      {lastBlock ? renderedLastContent : null}
     </div>
   );
 };

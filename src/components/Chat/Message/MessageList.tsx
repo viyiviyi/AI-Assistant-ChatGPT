@@ -1,3 +1,4 @@
+import { Hidden } from "@/components/common/Hidden";
 import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { useSendMessage } from "@/core/hooks/hooks";
 import {
@@ -9,7 +10,6 @@ import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { Button } from "antd";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Hidden } from "../../common/Hidden";
 import { MessageContext } from "../Chat";
 import { useInput } from "../InputUtil";
 import { MemoInsertInput } from "../InsertInput";
@@ -34,26 +34,20 @@ export function MessageList({
   const { reloadNav, forceRender } = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
-  const [pageSize, setPageSize] = useState(
-    Math.max(0, chat.config.pageSize || 0) || 20
-  );
-  const [repect, setRepect] = useState(
-    Math.max(0, chat.config.pageRepect || 0) || 10
-  );
-  const [pageCount, setPageCount] = useState(
-    Math.ceil(topic.messages.length / pageSize)
-  );
-  const [pageNumber, setPageNumber] = useState(pageCount);
+  const [pageConf, setPageConf] = useState({
+    totalPages:
+      Math.ceil(topic.messages.length / (chat.config.pageSize || 20)) || 1,
+    pageSize: chat.config.pageSize || 20,
+    pageNumber: 1,
+    repect: chat.config.pageRepect || 0,
+    repectInEnd: true,
+  });
   const [insertIndex, setInsertIndex] = useState(-1);
   const [countChar, setCountChar] = useState(0);
   const [ctxCountChar, setCtxCountChar] = useState(0);
-  const [renderMessage] = useState<{ [key: string]: () => void }>({});
-  const [messages, steMessages] = useState<Message[]>([
-    ...(forceRender
-      ? topic.messages
-      : topic.messages.slice(Math.max(-topic.messages.length, -pageSize))),
-  ]);
-  const [msgIdIdxMap] = useState(new Map<string, number>());
+  const renderMessage = useMemo<{ [key: string]: () => void }>(() => ({}), []);
+
+  const msgIdIdxMap = useMemo(() => new Map<string, number>(), []);
   const { sendMessage } = useSendMessage(chat);
   /**
    * 更新字数统计 最小更新间隔： 两秒
@@ -72,38 +66,37 @@ export function MessageList({
       setCtxCountChar(ctxCountChar);
     }, 2000);
   }, [chat, topic]);
-  /**
-   * 分页
-   */
-  const rangeMessage = useCallback(
-    (pageNumber: number = pageCount + 1, isEnd = true) => {
-      const { range, totalPages, pageIndex } = pagesUtil(
-        topic.messages,
-        pageNumber,
-        pageSize,
-        repect,
-        isEnd
-      );
-      resetCharCount();
-      setPageCount(totalPages);
-      steMessages(range);
-      setPageNumber(pageIndex);
-      msgIdIdxMap.clear();
-      topic.messages.forEach((m, idx) => {
-        msgIdIdxMap.set(m.id + "", idx);
-      });
-      return range;
-    },
-    [topic, pageSize, repect, msgIdIdxMap, pageCount, resetCharCount]
-  );
-  useEffect(resetCharCount, [resetCharCount]);
+
+  const messages = useMemo(() => {
+    if (forceRender) return topic.messages;
+    const { range, totalPages, pageIndex } = pagesUtil(
+      topic.messages,
+      pageConf.pageNumber,
+      pageConf.pageSize,
+      pageConf.repect,
+      pageConf.repectInEnd
+    );
+    msgIdIdxMap.clear();
+    topic.messages.forEach((m, idx) => {
+      msgIdIdxMap.set(m.id + "", idx);
+    });
+    pageConf.totalPages = totalPages;
+    pageConf.pageNumber = pageIndex;
+    resetCharCount();
+    return range;
+  }, [forceRender, msgIdIdxMap, pageConf, resetCharCount, topic.messages]);
+
   useEffect(() => {
-    rangeMessage(999999999999); // 为了省事，直接写了一个几乎不可能存在的页数，会自动转换成最后一页的
-  }, [pageSize, rangeMessage]);
-  useEffect(() => {
-    setPageSize(Math.max(0, chat.config.pageSize || 0) || 20);
-    setRepect(Math.max(0, chat.config.pageRepect || 0) || 10);
-  }, [chat]);
+    let pgs = Math.max(0, chat.config.pageSize || 0) || 20;
+    let totalPages = Math.ceil(topic.messages.length / pgs) || 1;
+    setPageConf((conf) => ({
+      pageSize: pgs,
+      repect: Math.max(0, chat.config.pageRepect || 0) || 0,
+      totalPages: totalPages,
+      pageNumber: totalPages,
+      repectInEnd: true,
+    }));
+  }, [chat.config.pageSize, chat.config.pageRepect, topic.messages.length]);
 
   useEffect(() => {
     /**
@@ -144,52 +137,49 @@ export function MessageList({
       chat.removeMessage(msg)?.then(() => {
         let idx = msgIdIdxMap.get(msg.id);
         delete renderMessage[msg.id];
-        rangeMessage(idx !== undefined ? idx : pageNumber);
+        pageConf.pageNumber = Math.min(
+          Math.ceil(((idx || 0) + 1) / pageConf.pageSize),
+          pageConf.totalPages
+        );
         reloadNav(topic);
       });
     },
-    [
-      renderMessage,
-      rangeMessage,
-      topic,
-      chat,
-      reloadNav,
-      pageNumber,
-      msgIdIdxMap,
-    ]
+    [chat, msgIdIdxMap, renderMessage, pageConf, reloadNav, topic]
   );
   useEffect(() => {
     /**
      * 用于在其他组件刷新话题或消息
      */
     topicRender[topic.id] = (messageId?: string | number) => {
-      resetCharCount();
       if (typeof messageId == "number") {
-        rangeMessage(
-          Math.ceil((messageId + 1) / pageSize),
-          messageId % pageSize >= pageSize / 2
+        pageConf.pageNumber = Math.min(
+          Math.ceil((messageId + 1 || 1) / pageConf.pageSize),
+          pageConf.totalPages
         );
+        setPageConf({ ...pageConf });
         return;
       }
       if (messageId) {
         return renderMessage[messageId] && renderMessage[messageId]();
       }
-      rangeMessage();
+      pageConf.pageNumber = pageConf.totalPages;
+      setPageConf({ ...pageConf });
     };
     return () => {
       delete topicRender[topic.id];
       Object.keys(renderMessage).forEach((key) => delete renderMessage[key]);
     };
-  }, [rangeMessage, renderMessage, topic, pageSize, resetCharCount]);
+  }, [renderMessage, topic, pageConf, resetCharCount]);
+
   return (
     <>
-      {pageNumber > 1 ? (
+      {pageConf.pageNumber > 1 ? (
         <Button.Group style={{ width: "100%" }}>
           <Button
             block
             type="text"
             onClick={() => {
-              rangeMessage(pageNumber - 1);
+              setPageConf({ ...pageConf,pageNumber:pageConf.pageNumber-1,repectInEnd:true });
             }}
           >
             上一页
@@ -198,7 +188,9 @@ export function MessageList({
             block
             type="text"
             onClick={() => {
-              rangeMessage(1);
+              pageConf.pageNumber = 1;
+              pageConf.repectInEnd = true;
+              setPageConf({ ...pageConf });
             }}
           >
             顶部
@@ -232,7 +224,9 @@ export function MessageList({
                 insertIndex={idx + 1}
                 topic={topic}
                 chat={chat}
-                onHidden={() => setInsertIndex(-1)}
+                onHidden={() => {
+                  setInsertIndex(-1)
+                }}
               />
             )}
             {i == messages.length - 1 && (
@@ -241,10 +235,10 @@ export function MessageList({
           </div>
         );
       })}
-
       <Hidden
         hidden={
-          chat.config.renderType != "document" || topic.messages.length < 1
+          (topic.overrideSettings?.renderType || chat.config.renderType) !=
+            "document" || topic.messages.length < 1
         }
       >
         <div style={{ fontSize: ".8em", textAlign: "center", opacity: 0.5 }}>
@@ -252,13 +246,15 @@ export function MessageList({
           <span style={{ marginLeft: 16 }}>上下文：{ctxCountChar}</span>
         </div>
       </Hidden>
-      {pageNumber < pageCount ? (
+      {pageConf.pageNumber < pageConf.totalPages ? (
         <Button.Group style={{ width: "100%", marginTop: "2em" }}>
           <Button
             block
             type="text"
             onClick={() => {
-              rangeMessage(pageNumber + 1, false);
+              pageConf.pageNumber += 1;
+              pageConf.repectInEnd = false;
+              setPageConf({ ...pageConf });
             }}
           >
             下一页
@@ -267,7 +263,9 @@ export function MessageList({
             block
             type="text"
             onClick={() => {
-              rangeMessage(pageCount);
+              pageConf.pageNumber = pageConf.totalPages;
+              pageConf.repectInEnd = false;
+              setPageConf({ ...pageConf });
             }}
           >
             底部

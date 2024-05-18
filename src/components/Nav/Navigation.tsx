@@ -7,7 +7,11 @@ import React, { useContext, useState } from "react";
 import { reloadTopic } from "../Chat/Message/MessageList";
 import { SkipExport } from "../common/SkipExport";
 const Navigation = () => {
-  const { chatMgt: chat, activityTopic, setActivityTopic } = useContext(ChatContext);
+  const {
+    chatMgt: chat,
+    activityTopic,
+    setActivityTopic,
+  } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [showCheckeds, setShowCheckeds] = useState(false);
   return (
@@ -48,12 +52,15 @@ const Navigation = () => {
                 paddingTop: ".5em",
               }}
               onClick={() => {
-                setActivityTopic(t);
-                reloadTopic(t.id, t.messages.length - 1);
-                activityScroll({ botton: true });
-                setTimeout(() => {
-                  scrollToBotton(t.messages.slice(-1)[0]?.id || t.id);
-                }, 200);
+                if (t.id != activityTopic?.id) {
+                  setActivityTopic(t);
+                } else {
+                  reloadTopic(t.id, t.messages.length - 1);
+                }
+                // activityScroll({ botton: true });
+                // setTimeout(() => {
+                //   scrollToBotton(t.messages.slice(-1)[0]?.id || t.id);
+                // }, 200);
               }}
             >
               <Typography.Text
@@ -79,8 +86,9 @@ const Navigation = () => {
                         lineHeight: 1.5,
                       }}
                       onClick={() => {
-                        setActivityTopic(t);
-                        reloadTopic(t.id, idx);
+                        if (t.id != activityTopic?.id) {
+                          setActivityTopic(t);
+                        } else reloadTopic(t.id, idx);
                         activityScroll({ botton: true });
                         setTimeout(() => {
                           scrollToBotton(m.id);
@@ -107,8 +115,11 @@ const Navigation = () => {
                   lineHeight: 1.5,
                 }}
                 onClick={() => {
-                  setActivityTopic(t);
-                  reloadTopic(t.id, m.index);
+                  if (t.id != activityTopic?.id) {
+                    setActivityTopic(t);
+                  } else {
+                    reloadTopic(t.id, m.index);
+                  }
                   activityScroll({ botton: true });
                   setTimeout(() => {
                     scrollToBotton(m.msgId);

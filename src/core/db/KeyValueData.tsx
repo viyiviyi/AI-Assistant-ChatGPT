@@ -1,4 +1,3 @@
-import { aiServiceType } from "../AiService/ServiceProvider";
 
 export interface DatasetProvider {
   getItem(key: string): string | null;
@@ -84,27 +83,27 @@ export class KeyValueData {
       save ? JSON.stringify(this._UIConfig) : "{}"
     );
   }
-  private _aiServerConfig: { [key in aiServiceType]?: any } = {};
-  getAiServerConfig(aiServerType: aiServiceType): any {
-    if (this._slackProxyUrl) return this._aiServerConfig[aiServerType];
-    try {
-      return JSON.parse(
-        this.provider.getItem(this.dataKeyPrefix + "AiServerConfig") || "{}"
-      )[aiServerType];
-    } catch {
-      return undefined;
-    }
-  }
-  setAiServerConfig(
-    val: { [key in aiServiceType]?: any },
-    save: boolean = true
-  ) {
-    this._aiServerConfig = { ...this._aiServerConfig, ...val };
-    this.provider.setItem(
-      this.dataKeyPrefix + "AiServerConfig",
-      save ? JSON.stringify(this._aiServerConfig) : "{}"
-    );
-  }
+  // private _aiServerConfig: { [key in aiServiceType]?: any } = {};
+  // getAiServerConfig(aiServerType: aiServiceType): any {
+  //   if (this._slackProxyUrl) return this._aiServerConfig[aiServerType];
+  //   try {
+  //     return JSON.parse(
+  //       this.provider.getItem(this.dataKeyPrefix + "AiServerConfig") || "{}"
+  //     )[aiServerType];
+  //   } catch {
+  //     return undefined;
+  //   }
+  // }
+  // setAiServerConfig(
+  //   val: { [key in aiServiceType]?: any },
+  //   save: boolean = true
+  // ) {
+  //   this._aiServerConfig = { ...this._aiServerConfig, ...val };
+  //   this.provider.setItem(
+  //     this.dataKeyPrefix + "AiServerConfig",
+  //     save ? JSON.stringify(this._aiServerConfig) : "{}"
+  //   );
+  // }
   static instance(): KeyValueData {
     return KeyValueData._instance
       ? KeyValueData._instance

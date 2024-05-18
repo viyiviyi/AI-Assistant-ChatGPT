@@ -63,6 +63,13 @@ export interface Message {
   cloudTopicId?: string;
   cloudMsgId?: string;
   model?: string;
+  searchQueries?: string[];
+  searchResults?: {
+    title: string;
+    url: string;
+    timestamp: string;
+    snippet: string;
+  }[];
 }
 
 export interface Topic {
@@ -108,4 +115,5 @@ export interface GptConfig {
   presence_penalty?: number;
   frequency_penalty?: number;
   updateTime?: number;
+  aiServerConfig?: any;
 }

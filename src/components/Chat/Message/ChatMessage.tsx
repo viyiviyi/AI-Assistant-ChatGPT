@@ -76,7 +76,7 @@ export const ChatMessage = () => {
     if (closeAll) {
       setActivityKey([]);
     } else {
-      if (activityTopic && activityTopic.id != topicId)
+      if (activityTopic?.id && activityTopic?.id != topicId)
         setActivityKey((v) => {
           if (v.includes(activityTopic.id)) {
             return v.filter((v) => v != activityTopic.id);
@@ -85,7 +85,7 @@ export const ChatMessage = () => {
           }
         });
     }
-  }, [activityTopic, closeAll, topicId]);
+  }, [activityTopic?.id, closeAll, topicId]);
   const handlerDelete = useCallback(
     (topic: TopicMessage) => {
       chat.removeTopic(topic!).then(() => {

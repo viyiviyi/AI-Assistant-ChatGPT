@@ -182,6 +182,12 @@ export function useSendMessage(chat: ChatManagement) {
               res.cloud_topic_id
             );
           }
+          if (res.searchQueries) {
+            result.searchQueries = res.searchQueries;
+          }
+          if (res.searchResults) {
+            result.searchResults = res.searchResults;
+          }
           result.text = res.text + (res.end ? "" : "\n\nloading...");
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           loadingMsgs[result.id] = {

@@ -154,7 +154,8 @@ export function getServiceInstance(
     case "CohereAi":
       return new CohereAi(
         chat.config.userServerUrl || baseUrl.cohereAi,
-        tokens
+        tokens,
+        chat.gptConfig
       );
     case "APICenter":
       return new APICenter(

@@ -2,7 +2,7 @@ import { aiServiceType } from "@/core/AiService/ServiceProvider";
 import { CtxRole } from "@/Models/CtxRole";
 import {
   ChatCompletionRequestMessage,
-  CreateChatCompletionRequest,
+  CreateChatCompletionRequest
 } from "openai";
 import { Message } from "../../Models/DataBase";
 import { ServiceTokens } from "./ServiceProvider";
@@ -16,7 +16,7 @@ export interface IAiService {
    */
   customContext: boolean;
   models: () => Promise<Array<string>>;
-  setConfig?: (config: any) => void;
+  setConfig?: (config: any) => any;
   getCurrentConnectors?: () => { name: string; id: string }[];
   getConnectors?: () => Promise<{ name: string; id: string }[]>;
   sendMessage(input: {
@@ -29,6 +29,13 @@ export interface IAiService {
       cloud_topic_id?: string;
       cloud_send_id?: string;
       cloud_result_id?: string;
+      searchQueries?: string[];
+      searchResults?: {
+        title: string;
+        url: string;
+        timestamp: string;
+        snippet: string;
+      }[];
       stop: () => void;
     }) => Promise<void>;
     config: InputConfig;

@@ -1,8 +1,7 @@
 import { getToken, nextToken } from "@/core/tokens";
-import { Message } from "@/Models/DataBase";
+import { GptConfig, Message } from "@/Models/DataBase";
 import axios from "axios";
 import { ChatCompletionRequestMessage } from "openai";
-import { KeyValueData } from "../db/KeyValueData";
 import { CtxRole } from "./../../Models/CtxRole";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
@@ -12,15 +11,14 @@ export class CohereAi implements IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
   severConfig: { connectors?: any[] } = {};
-  constructor(baseUrl: string, tokens: ServiceTokens) {
+  constructor(baseUrl: string, tokens: ServiceTokens, config: GptConfig) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
-    this.severConfig =
-      KeyValueData.instance().getAiServerConfig(this.serverType) || {};
+    this.severConfig = config.aiServerConfig || {};
   }
   serverType: aiServiceType = "CohereAi";
   static modelCache: string[] = [];
-  setConfig = (config: any) => {
+  setConfig: (c: any) => any = (config: any) => {
     if (typeof config === "object" && "connectors" in config) {
       if (Array.isArray(config.connectors)) {
         this.severConfig.connectors = config.connectors
@@ -30,9 +28,7 @@ export class CohereAi implements IAiService {
               return { id: v.id };
             }
           });
-        KeyValueData.instance().setAiServerConfig({
-          [this.serverType]: this.severConfig,
-        });
+        return this.severConfig;
       }
     }
   };
@@ -98,6 +94,13 @@ export class CohereAi implements IAiService {
       error: boolean;
       text: string;
       end: boolean;
+      searchQueries?: string[];
+      searchResults?: {
+        title: string;
+        url: string;
+        timestamp: string;
+        snippet: string;
+      }[];
       stop?: (() => void) | undefined;
     }) => Promise<void>;
     config: InputConfig;
@@ -142,6 +145,13 @@ export class CohereAi implements IAiService {
       error: boolean;
       text: string;
       end: boolean;
+      searchQueries?: string[];
+      searchResults?: {
+        title: string;
+        url: string;
+        timestamp: string;
+        snippet: string;
+      }[];
       stop?: () => void;
     }) => Promise<void>
   ) {
@@ -159,7 +169,7 @@ export class CohereAi implements IAiService {
       message: context.slice(-1)[0].content,
       connectors: [...(this.severConfig.connectors || [])],
       temperature: config.temperature,
-      max_tokens: config.max_tokens,
+      max_tokens: config.max_tokens ? config.max_tokens : undefined,
       frequency_penalty: config.frequency_penalty
         ? config.frequency_penalty
         : undefined,
@@ -209,6 +219,7 @@ export class CohereAi implements IAiService {
         } catch (error) {}
       };
       if (reader) {
+        let decodedValue = "";
         while (true) {
           const { done, value } = await reader.read();
           if (done) {
@@ -219,7 +230,7 @@ export class CohereAi implements IAiService {
             });
             break;
           }
-          const decodedValue = new TextDecoder("utf-8").decode(value);
+          decodedValue = decodedValue + new TextDecoder("utf-8").decode(value);
           const lines = decodedValue.split("\n");
           for (const line of lines) {
             if (line.trim() === "") {
@@ -229,20 +240,47 @@ export class CohereAi implements IAiService {
               let data;
               try {
                 data = JSON.parse(line);
+                decodedValue = "";
               } catch (error) {
                 continue;
               }
               if (data.event_type == "stream-end") {
+                full_response = (data.response ? data.response : data.text)
+                  .text;
                 await onMessage({
                   error: false,
                   end: true,
                   text: full_response,
                 });
-                break;
+                return full_response;
+              }
+              if (data.event_type == "search-queries-generation") {
+                await onMessage({
+                  error: false,
+                  end: false,
+                  text: "网络搜索中...",
+                  searchQueries: data.search_queries?.map((v: any) => v.text),
+                  stop: stop,
+                });
+              }
+              if (data.event_type == "search-results") {
+                await onMessage({
+                  error: false,
+                  end: false,
+                  text: "网络搜索完成",
+                  searchQueries: data.search_results?.map(
+                    (v: any) => v.search_query?.text
+                  ),
+                  searchResults: data.documents?.map((v: any) => ({
+                    title: v.title,
+                    url: v.url,
+                    timestamp: v.timestamp,
+                  })),
+                  stop: stop,
+                });
               }
               if (data.event_type == "text-generation") {
-                const content = data.text;
-                full_response += content;
+                full_response += data.text;
                 await onMessage({
                   error: false,
                   end: false,

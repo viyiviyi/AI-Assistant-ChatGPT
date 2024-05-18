@@ -46,7 +46,7 @@ export function pagesUtil<T>(
   repect = 10,
   repectInEnd = true
 ): { range: T[]; totalPages: number; pageIndex: number } {
-  if (arr.length <= 0) return { range: [], totalPages: 0, pageIndex: 1 };
+  if (arr.length <= 0) return { range: [], totalPages: 1, pageIndex: 1 };
   if (arr.length < pageSize + repect)
     return { range: [...arr], totalPages: 1, pageIndex: 1 };
   if (pageSize <= 0) pageSize = 20;

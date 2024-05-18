@@ -28,7 +28,7 @@ export const MessageContext = React.createContext({
 });
 
 export const Chat = () => {
-  const { chatMgt: chat, forceRender } = useContext(ChatContext);
+  const { forceRender } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [cite, setCite] = useState<Message>();
   const [_, contextHolder] = message.useMessage();

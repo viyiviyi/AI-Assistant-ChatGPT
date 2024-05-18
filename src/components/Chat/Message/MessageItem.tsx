@@ -25,7 +25,8 @@ import {
   Segmented,
   Space,
   theme,
-  Tooltip
+  Tooltip,
+  Typography
 } from "antd";
 import copy from "copy-to-clipboard";
 import Image from "next/image";
@@ -91,7 +92,7 @@ export const MessageItem = ({
   useEffect(() => {
     renderMessage[msg.id] = createThrottleAndDebounce(() => {
       setMessage({ text: msg.text });
-    }, 200);
+    }, 50);
     return () => {
       delete renderMessage[msg.id];
     };
@@ -348,6 +349,7 @@ export const MessageItem = ({
               setMessage({ text: msg.text });
               setEdit(true);
             }}
+            lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
           />
         )}
       </div>
@@ -357,9 +359,9 @@ export const MessageItem = ({
     EditUtil,
     renderType,
     messageText,
-    // inputRef,
     chat.config.disableStrikethrough,
     msg,
+    loadingMsgs,
     saveMsg,
     ctxRole,
   ]);
@@ -442,6 +444,29 @@ export const MessageItem = ({
                   lineHeight: 1.7,
                 }}
               >
+                <Hidden hidden={!msg.searchQueries && !msg.searchResults}>
+                  <Hidden hidden={!msg.searchQueries}>
+                    <p>搜索关键词：</p>
+                    {msg.searchQueries?.map((v) => (
+                      <p>{v}</p>
+                    ))}
+                  </Hidden>
+                  <Hidden hidden={!msg.searchResults}>
+                    <p>搜索结果：</p>
+                    {msg.searchResults?.map((v) => (
+                      <p>
+                        {v.timestamp}
+                        <Typography.Link
+                          rel="noopener noreferrer"
+                          target={"_blank"}
+                          href={v.url}
+                        >
+                          {v.title}
+                        </Typography.Link>
+                      </p>
+                    ))}
+                  </Hidden>
+                </Hidden>
                 <Tooltip
                   placement="rightBottom"
                   title={
@@ -585,6 +610,47 @@ export const MessageItem = ({
               </SkipExport>
             </Hidden>
           </div>
+          <Hidden hidden={!msg.searchQueries && !msg.searchResults}>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                padding: "10px 16px",
+                flexDirection: "column",
+                boxSizing: "border-box",
+                borderRadius: token.borderRadiusLG,
+                border: "1px solid " + token.colorFillAlter,
+                backgroundColor: token.colorInfoBg,
+                marginBottom: "12px",
+                boxShadow: token.boxShadowTertiary,
+                lineHeight: 1.7,
+              }}
+            >
+              <Hidden hidden={!msg.searchQueries}>
+                <p>
+                  {"搜索关键词："}
+                  {msg.searchQueries?.map((v) => (
+                    <i>{v}</i>
+                  ))}
+                </p>
+              </Hidden>
+              <Hidden hidden={!msg.searchResults}>
+                <p>{"参考文档："}</p>
+                {msg.searchResults?.map((v) => (
+                  <h5>
+                    <Typography.Link
+                      rel="noopener noreferrer"
+                      target={"_blank"}
+                      href={v.url}
+                    >
+                      {v.title}
+                      <span style={{ marginLeft: "2em" }}>{v.timestamp}</span>
+                    </Typography.Link>
+                  </h5>
+                ))}
+              </Hidden>
+            </div>
+          </Hidden>
           <div
             style={{
               flex: 1,
