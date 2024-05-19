@@ -48,7 +48,7 @@ export const DevBaseUrl: BaseUrlScheam = {
   slackClaude: "http://slack.yiyiooo.com",
   Kamiya: ProxyBaseUrl.Kamiya,
   dashscope_alyun: "https://dashscope-proxy.yiyiooo.workers.dev",
-  cohereAi: "https://api.cohere.ai",
+  cohereAi: "https://proxy.eaias.com/https://api.cohere.ai",
 };
 
 export const httpProxyUrl = "https://proxy.eaias.com/";

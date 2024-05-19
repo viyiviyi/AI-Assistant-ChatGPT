@@ -507,7 +507,10 @@ export const Setting = ({
                     res.length &&
                     !res.includes(form.getFieldValue("GptConfig_model"))
                   ) {
-                    form.setFieldValue("GptConfig_model", res[0]);
+                    form.setFieldValue(
+                      "GptConfig_model",
+                      server?.defaultModel || res[0]
+                    );
                   }
                 });
                 setConnectors([]);

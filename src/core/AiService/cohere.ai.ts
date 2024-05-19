@@ -10,7 +10,8 @@ export class CohereAi implements IAiService {
   history = undefined;
   baseUrl: string;
   tokens: ServiceTokens;
-  severConfig: { connectors?: any[] } = {};
+  severConfig: { connectors?: { name: string; id: string; options?: any }[] } =
+    {};
   constructor(baseUrl: string, tokens: ServiceTokens, config: GptConfig) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
@@ -25,7 +26,7 @@ export class CohereAi implements IAiService {
           .filter((v: any) => v)
           .map((v: any) => {
             if ("id" in v) {
-              return { id: v.id };
+              return { id: v.id, name: v.name, options: v.options };
             }
           });
         return this.severConfig;
@@ -63,9 +64,21 @@ export class CohereAi implements IAiService {
       )
       .catch((err) => this.defaultModels);
   };
+  defaultModel = "command-r-plus";
   defaultModels = ["command-r-plus"];
   getCurrentConnectors = () => {
     return this.severConfig.connectors || [];
+  };
+  getConnectorsConfig = () => {
+    return (
+      this.severConfig.connectors?.map((v) => {
+        let item = { ...v };
+        if (v.id == "web-search") {
+          item.options = { site: "", ...(v.options || {}) };
+        }
+        return item;
+      }) || []
+    );
   };
   async getConnectors(): Promise<{ name: string; id: string }[]> {
     var token = getToken(this.serverType);

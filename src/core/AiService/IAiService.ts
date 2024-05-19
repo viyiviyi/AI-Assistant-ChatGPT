@@ -16,8 +16,10 @@ export interface IAiService {
    */
   customContext: boolean;
   models: () => Promise<Array<string>>;
+  defaultModel?: string;
   setConfig?: (config: any) => any;
   getCurrentConnectors?: () => { name: string; id: string }[];
+  getConnectorsConfig?: () => { name: string; id: string; options?: any }[];
   getConnectors?: () => Promise<{ name: string; id: string }[]>;
   sendMessage(input: {
     msg: Message;

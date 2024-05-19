@@ -1,8 +1,17 @@
+import { aiServices } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { useScreenSize } from "@/core/hooks/hooks";
 import { TopicMessage } from "@/Models/Topic";
 import { SettingOutlined } from "@ant-design/icons";
-import { Button, Form, InputNumber, Segmented, Switch, Tabs } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Segmented,
+  Switch,
+  Tabs
+} from "antd";
 import {
   CSSProperties,
   useCallback,
@@ -66,6 +75,7 @@ export const TopicConfig = ({
       edit: false,
     }))
   );
+
   // 会话的设定
   const [virtualRoleSetting, setVirtualRoleSetting] = useState(
     chatMgt.virtualRole.settings?.map((v, i) => ({
@@ -74,10 +84,12 @@ export const TopicConfig = ({
       edit: false,
     })) || []
   );
+
   const currentvirtualRoleSettings = useMemo(
     () => ({ current: virtualRoleSetting }),
     [virtualRoleSetting]
   );
+
   useEffect(() => {
     setVirtualRoleSetting((settings) => {
       if (!overrideVirtualRole) {
@@ -105,6 +117,7 @@ export const TopicConfig = ({
       return [...settings];
     });
   }, [chatMgt, overrideVirtualRole]);
+
   // 话题内设定
   const [virtualRole] = useState(
     topic.virtualRole?.map((v, i) => ({
@@ -113,10 +126,17 @@ export const TopicConfig = ({
       edit: false,
     })) || []
   );
+
+  const [connectorsConfig, setConnectorsConfig] = useState(
+    aiServices.current?.getConnectorsConfig &&
+      aiServices.current?.getConnectorsConfig()
+  );
+
   const currentSettings = useMemo(
     () => ({ current: virtualRole }),
     [virtualRole]
   );
+
   const tabItemStyle: CSSProperties = {
     maxHeight: screenSize.height - 300,
     overflow: "auto",
@@ -164,10 +184,15 @@ export const TopicConfig = ({
         ctx: v.ctx.map((c) => ({ ...c, edit: undefined })),
         edit: undefined,
       }));
+    if (aiServices.current?.setConfig) {
+      aiServices.current?.setConfig({ connectors: connectorsConfig });
+    }
+
     chatMgt.saveTopic(topic.id, topic.name);
     reloadTopic(topic.id);
   }, [
     chatMgt,
+    connectorsConfig,
     countCtx,
     currentSettings,
     currentvirtualRoleSettings,
@@ -193,7 +218,8 @@ export const TopicConfig = ({
             key: "overrideSettings",
             children: (
               <div style={{ ...tabItemStyle }}>
-                <Form.Item label={"这些设置会覆盖会话的设置"}>
+                <Form.Item>
+                  <Form.Item label={"这些设置会覆盖会话的设置"}></Form.Item>
                   <Form.Item label="上下文数量">
                     <InputNumber
                       value={
@@ -255,6 +281,53 @@ export const TopicConfig = ({
                       {"恢复默认"}
                     </Button>
                   </Form.Item>
+                </Form.Item>
+                <Form.Item>
+                  {connectorsConfig &&
+                    connectorsConfig.map((c) => {
+                      if (c.options) {
+                        return (
+                          <Form.Item key={c.id} label={"配置：" + c.id+' (这些配置不会持久保持)'}>
+                            {(() => {
+                              if (typeof c.options === "string") {
+                                return (
+                                  <Form.Item>
+                                    <Input placeholder="请输入配置内容" />
+                                  </Form.Item>
+                                );
+                              } else if (
+                                typeof c.options === "object" &&
+                                Array.isArray(c.options)
+                              ) {
+                                return c.options.map((o) => {
+                                  if (typeof o === "string") return <></>;
+                                });
+                              } else if (typeof c.options === "object") {
+                                return Object.keys(c.options).map((o) => {
+                                  return (
+                                    <Form.Item key={c.id + "_" + o} label={o}>
+                                      <Input
+                                        placeholder="请输入配置内容"
+                                        defaultValue={c.options[o]}
+                                        onChange={(e) => {
+                                          c.options[o] = e.target.value;
+                                          setConnectorsConfig([
+                                            ...connectorsConfig,
+                                          ]);
+                                        }}
+                                      />
+                                    </Form.Item>
+                                  );
+                                  return <></>;
+                                });
+                              }
+                              return <></>;
+                            })()}
+                          </Form.Item>
+                        );
+                      }
+                      return <></>;
+                    })}
                 </Form.Item>
               </div>
             ),
