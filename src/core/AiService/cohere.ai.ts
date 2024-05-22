@@ -258,8 +258,7 @@ export class CohereAi implements IAiService {
                 continue;
               }
               if (data.event_type == "stream-end") {
-                full_response = (data.response ? data.response : data.text)
-                  .text;
+                full_response = data.response ? data.response.text : data.text;
                 await onMessage({
                   error: false,
                   end: true,

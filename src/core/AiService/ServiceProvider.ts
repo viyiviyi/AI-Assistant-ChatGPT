@@ -34,14 +34,14 @@ export const DefaultBaseUrl: BaseUrlScheam = {
   slackClaude: "https://slack.com",
   Kamiya: "https://p0.kamiya.dev",
   dashscope_alyun: "https://dashscope.aliyuncs.com",
-  cohereAi: "https://api.cohere.ai",
+  cohereAi: "https://proxy.eaias.com/https://api.cohere.ai",
 };
 export const ProxyBaseUrl: BaseUrlScheam = {
   chatGPT: "https://chat.eaias.com",
   slackClaude: "https://slack.eaias.com",
   Kamiya: "https://p0.kamiya.dev",
   dashscope_alyun: "https://dashscope.alyun.proxy.eaias.com",
-  cohereAi: "https://api.cohere.ai",
+  cohereAi: "https://proxy.eaias.com/https://api.cohere.ai",
 };
 export const DevBaseUrl: BaseUrlScheam = {
   chatGPT: ProxyBaseUrl.chatGPT,
