@@ -76,7 +76,6 @@ export const MessageItem = ({
   const [messageText, setMessage] = useState({ text: "" });
   // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
   const [successLines, setSuccessLines] = useState(msg.text);
-  const [isPause, setIsPause] = useState(false);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
@@ -300,6 +299,7 @@ export const MessageItem = ({
   );
   const RuningText = () => {
     const [runLines, setRunLines] = useState("");
+    const [isPause, setIsPause] = useState(false);
     useEffect(() => {
       renderMessage[msg.id] = () => {
         // 如果正在运行，则分成两部分显示
@@ -330,20 +330,27 @@ export const MessageItem = ({
       return () => {
         delete renderMessage[msg.id];
       };
-    }, []);
+    }, [isPause]);
 
     return (
       <Hidden hidden={!loadingMsgs[msg.id]}>
-        <div>
+        <div style={{ minHeight: "3.5em", position: "relative" }}>
           {runLines}
           <div
-            style={{ textAlign: "center", fontSize:30 }}
+            style={{
+              width: "100%",
+              textAlign: "center",
+              fontSize: 24,
+              position: "absolute",
+              bottom: 0,
+              opacity: 0.7,
+            }}
             onClick={() => {
               setIsPause((v) => !v);
             }}
           >
             {isPause ? (
-              <ForwardOutlined style={{ color: token.colorPrimary }} />
+              <ForwardOutlined style={{ color: token.colorPrimaryActive }} />
             ) : (
               <PauseOutlined
                 style={{ color: token.colorPrimary }}

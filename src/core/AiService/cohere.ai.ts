@@ -241,7 +241,7 @@ export class CohereAi implements IAiService {
           decodedValue = decodedValue + new TextDecoder("utf-8").decode(value);
           const lines = decodedValue.split("\n");
           for (const line of lines) {
-            if (line.trim() === "") {
+            if (!line.trim()) {
               continue;
             }
             try {
