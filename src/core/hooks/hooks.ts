@@ -147,7 +147,7 @@ export function useSendMessage(chat: ChatManagement) {
       let isFirst = true;
       chat.pushMessage(result, idx + 1).then((r) => {
         result = r;
-        reloadTopic(topic.id, result.id);
+        reloadTopic(topic.id);
       });
       let save = createThrottleAndDebounce((isEnd) => {
         // result.text = text;
