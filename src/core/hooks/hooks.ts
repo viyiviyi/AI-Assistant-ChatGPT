@@ -145,6 +145,10 @@ export function useSendMessage(chat: ChatManagement) {
         current: chat,
       };
       let isFirst = true;
+      chat.pushMessage(result, idx + 1).then((r) => {
+        result = r;
+        reloadTopic(topic.id, result.id);
+      });
       let save = createThrottleAndDebounce((isEnd) => {
         // result.text = text;
         chat.pushMessage(result, idx + 1).then((r) => {
@@ -188,7 +192,7 @@ export function useSendMessage(chat: ChatManagement) {
           if (res.searchResults) {
             result.searchResults = res.searchResults;
           }
-          result.text = res.text + (res.end ? "" : "\n\nloading...");
+          result.text = res.text;
           result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
           loadingMsgs[result.id] = {
             stop: res.stop,
