@@ -13,7 +13,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -26,7 +26,7 @@ import {
   Space,
   theme,
   Tooltip,
-  Typography
+  Typography,
 } from "antd";
 import copy from "copy-to-clipboard";
 import Image from "next/image";
@@ -36,7 +36,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 import { Hidden } from "../../common/Hidden";
 import { MarkdownView } from "../../common/MarkdownView";
@@ -74,6 +74,9 @@ export const MessageItem = ({
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState({ text: "" });
   // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
+  const [successLines, setSuccessLines] = useState(msg.text);
+  const [runLines, setRunLines] = useState("");
+  const [isPause, setIsPause] = useState(false);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
@@ -91,7 +94,28 @@ export const MessageItem = ({
   }, [chat.config.renderType, topic?.overrideSettings?.renderType]);
   useEffect(() => {
     renderMessage[msg.id] = () => {
-      setMessage({ text: msg.text });
+      // 如果正在运行，则分成两部分显示
+      if (!!loadingMsgs[msg.id]) {
+        if (!isPause) {
+          setSuccessLines((txt) => {
+            let runText = msg.text.slice(0, txt.length);
+            let enterIdx = runText.lastIndexOf("\n");
+            let successText = txt;
+            if (enterIdx >= 0) {
+              // 最新的内容里面有换行符
+              successText = txt + runText.substring(0, enterIdx);
+              runText = runText.substring(enterIdx);
+            }
+            setRunLines(runText);
+            return successText;
+          });
+        }
+      } else {
+        setRunLines((rt) => {
+          setSuccessLines((v) => v + rt);
+          return "";
+        });
+      }
     };
     return () => {
       delete renderMessage[msg.id];
@@ -342,8 +366,8 @@ export const MessageItem = ({
           <MemoMarkdownView
             markdown={
               chat.config.disableStrikethrough
-                ? msg.text.replaceAll("~", "～")
-                : msg.text
+                ? successLines.replaceAll("~", "～")
+                : successLines
             }
             doubleClick={() => {
               setMessage({ text: msg.text });
