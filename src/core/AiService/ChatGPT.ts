@@ -107,11 +107,6 @@ export class ChatGPT implements IAiService {
         text: "请填写API key后继续使用。",
       });
     }
-    onMessage({
-      end: false,
-      error: false,
-      text: "",
-    });
     this.tokens.openai!.apiKey = token.current;
     nextToken(token);
     if (config.model.startsWith("gpt-3")) {

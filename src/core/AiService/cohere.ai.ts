@@ -136,11 +136,6 @@ export class CohereAi implements IAiService {
         text: "最后一条消息的身份必须是用户，请注意设定内的最后一条设定的身份。",
       });
     }
-    onMessage({
-      end: false,
-      error: false,
-      text: "",
-    });
     this.tokens.openai!.apiKey = token.current;
     nextToken(token);
     await this.generateChatStream(context, config, onMessage);

@@ -9,6 +9,7 @@ import {
   CopyOutlined,
   DeleteOutlined,
   EditOutlined,
+  ForwardOutlined,
   MessageOutlined,
   PauseOutlined,
   PlusOutlined,
@@ -333,12 +334,22 @@ export const MessageItem = ({
 
     return (
       <Hidden hidden={!loadingMsgs[msg.id]}>
-        <div
-          onClick={() => {
-            setIsPause((v) => !v);
-          }}
-        >
+        <div>
           {runLines}
+          <div
+            style={{ textAlign: "center", fontSize:30 }}
+            onClick={() => {
+              setIsPause((v) => !v);
+            }}
+          >
+            {isPause ? (
+              <ForwardOutlined style={{ color: token.colorPrimary }} />
+            ) : (
+              <PauseOutlined
+                style={{ color: token.colorPrimary }}
+              ></PauseOutlined>
+            )}
+          </div>
         </div>
       </Hidden>
     );
