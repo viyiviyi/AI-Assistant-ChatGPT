@@ -81,6 +81,8 @@ export function InputUtil() {
   const onSubmit = useCallback(
     async function (isNewTopic: boolean) {
       let text = inputText.text.trim();
+      activityScroll({ botton: true });
+      if (!text) return;
       text = ChatManagement.parseText(text);
       let topic = chat.getActivityTopic();
       if (!chat.config.activityTopicId) isNewTopic = true;
