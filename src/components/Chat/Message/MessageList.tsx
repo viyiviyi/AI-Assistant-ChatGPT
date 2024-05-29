@@ -4,7 +4,7 @@ import { useSendMessage } from "@/core/hooks/hooks";
 import {
   activityScroll,
   createThrottleAndDebounce,
-  pagesUtil
+  pagesUtil,
 } from "@/core/utils/utils";
 import { Message } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
@@ -150,21 +150,24 @@ export function MessageList({
     /**
      * 用于在其他组件刷新话题或消息
      */
-    topicRender[topic.id] = (messageId?: string | number) => {
-      if (typeof messageId == "number") {
-        pageConf.pageNumber = Math.min(
-          Math.ceil((messageId + 1 || 1) / pageConf.pageSize),
-          pageConf.totalPages
-        );
+    topicRender[topic.id] = createThrottleAndDebounce(
+      (messageId?: string | number) => {
+        if (typeof messageId == "number") {
+          pageConf.pageNumber = Math.min(
+            Math.ceil((messageId + 1 || 1) / pageConf.pageSize),
+            pageConf.totalPages
+          );
+          setPageConf({ ...pageConf });
+          return;
+        }
+        if (messageId) {
+          return renderMessage[messageId] && renderMessage[messageId]();
+        }
+        pageConf.pageNumber = pageConf.totalPages;
         setPageConf({ ...pageConf });
-        return;
-      }
-      if (messageId) {
-        return renderMessage[messageId] && renderMessage[messageId]();
-      }
-      pageConf.pageNumber = pageConf.totalPages;
-      setPageConf({ ...pageConf });
-    };
+      },
+      50
+    );
     return () => {
       delete topicRender[topic.id];
     };
