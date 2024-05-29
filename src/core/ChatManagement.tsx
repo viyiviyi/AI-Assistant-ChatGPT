@@ -856,7 +856,6 @@ export class ChatManagement {
     if (insertIndex !== -1)
       topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
     else topic.messages.push(message);
-    if (!message.text || !message.text.trim()) return message;
     topic.messageMap[message.id] = message;
     message.updateTime = Date.now();
     await ChatManagement.createMessage(message);

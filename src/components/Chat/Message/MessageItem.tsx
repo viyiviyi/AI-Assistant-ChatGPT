@@ -1,7 +1,7 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
 import { loadingMessages, useScreenSize } from "@/core/hooks/hooks";
-import { onTextareaTab } from "@/core/utils/utils";
+import { createThrottleAndDebounce, onTextareaTab } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
 import styleCss from "@/styles/index.module.css";
@@ -14,7 +14,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -27,7 +27,7 @@ import {
   Space,
   theme,
   Tooltip,
-  Typography,
+  Typography
 } from "antd";
 import copy from "copy-to-clipboard";
 import Image from "next/image";
@@ -37,7 +37,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useState
 } from "react";
 import { Hidden } from "../../common/Hidden";
 import { MarkdownView } from "../../common/MarkdownView";
@@ -301,7 +301,7 @@ export const MessageItem = ({
     const [runLines, setRunLines] = useState("");
     const [isPause, setIsPause] = useState(false);
     useEffect(() => {
-      renderMessage[msg.id] = () => {
+      renderMessage[msg.id] = createThrottleAndDebounce(() => {
         // 如果正在运行，则分成两部分显示
         if (!!loadingMsgs[msg.id]) {
           if (!isPause) {
@@ -329,14 +329,20 @@ export const MessageItem = ({
           setSuccessLines(msg.text);
           setRunLines("");
         }
-      };
+      }, 40);
       return () => {
         delete renderMessage[msg.id];
       };
     }, [isPause]);
     if (!loadingMessages[msg.id]) return <></>;
     return (
-      <div style={{ minHeight: "3.5em", position: "relative" ,whiteSpace:'pre-line'}}>
+      <div
+        style={{
+          minHeight: "3.5em",
+          position: "relative",
+          whiteSpace: "pre-line",
+        }}
+      >
         {runLines || "loading..."}
         <div
           style={{
