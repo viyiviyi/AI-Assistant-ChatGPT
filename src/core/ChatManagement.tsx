@@ -826,7 +826,6 @@ export class ChatManagement {
     message: Message,
     insertIndex: number = -1
   ): Promise<Message> {
-    if (!message.text || !message.text.trim()) return message;
     message.text = message.text.trim();
     // 让纯xml内容显示正常
     let topic = this.topics.find((f) => f.id == message.topicId);
@@ -859,6 +858,7 @@ export class ChatManagement {
     else topic.messages.push(message);
     topic.messageMap[message.id] = message;
     message.updateTime = Date.now();
+    if (!message.text || !message.text.trim()) return message;
     await ChatManagement.createMessage(message);
     return message;
   }

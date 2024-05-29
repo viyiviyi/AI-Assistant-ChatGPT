@@ -166,7 +166,7 @@ export function MessageList({
         pageConf.pageNumber = pageConf.totalPages;
         setPageConf({ ...pageConf });
       },
-      50
+      40
     );
     return () => {
       delete topicRender[topic.id];

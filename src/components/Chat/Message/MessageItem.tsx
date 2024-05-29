@@ -1,6 +1,6 @@
 import { useService } from "@/core/AiService/ServiceProvider";
 import { ChatContext } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks/hooks";
+import { loadingMessages, useScreenSize } from "@/core/hooks/hooks";
 import { onTextareaTab } from "@/core/utils/utils";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
@@ -14,7 +14,7 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -27,7 +27,7 @@ import {
   Space,
   theme,
   Tooltip,
-  Typography
+  Typography,
 } from "antd";
 import copy from "copy-to-clipboard";
 import Image from "next/image";
@@ -37,7 +37,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState
+  useState,
 } from "react";
 import { Hidden } from "../../common/Hidden";
 import { MarkdownView } from "../../common/MarkdownView";
@@ -73,7 +73,7 @@ export const MessageItem = ({
   const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
-  const [messageText, setMessage] = useState({ text: "" });
+  const [messageText, setMessage] = useState({ text: msg.text });
   // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
   const [successLines, setSuccessLines] = useState(msg.text);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
@@ -306,7 +306,10 @@ export const MessageItem = ({
         if (!!loadingMsgs[msg.id]) {
           if (!isPause) {
             let runText = msg.text.slice(successLines.length);
-            let enterIdx = runText.lastIndexOf("\n");
+            let enterIdx =
+              (runText.match(/\n/g) || []).length > 2
+                ? runText.lastIndexOf("\n")
+                : -1;
             let successText = successLines;
             if (enterIdx >= 0) {
               // 最新的内容里面有换行符
@@ -331,34 +334,32 @@ export const MessageItem = ({
         delete renderMessage[msg.id];
       };
     }, [isPause]);
-
+    if (!loadingMessages[msg.id]) return <></>;
     return (
-      <Hidden hidden={!loadingMsgs[msg.id]}>
-        <div style={{ minHeight: "3.5em", position: "relative" }}>
-          {runLines}
-          <div
-            style={{
-              width: "100%",
-              textAlign: "center",
-              fontSize: 24,
-              position: "absolute",
-              bottom: 0,
-              opacity: 0.7,
-            }}
-            onClick={() => {
-              setIsPause((v) => !v);
-            }}
-          >
-            {isPause ? (
-              <ForwardOutlined style={{ color: token.colorPrimaryActive }} />
-            ) : (
-              <PauseOutlined
-                style={{ color: token.colorPrimary }}
-              ></PauseOutlined>
-            )}
-          </div>
+      <div style={{ minHeight: "3.5em", position: "relative" ,whiteSpace:'pre-line'}}>
+        {runLines || "loading..."}
+        <div
+          style={{
+            width: "100%",
+            textAlign: "center",
+            fontSize: 24,
+            position: "absolute",
+            bottom: 0,
+            opacity: 0.7,
+          }}
+          onClick={() => {
+            setIsPause((v) => !v);
+          }}
+        >
+          {isPause ? (
+            <ForwardOutlined style={{ color: token.colorPrimaryActive }} />
+          ) : (
+            <PauseOutlined
+              style={{ color: token.colorPrimary }}
+            ></PauseOutlined>
+          )}
         </div>
-      </Hidden>
+      </div>
     );
   };
   // 内容显示
@@ -568,7 +569,7 @@ export const MessageItem = ({
               </div>
             </div>
           </div>
-          {!loadingMsgs[msg.id] && Extend}
+          {!loadingMessages[msg.id] && Extend}
         </div>
       </>
     );

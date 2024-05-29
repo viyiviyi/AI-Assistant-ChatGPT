@@ -128,7 +128,7 @@ export function useSendMessage(chat: ChatManagement) {
         id: getUuid(),
         groupId: chat.group.id,
         ctxRole: "assistant",
-        text: "loading...",
+        text: "",
         timestamp: time,
         topicId: topic.id,
       };
