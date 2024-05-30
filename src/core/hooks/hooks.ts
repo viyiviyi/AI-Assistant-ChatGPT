@@ -4,7 +4,7 @@ import {
   onReader,
   onReaderAfter,
   onReaderFirst,
-  onSendBefore
+  onSendBefore,
 } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
@@ -14,7 +14,7 @@ import { aiServices } from "../AiService/ServiceProvider";
 import {
   createThrottleAndDebounce,
   getUuid,
-  scrollToBotton
+  scrollToBotton,
 } from "../utils/utils";
 
 export function useScreenSize() {
@@ -177,7 +177,7 @@ export function useSendMessage(chat: ChatManagement) {
         content: string;
         name: string;
       }[];
-      aiService.sendMessage({
+      await aiService.sendMessage({
         msg: topic.messages[idx],
         context: ctx,
         async onMessage(res) {
@@ -286,14 +286,17 @@ export function usePushMessage(chat: ChatManagement) {
         topicId: topic.id,
         cloudTopicId: topic.cloudTopicId,
       };
-      await chat.pushMessage(msg, idx);
+      if (msg.text) await chat.pushMessage(msg, idx);
       if (msg.id) {
         reloadIndex(topic, idx);
         reloadTopic(topic.id, idx);
       }
-      pushCallback(msg);
-      if (skipRequest) return;
+      if (skipRequest) {
+        pushCallback(msg);
+        return;
+      }
       await sendMessage(idx, topic);
+      pushCallback(msg);
     },
     [chat, reloadIndex, sendMessage, getHistory]
   );
