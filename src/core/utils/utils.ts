@@ -135,7 +135,7 @@ export function scrollToBotton(id?: string) {
       smoothScroll(
         wrap,
         wrap.scrollTop,
-        offsetTop + offsetHeight - wrap.offsetHeight,
+        offsetTop + offsetHeight - wrap.offsetHeight + 40,
         500
       );
     }

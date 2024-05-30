@@ -4,7 +4,7 @@ import {
   onReader,
   onReaderAfter,
   onReaderFirst,
-  onSendBefore,
+  onSendBefore
 } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
@@ -14,7 +14,7 @@ import { aiServices } from "../AiService/ServiceProvider";
 import {
   createThrottleAndDebounce,
   getUuid,
-  scrollToBotton,
+  scrollToBotton
 } from "../utils/utils";
 
 export function useScreenSize() {
@@ -154,6 +154,7 @@ export function useSendMessage(chat: ChatManagement) {
       chat.pushMessage(result, idx + 1).then((r) => {
         result = r;
         reloadTopic(topic.id);
+        scrollToBotton(currentPullMessage.id);
       });
       let save = createThrottleAndDebounce((isEnd) => {
         // result.text = text;

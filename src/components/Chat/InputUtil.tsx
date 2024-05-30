@@ -12,7 +12,8 @@ import {
   AlignLeftOutlined,
   CaretLeftOutlined,
   CommentOutlined,
-  MessageOutlined, VerticalAlignBottomOutlined,
+  MessageOutlined,
+  VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
 } from "@ant-design/icons";
@@ -95,8 +96,8 @@ export function InputUtil() {
       if (!topic) return;
       activityScroll({ botton: true });
       setLoading((v) => ++v);
+      setInputText({ text: "" });
       pushMessage(text, topic.messages.length || 0, topic, role, () => {
-        setInputText({ text: "" });
         setRole(["user", true]);
         if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
         setTimeout(() => {
