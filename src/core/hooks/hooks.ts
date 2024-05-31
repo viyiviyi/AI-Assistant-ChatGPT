@@ -4,7 +4,7 @@ import {
   onReader,
   onReaderAfter,
   onReaderFirst,
-  onSendBefore
+  onSendBefore,
 } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
@@ -14,7 +14,7 @@ import { aiServices } from "../AiService/ServiceProvider";
 import {
   createThrottleAndDebounce,
   getUuid,
-  scrollToBotton
+  scrollToBotton,
 } from "../utils/utils";
 
 export function useScreenSize() {
@@ -101,7 +101,7 @@ export function useReloadIndex(chat: ChatManagement) {
 }
 
 export const loadingMessages: { [key: string]: boolean } = {};
-const currentPullMessage = { id: "" };
+const currentPullMessage = { id: "" }; // 最新一条消息的id 用于自动滚动
 
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
@@ -150,22 +150,22 @@ export function useSendMessage(chat: ChatManagement) {
       let currentChat: { current: ChatManagement | undefined } = {
         current: chat,
       };
-      let isFirst = true;
       chat.pushMessage(result, idx + 1).then((r) => {
-        result = r;
+        currentPullMessage.id = r.id;
+        Object.assign(result, r);
         reloadTopic(topic.id);
         scrollToBotton(result.id);
       });
       let save = createThrottleAndDebounce((isEnd) => {
-        // result.text = text;
-        chat.pushMessage(result, idx + 1).then((r) => {
-          result = r;
-        });
         if (isEnd) {
           onReaderAfter(chat.getChat(), [result]).forEach((res, idx) => {
             chat.pushMessage(res, idx + 1 + idx).then((r) => {
-              result = r;
+              Object.assign(result, r);
             });
+          });
+        } else {
+          chat.pushMessage(result, idx + 1).then((r) => {
+            Object.assign(result, r);
           });
         }
       }, 100);
@@ -182,7 +182,7 @@ export function useSendMessage(chat: ChatManagement) {
         msg: topic.messages[idx],
         context: ctx,
         async onMessage(res) {
-          res.text = onReader(chat.getChat(), res.text || "");
+          result.text = onReader(chat.getChat(), res.text || "");
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;
@@ -199,34 +199,19 @@ export function useSendMessage(chat: ChatManagement) {
           if (res.searchResults) {
             result.searchResults = res.searchResults;
           }
-          result.text = res.text;
-          result.cloudMsgId = res.cloud_result_id || result.cloudMsgId;
+          if (res.cloud_result_id) {
+            result.cloudMsgId = res.cloud_result_id;
+          }
           loadingMsgs[result.id] = {
             stop: res.stop,
           };
-          if (isFirst) {
-            isFirst = false;
-            currentPullMessage.id = result.id;
-            await currentChat.current
-              ?.pushMessage(result, idx + 1)
-              .then((r) => {
-                result = r;
-                reloadIndex(topic, idx);
-                // reloadTopic(topic.id);
-                scrollToBotton(currentPullMessage.id);
-                delete currentChat.current;
-              });
-          } else {
-            save();
-            reloadTopic(topic.id, result.id);
-            scrollToBotton(currentPullMessage.id);
-          }
+          save(res.end);
+          reloadTopic(topic.id, result.id);
+          scrollToBotton(currentPullMessage.id);
           if (res.end) {
-            save();
             delete loadingMsgs[result.id];
             delete loadingMessages[result.id];
-            reloadTopic(topic.id, result.id);
-            scrollToBotton(currentPullMessage.id);
+            currentChat.current = undefined;
           }
         },
         config: {

@@ -9,7 +9,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole
+  VirtualRole,
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -18,7 +18,7 @@ import React from "react";
 import { BgConfig } from "./BgImageStore";
 import {
   getDbInstance as getInstance,
-  setSkipDbSave
+  setSkipDbSave,
 } from "./db/IndexDbInstance";
 import { getUuid } from "./utils/utils";
 
@@ -300,106 +300,16 @@ export class ChatManagement {
       name: string;
     }>;
   } {
+    let messages: Message[] = [];
+    // 获取全部消息
+    messages = [...topic.messages];
+    if (index > -1) messages = messages.slice(0, index);
+    else messages = [];
     let history: Array<{
       role: CtxRole;
       content: string;
       name: string;
     }> = [];
-    if (topic) {
-      let messages = [...topic.messages];
-      if (index > -1) messages = messages.slice(0, index);
-      else messages = [];
-      messages.unshift(
-        ...ChatManagement.parseSetting(
-          topic.virtualRole?.filter((v) => !v.postposition && v.autoCtx)
-        ).map((v) => {
-          return {
-            id: "",
-            groupId: "",
-            topicId: "",
-            ctxRole: v.role,
-            text: v.content,
-            timestamp: 0,
-          };
-        })
-      );
-      messages.unshift(
-        ...ChatManagement.parseSetting(
-          virtualRole.settings.filter((v) => !v.postposition && v.autoCtx),
-          topic.overrideVirtualRole
-        ).map((v) => {
-          return {
-            id: "",
-            groupId: "",
-            topicId: "",
-            ctxRole: v.role,
-            text: v.content,
-            timestamp: 0,
-          };
-        })
-      );
-      messages.push(
-        ...ChatManagement.parseSetting(
-          topic.virtualRole?.filter((v) => v.postposition && v.autoCtx)
-        ).map((v) => {
-          return {
-            id: "",
-            groupId: "",
-            topicId: "",
-            ctxRole: v.role,
-            text: v.content,
-            timestamp: 0,
-          };
-        })
-      );
-      messages.push(
-        ...ChatManagement.parseSetting(
-          virtualRole.settings.filter((v) => v.postposition && v.autoCtx),
-          topic.overrideVirtualRole
-        ).map((v) => {
-          return {
-            id: "",
-            groupId: "",
-            topicId: "",
-            ctxRole: v.role,
-            text: v.content,
-            timestamp: 0,
-          };
-        })
-      );
-      let ctxCount =
-        topic.overrideSettings?.msgCount === undefined
-          ? historyLength
-          : topic.overrideSettings?.msgCount;
-      if (ctxCount > 0 && messages.length > ctxCount) {
-        // 不在记忆范围内 且勾选了的消息
-        messages
-          .slice(0, messages.length - ctxCount)
-          .filter((v) => v.checked)
-          .forEach((v) => {
-            history.push({
-              role: v.ctxRole,
-              content: v.text,
-              name: this.getNameByRole(v.ctxRole, virtualRole),
-            });
-          });
-      }
-      // 记忆范围内的消息
-      messages.slice(-ctxCount).forEach((v) => {
-        history.push({
-          role: v.ctxRole,
-          content: v.text,
-          name: this.getNameByRole(v.ctxRole, virtualRole),
-        });
-      });
-    }
-    let ctxContent = history.map((v) => v.content).join(" \n");
-    // 置顶助理全局配置
-    let ctx: Array<{
-      role: CtxRole;
-      content: string;
-      name: string;
-    }> = [...history];
     let historyBefore: Array<{
       role: CtxRole;
       content: string;
@@ -415,6 +325,97 @@ export class ChatManagement {
         ? enableVirtualRole
         : topic.overrideSettings?.useConfig
     ) {
+      // 在设定内的动态上下文
+      let autoCtxBefore: Message[] = [];
+      let autoCtxAfter: Message[] = [];
+      autoCtxBefore.push(
+        ...ChatManagement.parseSetting(
+          virtualRole.settings.filter((v) => !v.postposition && v.autoCtx),
+          topic.overrideVirtualRole
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
+      autoCtxBefore.push(
+        ...ChatManagement.parseSetting(
+          topic.virtualRole?.filter((v) => !v.postposition && v.autoCtx),
+          undefined
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
+      autoCtxAfter.push(
+        ...ChatManagement.parseSetting(
+          topic.virtualRole?.filter((v) => v.postposition && v.autoCtx),
+          undefined
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
+      autoCtxAfter.push(
+        ...ChatManagement.parseSetting(
+          virtualRole.settings.filter((v) => v.postposition && v.autoCtx),
+          topic.overrideVirtualRole
+        ).map((v) => {
+          return {
+            id: "",
+            groupId: "",
+            topicId: "",
+            ctxRole: v.role,
+            text: v.content,
+            timestamp: 0,
+          };
+        })
+      );
+      messages = [...autoCtxAfter, ...messages, ...autoCtxBefore];
+    }
+    // 按照消息上下文限制截断消息
+    let ctxCount =
+      topic.overrideSettings?.msgCount === undefined
+        ? historyLength
+        : topic.overrideSettings?.msgCount;
+    if (ctxCount > 0 && messages.length > ctxCount) {
+      // 不在记忆范围内 且勾选了的消息
+      let checkedMessage = messages
+        .slice(0, messages.length - ctxCount)
+        .filter((v) => v.checked);
+      // 记忆范围内的消息
+      messages = [...checkedMessage, ...messages.slice(-ctxCount)];
+    }
+    history = messages.map((v) => {
+      return {
+        role: v.ctxRole,
+        content: v.text,
+        name: this.getNameByRole(v.ctxRole, virtualRole),
+      };
+    });
+    if (
+      topic.overrideSettings?.useConfig === undefined
+        ? enableVirtualRole
+        : topic.overrideSettings?.useConfig
+    ) {
+      let ctxContent = history.map((v) => v.content).join(" \n");
       historyBefore = [
         ...(virtualRole.bio
           ? [
@@ -478,16 +479,17 @@ export class ChatManagement {
           };
         }),
       ];
-      ctx = [
-        // 助理简介
-        ...historyBefore,
-        // 上下文
-        ...history,
-        // 话题内后置设定
-        ...historyAfter,
-      ];
     }
-    return { allCtx: ctx, historyBefore, history, historyAfter };
+    let allCtx = [
+      // 助理简介
+      ...historyBefore,
+      // 上下文
+      ...history,
+      // 话题内后置设定
+      ...historyAfter,
+    ];
+
+    return { allCtx, historyBefore, history, historyAfter };
   }
 
   static getNameByRole(role?: CtxRole, virtualRole?: VirtualRole, user?: User) {

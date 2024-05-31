@@ -295,24 +295,28 @@ export function EditVirtualRoleSetting({
             <Hidden hidden={disabledEdit}>
               <Button
                 onClick={() => {
-                  navigator?.clipboard.readText().then((text) => {
-                    try {
-                      if (!text) return;
-                      let res: VirtualRoleSetting = JSON.parse(text);
-                      if (typeof res == "string") res = JSON.parse(res);
-                      if (!res || !res.ctx) return;
-                      setTags(res.tags);
-                      setTitle(res.title);
-                      setCtx(res.ctx);
-                    } catch (err) {
-                      item.ctx.push({
-                        key: getUuid(),
-                        role: "system",
-                        content: text,
-                        checked: true,
-                      });
-                    }
-                  });
+                  try {
+                    navigator?.clipboard.readText().then((text) => {
+                      try {
+                        if (!text) return;
+                        let res: VirtualRoleSetting = JSON.parse(text);
+                        if (typeof res == "string") res = JSON.parse(res);
+                        if (!res || !res.ctx) return;
+                        setTags(res.tags);
+                        setTitle(res.title);
+                        setCtx(res.ctx);
+                      } catch (err) {
+                        item.ctx.push({
+                          key: getUuid(),
+                          role: "system",
+                          content: text,
+                          checked: true,
+                        });
+                      }
+                    });
+                  } catch (error) {
+                    messageApi.warning("读取剪切板失败");
+                  }
                 }}
               >
                 {"粘贴"}
@@ -325,10 +329,11 @@ export function EditVirtualRoleSetting({
             checked={item.autoCtx || false}
             onChange={(checked: boolean) => {
               item.autoCtx = checked;
+              if (checked) item.dynamic = false;
               setTags([...tags]);
             }}
           >
-            {"受限"}
+            {"上下文"}
             <span onClick={(e) => e.stopPropagation()}>
               <Tooltip
                 trigger={"click"}
@@ -343,6 +348,7 @@ export function EditVirtualRoleSetting({
             checked={item.dynamic || false}
             onChange={(checked: boolean) => {
               item.dynamic = checked;
+              if (checked) item.autoCtx = false;
               setTags([...tags]);
             }}
           >
@@ -350,7 +356,7 @@ export function EditVirtualRoleSetting({
             <span onClick={(e) => e.stopPropagation()}>
               <Tooltip
                 trigger={"click"}
-                title="开启动态设定后，仅当设定明细内至少能匹配到一个关键词时设定才会被发送, 可使用关键词all让内容被永久匹配。"
+                title="设为动态设定后，此设定明细是否剩下将受到关键词影响，仅至少能匹配一个关键词勾选才会生效，至少有一个明细被匹配时整个内容才会生效；可以使用all关键词来让某个设定永久被匹配。"
               >
                 <QuestionOutlined />
               </Tooltip>
