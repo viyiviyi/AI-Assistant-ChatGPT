@@ -4,7 +4,7 @@ import {
   onReader,
   onReaderAfter,
   onReaderFirst,
-  onSendBefore,
+  onSendBefore
 } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
@@ -14,7 +14,7 @@ import { aiServices } from "../AiService/ServiceProvider";
 import {
   createThrottleAndDebounce,
   getUuid,
-  scrollToBotton,
+  scrollToBotton
 } from "../utils/utils";
 
 export function useScreenSize() {
@@ -209,6 +209,7 @@ export function useSendMessage(chat: ChatManagement) {
           reloadTopic(topic.id, result.id);
           scrollToBotton(currentPullMessage.id);
           if (res.end) {
+            reloadIndex(topic, idx);
             delete loadingMsgs[result.id];
             delete loadingMessages[result.id];
             currentChat.current = undefined;
@@ -222,7 +223,7 @@ export function useSendMessage(chat: ChatManagement) {
         },
       });
     },
-    [chat, reloadIndex, loadingMsgs]
+    [chat, loadingMsgs, reloadIndex]
   );
   return { sendMessage };
 }
