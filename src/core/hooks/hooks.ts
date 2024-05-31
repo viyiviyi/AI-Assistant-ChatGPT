@@ -154,7 +154,7 @@ export function useSendMessage(chat: ChatManagement) {
       chat.pushMessage(result, idx + 1).then((r) => {
         result = r;
         reloadTopic(topic.id);
-        scrollToBotton(currentPullMessage.id);
+        scrollToBotton(result.id);
       });
       let save = createThrottleAndDebounce((isEnd) => {
         // result.text = text;
@@ -212,7 +212,7 @@ export function useSendMessage(chat: ChatManagement) {
               .then((r) => {
                 result = r;
                 reloadIndex(topic, idx);
-                reloadTopic(topic.id);
+                // reloadTopic(topic.id);
                 scrollToBotton(currentPullMessage.id);
                 delete currentChat.current;
               });
