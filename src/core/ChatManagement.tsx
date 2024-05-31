@@ -9,7 +9,7 @@ import {
   Message,
   Topic,
   User,
-  VirtualRole,
+  VirtualRole
 } from "@/Models/DataBase";
 import { TopicMessage } from "@/Models/Topic";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
@@ -18,7 +18,7 @@ import React from "react";
 import { BgConfig } from "./BgImageStore";
 import {
   getDbInstance as getInstance,
-  setSkipDbSave,
+  setSkipDbSave
 } from "./db/IndexDbInstance";
 import { getUuid } from "./utils/utils";
 
@@ -388,7 +388,7 @@ export class ChatManagement {
           };
         })
       );
-      messages = [...autoCtxAfter, ...messages, ...autoCtxBefore];
+      messages = [...autoCtxBefore, ...messages, ...autoCtxAfter];
     }
     // 按照消息上下文限制截断消息
     let ctxCount =
