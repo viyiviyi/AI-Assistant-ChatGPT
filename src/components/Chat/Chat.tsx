@@ -5,7 +5,7 @@ import { useScreenSize } from "@/core/hooks/hooks";
 import { activityScroll } from "@/core/utils/utils";
 import { Message } from "@/Models/DataBase";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button, Layout, message, Modal, theme } from "antd";
+import { App, Button, Layout, message, Modal, theme } from "antd";
 import React, { useContext, useEffect, useState } from "react";
 import { MemoChatHeader } from "../ChatHeader";
 import { Hidden } from "../common/Hidden";
@@ -72,180 +72,191 @@ export const Chat = () => {
     });
   }, [showConfigs, screenSize]);
   return (
-    <MessageContext.Provider
-      value={{
-        onlyOne,
-        setOnlyOne,
-        closeAll,
-        setCloseAll: setCloseAll,
-        cite,
-        setCite,
-      }}
-    >
-      {contextHolder}
-      <div
-        style={{
-          position: "relative",
-          display: "flex",
-          flex: 1,
-          flexDirection: "column",
-          height: "100dvh",
-          width: "100%",
-          maxHeight: "100%",
-          margin: "0 auto",
+    <App>
+      <MessageContext.Provider
+        value={{
+          onlyOne,
+          setOnlyOne,
+          closeAll,
+          setCloseAll: setCloseAll,
+          cite,
+          setCite,
         }}
       >
-        <SkipExport>
-          <MemoChatHeader></MemoChatHeader>
-        </SkipExport>
-        <Layout
+        {contextHolder}
+        <div
           style={{
-            color: token.colorTextBase,
-            backgroundColor: "#0000",
+            position: "relative",
+            display: "flex",
+            flex: 1,
+            flexDirection: "column",
+            height: "100dvh",
+            width: "100%",
+            maxHeight: "100%",
+            margin: "0 auto",
           }}
         >
-          <div
+          <SkipExport>
+            <MemoChatHeader></MemoChatHeader>
+          </SkipExport>
+          <Layout
             style={{
-              display: "inline-flex",
-              margin: "0 auto",
-              flexDirection: "column",
-              position: "relative",
+              color: token.colorTextBase,
+              backgroundColor: "#0000",
             }}
           >
             <div
               style={{
-                display: "flex",
-                height: 0,
-                flex: 1,
+                display: "inline-flex",
+                margin: "0 auto",
+                flexDirection: "column",
+                position: "relative",
               }}
             >
-              <Layout.Sider
-                hidden={!showNav || screenSize.width < 1200}
-                width={300}
+              <div
                 style={{
-                  overflow: "auto",
-                  lineHeight: 1,
-                  borderRadius: token.borderRadius,
-                  backgroundColor: token.colorFillContent,
-                  marginRight:
-                    screenSize.width >= 1200
-                      ? "clamp(5px,100vw - 1200px,50px)"
-                      : 0,
+                  display: "flex",
+                  height: 0,
+                  flex: 1,
                 }}
               >
-                <MemoNavigation></MemoNavigation>
-              </Layout.Sider>
-              <Hidden hidden={screenSize.width < 1200}>
-                <div
+                <Layout.Sider
+                  hidden={!showNav || screenSize.width < 1200}
+                  width={300}
                   style={{
-                    position: "absolute",
-                    left: showNav ? 10 : -40,
-                    top: 10,
+                    overflow: "auto",
+                    lineHeight: 1,
+                    borderRadius: token.borderRadius,
+                    backgroundColor: token.colorFillContent,
+                    marginRight:
+                      screenSize.width >= 1200
+                        ? "clamp(5px,100vw - 1200px,50px)"
+                        : 0,
                   }}
                 >
+                  <MemoNavigation></MemoNavigation>
+                </Layout.Sider>
+                <Hidden hidden={screenSize.width < 1200}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: showNav ? 10 : -40,
+                      top: 10,
+                    }}
+                  >
+                    <Button
+                      type="text"
+                      style={{
+                        color: token.colorTextBase,
+                      }}
+                      onClick={() => setShowNav((v) => !v)}
+                      icon={
+                        showNav ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+                      }
+                    ></Button>
+                  </div>
+                </Hidden>
+
+                <Content
+                  style={{
+                    borderRadius: token.borderRadius,
+                    backgroundColor: token.colorFillContent,
+                    // width: "auto",
+                    display: "flex",
+                  }}
+                  onTouchMove={() => {
+                    activityScroll({});
+                  }}
+                  onWheel={() => {
+                    activityScroll({});
+                  }}
+                >
+                  <div
+                    id={onlyOne ? undefined : "content"}
+                    style={{
+                      height: "100%",
+                      overflow: "auto",
+                      maxWidth: 1100,
+                      width:
+                        screenSize.width >= 1200
+                          ? screenSize.width -
+                            (showConfigs ? 340 : 0) -
+                            (showNav
+                              ? 300 +
+                                Math.min(
+                                  50,
+                                  Math.max(5, screenSize.width - 1200)
+                                )
+                              : 0) -
+                            120
+                          : "100vw",
+                      minWidth: 300,
+                    }}
+                  >
+                    <MemoChatMessage />
+                  </div>
+                  <Hidden hidden={!showConfigs}>
+                    <div
+                      style={{
+                        width: 340,
+                        padding: 10,
+                      }}
+                    >
+                      <QuickEditConfig />
+                    </div>
+                  </Hidden>
+                </Content>
+              </div>
+              <SkipExport>
+                <div>
+                  <MemoInputUtil></MemoInputUtil>
+                </div>
+              </SkipExport>
+              <Hidden
+                hidden={
+                  screenSize.width > 1460 ? false : screenSize.width < 1200
+                }
+              >
+                <div style={{ position: "absolute", right: -40, bottom: 10 }}>
                   <Button
                     type="text"
                     style={{
                       color: token.colorTextBase,
                     }}
-                    onClick={() => setShowNav((v) => !v)}
+                    onClick={() => setShowConfigs((v) => !v)}
                     icon={
-                      showNav ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+                      showConfigs ? (
+                        <MenuFoldOutlined />
+                      ) : (
+                        <MenuUnfoldOutlined />
+                      )
                     }
                   ></Button>
                 </div>
               </Hidden>
-
-              <Content
-                style={{
-                  borderRadius: token.borderRadius,
-                  backgroundColor: token.colorFillContent,
-                  // width: "auto",
-                  display: "flex",
-                }}
-                onTouchMove={() => {
-                  activityScroll({});
-                }}
-                onWheel={() => {
-                  activityScroll({});
-                }}
-              >
-                <div
-                  id={onlyOne ? undefined : "content"}
-                  style={{
-                    height: "100%",
-                    overflow: "auto",
-                    maxWidth: 1100,
-                    width:
-                      screenSize.width >= 1200
-                        ? screenSize.width -
-                          (showConfigs ? 340 : 0) -
-                          (showNav
-                            ? 300 +
-                              Math.min(50, Math.max(5, screenSize.width - 1200))
-                            : 0) -
-                          120
-                        : "100vw",
-                    minWidth: 300,
-                  }}
-                >
-                  <MemoChatMessage />
-                </div>
-                <Hidden hidden={!showConfigs}>
-                  <div
-                    style={{
-                      width: 340,
-                      padding: 10,
-                    }}
-                  >
-                    <QuickEditConfig />
-                  </div>
-                </Hidden>
-              </Content>
             </div>
-            <SkipExport>
-              <div>
-                <MemoInputUtil></MemoInputUtil>
-              </div>
-            </SkipExport>
-            <Hidden
-              hidden={screenSize.width > 1460 ? false : screenSize.width < 1200}
-            >
-              <div style={{ position: "absolute", right: -40, bottom: 10 }}>
-                <Button
-                  type="text"
-                  style={{
-                    color: token.colorTextBase,
-                  }}
-                  onClick={() => setShowConfigs((v) => !v)}
-                  icon={
-                    showConfigs ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />
-                  }
-                ></Button>
-              </div>
-            </Hidden>
-          </div>
-        </Layout>
-      </div>
-      <SkipExport>
-        <Modal
-          title={"重要通知"}
-          open={showNotice}
-          centered
-          onCancel={() => setShowNotice(false)}
-          onOk={() => setShowNotice(false)}
-        >
-          <MarkdownView
-            markdown={`
+          </Layout>
+        </div>
+        <SkipExport>
+          <Modal
+            title={"重要通知"}
+            open={showNotice}
+            centered
+            onCancel={() => setShowNotice(false)}
+            onOk={() => setShowNotice(false)}
+          >
+            <MarkdownView
+              markdown={`
 ### 此站点已经转移到新域名，将在不久后停止访问，请尽快导出会话并导入到新域名。
 
 ---
 
 #### 新域名：[https://eaias.com/](https://eaias.com/)
 `}
-          ></MarkdownView>
-        </Modal>
-      </SkipExport>
-    </MessageContext.Provider>
+            ></MarkdownView>
+          </Modal>
+        </SkipExport>
+      </MessageContext.Provider>
+    </App>
   );
 };

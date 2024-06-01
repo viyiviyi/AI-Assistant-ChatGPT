@@ -16,10 +16,15 @@ import { MemoInsertInput } from "../InsertInput";
 import { MemoMessageItem } from "./MessageItem";
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
-const topicRender: { [key: string]: (messageId?: string | number) => void } =
-  {};
-export function reloadTopic(topicId: string, messageId?: string | number) {
-  topicRender[topicId] && topicRender[topicId](messageId);
+const topicRender: {
+  [key: string]: (messageId?: string | number, reloadStatus?: boolean) => void;
+} = {};
+export function reloadTopic(
+  topicId: string,
+  messageId?: string | number,
+  reloadStatus: boolean = false
+) {
+  topicRender[topicId] && topicRender[topicId](messageId, reloadStatus);
 }
 
 export function MessageList({
@@ -45,7 +50,9 @@ export function MessageList({
   const [insertIndex, setInsertIndex] = useState(-1);
   const [countChar, setCountChar] = useState(0);
   const [ctxCountChar, setCtxCountChar] = useState(0);
-  const renderMessage = useMemo<{ [key: string]: () => void }>(() => ({}), []);
+  const renderMessage = useMemo<{
+    [key: string]: (reloadStatus?: boolean) => void;
+  }>(() => ({}), []);
 
   const msgIdIdxMap = useMemo(() => new Map<string, number>(), []);
   const { sendMessage } = useSendMessage(chat);
@@ -153,7 +160,10 @@ export function MessageList({
     let reload = createThrottleAndDebounce((conf) => {
       setPageConf({ ...conf });
     }, 50);
-    topicRender[topic.id] = (messageId?: string | number) => {
+    topicRender[topic.id] = (
+      messageId?: string | number,
+      reloadStatus: boolean = false
+    ) => {
       if (typeof messageId == "number") {
         pageConf.pageNumber = Math.min(
           Math.ceil((messageId + 1 || 1) / pageConf.pageSize),
@@ -163,7 +173,9 @@ export function MessageList({
         return;
       }
       if (messageId) {
-        return renderMessage[messageId] && renderMessage[messageId]();
+        return (
+          renderMessage[messageId] && renderMessage[messageId](reloadStatus)
+        );
       }
       pageConf.pageNumber = pageConf.totalPages;
       reload(pageConf);

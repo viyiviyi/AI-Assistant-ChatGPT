@@ -8,6 +8,7 @@ import {
 } from "@/middleware/execMiddleware";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
+import { App } from "antd";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { TopicMessage } from "../../Models/Topic";
 import { aiServices } from "../AiService/ServiceProvider";
@@ -106,6 +107,7 @@ const currentPullMessage = { id: "" }; // 最新一条消息的id 用于自动�
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
+  const { message } = App.useApp();
   const sendMessage = useCallback(
     /**
      * 发送上下文给AI
@@ -144,7 +146,7 @@ export function useSendMessage(chat: ChatManagement) {
           )
           .findIndex((f) => loadingMessages[f.id]) != -1
       )
-        return;
+        return message.info("上下文中存在未完成的消息");
       loadingMessages[result.id] = true;
       // 因为回调函数引用了chat，而编辑配置时会创建新的chat，导致旧的chat不能被回收，导致内存溢出
       let currentChat: { current: ChatManagement | undefined } = {
@@ -157,16 +159,23 @@ export function useSendMessage(chat: ChatManagement) {
         scrollToBotton(result.id);
       });
       let save = createThrottleAndDebounce((isEnd) => {
-        if (isEnd) {
-          onReaderAfter(chat.getChat(), [result]).forEach((res, idx) => {
-            chat.pushMessage(res, idx + 1 + idx).then((r) => {
+        if (currentChat.current) {
+          if (isEnd) {
+            onReaderAfter(currentChat.current.getChat(), [result]).forEach(
+              (res, idx) => {
+                currentChat.current &&
+                  currentChat.current
+                    .pushMessage(res, idx + 1 + idx)
+                    .then((r) => {
+                      Object.assign(result, r);
+                    });
+              }
+            );
+          } else {
+            currentChat.current.pushMessage(result, idx + 1).then((r) => {
               Object.assign(result, r);
             });
-          });
-        } else {
-          chat.pushMessage(result, idx + 1).then((r) => {
-            Object.assign(result, r);
-          });
+          }
         }
       }, 100);
       let { allCtx: ctx, history } = currentChat.current!.getAskContext(
@@ -182,7 +191,12 @@ export function useSendMessage(chat: ChatManagement) {
         msg: topic.messages[idx],
         context: ctx,
         async onMessage(res) {
-          result.text = onReader(chat.getChat(), res.text || "");
+          if (currentChat.current) {
+            result.text = onReader(
+              currentChat.current.getChat(),
+              res.text || ""
+            );
+          }
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;
@@ -206,14 +220,14 @@ export function useSendMessage(chat: ChatManagement) {
             stop: res.stop,
           };
           save(res.end);
-          reloadTopic(topic.id, result.id);
-          scrollToBotton(currentPullMessage.id);
           if (res.end) {
-            reloadIndex(topic, idx);
             delete loadingMsgs[result.id];
             delete loadingMessages[result.id];
             currentChat.current = undefined;
+            reloadIndex(topic, idx);
           }
+          reloadTopic(topic.id, result.id, res.end);
+          scrollToBotton(currentPullMessage.id);
         },
         config: {
           channel_id: currentChat.current!.config.cloudChannelId,
@@ -223,7 +237,7 @@ export function useSendMessage(chat: ChatManagement) {
         },
       });
     },
-    [chat, loadingMsgs, reloadIndex]
+    [chat, loadingMsgs, message, reloadIndex]
   );
   return { sendMessage };
 }

@@ -194,6 +194,7 @@ export const MessageItem = ({
               if (typeof loadingMsgs[msg.id]?.stop == "function")
                 loadingMsgs[msg.id]?.stop();
               delete loadingMsgs[msg.id];
+              setMessage({ text: msg.text });
             }}
           >
             <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
@@ -301,35 +302,41 @@ export const MessageItem = ({
     const [runLines, setRunLines] = useState("");
     const [isPause, setIsPause] = useState(false);
     useEffect(() => {
-      renderMessage[msg.id] = createThrottleAndDebounce(() => {
-        // 如果正在运行，则分成两部分显示
-        if (!!loadingMsgs[msg.id]) {
-          if (!isPause) {
-            let runText = msg.text.slice(successLines.length);
-            let enterIdx =
-              (runText.match(/\n/g) || []).length > 2
-                ? runText.lastIndexOf("\n")
-                : -1;
-            let successText = successLines;
-            if (enterIdx >= 0) {
-              // 最新的内容里面有换行符
-              successText = msg.text.slice(
-                0,
-                successLines.length + enterIdx + 1
-              );
-              runText = runText.substring(enterIdx + 1);
+      renderMessage[msg.id] = createThrottleAndDebounce(
+        (reloadStatus = false) => {
+          // 如果正在运行，则分成两部分显示
+          if (loadingMessages[msg.id]) {
+            if (!isPause) {
+              let runText = msg.text.slice(successLines.length);
+              let enterIdx =
+                (runText.match(/\n/g) || []).length > 2
+                  ? runText.lastIndexOf("\n")
+                  : -1;
+              let successText = successLines;
+              if (enterIdx >= 0) {
+                // 最新的内容里面有换行符
+                successText = msg.text.slice(
+                  0,
+                  successLines.length + enterIdx + 1
+                );
+                runText = runText.substring(enterIdx + 1);
+              }
+              setRunLines(runText);
+              if (successText != successLines) {
+                setSuccessLines(successText);
+              }
             }
-            setRunLines(runText);
-            if (successText != successLines) {
-              setSuccessLines(successText);
-            }
+          } else {
+            setMessage({ text: msg.text });
+            setSuccessLines(msg.text);
+            setRunLines("");
           }
-        } else {
-          setMessage({ text: msg.text });
-          setSuccessLines(msg.text);
-          setRunLines("");
-        }
-      }, 40);
+          if (reloadStatus) {
+            setMessage({ text: msg.text });
+          }
+        },
+        40
+      );
       return () => {
         delete renderMessage[msg.id];
       };
@@ -481,6 +488,7 @@ export const MessageItem = ({
                         if (typeof loadingMsgs[msg.id]?.stop == "function")
                           loadingMsgs[msg.id]?.stop();
                         delete loadingMsgs[msg.id];
+                        setMessage({ text: msg.text });
                       }}
                     >
                       <PauseOutlined
@@ -673,6 +681,7 @@ export const MessageItem = ({
                     if (typeof loadingMsgs[msg.id]?.stop == "function")
                       loadingMsgs[msg.id]?.stop();
                     delete loadingMsgs[msg.id];
+                    setMessage({ text: msg.text });
                   }}
                 >
                   <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
