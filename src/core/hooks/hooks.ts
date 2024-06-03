@@ -216,9 +216,19 @@ export function useSendMessage(chat: ChatManagement) {
           if (res.cloud_result_id) {
             result.cloudMsgId = res.cloud_result_id;
           }
+          let first = !loadingMsgs[result.id];
           loadingMsgs[result.id] = {
-            stop: res.stop,
+            stop: () => {
+              res.stop();
+              delete loadingMsgs[result.id];
+              delete loadingMessages[result.id];
+              currentChat.current = undefined;
+              reloadIndex(topic, idx);
+            },
           };
+          if (first) {
+            reloadTopic(topic.id, result.id, true);
+          }
           save(res.end);
           if (res.end) {
             delete loadingMsgs[result.id];

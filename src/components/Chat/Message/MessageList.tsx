@@ -148,6 +148,7 @@ export function MessageList({
           Math.ceil(((idx || 0) + 1) / pageConf.pageSize),
           pageConf.totalPages
         );
+        setPageConf(pageConf);
         reloadNav(topic);
       });
     },
