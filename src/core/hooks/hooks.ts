@@ -147,10 +147,18 @@ export function useSendMessage(chat: ChatManagement) {
           .findIndex((f) => loadingMessages[f.id]) != -1
       )
         return message.info("上下文中存在未完成的消息");
-      loadingMessages[result.id] = true;
       // 因为回调函数引用了chat，而编辑配置时会创建新的chat，导致旧的chat不能被回收，导致内存溢出
       let currentChat: { current: ChatManagement | undefined } = {
         current: chat,
+      };
+      loadingMessages[result.id] = true;
+      loadingMsgs[result.id] = {
+        stop: () => {
+          delete loadingMsgs[result.id];
+          delete loadingMessages[result.id];
+          currentChat.current = undefined;
+          reloadIndex(topic, idx);
+        },
       };
       chat.pushMessage(result, idx + 1).then((r) => {
         currentPullMessage.id = r.id;
@@ -196,6 +204,8 @@ export function useSendMessage(chat: ChatManagement) {
               currentChat.current.getChat(),
               res.text || ""
             );
+          } else if (res.stop) {
+            res.stop();
           }
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
@@ -216,7 +226,6 @@ export function useSendMessage(chat: ChatManagement) {
           if (res.cloud_result_id) {
             result.cloudMsgId = res.cloud_result_id;
           }
-          let first = !loadingMsgs[result.id];
           loadingMsgs[result.id] = {
             stop: () => {
               res.stop();
@@ -226,9 +235,6 @@ export function useSendMessage(chat: ChatManagement) {
               reloadIndex(topic, idx);
             },
           };
-          if (first) {
-            reloadTopic(topic.id, result.id, true);
-          }
           save(res.end);
           if (res.end) {
             delete loadingMsgs[result.id];

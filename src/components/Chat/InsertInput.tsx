@@ -30,8 +30,8 @@ function InsertInput({
   const onSubmit = (text: string, idx: number) => {
     if (!text.trim()) return;
     activityScroll({ botton: true });
+    onHidden();
     pushMessage(text, idx, topic, role, () => {
-      onHidden();
       setInsertText("");
     });
   };
