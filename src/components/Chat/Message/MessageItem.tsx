@@ -76,6 +76,7 @@ export const MessageItem = ({
   const [messageText, setMessage] = useState({ text: msg.text });
   // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
   const [successLines, setSuccessLines] = useState(msg.text);
+  const [isPause, setIsPause] = useState(false);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
@@ -299,8 +300,9 @@ export const MessageItem = ({
     [ctxRole, messageText, msg, onSned, saveMsg]
   );
   const RuningText = () => {
-    const [runLines, setRunLines] = useState("");
-    const [isPause, setIsPause] = useState(false);
+    const [runLines, setRunLines] = useState(
+      msg.text.slice(successLines.length)
+    );
     useEffect(() => {
       renderMessage[msg.id] = createThrottleAndDebounce(
         (reloadStatus = false) => {
@@ -327,7 +329,7 @@ export const MessageItem = ({
               }
             }
           } else {
-            setMessage({ text: msg.text });
+            if (!reloadStatus) setMessage({ text: msg.text });
             setSuccessLines(msg.text);
             setRunLines("");
           }
@@ -340,7 +342,7 @@ export const MessageItem = ({
       return () => {
         delete renderMessage[msg.id];
       };
-    }, [isPause]);
+    }, []);
     if (!loadingMessages[msg.id]) return <></>;
     return (
       <div
