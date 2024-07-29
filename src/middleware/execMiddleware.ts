@@ -3,7 +3,6 @@ import { Message } from "@/Models/DataBase";
 import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "./IMiddleware";
 import { AssistantMessagePrdfix } from "./scripts/AssistantMessagePrdfix.middleware";
-import { ChubPrompt } from "./scripts/ChubPrompt.middleware";
 import { ContinueLastMsg } from "./scripts/ContinueLastMsg";
 import { CreataMessageForUser } from "./scripts/CreataMessageForUser";
 import { NameMacrosPrompt } from "./scripts/NameMacrosPrompt.middleware";
@@ -22,7 +21,7 @@ const middlewareArr: Array<new () => IMiddleware> = [
   RemoveNamePrdfix,
   NameMacrosPrompt,
   ReplaceHalfWidthSymbols,
-  ChubPrompt,
+  // ChubPrompt,
 ];
 
 /**

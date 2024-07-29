@@ -11,7 +11,7 @@ export class AssistantMessagePrdfix implements IMiddleware {
   readonly description: string =
     "助理名增加在AI的消息前面。";
   setting: VirtualRoleSetting[] | undefined;
-  prompt = "{{char}}：\n{{message}}";
+  prompt = "{{char}}：{{message}}";
   readonly onSendBefore = (
     chat: IChat,
     context: {
