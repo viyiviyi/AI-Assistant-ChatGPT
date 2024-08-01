@@ -51,6 +51,7 @@ export const VirtualRoleConfig = ({
   const { setChat, activityTopic } = useContext(ChatContext);
   const [showInfo, setShowInfo] = useState(false);
   const screenSize = useScreenSize();
+  const [isLoadImg, setIsLoadImg] = useState(false);
   const [form] = Form.useForm<{
     virtualRole_name: string;
     virtualRole_bio: string;
@@ -101,7 +102,7 @@ export const VirtualRoleConfig = ({
       replace = false
     ) => {
       if (charData) {
-        setVirtualRole_Avatar(charData.avatar);
+        if (!isLoadImg) setVirtualRole_Avatar(charData.avatar);
         form.setFieldValue("virtualRole_name", charData.name);
         if (
           chatMgt?.config.middleware &&
@@ -176,7 +177,7 @@ export const VirtualRoleConfig = ({
         );
       }
     },
-    [chatMgt, currentSettings, form, virtualRole_settings]
+    [chatMgt, currentSettings, form, virtualRole_settings, isLoadImg]
   );
   function onSave() {
     let values = form.getFieldsValue();
@@ -449,6 +450,39 @@ export const VirtualRoleConfig = ({
                                   pnginfo(file).then((res) => {
                                     push(res);
                                   });
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    const img = new Image();
+                                    img.onload = () => {
+                                      let width = img.width;
+                                      let height = img.height;
+                                      // 计算新的宽度和高度
+                                      if (width > 96 || height > 96) {
+                                        if (width > height) {
+                                          height *= 96 / width;
+                                          width = 96;
+                                        } else {
+                                          width *= 96 / height;
+                                          height = 96;
+                                        }
+                                      }
+                                      const canvas =
+                                        document.createElement("canvas");
+                                      canvas.width = width;
+                                      canvas.height = height;
+                                      const ctx = canvas.getContext("2d");
+                                      if (!ctx) return;
+                                      ctx.drawImage(img, 0, 0, width, height);
+                                      // 转换为 Blob 或 base64
+                                      setVirtualRole_Avatar(
+                                        canvas.toDataURL("image/jpeg", 1)
+                                      );
+                                      setIsLoadImg(true);
+                                    };
+                                    img.src =
+                                      event.target?.result?.toString() || "";
+                                  };
+                                  reader.readAsDataURL(file);
                                   return false;
                                 }
                                 const fr = new FileReader();
@@ -464,52 +498,15 @@ export const VirtualRoleConfig = ({
                               showUploadList: false,
                             }}
                           >
-                            {"导入酒馆角色卡json"}
+                            {"导入酒馆角色卡"}
                           </Upload>
                         ),
                       },
-                      // {
-                      //   key: "4",
-                      //   label: (
-                      //     <Upload
-                      //       accept=".json"
-                      //       {...{
-                      //         beforeUpload(file, FileList) {
-                      //           const fr = new FileReader();
-                      //           fr.onloadend = (e) => {
-                      //             if (e.target?.result) {
-                      //               try {
-                      //                 let jsonData = JSON.parse(
-                      //                   e.target.result.toString()
-                      //                 );
-                      //                 if (typeof jsonData == "string")
-                      //                   jsonData = JSON.parse(jsonData);
-                      //                 let charData = jsonToSetting(jsonData);
-                      //                 if (!charData.name)
-                      //                   return messageApi.error("数据不正确");
-                      //                 loadChubData(charData, true);
-                      //               } catch (error) {
-                      //                 console.error(error);
-                      //                 messageApi.error("文件格式错误");
-                      //               }
-                      //             }
-                      //           };
-                      //           fr.readAsText(file);
-                      //           return false;
-                      //         },
-                      //         defaultFileList: [],
-                      //         showUploadList: false,
-                      //       }}
-                      //     >
-                      //       {"使用酒馆角色卡json重置"}
-                      //     </Upload>
-                      //   ),
-                      // },
                       {
                         key: "5",
                         label: (
                           <Upload
-                            accept=".json"
+                            accept=".json,.png"
                             {...{
                               beforeUpload(file, FileList) {
                                 function push(res: string) {
@@ -544,7 +541,7 @@ export const VirtualRoleConfig = ({
                               showUploadList: false,
                             }}
                           >
-                            {"导入世界书json"}
+                            {"导入世界书"}
                           </Upload>
                         ),
                       },
