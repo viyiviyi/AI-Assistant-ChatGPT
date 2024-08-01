@@ -2,6 +2,7 @@ import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { KeyValueData } from "@/core/db/KeyValueData";
 import { useScreenSize } from "@/core/hooks/hooks";
 import { jsonToSetting, readLorebook } from "@/core/utils/chub";
+import { pnginfo } from "@/core/utils/pnginfo";
 import { downloadJson, getUuid } from "@/core/utils/utils";
 import { NameMacrosPrompt } from "@/middleware/scripts/NameMacrosPrompt.middleware";
 import { VirtualRole } from "@/Models/DataBase";
@@ -426,26 +427,34 @@ export const VirtualRoleConfig = ({
                         key: "3",
                         label: (
                           <Upload
-                            accept=".json"
+                            accept=".json,.png"
                             {...{
                               beforeUpload(file, FileList) {
+                                function push(res: string) {
+                                  if (!res) return;
+                                  try {
+                                    let jsonData = JSON.parse(res);
+                                    if (typeof jsonData == "string")
+                                      jsonData = JSON.parse(jsonData);
+                                    let charData = jsonToSetting(jsonData);
+                                    if (!charData.name)
+                                      return messageApi.error("数据不正确");
+                                    loadChubData(charData);
+                                  } catch (error) {
+                                    console.error(error);
+                                    messageApi.error("文件格式错误");
+                                  }
+                                }
+                                if (file.type == "image/png") {
+                                  pnginfo(file).then((res) => {
+                                    push(res);
+                                  });
+                                  return false;
+                                }
                                 const fr = new FileReader();
                                 fr.onloadend = (e) => {
                                   if (e.target?.result) {
-                                    try {
-                                      let jsonData = JSON.parse(
-                                        e.target.result.toString()
-                                      );
-                                      if (typeof jsonData == "string")
-                                        jsonData = JSON.parse(jsonData);
-                                      let charData = jsonToSetting(jsonData);
-                                      if (!charData.name)
-                                        return messageApi.error("数据不正确");
-                                      loadChubData(charData);
-                                    } catch (error) {
-                                      console.error(error);
-                                      messageApi.error("文件格式错误");
-                                    }
+                                    push(e.target.result.toString());
                                   }
                                 };
                                 fr.readAsText(file);
@@ -503,21 +512,29 @@ export const VirtualRoleConfig = ({
                             accept=".json"
                             {...{
                               beforeUpload(file, FileList) {
+                                function push(res: string) {
+                                  if (!res) return;
+                                  try {
+                                    let jsonData = JSON.parse(res);
+                                    if (typeof jsonData == "string")
+                                      jsonData = JSON.parse(jsonData);
+                                    let charData = readLorebook(jsonData);
+                                    loadChubBook(charData);
+                                  } catch (error) {
+                                    console.error(error);
+                                    messageApi.error("文件格式错误");
+                                  }
+                                }
+                                if (file.type == "image/png") {
+                                  pnginfo(file).then((res) => {
+                                    push(res);
+                                  });
+                                  return false;
+                                }
                                 const fr = new FileReader();
                                 fr.onloadend = (e) => {
                                   if (e.target?.result) {
-                                    try {
-                                      let jsonData = JSON.parse(
-                                        e.target.result.toString()
-                                      );
-                                      if (typeof jsonData == "string")
-                                        jsonData = JSON.parse(jsonData);
-                                      let charData = readLorebook(jsonData);
-                                      loadChubBook(charData);
-                                    } catch (error) {
-                                      console.error(error);
-                                      messageApi.error("文件格式错误");
-                                    }
+                                    push(e.target.result.toString());
                                   }
                                 };
                                 fr.readAsText(file);
