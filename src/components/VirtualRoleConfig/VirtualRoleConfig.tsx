@@ -454,25 +454,29 @@ export const VirtualRoleConfig = ({
                                   reader.onload = (event) => {
                                     const img = new Image();
                                     img.onload = () => {
-                                      let width = img.width;
-                                      let height = img.height;
-                                      // 计算新的宽度和高度
-                                      if (width > 96 || height > 96) {
-                                        if (width > height) {
-                                          height *= 96 / width;
-                                          width = 96;
-                                        } else {
-                                          width *= 96 / height;
-                                          height = 96;
-                                        }
-                                      }
                                       const canvas =
                                         document.createElement("canvas");
-                                      canvas.width = width;
-                                      canvas.height = height;
+                                      canvas.width = 128;
+                                      canvas.height = 128;
                                       const ctx = canvas.getContext("2d");
                                       if (!ctx) return;
-                                      ctx.drawImage(img, 0, 0, width, height);
+                                      let minWidth = Math.min(
+                                        img.width,
+                                        img.height
+                                      );
+                                      ctx.drawImage(
+                                        img,
+                                        minWidth == img.width
+                                          ? 0
+                                          : (img.width - minWidth) / 2,
+                                        0,
+                                        minWidth,
+                                        minWidth,
+                                        0,
+                                        0,
+                                        128,
+                                        128
+                                      );
                                       // 转换为 Blob 或 base64
                                       setVirtualRole_Avatar(
                                         canvas.toDataURL("image/jpeg", 1)
