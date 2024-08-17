@@ -1,3 +1,6 @@
 .markdown em {
   opacity: 0.8;
 }
+.markdown img {
+  width: 100%;
+}

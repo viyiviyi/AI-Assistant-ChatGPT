@@ -16,7 +16,7 @@ export class QWen implements IAiService {
   severConfig: any;
   setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = "QWen";
-  models = async () => ["qwen-turbo", "qwen-plus"];
+  models = async () => ["qwen-turbo", "qwen-plus",'qwen-max'];
   async sendMessage({
     context,
     onMessage,
