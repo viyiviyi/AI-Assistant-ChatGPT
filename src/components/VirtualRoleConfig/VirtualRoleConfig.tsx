@@ -7,7 +7,7 @@ import { downloadJson, getUuid } from "@/core/utils/utils";
 import { NameMacrosPrompt } from "@/middleware/scripts/NameMacrosPrompt.middleware";
 import { VirtualRole } from "@/Models/DataBase";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { Button, Dropdown, Flex, Form, Input, message, Popconfirm, Switch, Tabs, theme, Upload } from "antd";
+import { Button, Dropdown, Flex, Form, Input, message, Popconfirm, Switch, Tabs, Tag, theme, Upload } from "antd";
 import copy from "copy-to-clipboard";
 import { CSSProperties, useCallback, useContext, useMemo, useState } from "react";
 import ImageUpload from "../common/ImageUpload";
@@ -25,6 +25,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
     const { setChat, activityTopic } = useContext(ChatContext);
     const [showInfo, setShowInfo] = useState(false);
     const screenSize = useScreenSize();
+    const [virtualRoleTags, setVirtualRoleTags] = useState<string[]>(chatMgt?.virtualRole.tags || []);
     const [loadImageAwait, setLoadImageAwait] = useState<Promise<string>>();
 
     const [form] = Form.useForm<{
@@ -81,6 +82,9 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                 let userVariableSetting: {
                     [extensionId: string]: VirtualRoleSetting;
                 } = {};
+                let oldChubSetting: {
+                    [extensionId: string]: VirtualRoleSetting;
+                } = {};
                 let lastChubId = "None";
                 (currentSettings.current || virtualRole_settings).forEach((v) => {
                     if (v.extensionId?.startsWith("chub.")) {
@@ -100,6 +104,8 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                             ].includes(v.extensionId)
                         ) {
                             userVariableSetting[v.extensionId] = v;
+                        } else {
+                            oldChubSetting[v.extensionId] = v;
                         }
                     } else if (lastChubId) {
                         if (previousPosition[lastChubId]) previousPosition[lastChubId].push(v);
@@ -107,8 +113,19 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                     }
                 });
                 let nextSetting: VirtualRoleSetting[] = [...(previousPosition["None"] || [])];
+                // 传入的新setting
                 charData.setting.forEach((v) => {
                     if (v.extensionId) {
+                        if (oldChubSetting[v.extensionId]) v.checked = oldChubSetting[v.extensionId].checked;
+                        if (v.extensionId == "chub.HistoricalScene") {
+                            if (oldChubSetting[v.extensionId] && oldChubSetting[v.extensionId].ctx.length > 2) {
+                                v.ctx = [
+                                    oldChubSetting[v.extensionId].ctx[0],
+                                    ...v.ctx.slice(1, -1),
+                                    oldChubSetting[v.extensionId].ctx.slice(-1)[0],
+                                ];
+                            }
+                        }
                         if (userVariableSetting[v.extensionId] && !replace) {
                             v.checked = userVariableSetting[v.extensionId].checked;
                             let newCtx = v.ctx.filter(
@@ -153,6 +170,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
             .map((v) => ({ ...v, edit: undefined }));
         chatMgt.virtualRole.avatar = virtualRole_Avatar || "";
         chatMgt.virtualRole.enName = values.virtualRole_en_name;
+        chatMgt.virtualRole.tags = virtualRoleTags;
         if (loadImageAwait) chatMgt.virtualRole.avatar = await loadImageAwait;
         chatMgt.saveVirtualRoleBio();
 
@@ -230,6 +248,13 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
             </div>
             <Form.Item name="virtualRole_bio" label="助理设定" extra="当助理模式开启时，所有发送的内容都将以此内容开头">
                 <Input.TextArea autoSize />
+                <div style={{ marginTop: 5 }}>
+                    {virtualRoleTags.map((v) => (
+                        <Tag key={"role_tag_" + v} color="green">
+                            {v}
+                        </Tag>
+                    ))}
+                </div>
             </Form.Item>
             <Form.Item name="user_en_bio" label="用户设定" extra="当导入角色卡片时，这个内容将作为用户设定导入，其他时候此内容无效。">
                 <Input.TextArea autoSize />
@@ -366,6 +391,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                                                                         if (typeof jsonData == "string") jsonData = JSON.parse(jsonData);
                                                                         let charData = jsonToSetting(jsonData);
                                                                         if (!charData.name) return messageApi.error("数据不正确");
+                                                                        setVirtualRoleTags(charData.tags ?? []);
                                                                         loadChubData(charData);
                                                                     } catch (error) {
                                                                         console.error(error);
