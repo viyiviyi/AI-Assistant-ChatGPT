@@ -1,45 +1,19 @@
-import {
-  aiServerList,
-  aiServices,
-  aiServiceType,
-  getServiceInstance,
-  useService
-} from "@/core/AiService/ServiceProvider";
-import { BgImageStore } from "@/core/BgImageStore";
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { KeyValueData } from "@/core/db/KeyValueData";
-import { useScreenSize } from "@/core/hooks/hooks";
-import { getToken, saveToken } from "@/core/tokens";
-import { downloadJson } from "@/core/utils/utils";
-import { CtxRole } from "@/Models/CtxRole";
-import {
-  CaretRightOutlined,
-  DownloadOutlined,
-  GithubOutlined,
-  PlusOutlined,
-  UploadOutlined
-} from "@ant-design/icons";
-import {
-  Button,
-  Checkbox,
-  Collapse,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Radio,
-  Segmented,
-  Select,
-  Switch,
-  theme,
-  Upload
-} from "antd";
-import { useRouter } from "next/router";
-import { useContext, useEffect, useMemo, useState } from "react";
-import { downloadTopic } from "../Chat/Message/ChatMessage";
-import ImageUpload from "../common/ImageUpload";
-import { ModalCallback } from "../common/Modal";
-import { SkipExport } from "../common/SkipExport";
+import { aiServerList, aiServices, aiServiceType, getServiceInstance, useService } from '@/core/AiService/ServiceProvider';
+import { BgImageStore } from '@/core/BgImageStore';
+import { ChatContext, ChatManagement } from '@/core/ChatManagement';
+import { KeyValueData } from '@/core/db/KeyValueData';
+import { useScreenSize } from '@/core/hooks/hooks';
+import { getToken, saveToken } from '@/core/tokens';
+import { downloadJson } from '@/core/utils/utils';
+import { CtxRole } from '@/Models/CtxRole';
+import { CaretRightOutlined, DownloadOutlined, GithubOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Collapse, Form, Input, InputNumber, Modal, Radio, Segmented, Select, Switch, theme, Upload } from 'antd';
+import { useRouter } from 'next/router';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { downloadTopic } from '../Chat/Message/ChatMessage';
+import ImageUpload from '../common/ImageUpload';
+import { ModalCallback } from '../common/Modal';
+import { SkipExport } from '../common/SkipExport';
 
 export const Setting = ({
   chatMgt,
@@ -50,14 +24,12 @@ export const Setting = ({
   cbs: ModalCallback;
 }) => {
   const [modal, contextHolder] = Modal.useModal();
-  const [activityKey, setActivityKey] = useState<string[]>(["UI"]);
+  const [activityKey, setActivityKey] = useState<string[]>(['UI']);
   const router = useRouter();
   const { setBgConfig, setChat } = useContext(ChatContext);
   const { reloadService } = useService();
   const [models, setModels] = useState<string[]>([]);
-  const [connectors, setConnectors] = useState<{ id: string; name: string }[]>(
-    []
-  );
+  const [connectors, setConnectors] = useState<{ id: string; name: string }[]>([]);
   const screenSize = useScreenSize();
   const [group_Avatar, setGroup_Avatar] = useState(chatMgt?.group.avatar);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -67,9 +39,7 @@ export const Setting = ({
     user: true,
     isMarkdown: false,
   });
-  const [group_background, setGroup_background] = useState(
-    chatMgt?.group.background
-  );
+  const [group_background, setGroup_background] = useState(chatMgt?.group.background);
   const [background, setBackground] = useState<string>();
   const { token } = theme.useToken();
   const [form] = Form.useForm<{
@@ -99,6 +69,7 @@ export const Setting = ({
     setting_api_transfer_url: string;
     slack_user_token: string;
     config_disable_renderType: string;
+    config_use_virtual_role_img: boolean;
   }>();
   const formValus = useMemo(() => {
     return {
@@ -114,32 +85,26 @@ export const Setting = ({
       GptConfig_presence_penalty: chatMgt?.gptConfig.presence_penalty || 0,
       config_saveKey: true,
       config_disable_strikethrough: chatMgt?.config.disableStrikethrough,
-      setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ""),
-      setting_user_server_url: chatMgt?.config.userServerUrl
-        ?.trim()
-        .replace(/\/$/, ""),
+      setting_baseurl: chatMgt?.config.baseUrl?.trim().replace(/\/$/, ''),
+      setting_user_server_url: chatMgt?.config.userServerUrl?.trim().replace(/\/$/, ''),
       config_bot_type: chatMgt?.config.botType,
       config_channel_id: chatMgt?.config.cloudChannelId?.trim(),
       config_page_size: chatMgt?.config.pageSize || 20,
       config_page_repect: chatMgt?.config.pageRepect || 0,
       config_limit_pre_height: chatMgt?.config.limitPreHeight,
       config_disable_renderType: chatMgt?.config.renderType,
+      config_use_virtual_role_img: chatMgt?.config.useVirtualRoleImgToBack || false,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
-      chat_connectors: aiServices.current?.getCurrentConnectors
-        ?.call(aiServices.current?.getCurrentConnectors)
-        .map((v) => v.id),
-      setting_slack_proxy_url: KeyValueData.instance()
-        .getSlackProxyUrl()
-        .trim()
-        ?.replace(/\/$/, ""),
+      chat_connectors: aiServices.current?.getCurrentConnectors?.call(aiServices.current?.getCurrentConnectors).map((v) => v.id),
+      setting_slack_proxy_url: KeyValueData.instance().getSlackProxyUrl().trim()?.replace(/\/$/, ''),
       setting_api_transfer_url: KeyValueData.instance().getApiTransferUrl(),
       group_name: chatMgt?.group.name,
       ...(() => {
         let d: { [key: string]: string[] } = {};
         aiServerList.forEach((v) => {
           let t = getToken(v.key);
-          d["global_tokens_" + v.key] = t.tokens;
+          d['global_tokens_' + v.key] = t.tokens;
         });
         return d;
       })(),
@@ -149,7 +114,7 @@ export const Setting = ({
     BgImageStore.getInstance().getBgImage().then(setBackground);
     aiServices.current?.models().then((res) => {
       setModels(res);
-      if (!res.includes(chatMgt?.gptConfig.model || "") && res.length) {
+      if (!res.includes(chatMgt?.gptConfig.model || '') && res.length) {
         formValus.GptConfig_model = res[0];
         form.setFieldsValue(formValus);
       }
@@ -183,51 +148,33 @@ export const Setting = ({
     }
     chatMgt.saveGptConfig();
 
-    chatMgt.config.baseUrl = values.setting_baseurl?.trim()?.replace(/\/$/, "");
+    chatMgt.config.baseUrl = values.setting_baseurl?.trim()?.replace(/\/$/, '');
     chatMgt.config.disableStrikethrough = values.config_disable_strikethrough;
     chatMgt.config.botType = values.config_bot_type;
     chatMgt.config.cloudChannelId = values.config_channel_id;
-    chatMgt.config.userServerUrl = values.setting_user_server_url
-      ?.trim()
-      ?.replace(/\/$/, "");
+    chatMgt.config.userServerUrl = values.setting_user_server_url?.trim()?.replace(/\/$/, '');
     chatMgt.config.limitPreHeight = values.config_limit_pre_height;
     chatMgt.config.pageSize = values.config_page_size;
     chatMgt.config.pageRepect = values.config_page_repect;
-    chatMgt.config.renderType = values.config_disable_renderType as
-      | "default"
-      | "document";
+    chatMgt.config.renderType = values.config_disable_renderType as 'default' | 'document';
+    chatMgt.config.useVirtualRoleImgToBack = values.config_use_virtual_role_img;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
     chatMgt.group.avatar = group_Avatar;
     chatMgt.group.background = group_background;
     chatMgt.saveGroup();
-    BgImageStore.getInstance().setBgImage(background || "");
+    BgImageStore.getInstance().setBgImage(background || '');
     setBgConfig(group_background || background);
 
-    KeyValueData.instance().setApiKey("", false);
-    KeyValueData.instance().setSlackClaudeId(
-      values.slack_claude_id,
-      values.config_saveKey
-    );
-    KeyValueData.instance().setSlackUserToken(
-      values.slack_user_token,
-      values.config_saveKey
-    );
-    KeyValueData.instance().setSlackProxyUrl(
-      values.setting_slack_proxy_url?.trim()?.replace(/\/$/, ""),
-      values.config_saveKey
-    );
-    KeyValueData.instance().setApiTransferUrl(
-      values.setting_api_transfer_url?.trim()?.replace(/\/$/, ""),
-      values.config_saveKey
-    );
+    KeyValueData.instance().setApiKey('', false);
+    KeyValueData.instance().setSlackClaudeId(values.slack_claude_id, values.config_saveKey);
+    KeyValueData.instance().setSlackUserToken(values.slack_user_token, values.config_saveKey);
+    KeyValueData.instance().setSlackProxyUrl(values.setting_slack_proxy_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
+    KeyValueData.instance().setApiTransferUrl(values.setting_api_transfer_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
     aiServerList.forEach((v) => {
       let t = getToken(v.key);
-      t.tokens =
-        ((values as any)["global_tokens_" + v.key] as Array<string>)?.filter(
-          (v) => v
-        ) || [];
+      t.tokens = ((values as any)['global_tokens_' + v.key] as Array<string>)?.filter((v) => v) || [];
       if (!t.tokens.includes(t.current)) t.current = t.tokens[0];
       saveToken(v.key, t);
     });
@@ -236,7 +183,7 @@ export const Setting = ({
   }
   const panlProp = {
     forceRender: true,
-    style: { padding: "0 8px" },
+    style: { padding: '0 8px' },
   };
   cbs.current.okCallback = onSave;
   return (
@@ -246,39 +193,31 @@ export const Setting = ({
         layout="vertical"
         autoComplete="off"
         style={{
-          padding: "16px 0",
+          padding: '16px 0',
         }}
       >
         <div
           style={{
             maxHeight: screenSize.height - 200,
-            overflow: "auto",
+            overflow: 'auto',
           }}
         >
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              fontSize: "32px",
-              alignItems: "center",
-              flexDirection: "column",
+              display: 'flex',
+              justifyContent: 'center',
+              fontSize: '32px',
+              alignItems: 'center',
+              flexDirection: 'column',
             }}
           >
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <a
-                href="https://github.com/viyiviyi/AI-Assistant-ChatGPT"
-                rel="noopener noreferrer"
-                target={"_blank"}
-              >
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <a href="https://github.com/viyiviyi/AI-Assistant-ChatGPT" rel="noopener noreferrer" target={'_blank'}>
                 <SkipExport>
                   <GithubOutlined size={64} />
                 </SkipExport>
               </a>
-              <a
-                href="https://gitee.com/yiyiooo/AI-Assistant-ChatGPT"
-                rel="noopener noreferrer"
-                target={"_blank"}
-              >
+              <a href="https://gitee.com/yiyiooo/AI-Assistant-ChatGPT" rel="noopener noreferrer" target={'_blank'}>
                 {/* <div style={{ width: 32, height: 64, overflow: "hidden" ,marginLeft:10}} >
                   <Image
                     style={{marginTop:-5}}
@@ -294,14 +233,11 @@ export const Setting = ({
             </div>
             <div style={{ fontSize: 16 }}>QQ群 816545732</div>
           </div>
-          <Form.Item label={"会话头像"}>
-            <ImageUpload
-              avatar={group_Avatar || undefined}
-              onSave={setGroup_Avatar}
-            />
+          <Form.Item label={'会话头像'}>
+            <ImageUpload avatar={group_Avatar || undefined} onSave={setGroup_Avatar} />
             <Button
               type="text"
-              style={{ marginLeft: "1em" }}
+              style={{ marginLeft: '1em' }}
               onClick={() => {
                 setGroup_Avatar(undefined);
               }}
@@ -312,14 +248,14 @@ export const Setting = ({
           <Form.Item style={{ flex: 1 }} name="group_name" label="会话名称">
             <Input />
           </Form.Item>
-          <Form.Item label={"会话背景图片"}>
-            <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+          <Form.Item label={'会话背景图片'}>
+            <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
               <ImageUpload
                 onSave={setGroup_background}
                 width={screenSize.screenWidth}
                 height={screenSize.screenHeight}
                 trigger={
-                  <Button block style={{ width: "min(220px, 40vw)" }}>
+                  <Button block style={{ width: 'min(220px, 40vw)' }}>
                     设置
                   </Button>
                 }
@@ -335,38 +271,28 @@ export const Setting = ({
             </div>
           </Form.Item>
           <Form.Item>
-            <Button.Group style={{ width: "100%" }}>
+            <Button.Group style={{ width: '100%' }}>
               <Modal
                 open={showExportModal}
                 centered={true}
-                title={"导出会话"}
+                title={'导出会话'}
                 onCancel={() => setShowExportModal(false)}
                 onOk={() => {
                   if (exportConfig.isMarkdown) {
                     chatMgt?.topics.forEach((v) => {
                       ChatManagement.loadMessage(v).then((t) => {
-                        downloadTopic(
-                          v,
-                          false,
-                          chatMgt.getChat(),
-                          exportConfig
-                        );
+                        downloadTopic(v, false, chatMgt.getChat(), exportConfig);
                       });
                     });
                   } else {
                     let _chat = chatMgt!.toJson();
                     _chat.group.background = undefined;
-                    downloadJson(
-                      JSON.stringify(_chat),
-                      chatMgt!.group.name + "_eaias.com"
-                    );
+                    downloadJson(JSON.stringify(_chat), chatMgt!.group.name + '_eaias.com');
                   }
                   setShowExportModal(false);
                 }}
               >
-                <p>
-                  Markdown格式是分开导出所有的话题为多个文件，且不能用于还原。
-                </p>
+                <p>Markdown格式是分开导出所有的话题为多个文件，且不能用于还原。</p>
                 <div>
                   <Checkbox
                     checked={exportConfig.isMarkdown}
@@ -377,7 +303,7 @@ export const Setting = ({
                       }));
                     }}
                   >
-                    {" Markdown"}
+                    {' Markdown'}
                   </Checkbox>
                   <Checkbox
                     checked={!exportConfig.isMarkdown}
@@ -388,7 +314,7 @@ export const Setting = ({
                       }));
                     }}
                   >
-                    {"JSON"}
+                    {'JSON'}
                   </Checkbox>
                 </div>
                 {exportConfig.isMarkdown ? (
@@ -403,7 +329,7 @@ export const Setting = ({
                         }));
                       }}
                     >
-                      {"用户"}
+                      {'用户'}
                     </Checkbox>
                     <Checkbox
                       checked={exportConfig.assistant}
@@ -414,7 +340,7 @@ export const Setting = ({
                         }));
                       }}
                     >
-                      {"助理"}
+                      {'助理'}
                     </Checkbox>
                     <Checkbox
                       checked={exportConfig.system}
@@ -425,7 +351,7 @@ export const Setting = ({
                         }));
                       }}
                     >
-                      {"系统"}
+                      {'系统'}
                     </Checkbox>
                   </div>
                 ) : (
@@ -446,12 +372,10 @@ export const Setting = ({
                       const fr = new FileReader();
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
-                          chatMgt
-                            ?.fromJson(JSON.parse(e.target.result.toString()))
-                            .then((chat) => {
-                              setChat(chat);
-                              cbs.current.cancel();
-                            });
+                          chatMgt?.fromJson(JSON.parse(e.target.result.toString())).then((chat) => {
+                            setChat(chat);
+                            cbs.current.cancel();
+                          });
                         }
                       };
                       fr.readAsText(file);
@@ -470,16 +394,16 @@ export const Setting = ({
               <Button
                 block
                 // danger={true}
-                style={{ borderColor: "#ff8d8e44" }}
+                style={{ borderColor: '#ff8d8e44' }}
                 onClick={(e) => {
                   modal.confirm({
-                    title: "确定删除？",
-                    okType: "danger",
-                    content: "删除操作不可逆，请谨慎操作。",
-                    bodyStyle: { whiteSpace: "nowrap" },
+                    title: '确定删除？',
+                    okType: 'danger',
+                    content: '删除操作不可逆，请谨慎操作。',
+                    bodyStyle: { whiteSpace: 'nowrap' },
                     onOk: () => {
                       ChatManagement.remove(chatMgt!.group.id).then(() => {
-                        router.push("/chat");
+                        router.push('/chat');
                         if (ChatManagement.getGroups().length) {
                           setChat(ChatManagement.getGroups()[0]);
                         } else {
@@ -491,26 +415,20 @@ export const Setting = ({
                   });
                 }}
               >
-                {"删除会话"}
+                {'删除会话'}
               </Button>
             </Button.Group>
           </Form.Item>
           <Form.Item name="config_bot_type" label="Ai类型">
             <Select
-              style={{ width: "100%" }}
+              style={{ width: '100%' }}
               onChange={(value, o) => {
                 setModels([]);
                 let server = getServiceInstance(value, chatMgt!.getChat());
                 server?.models().then((res) => {
                   setModels(res);
-                  if (
-                    res.length &&
-                    !res.includes(form.getFieldValue("GptConfig_model"))
-                  ) {
-                    form.setFieldValue(
-                      "GptConfig_model",
-                      server?.defaultModel || res[0]
-                    );
+                  if (res.length && !res.includes(form.getFieldValue('GptConfig_model'))) {
+                    form.setFieldValue('GptConfig_model', server?.defaultModel || res[0]);
                   }
                 });
                 setConnectors([]);
@@ -521,21 +439,21 @@ export const Setting = ({
               }}
             >
               {aiServerList.map((v) => (
-                <Select.Option key={"ai_type" + v.key} value={v.key}>
+                <Select.Option key={'ai_type' + v.key} value={v.key}>
                   {v.name}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
           {models.length ? (
-            <Form.Item label="Chat模型名称" name={"GptConfig_model"}>
+            <Form.Item label="Chat模型名称" name={'GptConfig_model'}>
               <Select options={models.map((v) => ({ value: v, label: v }))} />
             </Form.Item>
           ) : (
             <></>
           )}
           {connectors.length ? (
-            <Form.Item label="Chat连接器" name={"chat_connectors"}>
+            <Form.Item label="Chat连接器" name={'chat_connectors'}>
               <Select
                 allowClear
                 mode="multiple"
@@ -560,8 +478,8 @@ export const Setting = ({
             )}
             items={[
               {
-                key: "UI",
-                label: "界面配置",
+                key: 'UI',
+                label: '界面配置',
                 ...panlProp,
                 children: (
                   <div>
@@ -570,93 +488,49 @@ export const Setting = ({
                       label="上下文数量"
                       extra="表示最近的几条消息会被当成上下文发送给AI，模拟聊天时建议10以上，当做辅助工具时建议1  "
                     >
-                      <InputNumber
-                        style={{ width: "100%" }}
-                        step="1"
-                        min={0}
-                        autoComplete="off"
-                      />
+                      <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
                     </Form.Item>
-                    <div
-                      style={{ width: "100%", display: "flex", gap: "10px" }}
-                    >
-                      <Form.Item
-                        style={{ flex: "1" }}
-                        name="config_page_size"
-                        label="单页显示条数"
-                      >
-                        <InputNumber
-                          style={{ width: "100%" }}
-                          step="1"
-                          min={0}
-                          autoComplete="off"
-                        />
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_page_size" label="单页显示条数">
+                        <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
                       </Form.Item>
-                      <Form.Item
-                        style={{ flex: "1" }}
-                        name="config_page_repect"
-                        label="重复显示条数"
-                      >
-                        <InputNumber
-                          style={{ width: "100%" }}
-                          step="1"
-                          min={0}
-                          autoComplete="off"
-                        />
+                      <Form.Item style={{ flex: '1' }} name="config_page_repect" label="重复显示条数">
+                        <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
                       </Form.Item>
                     </div>
-                    <div
-                      style={{ width: "100%", display: "flex", gap: "10px" }}
-                    >
-                      <Form.Item
-                        style={{ flex: "1" }}
-                        name="config_disable_strikethrough"
-                        valuePropName="checked"
-                        label="禁用删除线"
-                      >
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_disable_strikethrough" valuePropName="checked" label="禁用删除线">
                         <Switch />
                       </Form.Item>
-                      <Form.Item
-                        style={{ flex: "1" }}
-                        name="config_limit_pre_height"
-                        valuePropName="checked"
-                        label="代码块限高"
-                      >
+                      <Form.Item style={{ flex: '1' }} name="config_limit_pre_height" valuePropName="checked" label="代码块限高">
                         <Switch />
                       </Form.Item>
                     </div>
-                    <div
-                      style={{ width: "100%", display: "flex", gap: "10px" }}
-                    >
-                      <Form.Item
-                        style={{ flex: "1" }}
-                        name="config_disable_renderType"
-                        label="渲染方式"
-                      >
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_disable_renderType" label="渲染方式">
                         <Segmented
                           options={[
-                            { label: "对话", value: "default" },
-                            { label: "文档", value: "document" },
+                            { label: '对话', value: 'default' },
+                            { label: '文档', value: 'document' },
                           ]}
                         />
+                      </Form.Item>
+                      <Form.Item style={{ flex: '1' }} name="config_use_virtual_role_img" valuePropName="checked" label="角色卡图片做背景">
+                        <Switch />
                       </Form.Item>
                     </div>
                   </div>
                 ),
               },
               {
-                key: "GPT_Args",
-                label: "参数配置",
+                key: 'GPT_Args',
+                label: '参数配置',
                 ...panlProp,
                 children: (
                   <div>
                     <Form.Item extra="ChatGLM与ChatGPT共用了部分参数"></Form.Item>
-                    <Form.Item
-                      name="GptConfig_role"
-                      label="ChatGPT参数： role"
-                      extra={" 用户使用的角色 建议使用user"}
-                    >
-                      <Radio.Group style={{ width: "100%" }}>
+                    <Form.Item name="GptConfig_role" label="ChatGPT参数： role" extra={' 用户使用的角色 建议使用user'}>
+                      <Radio.Group style={{ width: '100%' }}>
                         <Radio.Button value="assistant">assistant</Radio.Button>
                         <Radio.Button value="system">system</Radio.Button>
                         <Radio.Button value="user">user</Radio.Button>
@@ -672,77 +546,44 @@ export const Setting = ({
                     <Form.Item
                       name="GptConfig_top_p"
                       label="ChatGPT参数： top_p"
-                      extra={
-                        "控制生成内容的多样性, 推荐0.5-0.9, 稍高一些, 保证有一定的词汇多样性，也可能出现一长串形容词"
-                      }
+                      extra={'控制生成内容的多样性, 推荐0.5-0.9, 稍高一些, 保证有一定的词汇多样性，也可能出现一长串形容词'}
                     >
-                      <InputNumber
-                        step="0.05"
-                        min={0}
-                        max={1}
-                        autoComplete="off"
-                      />
+                      <InputNumber step="0.05" min={0} max={1} autoComplete="off" />
                     </Form.Item>
-                    <Form.Item
-                      name="GptConfig_n"
-                      label="ChatGPT参数： n"
-                      extra={"指定生成文本的数量"}
-                    >
-                      <InputNumber
-                        step="1"
-                        min={1}
-                        max={10}
-                        autoComplete="off"
-                      />
+                    <Form.Item name="GptConfig_n" label="ChatGPT参数： n" extra={'指定生成文本的数量'}>
+                      <InputNumber step="1" min={1} max={10} autoComplete="off" />
                     </Form.Item>
                     <Form.Item
                       name="GptConfig_temperature"
                       label="ChatGPT参数： temperature"
-                      extra={
-                        "控制生成内容的随机性, 推荐0.5-0.1, 较低一些, 使内容更加清晰连贯，写文建议值0.7 - 1,"
-                      }
+                      extra={'控制生成内容的随机性, 推荐0.5-0.1, 较低一些, 使内容更加清晰连贯，写文建议值0.7 - 1,'}
                     >
-                      <InputNumber
-                        step="0.05"
-                        min={0}
-                        max={2}
-                        autoComplete="off"
-                      />
+                      <InputNumber step="0.05" min={0} max={2} autoComplete="off" />
                     </Form.Item>
                     <Form.Item
                       name="GptConfig_presence_penalty"
                       label="ChatGPT参数： presence_penalty"
                       extra={
-                        "减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多。使用cohere.ai时，可以通过设置为0来关闭此参数，且当frequency_penalty有值时，此值无效。"
+                        '减少生成过于重复和没有信息量的内容, 减少无意义的重复。推荐0.5-1, 避免重复内容过多。使用cohere.ai时，可以通过设置为0来关闭此参数，且当frequency_penalty有值时，此值无效。'
                       }
                     >
-                      <InputNumber
-                        step="0.01"
-                        min={-2}
-                        max={2}
-                        autoComplete="off"
-                      />
+                      <InputNumber step="0.01" min={-2} max={2} autoComplete="off" />
                     </Form.Item>
                     <Form.Item
                       name="GptConfig_frequency_penalty"
                       label="ChatGPT参数： frequency_penalty"
                       extra={
-                        "减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词。使用cohere.ai时，可以通过设置为0来关闭此参数。"
+                        '减少生成高频词汇, 促进使用更多低频词汇, 推荐1-1.5, 适度降低高频词。使用cohere.ai时，可以通过设置为0来关闭此参数。'
                       }
                     >
-                      <InputNumber
-                        step="0.05"
-                        min={-2}
-                        max={2}
-                        autoComplete="off"
-                      />
+                      <InputNumber step="0.05" min={-2} max={2} autoComplete="off" />
                     </Form.Item>
                   </div>
                 ),
               },
               {
-                key: "Slack",
-                label: "Slack配置",
+                key: 'Slack',
+                label: 'Slack配置',
                 ...panlProp,
                 children: (
                   <div>
@@ -771,38 +612,27 @@ export const Setting = ({
                 ),
               },
               {
-                key: "token",
-                label: "秘钥配置",
+                key: 'token',
+                label: '秘钥配置',
                 ...panlProp,
                 children: (
                   <div>
-                    <Form.Item
-                      style={{ flex: "1" }}
-                      name="config_saveKey"
-                      valuePropName="checked"
-                      label="保存秘钥到浏览器"
-                    >
+                    <Form.Item style={{ flex: '1' }} name="config_saveKey" valuePropName="checked" label="保存秘钥到浏览器">
                       <Switch />
                     </Form.Item>
                     {aiServerList
                       .filter((s) => s.hasToken)
                       .map((s) => {
                         return (
-                          <Form.Item
-                            key={"global_tokens_" + s.key}
-                            label={s.name + " token (全局生效)"}
-                          >
-                            <Form.List name={"global_tokens_" + s.key}>
+                          <Form.Item key={'global_tokens_' + s.key} label={s.name + ' token (全局生效)'}>
+                            <Form.List name={'global_tokens_' + s.key}>
                               {(fields, { add, remove }, { errors }) => {
                                 return (
-                                  <div style={{ overflow: "auto" }}>
+                                  <div style={{ overflow: 'auto' }}>
                                     {fields.map((field, index) => {
                                       return (
                                         <Form.Item {...field}>
-                                          <Input.Password
-                                            autoComplete="off"
-                                            type="text"
-                                          />
+                                          <Input.Password autoComplete="off" type="text" />
                                         </Form.Item>
                                       );
                                     })}
@@ -834,8 +664,8 @@ export const Setting = ({
                 ),
               },
               {
-                key: "network",
-                label: "网络配置",
+                key: 'network',
+                label: '网络配置',
                 ...panlProp,
                 children: (
                   <div>
@@ -844,60 +674,40 @@ export const Setting = ({
                       label="ChatGPT参数： 接口访问地址"
                       extra="api代理地址 (反向代理了 https://api.openai.com 的地址)"
                     >
-                      <Input
-                        type="text"
-                        placeholder="https://xxxx.xx.xx"
-                        autoComplete="off"
-                      />
+                      <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
                     <Form.Item
                       name="setting_slack_proxy_url"
                       label="Slack配置： 接口访问地址 (全局生效)"
                       extra="api代理地址 (反向代理了 https://slack.com 的地址)"
                     >
-                      <Input
-                        type="text"
-                        placeholder="https://xxxx.xx.xx"
-                        autoComplete="off"
-                      />
+                      <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
-                    <Form.Item
-                      name="setting_user_server_url"
-                      label="自定义服务地址"
-                      extra="用于访问自建AI服务的地址，比如ChatGLM"
-                    >
-                      <Input
-                        type="text"
-                        placeholder="https://xxxx.xx.xx"
-                        autoComplete="off"
-                      />
+                    <Form.Item name="setting_user_server_url" label="自定义服务地址" extra="用于访问自建AI服务的地址，比如ChatGLM">
+                      <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
                     <Form.Item
                       name="setting_api_transfer_url"
                       label="API中转服务地址 (全局生效)"
                       extra="如果使用API中转服务，可以将地址设置在这里，比如 https://oneapi.huinong.co ; 如果中转地址不允许跨域访问，可以在地址前面拼接 https://proxy.eaias.com/ ; 如： https://proxy.eaias.com/https://oneapi.huinong.co"
                     >
-                      <Input
-                        type="text"
-                        placeholder="https://xxxx.xx.xx"
-                        autoComplete="off"
-                      />
+                      <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
                   </div>
                 ),
               },
               {
-                key: "Glabal",
-                label: "全局设置",
+                key: 'Glabal',
+                label: '全局设置',
                 ...panlProp,
                 children: (
                   <div>
-                    <Form.Item label={"全局背景图片"}>
+                    <Form.Item label={'全局背景图片'}>
                       <div
                         style={{
-                          width: "100%",
-                          display: "flex",
-                          gap: "10px",
+                          width: '100%',
+                          display: 'flex',
+                          gap: '10px',
                         }}
                       >
                         <ImageUpload
@@ -905,15 +715,15 @@ export const Setting = ({
                           width={screenSize.screenWidth}
                           height={screenSize.screenHeight}
                           trigger={
-                            <Button block style={{ width: "min(220px, 40vw)" }}>
+                            <Button block style={{ width: 'min(220px, 40vw)' }}>
                               设置
                             </Button>
                           }
                         ></ImageUpload>
                         <Button
-                          style={{ flex: "1" }}
+                          style={{ flex: '1' }}
                           onClick={() => {
-                            setBackground("");
+                            setBackground('');
                           }}
                         >
                           清除
