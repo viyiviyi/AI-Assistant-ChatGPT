@@ -169,7 +169,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
     if (loadImageAwait) chatMgt.virtualRole.avatar = await loadImageAwait;
     chatMgt.saveVirtualRoleBio();
 
-    if (chatMgt?.config.useVirtualRoleImgToBack) {
+    if (bgImg && chatMgt?.config.useVirtualRoleImgToBack) {
       BgImageStore.getInstance().setBgImage(bgImg || '');
       setBgConfig(bgImg || '');
     }
