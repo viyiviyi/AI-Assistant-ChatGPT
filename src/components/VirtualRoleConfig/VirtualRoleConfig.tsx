@@ -170,6 +170,8 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
 
     if (bgImg && chatMgt?.config.useVirtualRoleImgToBack) {
       // BgImageStore.getInstance().setBgImage(bgImg || '');
+      chatMgt.group.background = bgImg;
+      chatMgt.saveGroup();
       setBgConfig(bgImg || '');
     }
 
