@@ -1,4 +1,3 @@
-import { BgImageStore } from '@/core/BgImageStore';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { KeyValueData } from '@/core/db/KeyValueData';
 import { useScreenSize } from '@/core/hooks/hooks';
@@ -170,7 +169,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
     chatMgt.saveVirtualRoleBio();
 
     if (bgImg && chatMgt?.config.useVirtualRoleImgToBack) {
-      BgImageStore.getInstance().setBgImage(bgImg || '');
+      // BgImageStore.getInstance().setBgImage(bgImg || '');
       setBgConfig(bgImg || '');
     }
 
