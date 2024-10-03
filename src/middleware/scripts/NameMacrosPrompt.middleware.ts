@@ -28,8 +28,10 @@ export class NameMacrosPrompt implements IMiddleware {
     return input
       ?.replaceAll("{{user_info}}", chat.user.bio || "")
       .replaceAll("{{current_time}}", format(new Date(), "yyyy-MM-dd HH:mm:ss"))
-      .replaceAll("{{char}}", chat.virtualRole.name)
-      .replaceAll("{{user}}", chat.user.name)
+      .replace(/\{\{(char|bot)\}\}/gi,chat.virtualRole.name)
+      .replace(/\{\{(user)\}\}/gi,chat.user.name)
+      // .replaceAll("{{char}}", chat.virtualRole.name)
+      // .replaceAll("{{user}}", chat.user.name)
       .replaceAll("<BOT>", chat.virtualRole.name)
       .replaceAll("<USER>", chat.user.name);
   }
