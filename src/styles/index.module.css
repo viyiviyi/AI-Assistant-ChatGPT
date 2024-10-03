@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 16px;
+  height: 6px;
 }
 
 .loading .loadingBar {

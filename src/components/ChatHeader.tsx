@@ -36,8 +36,8 @@ export const ChatHeader = () => {
         display: "flex",
         alignItems: "center",
         marginBottom: "3px",
-        padding: "10px",
-        height: 52,
+        padding: "0 10px",
+        height: 50,
         position: "relative",
         color: token.colorText,
         borderRadius:
@@ -49,8 +49,8 @@ export const ChatHeader = () => {
         onClick={(v) => {
           setRoleConfigShow(!roleConfigShow);
         }}
-        size={32}
-        style={{ minWidth: "32px", minHeight: "32px" }}
+        size={48}
+        style={{ minWidth: "32px", minHeight: "32px" ,marginTop:2}}
         src={chat.group.avatar || chat?.virtualRole.avatar || undefined}
         icon={<Image width={32} height={32} src={"/logo.png"} alt="logo" />}
       ></Avatar>

@@ -1,13 +1,8 @@
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { usePushMessage, useScreenSize } from "@/core/hooks/hooks";
-import {
-  activityScroll,
-  onTextareaTab,
-  scrollToBotton,
-  scrollToTop
-} from "@/core/utils/utils";
-import { CtxRole } from "@/Models/CtxRole";
-import styleCss from "@/styles/index.module.css";
+import { ChatContext, ChatManagement } from '@/core/ChatManagement';
+import { usePushMessage, useScreenSize } from '@/core/hooks/hooks';
+import { activityScroll, onTextareaTab, scrollToBotton, scrollToTop } from '@/core/utils/utils';
+import { CtxRole } from '@/Models/CtxRole';
+import styleCss from '@/styles/index.module.css';
 import {
   AlignLeftOutlined,
   CaretLeftOutlined,
@@ -16,15 +11,15 @@ import {
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
-} from "@ant-design/icons";
-import { Button, Drawer, theme, Typography } from "antd";
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { MemoBackgroundImage } from "../common/BackgroundImage";
-import { SkipExport } from "../common/SkipExport";
-import { TextEditor } from "../common/TextEditor";
-import { MemoNavigation } from "../Nav/Navigation";
-import { MessageContext } from "./Chat";
-import { CtxRoleButton } from "./CtxRoleButton";
+} from '@ant-design/icons';
+import { Button, Drawer, theme, Typography } from 'antd';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { MemoBackgroundImage } from '../common/BackgroundImage';
+import { SkipExport } from '../common/SkipExport';
+import { TextEditor } from '../common/TextEditor';
+import { MemoNavigation } from '../Nav/Navigation';
+import { MessageContext } from './Chat';
+import { CtxRoleButton } from './CtxRoleButton';
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };
@@ -37,29 +32,19 @@ export function useInput() {
   };
 }
 export function InputUtil() {
-  const [inputText, setInputText] = useState({ text: "" });
+  const [inputText, setInputText] = useState({ text: '' });
   const [loading, setLoading] = useState(0);
   const [showNav, setShowNav] = useState(false);
-  const {
-    chatMgt: chat,
-    activityTopic,
-    setActivityTopic,
-    reloadNav,
-  } = useContext(ChatContext);
-  const {
-    onlyOne,
-    setOnlyOne,
-    closeAll,
-    setCloseAll: setCloasAll,
-  } = useContext(MessageContext);
+  const { chatMgt: chat, activityTopic, setActivityTopic, reloadNav } = useContext(ChatContext);
+  const { onlyOne, setOnlyOne, closeAll, showTitle, setShowTitle, setCloseAll: setCloasAll } = useContext(MessageContext);
   const screenSize = useScreenSize();
   const { token } = theme.useToken();
-  const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
+  const [role, setRole] = useState<[CtxRole, boolean]>(['user', true]);
   const { pushMessage } = usePushMessage(chat);
   const [showCtxRoleButton, setShowCtxRoleButton] = useState(false);
   objs.setInput = (input: string | ((s: string) => string)) => {
     let next_input = inputText.text;
-    if (typeof input == "function") {
+    if (typeof input == 'function') {
       next_input = input(next_input);
     } else {
       next_input = input;
@@ -85,8 +70,7 @@ export function InputUtil() {
       text = ChatManagement.parseText(text);
       let topic = chat.getActivityTopic();
       if (!chat.config.activityTopicId) isNewTopic = true;
-      if (!chat.topics.find((t) => t.id == chat.config.activityTopicId))
-        isNewTopic = true;
+      if (!chat.topics.find((t) => t.id == chat.config.activityTopicId)) isNewTopic = true;
       if (isNewTopic) {
         await chat.newTopic(text).then((_topic) => {
           topic = _topic;
@@ -96,9 +80,9 @@ export function InputUtil() {
       if (!topic) return;
       activityScroll({ botton: true });
       setLoading((v) => ++v);
-      setInputText({ text: "" });
+      setInputText({ text: '' });
       pushMessage(text, topic.messages.length || 0, topic, role, () => {
-        setRole(["user", true]);
+        setRole(['user', true]);
         if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
         setTimeout(() => {
           setLoading((v) => --v);
@@ -114,11 +98,7 @@ export function InputUtil() {
         {loading ? (
           <div className={styleCss.loading}>
             {[0, 1, 2, 3, 4].map((v) => (
-              <div
-                key={v}
-                style={{ backgroundColor: token.colorPrimary }}
-                className={styleCss.loadingBar}
-              ></div>
+              <div key={v} style={{ backgroundColor: token.colorPrimary }} className={styleCss.loadingBar}></div>
             ))}
           </div>
         ) : (
@@ -127,21 +107,21 @@ export function InputUtil() {
       </div>
       <div
         style={{
-          width: "100%",
-          padding: "0px 10px 10px",
+          width: '100%',
+          padding: '0px 10px 10px',
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
         }}
       >
         <div
           style={{
-            flexWrap: "nowrap",
-            width: "100%",
-            justifyContent: "flex-end",
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "3px",
-            position: "relative",
+            flexWrap: 'nowrap',
+            width: '100%',
+            justifyContent: 'flex-end',
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '3px',
+            position: 'relative',
           }}
         >
           {showCtxRoleButton && (
@@ -150,8 +130,8 @@ export function InputUtil() {
               onChange={setRole}
               inputRef={inputRef}
               style={{
-                position: "absolute",
-                bottom: "100%",
+                position: 'absolute',
+                bottom: '100%',
                 left: 0,
                 borderRadius: token.borderRadius,
                 backgroundColor: token.colorFillContent,
@@ -161,7 +141,7 @@ export function InputUtil() {
           <SkipExport>
             <div className={styleCss.roll_button}>
               <Button
-                shape={"circle"}
+                shape={'circle'}
                 size="large"
                 className={styleCss.roll_button_item}
                 icon={<VerticalAlignTopOutlined />}
@@ -175,7 +155,7 @@ export function InputUtil() {
               />
               <span style={{ marginTop: 10 }}></span>
               <Button
-                shape={"circle"}
+                shape={'circle'}
                 size="large"
                 className={styleCss.roll_button_item}
                 icon={<VerticalAlignBottomOutlined />}
@@ -189,16 +169,14 @@ export function InputUtil() {
                 }}
               />
               <SkipExport>
-                <CaretLeftOutlined
-                  style={{ position: "absolute", right: "0", top: "37px" }}
-                />
+                <CaretLeftOutlined style={{ position: 'absolute', right: '0', top: '37px' }} />
               </SkipExport>
             </div>
           </SkipExport>
           {screenSize.width < 1200 && (
             <SkipExport>
               <AlignLeftOutlined
-                style={{ padding: "8px 12px 8px 0" }}
+                style={{ padding: '8px 12px 8px 0' }}
                 onClick={(e) => {
                   setShowNav(true);
                 }}
@@ -206,11 +184,11 @@ export function InputUtil() {
             </SkipExport>
           )}
           <Drawer
-            placement={"left"}
+            placement={'left'}
             closable={false}
             width={Math.min(screenSize.width - 40, 400)}
-            key={"nav_drawer"}
-            styles={{ body: { padding: "1em 0" } }}
+            key={'nav_drawer'}
+            styles={{ body: { padding: '1em 0' } }}
             open={showNav}
             onClose={() => {
               setShowNav(false);
@@ -219,8 +197,8 @@ export function InputUtil() {
             <MemoBackgroundImage />
             <div
               style={{
-                position: "relative",
-                height: "100%",
+                position: 'relative',
+                height: '100%',
                 zIndex: 99,
               }}
             >
@@ -229,7 +207,7 @@ export function InputUtil() {
           </Drawer>
           <Typography.Text
             style={{
-              cursor: "pointer",
+              cursor: 'pointer',
               color: onlyOne ? token.colorPrimary : undefined,
               flex: 1,
               width: 0,
@@ -261,8 +239,17 @@ export function InputUtil() {
             shape="round"
             onMouseDown={(e) => e.preventDefault()}
             onClick={(e) => {
-              setOnlyOne(false);
-              setCloasAll(!closeAll);
+              if (showTitle && onlyOne) {
+                setShowTitle(false);
+              } else if (onlyOne) {
+                setOnlyOne(false);
+                setCloasAll(true);
+              } else if (closeAll) {
+                setCloasAll(false);
+              } else {
+                setOnlyOne(true);
+                setShowTitle(true);
+              }
             }}
           >
             <SkipExport>
@@ -298,7 +285,7 @@ export function InputUtil() {
             }}
           ></Button>
         </div>
-        <div style={{ width: "100%" }}>
+        <div style={{ width: '100%' }}>
           <TextEditor
             placeholder="Ctrl + S 发送    Ctrl + Enter 创建话题"
             autoSize={{ maxRows: 10 }}
@@ -306,8 +293,8 @@ export function InputUtil() {
             ref={inputRef}
             onFocus={(e) =>
               e.target.scrollIntoView({
-                behavior: "smooth",
-                block: "end",
+                behavior: 'smooth',
+                block: 'end',
               })
             }
             onChange={(e) => {
@@ -319,21 +306,12 @@ export function InputUtil() {
             }}
             input={inputText}
             autoFocus={false}
-            onKeyUp={(e) =>
-              (e.key === "s" && e.altKey && onSubmit(false)) ||
-              (e.key === "Enter" && e.ctrlKey && onSubmit(true))
-            }
+            onKeyUp={(e) => (e.key === 's' && e.altKey && onSubmit(false)) || (e.key === 'Enter' && e.ctrlKey && onSubmit(true))}
             onKeyDown={(e) =>
-              e.key === "Tab" &&
+              e.key === 'Tab' &&
               (e.preventDefault(),
               setInputText((v) => ({
-                text: onTextareaTab(
-                  v.text,
-                  e.currentTarget?.selectionStart,
-                  e.currentTarget?.selectionEnd,
-                  e.currentTarget,
-                  e.shiftKey
-                ),
+                text: onTextareaTab(v.text, e.currentTarget?.selectionStart, e.currentTarget?.selectionEnd, e.currentTarget, e.shiftKey),
               })))
             }
           />

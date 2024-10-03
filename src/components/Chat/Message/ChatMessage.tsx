@@ -1,36 +1,15 @@
-import { TopicConfigModal } from "@/components/TopicConfig/TopicConfig";
-import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
-import { useSendMessage } from "@/core/hooks/hooks";
-import { TopicMessage } from "@/Models/Topic";
-import {
-  CaretRightOutlined,
-  DeleteOutlined,
-  DownloadOutlined,
-  EditOutlined,
-  MessageOutlined,
-  PlusOutlined
-} from "@ant-design/icons";
-import {
-  Button,
-  Checkbox,
-  Collapse,
-  Input,
-  Popconfirm,
-  Space,
-  theme,
-  Typography
-} from "antd";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from "react";
-import { SkipExport } from "../../common/SkipExport";
-import { MessageContext } from "../Chat";
-import { MemoInsertInput } from "../InsertInput";
-import { MessageList, reloadTopic } from "./MessageList";
+import { Hidden } from '@/components/common/Hidden';
+import { TopicConfigModal } from '@/components/TopicConfig/TopicConfig';
+import { ChatContext, ChatManagement, IChat } from '@/core/ChatManagement';
+import { useSendMessage } from '@/core/hooks/hooks';
+import { TopicMessage } from '@/Models/Topic';
+import { CaretRightOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, MessageOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Collapse, Input, Popconfirm, Space, theme, Typography } from 'antd';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { SkipExport } from '../../common/SkipExport';
+import { MessageContext } from '../Chat';
+import { MemoInsertInput } from '../InsertInput';
+import { MessageList, reloadTopic } from './MessageList';
 
 const { Panel } = Collapse;
 
@@ -40,22 +19,10 @@ const MemoTopUtil = React.memo(TopUtil);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const firstMsgIdx = useRef<number>();
-  const {
-    chatMgt: chat,
-    setActivityTopic,
-    activityTopic,
-    reloadNav,
-    forceRender,
-  } = useContext(ChatContext);
-  const [activityKey, setActivityKey] = useState<string[]>([
-    chat.config.activityTopicId,
-  ]);
+  const { chatMgt: chat, setActivityTopic, activityTopic, reloadNav, forceRender } = useContext(ChatContext);
+  const [activityKey, setActivityKey] = useState<string[]>([chat.config.activityTopicId]);
   const [topicId, setTopicId] = useState<string>();
-  const {
-    onlyOne,
-    closeAll,
-    setCloseAll: setCloasAll,
-  } = useContext(MessageContext);
+  const { onlyOne, closeAll, showTitle, setCloseAll: setCloasAll } = useContext(MessageContext);
   const [none, setNone] = useState([]);
   const onClickTopicTitle = useCallback(
     async (topic: TopicMessage) => {
@@ -94,8 +61,7 @@ export const ChatMessage = () => {
           next_t = chat.topics.length ? chat.topics.slice(-1)[0] : undefined;
         }
         setActivityTopic(next_t);
-        if (next_t && !activityKey.includes(next_t?.id || ""))
-          setActivityKey((k) => [next_t!.id, ...k]);
+        if (next_t && !activityKey.includes(next_t?.id || '')) setActivityKey((k) => [next_t!.id, ...k]);
         reloadNav(next_t!);
         reloadTopic;
         setNone([]);
@@ -111,25 +77,20 @@ export const ChatMessage = () => {
         <div
           style={{
             padding: token.paddingContentVerticalSM,
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
+            paddingBottom: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
           }}
         >
-          <MemoTopicTitle topic={topic} onClick={() => {}}></MemoTopicTitle>
-          <div style={{ marginTop: "15px" }}>
-            <MemoTopUtil
-              topic={topic}
-              onDle={handlerDelete}
-              firstMsgIdxRef={firstMsgIdx}
-            />
-          </div>
-          <div id={"content"} style={{ flex: 1, overflow: "auto" }}>
-            <MemoMessageList
-              chat={chat}
-              topic={topic}
-              firstMsgIdxRef={firstMsgIdx}
-            ></MemoMessageList>
+          <Hidden hidden={!showTitle}>
+            <MemoTopicTitle topic={topic} onClick={() => {}}></MemoTopicTitle>
+            <div style={{ marginTop: '15px' }}>
+              <MemoTopUtil topic={topic} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
+            </div>
+          </Hidden>
+          <div id={'content'} style={{ flex: 1, overflow: 'auto' }}>
+            <MemoMessageList chat={chat} topic={topic} firstMsgIdxRef={firstMsgIdx}></MemoMessageList>
           </div>
         </div>
       );
@@ -150,26 +111,13 @@ export const ChatMessage = () => {
       items={chat.topics.map((v) => ({
         forceRender: forceRender,
         key: v.id,
-        style: { border: "none", padding: "0 8px", width: "100%" },
-        label: (
-          <MemoTopicTitle
-            topic={v}
-            onClick={() => onClickTopicTitle(v)}
-          ></MemoTopicTitle>
-        ),
+        style: { border: 'none', padding: '0 8px', width: '100%' },
+        label: <MemoTopicTitle topic={v} onClick={() => onClickTopicTitle(v)}></MemoTopicTitle>,
         children: (
           <div id={v.id}>
             <>
-              <MemoTopUtil
-                topic={v}
-                onDle={handlerDelete}
-                firstMsgIdxRef={firstMsgIdx}
-              />
-              <MemoMessageList
-                chat={chat}
-                topic={v}
-                firstMsgIdxRef={firstMsgIdx}
-              ></MemoMessageList>
+              <MemoTopUtil topic={v} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
+              <MemoMessageList chat={chat} topic={v} firstMsgIdxRef={firstMsgIdx}></MemoMessageList>
             </>
           </div>
         ),
@@ -200,9 +148,9 @@ function TopUtil({
     <>
       <div
         style={{
-          borderBottom: "1px solid #ccc5",
-          width: "100%",
-          display: "flex",
+          borderBottom: '1px solid #ccc5',
+          width: '100%',
+          display: 'flex',
           marginBottom: 5,
           marginTop: 0,
         }}
@@ -236,14 +184,10 @@ function TopUtil({
         <TopicConfigModal topic={v}></TopicConfigModal>
         <span style={{ flex: 1 }}></span>
         <Space size={10}>
-          <Typography.Title
-            level={5}
-            style={{ opacity: 0.5 }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <Typography.Title level={5} style={{ opacity: 0.5 }} onClick={(e) => e.stopPropagation()}>
             <SkipExport>
               <Popconfirm
-                overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                overlayInnerStyle={{ whiteSpace: 'nowrap' }}
                 placement="topRight"
                 okType="danger"
                 title="确定删除此话题？"
@@ -251,17 +195,11 @@ function TopUtil({
                   onDle(v);
                 }}
               >
-                <DeleteOutlined
-                  style={{ color: "#ff8d8f", padding: "0 5px" }}
-                ></DeleteOutlined>
+                <DeleteOutlined style={{ color: '#ff8d8f', padding: '0 5px' }}></DeleteOutlined>
               </Popconfirm>
             </SkipExport>
           </Typography.Title>
-          <Typography.Title
-            level={5}
-            style={{ opacity: 0.5, padding: "0 5px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <Typography.Title level={5} style={{ opacity: 0.5, padding: '0 5px' }} onClick={(e) => e.stopPropagation()}>
             <SkipExport>
               <Popconfirm
                 title="请选择内容格式。"
@@ -269,10 +207,8 @@ function TopUtil({
                 description={
                   <>
                     <p>当选择对话时，将会给每条消息前加上助理或用户的名字。</p>
-                    <div
-                      style={{ display: "flex", justifyContent: "flex-end" }}
-                    >
-                      <span>{"指定身份，仅对md文档生效"}</span>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span>{'指定身份，仅对md文档生效'}</span>
                       <Checkbox
                         checked={selectRoles.user}
                         onChange={(e) => {
@@ -282,7 +218,7 @@ function TopUtil({
                           }));
                         }}
                       >
-                        {"用户"}
+                        {'用户'}
                       </Checkbox>
                       <Checkbox
                         checked={selectRoles.assistant}
@@ -293,7 +229,7 @@ function TopUtil({
                           }));
                         }}
                       >
-                        {"助理"}
+                        {'助理'}
                       </Checkbox>
                       <Checkbox
                         checked={selectRoles.system}
@@ -304,7 +240,7 @@ function TopUtil({
                           }));
                         }}
                       >
-                        {"系统"}
+                        {'系统'}
                       </Checkbox>
                     </div>
                   </>
@@ -315,8 +251,8 @@ function TopUtil({
                 onCancel={() => {
                   downloadTopic(v, true, chat.getChat(), selectRoles);
                 }}
-                okText={"文档"}
-                cancelText={"对话"}
+                okText={'文档'}
+                cancelText={'对话'}
               >
                 <DownloadOutlined></DownloadOutlined>
               </Popconfirm>
@@ -325,13 +261,7 @@ function TopUtil({
         </Space>
       </div>
       {showInsert0 ? (
-        <MemoInsertInput
-          key={"insert0_input"}
-          insertIndex={0}
-          topic={v}
-          chat={chat}
-          onHidden={() => setShowInsert0(false)}
-        />
+        <MemoInsertInput key={'insert0_input'} insertIndex={0} topic={v} chat={chat} onHidden={() => setShowInsert0(false)} />
       ) : (
         <></>
       )}
@@ -339,13 +269,7 @@ function TopUtil({
   );
 }
 
-function TopicTitle({
-  topic,
-  onClick,
-}: {
-  topic: TopicMessage;
-  onClick: () => void;
-}) {
+function TopicTitle({ topic, onClick }: { topic: TopicMessage; onClick: () => void }) {
   const { token } = theme.useToken();
   const { chatMgt: chat } = useContext(ChatContext);
   const [title, setTitle] = useState(topic.name);
@@ -354,20 +278,17 @@ function TopicTitle({
     setEdit(false);
   }, []);
   useEffect(() => {
-    document.removeEventListener("click", cancelEdit);
-    document.addEventListener("click", cancelEdit);
+    document.removeEventListener('click', cancelEdit);
+    document.addEventListener('click', cancelEdit);
     return () => {
-      document.removeEventListener("click", cancelEdit);
+      document.removeEventListener('click', cancelEdit);
     };
   }, [cancelEdit]);
   useEffect(() => {
     setTitle(topic.name);
   }, [topic]);
   return (
-    <div
-      style={{ position: "relative", height: "24px" }}
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div style={{ position: 'relative', height: '24px' }} onClick={(e) => e.stopPropagation()}>
       {edit ? (
         <Input.TextArea
           placeholder={topic.name}
@@ -376,7 +297,7 @@ function TopicTitle({
           autoFocus={true}
           value={title}
           onKeyUp={(e) => {
-            if ((e.key === "s" && e.ctrlKey) || e.key == "Enter") {
+            if ((e.key === 's' && e.ctrlKey) || e.key == 'Enter') {
               e.stopPropagation();
               e.preventDefault();
               chat.saveTopic(topic.id, title.trim());
@@ -384,7 +305,7 @@ function TopicTitle({
             }
           }}
           onKeyDown={(e) => {
-            if ((e.key === "s" && e.ctrlKey) || e.key == "Enter") {
+            if ((e.key === 's' && e.ctrlKey) || e.key == 'Enter') {
               e.stopPropagation();
               e.preventDefault();
             }
@@ -401,18 +322,15 @@ function TopicTitle({
               onClick();
             }}
             style={{
-              color:
-                chat.config.activityTopicId == topic.id
-                  ? token.colorPrimary
-                  : undefined,
-              width: "calc(100% - 40px)",
-              position: "absolute",
+              color: chat.config.activityTopicId == topic.id ? token.colorPrimary : undefined,
+              width: 'calc(100% - 40px)',
+              position: 'absolute',
             }}
           >
             {title}
           </Typography.Title>
           <Button
-            style={{ position: "absolute", right: 0 }}
+            style={{ position: 'absolute', right: 0 }}
             type="text"
             icon={
               <SkipExport>
@@ -440,28 +358,28 @@ export function downloadTopic(
     user: boolean;
   }
 ) {
-  let str = "#" + ChatManagement.parseText(topic.name).substring(0, 64);
-  str += "\n---\n";
+  let str = '#' + ChatManagement.parseText(topic.name).substring(0, 64);
+  str += '\n---\n';
   topic.messages.forEach((v) => {
     let virtualRole = chat.virtualRole;
-    if (v.ctxRole === "system" && role.system) {
-      if (useRole) str += "系统：\n";
-      str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
-    } else if (v.ctxRole === "assistant" && role.assistant) {
-      if (useRole) str += virtualRole.name + ":\n";
-      str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
-    } else if (v.ctxRole === "user" && role.system) {
-      if (useRole) str += chat.user.name + ":\n";
-      str += v.text.replace(/^#+\s*\n/, "") + "\n\n";
+    if (v.ctxRole === 'system' && role.system) {
+      if (useRole) str += '系统：\n';
+      str += v.text.replace(/^#+\s*\n/, '') + '\n\n';
+    } else if (v.ctxRole === 'assistant' && role.assistant) {
+      if (useRole) str += virtualRole.name + ':\n';
+      str += v.text.replace(/^#+\s*\n/, '') + '\n\n';
+    } else if (v.ctxRole === 'user' && role.system) {
+      if (useRole) str += chat.user.name + ':\n';
+      str += v.text.replace(/^#+\s*\n/, '') + '\n\n';
     }
   });
-  downloadText(str, topic.name + ".md");
+  downloadText(str, topic.name + '.md');
 }
 
 function downloadText(jsonData: string, filename: string) {
-  const blob = new Blob([jsonData], { type: "text/plain" });
+  const blob = new Blob([jsonData], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
