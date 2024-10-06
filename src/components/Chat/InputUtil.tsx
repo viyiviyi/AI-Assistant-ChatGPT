@@ -289,7 +289,6 @@ export function InputUtil() {
           <TextEditor
             placeholder="Ctrl + S 发送    Ctrl + Enter 创建话题"
             autoSize={{ maxRows: 10 }}
-            allowClear
             ref={inputRef}
             onFocus={(e) =>
               e.target.scrollIntoView({

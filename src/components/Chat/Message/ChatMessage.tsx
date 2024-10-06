@@ -78,6 +78,7 @@ export const ChatMessage = () => {
           style={{
             padding: token.paddingContentVerticalSM,
             paddingBottom: 0,
+            paddingTop: 5,
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
@@ -85,7 +86,7 @@ export const ChatMessage = () => {
         >
           <Hidden hidden={!showTitle}>
             <MemoTopicTitle topic={topic} onClick={() => {}}></MemoTopicTitle>
-            <div style={{ marginTop: '15px' }}>
+            <div style={{ marginTop: 3 }}>
               <MemoTopUtil topic={topic} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
             </div>
           </Hidden>
@@ -184,7 +185,7 @@ function TopUtil({
         <TopicConfigModal topic={v}></TopicConfigModal>
         <span style={{ flex: 1 }}></span>
         <Space size={10}>
-          <Typography.Title level={5} style={{ opacity: 0.5 }} onClick={(e) => e.stopPropagation()}>
+          <Button shape="circle" type="text" onClick={(e) => e.stopPropagation()}>
             <SkipExport>
               <Popconfirm
                 overlayInnerStyle={{ whiteSpace: 'nowrap' }}
@@ -198,8 +199,8 @@ function TopUtil({
                 <DeleteOutlined style={{ color: '#ff8d8f', padding: '0 5px' }}></DeleteOutlined>
               </Popconfirm>
             </SkipExport>
-          </Typography.Title>
-          <Typography.Title level={5} style={{ opacity: 0.5, padding: '0 5px' }} onClick={(e) => e.stopPropagation()}>
+          </Button>
+          <Button shape="circle" type="text" onClick={(e) => e.stopPropagation()}>
             <SkipExport>
               <Popconfirm
                 title="请选择内容格式。"
@@ -257,7 +258,7 @@ function TopUtil({
                 <DownloadOutlined></DownloadOutlined>
               </Popconfirm>
             </SkipExport>
-          </Typography.Title>
+          </Button>
         </Space>
       </div>
       {showInsert0 ? (
@@ -293,7 +294,6 @@ function TopicTitle({ topic, onClick }: { topic: TopicMessage; onClick: () => vo
         <Input.TextArea
           placeholder={topic.name}
           autoSize={{ maxRows: 10 }}
-          allowClear
           autoFocus={true}
           value={title}
           onKeyUp={(e) => {
@@ -325,12 +325,13 @@ function TopicTitle({ topic, onClick }: { topic: TopicMessage; onClick: () => vo
               color: chat.config.activityTopicId == topic.id ? token.colorPrimary : undefined,
               width: 'calc(100% - 40px)',
               position: 'absolute',
+              marginBottom: 0,
             }}
           >
             {title}
           </Typography.Title>
           <Button
-            style={{ position: 'absolute', right: 0 }}
+            style={{ position: 'absolute', right: 0, padding: 0 }}
             type="text"
             icon={
               <SkipExport>

@@ -85,7 +85,6 @@ function InsertInput({
         <Input.TextArea
           placeholder="Ctrl + S 或 Ctrl + Enter 插入消息"
           autoSize={{ maxRows: 10 }}
-          allowClear
           ref={insertInputRef}
           autoFocus={true}
           value={insertText}
