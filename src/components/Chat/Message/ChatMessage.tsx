@@ -76,8 +76,8 @@ export const ChatMessage = () => {
       return (
         <div
           style={{
-            padding: token.paddingContentVerticalSM,
-            paddingBottom: 0,
+            // padding: token.paddingContentVerticalSM,
+            // paddingBottom: 0,
             paddingTop: 5,
             display: 'flex',
             flexDirection: 'column',
@@ -112,7 +112,7 @@ export const ChatMessage = () => {
       items={chat.topics.map((v) => ({
         forceRender: forceRender,
         key: v.id,
-        style: { border: 'none', padding: '0 8px', width: '100%' },
+        style: { border: 'none', width: '100%', },
         label: <MemoTopicTitle topic={v} onClick={() => onClickTopicTitle(v)}></MemoTopicTitle>,
         children: (
           <div id={v.id}>
@@ -154,6 +154,7 @@ function TopUtil({
           display: 'flex',
           marginBottom: 5,
           marginTop: 0,
+          padding: '0 10px',
         }}
       >
         <Button
@@ -289,7 +290,7 @@ function TopicTitle({ topic, onClick }: { topic: TopicMessage; onClick: () => vo
     setTitle(topic.name);
   }, [topic]);
   return (
-    <div style={{ position: 'relative', height: '24px' }} onClick={(e) => e.stopPropagation()}>
+    <div style={{ position: 'relative', height: '24px', padding: '0 10px' }} onClick={(e) => e.stopPropagation()}>
       {edit ? (
         <Input.TextArea
           placeholder={topic.name}
@@ -323,7 +324,7 @@ function TopicTitle({ topic, onClick }: { topic: TopicMessage; onClick: () => vo
             }}
             style={{
               color: chat.config.activityTopicId == topic.id ? token.colorPrimary : undefined,
-              width: 'calc(100% - 40px)',
+              width: 'calc(100% - 50px)',
               position: 'absolute',
               marginBottom: 0,
             }}
@@ -331,7 +332,7 @@ function TopicTitle({ topic, onClick }: { topic: TopicMessage; onClick: () => vo
             {title}
           </Typography.Title>
           <Button
-            style={{ position: 'absolute', right: 0, padding: 0 }}
+            style={{ position: 'absolute', right: 10, padding: 0 }}
             type="text"
             icon={
               <SkipExport>

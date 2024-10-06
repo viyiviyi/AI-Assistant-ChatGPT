@@ -1,10 +1,10 @@
-import { useService } from "@/core/AiService/ServiceProvider";
-import { ChatContext } from "@/core/ChatManagement";
-import { loadingMessages, useScreenSize } from "@/core/hooks/hooks";
-import { createThrottleAndDebounce, onTextareaTab } from "@/core/utils/utils";
-import { CtxRole } from "@/Models/CtxRole";
-import { Message } from "@/Models/DataBase";
-import styleCss from "@/styles/index.module.css";
+import { useService } from '@/core/AiService/ServiceProvider';
+import { ChatContext } from '@/core/ChatManagement';
+import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
+import { createThrottleAndDebounce, onTextareaTab } from '@/core/utils/utils';
+import { CtxRole } from '@/Models/CtxRole';
+import { Message } from '@/Models/DataBase';
+import styleCss from '@/styles/index.module.css';
 import {
   CopyOutlined,
   DeleteOutlined,
@@ -15,35 +15,16 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined
-} from "@ant-design/icons";
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Divider,
-  message,
-  Popconfirm,
-  Segmented,
-  Space,
-  theme,
-  Tooltip,
-  Typography
-} from "antd";
-import copy from "copy-to-clipboard";
-import Image from "next/image";
-import React, {
-  CSSProperties,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from "react";
-import { Hidden } from "../../common/Hidden";
-import { MarkdownView } from "../../common/MarkdownView";
-import { SkipExport } from "../../common/SkipExport";
-import { TextEditor } from "../../common/TextEditor";
-import { reloadTopic } from "./MessageList";
+} from '@ant-design/icons';
+import { Avatar, Button, Checkbox, Divider, message, Popconfirm, Segmented, Space, theme, Tooltip, Typography } from 'antd';
+import copy from 'copy-to-clipboard';
+import Image from 'next/image';
+import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Hidden } from '../../common/Hidden';
+import { MarkdownView } from '../../common/MarkdownView';
+import { SkipExport } from '../../common/SkipExport';
+import { TextEditor } from '../../common/TextEditor';
+import { reloadTopic } from './MessageList';
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -66,10 +47,7 @@ export const MessageItem = ({
   style?: CSSProperties | undefined;
 }) => {
   const { chatMgt: chat, loadingMsgs, reloadNav } = useContext(ChatContext);
-  const topic = useMemo(
-    () => chat.topics.find((f) => f.id == msg.topicId)!,
-    [chat.topics, msg.topicId]
-  );
+  const topic = useMemo(() => chat.topics.find((f) => f.id == msg.topicId)!, [chat.topics, msg.topicId]);
   const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
@@ -81,22 +59,15 @@ export const MessageItem = ({
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
   const [renderType, setRenderType] = useState(
-    topic?.overrideSettings?.renderType === undefined
-      ? chat.config.renderType
-      : topic.overrideSettings.renderType
+    topic?.overrideSettings?.renderType === undefined ? chat.config.renderType : topic.overrideSettings.renderType
   );
   useEffect(() => {
-    setRenderType(
-      topic?.overrideSettings?.renderType === undefined
-        ? chat.config.renderType
-        : topic.overrideSettings.renderType
-    );
+    setRenderType(topic?.overrideSettings?.renderType === undefined ? chat.config.renderType : topic.overrideSettings.renderType);
   }, [chat.config.renderType, topic?.overrideSettings?.renderType]);
 
   const saveMsg = useCallback(
     async (msg: Message, messageText: string, ctxRole: CtxRole) => {
-      const isReloadNav =
-        /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
+      const isReloadNav = /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
       msg.text = messageText;
       msg.ctxRole = ctxRole;
       return await chat.pushMessage(msg).then((res) => {
@@ -123,16 +94,14 @@ export const MessageItem = ({
           setMessage({ text: messageText.text });
         }}
       >
-        <Hidden hidden={renderType != "document"}>
+        <Hidden hidden={renderType != 'document'}>
           <span>
-            {"字数："}
+            {'字数：'}
             {msg.text.length}
           </span>
         </Hidden>
-        <Hidden hidden={renderType == "document"}>
-          <span>
-            {new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}
-          </span>
+        <Hidden hidden={renderType == 'document'}>
+          <span>{new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}</span>
         </Hidden>
       </Checkbox>
       <span
@@ -169,7 +138,7 @@ export const MessageItem = ({
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             if (copy(msg.text.toString())) {
-              messageApi.success("已复制");
+              messageApi.success('已复制');
             }
           }}
         />
@@ -178,41 +147,40 @@ export const MessageItem = ({
       <SkipExport>
         <RollbackOutlined
           onMouseDown={(e) => e.preventDefault()}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
           onClick={() => {
             rBak(msg);
           }}
         />
       </SkipExport>
-      <span style={{ marginLeft: "30px" }}></span>
+      <span style={{ marginLeft: '30px' }}></span>
       {loadingMsgs[msg.id] ? (
         <SkipExport>
           <Popconfirm
             placement="topRight"
-            overlayInnerStyle={{ whiteSpace: "nowrap" }}
-            title={"确定停止？"}
+            overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+            title={'确定停止？'}
             onConfirm={() => {
-              if (typeof loadingMsgs[msg.id]?.stop == "function")
-                loadingMsgs[msg.id]?.stop();
+              if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
               delete loadingMsgs[msg.id];
               setMessage({ text: msg.text });
             }}
           >
-            <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+            <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
           </Popconfirm>
         </SkipExport>
       ) : (
         <SkipExport>
           <Popconfirm
             placement="topRight"
-            overlayInnerStyle={{ whiteSpace: "nowrap" }}
+            overlayInnerStyle={{ whiteSpace: 'nowrap' }}
             okType="danger"
             title="确定删除此消息？"
             onConfirm={() => {
               onDel(msg);
             }}
           >
-            <DeleteOutlined style={{ color: "#ff8d8f" }}></DeleteOutlined>
+            <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
           </Popconfirm>
         </SkipExport>
       )}
@@ -256,11 +224,11 @@ export const MessageItem = ({
     () => (
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
+          display: 'flex',
+          justifyContent: 'space-between',
           marginBottom: 5,
-          maxWidth: "100%",
-          flexWrap: "wrap",
+          maxWidth: '100%',
+          flexWrap: 'wrap',
         }}
       >
         <Segmented
@@ -270,9 +238,9 @@ export const MessageItem = ({
             setCtxRole(val as CtxRole);
           }}
           options={[
-            { label: "助理", value: "assistant" },
-            { label: "系统", value: "system" },
-            { label: "用户", value: "user" },
+            { label: '助理', value: 'assistant' },
+            { label: '系统', value: 'system' },
+            { label: '用户', value: 'user' },
           ]}
         />
         <Button.Group size="small">
@@ -281,7 +249,7 @@ export const MessageItem = ({
               saveMsg(msg, messageText.text, ctxRole);
             }}
           >
-            {"保存"}
+            {'保存'}
           </Button>
           <Button
             onClick={() => {
@@ -292,7 +260,7 @@ export const MessageItem = ({
               }, 50);
             }}
           >
-            {"提交"}
+            {'提交'}
           </Button>
         </Button.Group>
       </div>
@@ -300,45 +268,34 @@ export const MessageItem = ({
     [ctxRole, messageText, msg, onSned, saveMsg]
   );
   const RuningText = () => {
-    const [runLines, setRunLines] = useState(
-      msg.text.slice(successLines.length)
-    );
+    const [runLines, setRunLines] = useState(msg.text.slice(successLines.length));
     useEffect(() => {
-      renderMessage[msg.id] = createThrottleAndDebounce(
-        (reloadStatus = false) => {
-          // 如果正在运行，则分成两部分显示
-          if (loadingMessages[msg.id]) {
-            if (!isPause) {
-              let runText = msg.text.slice(successLines.length);
-              let enterIdx =
-                (runText.match(/\n/g) || []).length > 2
-                  ? runText.lastIndexOf("\n")
-                  : -1;
-              let successText = successLines;
-              if (enterIdx >= 0) {
-                // 最新的内容里面有换行符
-                successText = msg.text.slice(
-                  0,
-                  successLines.length + enterIdx + 1
-                );
-                runText = runText.substring(enterIdx + 1);
-              }
-              setRunLines(runText);
-              if (successText != successLines) {
-                setSuccessLines(successText);
-              }
+      renderMessage[msg.id] = createThrottleAndDebounce((reloadStatus = false) => {
+        // 如果正在运行，则分成两部分显示
+        if (loadingMessages[msg.id]) {
+          if (!isPause) {
+            let runText = msg.text.slice(successLines.length);
+            let enterIdx = (runText.match(/\n/g) || []).length > 2 ? runText.lastIndexOf('\n') : -1;
+            let successText = successLines;
+            if (enterIdx >= 0) {
+              // 最新的内容里面有换行符
+              successText = msg.text.slice(0, successLines.length + enterIdx + 1);
+              runText = runText.substring(enterIdx + 1);
             }
-          } else {
-            if (!reloadStatus) setMessage({ text: msg.text });
-            setSuccessLines(msg.text);
-            setRunLines("");
+            setRunLines(runText);
+            if (successText != successLines) {
+              setSuccessLines(successText);
+            }
           }
-          if (reloadStatus) {
-            setMessage({ text: msg.text });
-          }
-        },
-        40
-      );
+        } else {
+          if (!reloadStatus) setMessage({ text: msg.text });
+          setSuccessLines(msg.text);
+          setRunLines('');
+        }
+        if (reloadStatus) {
+          setMessage({ text: msg.text });
+        }
+      }, 40);
       return () => {
         delete renderMessage[msg.id];
       };
@@ -347,18 +304,18 @@ export const MessageItem = ({
     return (
       <div
         style={{
-          minHeight: "3.5em",
-          position: "relative",
-          whiteSpace: "pre-line",
+          minHeight: '3.5em',
+          position: 'relative',
+          whiteSpace: 'pre-line',
         }}
       >
-        {runLines || "loading..."}
+        {runLines || 'loading...'}
         <div
           style={{
-            width: "100%",
-            textAlign: "center",
+            width: '100%',
+            textAlign: 'center',
             fontSize: 24,
-            position: "absolute",
+            position: 'absolute',
             bottom: 0,
             opacity: 0.7,
           }}
@@ -369,9 +326,7 @@ export const MessageItem = ({
           {isPause ? (
             <ForwardOutlined style={{ color: token.colorPrimaryActive }} />
           ) : (
-            <PauseOutlined
-              style={{ color: token.colorPrimary }}
-            ></PauseOutlined>
+            <PauseOutlined style={{ color: token.colorPrimary }}></PauseOutlined>
           )}
         </div>
       </div>
@@ -385,14 +340,14 @@ export const MessageItem = ({
           <>
             <Hidden hidden={!edit}>{EditUtil}</Hidden>
             <TextEditor
-              autoSize={renderType == "document" ? true : { maxRows: 10 }}
+              autoSize={renderType == 'document' ? true : { maxRows: 10 }}
               input={messageText}
               onKeyDown={(e) => {
-                if (e.key === "s" && e.ctrlKey) {
+                if (e.key === 's' && e.ctrlKey) {
                   e.preventDefault();
                   saveMsg(msg, messageText.text, ctxRole);
                 }
-                if (e.key === "Tab") {
+                if (e.key === 'Tab') {
                   e.preventDefault();
                   setMessage((v) => ({
                     text: onTextareaTab(
@@ -416,11 +371,7 @@ export const MessageItem = ({
         ) : (
           <>
             <MemoMarkdownView
-              markdown={
-                chat.config.disableStrikethrough
-                  ? successLines.replaceAll("~", "～")
-                  : successLines
-              }
+              markdown={chat.config.disableStrikethrough ? successLines.replaceAll('~', '～') : successLines}
               doubleClick={() => {
                 setMessage({ text: msg.text });
                 setEdit(true);
@@ -431,42 +382,27 @@ export const MessageItem = ({
         )}
       </div>
     );
-  }, [
-    edit,
-    EditUtil,
-    renderType,
-    messageText,
-    chat.config.disableStrikethrough,
-    successLines,
-    msg,
-    saveMsg,
-    ctxRole,
-  ]);
-  if (renderType == "document") {
+  }, [edit, EditUtil, renderType, messageText, chat.config.disableStrikethrough, successLines, msg, saveMsg, ctxRole]);
+  if (renderType == 'document') {
     return (
       <>
         {contextHolder}
         <div
-          className={
-            styleCss.message_box +
-            (chat.config.limitPreHeight ? " limt-hight" : "") +
-            " " +
-            styleCss.message_box_hiddel_tool
-          }
+          className={styleCss.message_box + (chat.config.limitPreHeight ? ' limt-hight' : '') + ' ' + styleCss.message_box_hiddel_tool}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            position: "relative",
-            flexDirection: "column",
-            marginTop: "18px",
+            display: 'flex',
+            justifyContent: 'center',
+            position: 'relative',
+            flexDirection: 'column',
+            marginTop: '18px',
           }}
           id={msg.id}
         >
           <div
             style={{
               flex: 1,
-              display: "flex",
-              justifyContent: "center",
+              display: 'flex',
+              justifyContent: 'center',
               paddingBottom: 15,
             }}
           >
@@ -474,28 +410,24 @@ export const MessageItem = ({
               <div
                 style={{
                   flex: 1,
-                  display: "flex",
-                  padding: "0 5px 0 20px",
-                  flexDirection:
-                    msg.ctxRole == "assistant" ? "row" : "row-reverse",
+                  display: 'flex',
+                  padding: '0 5px 0 20px',
+                  flexDirection: msg.ctxRole == 'assistant' ? 'row' : 'row-reverse',
                 }}
               >
                 {loadingMsgs[msg.id] ? (
                   <SkipExport>
                     <Popconfirm
                       placement="topRight"
-                      overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                      overlayInnerStyle={{ whiteSpace: 'nowrap' }}
                       title="确定停止？"
                       onConfirm={() => {
-                        if (typeof loadingMsgs[msg.id]?.stop == "function")
-                          loadingMsgs[msg.id]?.stop();
+                        if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                         delete loadingMsgs[msg.id];
                         setMessage({ text: msg.text });
                       }}
                     >
-                      <PauseOutlined
-                        style={{ color: "#ff8d8f" }}
-                      ></PauseOutlined>
+                      <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
                     </Popconfirm>
                   </SkipExport>
                 ) : (
@@ -505,20 +437,20 @@ export const MessageItem = ({
               <div
                 className={[
                   styleCss.top_label,
-                  msg.ctxRole == "assistant"
+                  msg.ctxRole == 'assistant'
                     ? styleCss.top_label_assistant
-                    : msg.ctxRole == "user"
+                    : msg.ctxRole == 'user'
                     ? styleCss.top_label_user
-                    : msg.ctxRole == "system"
+                    : msg.ctxRole == 'system'
                     ? styleCss.top_label_system
-                    : "",
-                ].join(" ")}
+                    : '',
+                ].join(' ')}
                 style={{
                   flex: 1,
-                  display: "flex",
+                  display: 'flex',
                   paddingLeft: screenSize.width >= 1200 ? 28 : 10,
                   paddingRight: screenSize.width >= 1200 ? 28 : 10,
-                  flexDirection: "column",
+                  flexDirection: 'column',
                   lineHeight: 1.7,
                 }}
               >
@@ -534,11 +466,7 @@ export const MessageItem = ({
                     {msg.searchResults?.map((v) => (
                       <p>
                         {v.timestamp}
-                        <Typography.Link
-                          rel="noopener noreferrer"
-                          target={"_blank"}
-                          href={v.url}
-                        >
+                        <Typography.Link rel="noopener noreferrer" target={'_blank'} href={v.url}>
                           {v.title}
                         </Typography.Link>
                       </p>
@@ -547,21 +475,13 @@ export const MessageItem = ({
                 </Hidden>
                 <Tooltip
                   placement="rightBottom"
-                  title={
-                    msg.ctxRole == "assistant"
-                      ? "助理"
-                      : msg.ctxRole == "user"
-                      ? "用户"
-                      : msg.ctxRole == "system"
-                      ? "系统"
-                      : ""
-                  }
+                  title={msg.ctxRole == 'assistant' ? '助理' : msg.ctxRole == 'user' ? '用户' : msg.ctxRole == 'system' ? '系统' : ''}
                 >
                   <div
                     style={{
                       width: 16,
                       height: 16,
-                      position: "absolute",
+                      position: 'absolute',
                       left: 0,
                       top: 0,
                     }}
@@ -573,10 +493,10 @@ export const MessageItem = ({
                 <RuningText></RuningText>
                 <div
                   style={{
-                    display: "flex",
-                    borderTop: "1px solid #ccc3",
-                    justifyContent: "flex-end",
-                    padding: "5px 5px",
+                    display: 'flex',
+                    borderTop: '1px solid #ccc3',
+                    justifyContent: 'flex-end',
+                    padding: '5px 5px',
                     opacity: 0.6,
                   }}
                 >
@@ -590,12 +510,12 @@ export const MessageItem = ({
       </>
     );
   }
-  if (msg.ctxRole === "system") {
+  if (msg.ctxRole === 'system') {
     return (
       <div
         style={{
-          padding: "1em 42px 10px",
-          textAlign: "center",
+          padding: '1em 42px 10px',
+          textAlign: 'center',
         }}
         id={msg.id}
         className={styleCss.message_box}
@@ -605,10 +525,10 @@ export const MessageItem = ({
         <RuningText></RuningText>
         <div
           style={{
-            display: "flex",
-            borderTop: "1px solid #ccc3",
-            justifyContent: "flex-end",
-            padding: "5px 5px",
+            display: 'flex',
+            borderTop: '1px solid #ccc3',
+            justifyContent: 'flex-end',
+            padding: '5px 5px',
             opacity: 0.6,
           }}
         >
@@ -620,15 +540,13 @@ export const MessageItem = ({
   }
   return (
     <div
-      className={
-        styleCss.message_box + (chat.config.limitPreHeight ? " limt-hight" : "")
-      }
+      className={styleCss.message_box + (chat.config.limitPreHeight ? ' limt-hight' : '')}
       style={{
-        display: "flex",
-        justifyContent: msg.ctxRole == "assistant" ? "flex-start" : "flex-end",
-        position: "relative",
-        flexDirection: "column",
-        marginTop: "12px",
+        display: 'flex',
+        justifyContent: msg.ctxRole == 'assistant' ? 'flex-start' : 'flex-end',
+        position: 'relative',
+        flexDirection: 'column',
+        marginTop: '12px',
       }}
       id={msg.id}
     >
@@ -636,57 +554,42 @@ export const MessageItem = ({
       <div
         style={{
           flex: 1,
-          display: "flex",
-          flexDirection: msg.ctxRole == "assistant" ? "row" : "row-reverse",
-          paddingLeft:
-            msg.ctxRole == "assistant" ? 0 : screenSize.width > 1300 ? 120 : 25,
-          paddingRight:
-            msg.ctxRole == "assistant"
-              ? screenSize.width > 1300
-                ? 120
-                : 25
-              : 0,
+          display: 'flex',
+          flexDirection: msg.ctxRole == 'assistant' ? 'row' : 'row-reverse',
+          paddingLeft: msg.ctxRole == 'assistant' ? 10 : screenSize.width > 1300 ? 120 : 25,
+          paddingRight: msg.ctxRole == 'assistant' ? (screenSize.width > 1300 ? 120 : 25) : 10,
         }}
       >
         <Avatar
-          src={
-            msg.ctxRole == "assistant"
-              ? chat.virtualRole.avatar || undefined
-              : chat.user.avatar || undefined
-          }
-          style={{ flex: "none" }}
+          src={msg.ctxRole == 'assistant' ? chat.virtualRole.avatar || undefined : chat.user.avatar || undefined}
+          style={{ flex: 'none' }}
           size={50}
-          icon={<Image width={50} height={50} src={"/logo.png"} alt="logo" />}
+          icon={<Image width={50} height={50} src={'/logo.png'} alt="logo" />}
         />
         <div className={styleCss.message_item}>
           <div
             style={{
               flex: 1,
-              display: "flex",
-              padding: "0 5px",
-              flexDirection: msg.ctxRole == "assistant" ? "row" : "row-reverse",
+              display: 'flex',
+              padding: '0 5px',
+              flexDirection: msg.ctxRole == 'assistant' ? 'row' : 'row-reverse',
             }}
           >
-            <span>
-              {msg.ctxRole == "assistant"
-                ? chat.virtualRole.name
-                : chat.user?.name}
-            </span>
-            <span style={{ marginLeft: "30px" }}></span>
+            <span>{msg.ctxRole == 'assistant' ? chat.virtualRole.name : chat.user?.name}</span>
+            <span style={{ marginLeft: '30px' }}></span>
             <Hidden hidden={loadingMsgs[msg.id] == undefined}>
               <SkipExport>
                 <Popconfirm
                   placement="topRight"
-                  overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                  overlayInnerStyle={{ whiteSpace: 'nowrap' }}
                   title="确定停止？"
                   onConfirm={() => {
-                    if (typeof loadingMsgs[msg.id]?.stop == "function")
-                      loadingMsgs[msg.id]?.stop();
+                    if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                     delete loadingMsgs[msg.id];
                     setMessage({ text: msg.text });
                   }}
                 >
-                  <PauseOutlined style={{ color: "#ff8d8f" }}></PauseOutlined>
+                  <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
                 </Popconfirm>
               </SkipExport>
             </Hidden>
@@ -695,37 +598,33 @@ export const MessageItem = ({
             <div
               style={{
                 flex: 1,
-                display: "flex",
-                padding: "10px 16px",
-                flexDirection: "column",
-                boxSizing: "border-box",
+                display: 'flex',
+                padding: '10px 16px',
+                flexDirection: 'column',
+                boxSizing: 'border-box',
                 borderRadius: token.borderRadiusLG,
-                border: "1px solid " + token.colorFillAlter,
+                border: '1px solid ' + token.colorFillAlter,
                 backgroundColor: token.colorInfoBg,
-                marginBottom: "12px",
+                marginBottom: '12px',
                 boxShadow: token.boxShadowTertiary,
                 lineHeight: 1.7,
               }}
             >
               <Hidden hidden={!msg.searchQueries}>
                 <p>
-                  {"搜索关键词："}
+                  {'搜索关键词：'}
                   {msg.searchQueries?.map((v) => (
                     <i>{v}</i>
                   ))}
                 </p>
               </Hidden>
               <Hidden hidden={!msg.searchResults}>
-                <p>{"参考文档："}</p>
+                <p>{'参考文档：'}</p>
                 {msg.searchResults?.map((v) => (
                   <h5>
-                    <Typography.Link
-                      rel="noopener noreferrer"
-                      target={"_blank"}
-                      href={v.url}
-                    >
+                    <Typography.Link rel="noopener noreferrer" target={'_blank'} href={v.url}>
                       {v.title}
-                      <span style={{ marginLeft: "2em" }}>{v.timestamp}</span>
+                      <span style={{ marginLeft: '2em' }}>{v.timestamp}</span>
                     </Typography.Link>
                   </h5>
                 ))}
@@ -735,14 +634,14 @@ export const MessageItem = ({
           <div
             style={{
               flex: 1,
-              display: "flex",
-              padding: "10px 16px",
-              flexDirection: "column",
-              boxSizing: "border-box",
+              display: 'flex',
+              padding: '10px 16px',
+              flexDirection: 'column',
+              boxSizing: 'border-box',
               borderRadius: token.borderRadiusLG,
-              border: "1px solid " + token.colorFillAlter,
+              border: '1px solid ' + token.colorFillAlter,
               backgroundColor: token.colorInfoBg,
-              marginBottom: "12px",
+              marginBottom: '12px',
               boxShadow: token.boxShadowTertiary,
               lineHeight: 1.7,
             }}
@@ -751,9 +650,9 @@ export const MessageItem = ({
             <RuningText></RuningText>
             <div
               style={{
-                display: "flex",
-                borderTop: "1px solid #ccc3",
-                justifyContent: "flex-end",
+                display: 'flex',
+                borderTop: '1px solid #ccc3',
+                justifyContent: 'flex-end',
                 opacity: 0.6,
               }}
             >

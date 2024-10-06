@@ -70,6 +70,10 @@ a {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+.ant-collapse-header .ant-collapse-expand-icon {
+  padding-inline-end: 0 !important;
+  padding-inline-start: 10px;
+}
 h1,
 h2,
 h3,
