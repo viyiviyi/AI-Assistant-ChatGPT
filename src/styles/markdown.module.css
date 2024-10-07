@@ -6,6 +6,7 @@
 }
 .markdown {
   line-height: 1.4;
+}
+.markdown p {
   white-space: pre-wrap;
 }
-
