@@ -190,7 +190,7 @@ export const MessageItem = ({
   // 下方悬浮按钮
   const Extend = useMemo(() => {
     return (
-      <div className={styleCss.message_extend_but} style={{ ...style }}>
+      <div className={styleCss.message_extend_but} style={{ ...style, zIndex: 9 }}>
         <Divider style={{ margin: 0 }}>
           <Space size={6}>
             {aiService?.customContext && (
@@ -556,8 +556,8 @@ export const MessageItem = ({
           flex: 1,
           display: 'flex',
           flexDirection: msg.ctxRole == 'assistant' ? 'row' : 'row-reverse',
-          paddingLeft: msg.ctxRole == 'assistant' ? 10 : screenSize.width > 1300 ? 120 : 25,
-          paddingRight: msg.ctxRole == 'assistant' ? (screenSize.width > 1300 ? 120 : 25) : 10,
+          paddingLeft: msg.ctxRole == 'assistant' ? 10 : screenSize.width > 1300 ? 120 : 20,
+          paddingRight: msg.ctxRole == 'assistant' ? (screenSize.width > 1300 ? 120 : 20) : 10,
         }}
       >
         <Avatar
@@ -635,7 +635,7 @@ export const MessageItem = ({
             style={{
               flex: 1,
               display: 'flex',
-              padding: '10px 16px',
+              padding: '6px 10px 0',
               flexDirection: 'column',
               boxSizing: 'border-box',
               borderRadius: token.borderRadiusLG,
@@ -644,6 +644,7 @@ export const MessageItem = ({
               marginBottom: '12px',
               boxShadow: token.boxShadowTertiary,
               lineHeight: 1.7,
+              ...(msg.ctxRole == 'assistant' ? { marginLeft: -10 } : { marginRight: -10 }),
             }}
           >
             {Content}
