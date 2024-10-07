@@ -1,6 +1,6 @@
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { usePushMessage, useScreenSize } from '@/core/hooks/hooks';
-import { activityScroll, onTextareaTab, scrollToBotton, scrollToTop } from '@/core/utils/utils';
+import { activityScroll, scrollToBotton, scrollToTop } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import styleCss from '@/styles/index.module.css';
 import {
@@ -306,13 +306,6 @@ export function InputUtil() {
             input={inputText}
             autoFocus={false}
             onKeyUp={(e) => (e.key === 's' && e.altKey && onSubmit(false)) || (e.key === 'Enter' && e.ctrlKey && onSubmit(true))}
-            onKeyDown={(e) =>
-              e.key === 'Tab' &&
-              (e.preventDefault(),
-              setInputText((v) => ({
-                text: onTextareaTab(v.text, e.currentTarget?.selectionStart, e.currentTarget?.selectionEnd, e.currentTarget, e.shiftKey),
-              })))
-            }
           />
         </div>
       </div>

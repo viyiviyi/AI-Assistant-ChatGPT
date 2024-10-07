@@ -16,7 +16,7 @@ import {
   RollbackOutlined,
   SaveOutlined
 } from '@ant-design/icons';
-import { Avatar, Button, Checkbox, Divider, message, Popconfirm, Segmented, Space, theme, Tooltip, Typography } from 'antd';
+import { Avatar, Button, Checkbox, Divider, Flex, message, Popconfirm, Segmented, theme, Tooltip, Typography } from 'antd';
 import copy from 'copy-to-clipboard';
 import Image from 'next/image';
 import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -192,7 +192,7 @@ export const MessageItem = ({
     return (
       <div className={styleCss.message_extend_but} style={{ ...style, zIndex: 9 }}>
         <Divider style={{ margin: 0 }}>
-          <Space size={6}>
+          <Flex gap={6}>
             {aiService?.customContext && (
               <Button
                 shape="circle"
@@ -215,7 +215,7 @@ export const MessageItem = ({
               }
               onClick={onPush}
             ></Button>
-          </Space>
+          </Flex>
         </Divider>
       </div>
     );
@@ -562,7 +562,7 @@ export const MessageItem = ({
       >
         <Avatar
           src={msg.ctxRole == 'assistant' ? chat.virtualRole.avatar || undefined : chat.user.avatar || undefined}
-          style={{ flex: 'none' }}
+          style={{ flex: 'none', borderRadius: msg.ctxRole == 'assistant' ? '50% 50% 50% 5px' : '50% 50% 5px 50%' }}
           size={50}
           icon={<Image width={50} height={50} src={'/logo.png'} alt="logo" />}
         />
@@ -646,6 +646,7 @@ export const MessageItem = ({
               lineHeight: 1.7,
               ...(msg.ctxRole == 'assistant' ? { marginLeft: -10 } : { marginRight: -10 }),
             }}
+            className={chat.config.autoWrapCode ? 'auto-wrap' : undefined}
           >
             {Content}
             <RuningText></RuningText>

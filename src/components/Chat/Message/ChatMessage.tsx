@@ -4,7 +4,7 @@ import { ChatContext, ChatManagement, IChat } from '@/core/ChatManagement';
 import { useSendMessage } from '@/core/hooks/hooks';
 import { TopicMessage } from '@/Models/Topic';
 import { CaretRightOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, MessageOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Collapse, Input, Popconfirm, Space, theme, Typography } from 'antd';
+import { Button, Checkbox, Collapse, Flex, Input, Popconfirm, theme, Typography } from 'antd';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { SkipExport } from '../../common/SkipExport';
 import { MessageContext } from '../Chat';
@@ -185,7 +185,7 @@ function TopUtil({
         <span style={{ flex: 1 }}></span>
         <TopicConfigModal topic={v}></TopicConfigModal>
         <span style={{ flex: 1 }}></span>
-        <Space size={10}>
+        <Flex gap={10}>
           <Button shape="circle" type="text" onClick={(e) => e.stopPropagation()}>
             <SkipExport>
               <Popconfirm
@@ -260,7 +260,7 @@ function TopUtil({
               </Popconfirm>
             </SkipExport>
           </Button>
-        </Space>
+        </Flex>
       </div>
       {showInsert0 ? (
         <MemoInsertInput key={'insert0_input'} insertIndex={0} topic={v} chat={chat} onHidden={() => setShowInsert0(false)} />

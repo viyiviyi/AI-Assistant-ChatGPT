@@ -74,6 +74,13 @@ a {
   padding-inline-end: 0 !important;
   padding-inline-start: 10px;
 }
+.auto-wrap code {
+  white-space: pre-wrap;
+}
+.ant-input {
+  line-height: 1.5 !important;
+  font-family: revert-layer !important;
+}
 h1,
 h2,
 h3,

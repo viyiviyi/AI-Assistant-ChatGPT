@@ -7,7 +7,7 @@ import { getToken, saveToken } from '@/core/tokens';
 import { downloadJson } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { CaretRightOutlined, DownloadOutlined, GithubOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Collapse, Form, Input, InputNumber, Modal, Radio, Segmented, Select, Switch, theme, Upload } from 'antd';
+import { Button, Checkbox, Collapse, Flex, Form, Input, InputNumber, Modal, Radio, Segmented, Select, Switch, theme, Upload } from 'antd';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { downloadTopic } from '../Chat/Message/ChatMessage';
@@ -61,6 +61,7 @@ export const Setting = ({
     config_page_size: number;
     config_page_repect: number;
     config_limit_pre_height: boolean;
+    config_auto_wrap_code: boolean;
     setting_user_server_url: string;
     slack_claude_id: string;
     group_name: string;
@@ -94,6 +95,7 @@ export const Setting = ({
       config_limit_pre_height: chatMgt?.config.limitPreHeight,
       config_disable_renderType: chatMgt?.config.renderType,
       config_use_virtual_role_img: chatMgt?.config.useVirtualRoleImgToBack || false,
+      config_auto_wrap_code: chatMgt?.config.autoWrapCode,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
       chat_connectors: aiServices.current?.getCurrentConnectors?.call(aiServices.current?.getCurrentConnectors).map((v) => v.id),
@@ -158,6 +160,7 @@ export const Setting = ({
     chatMgt.config.pageRepect = values.config_page_repect;
     chatMgt.config.renderType = values.config_disable_renderType as 'default' | 'document';
     chatMgt.config.useVirtualRoleImgToBack = values.config_use_virtual_role_img;
+    chatMgt.config.autoWrapCode = values.config_auto_wrap_code;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -193,7 +196,7 @@ export const Setting = ({
         layout="vertical"
         autoComplete="off"
         style={{
-          padding: '16px 0',
+          padding: 0,
         }}
       >
         <div
@@ -217,33 +220,22 @@ export const Setting = ({
                   <GithubOutlined size={64} />
                 </SkipExport>
               </a>
-              <a href="https://gitee.com/yiyiooo/AI-Assistant-ChatGPT" rel="noopener noreferrer" target={'_blank'}>
-                {/* <div style={{ width: 32, height: 64, overflow: "hidden" ,marginLeft:10}} >
-                  <Image
-                    style={{marginTop:-5}}
-                    width={100}
-                    height={32}
-                    src={
-                      "https://gitee.com/static/images/logo-black.svg?t=158106664"
-                    }
-                    alt="项目地址 https://gitee.com/yiyiooo/AI-Assistant-ChatGPT"
-                  />
-                </div> */}
-              </a>
             </div>
             <div style={{ fontSize: 16 }}>QQ群 816545732</div>
           </div>
           <Form.Item label={'会话头像'}>
-            <ImageUpload avatar={group_Avatar || undefined} onSave={setGroup_Avatar} />
-            <Button
-              type="text"
-              style={{ marginLeft: '1em' }}
-              onClick={() => {
-                setGroup_Avatar(undefined);
-              }}
-            >
-              清除
-            </Button>
+            <Flex>
+              <ImageUpload avatar={group_Avatar || undefined} onSave={setGroup_Avatar} />
+              <Button
+                type="text"
+                style={{ marginLeft: '1em' }}
+                onClick={() => {
+                  setGroup_Avatar(undefined);
+                }}
+              >
+                清除
+              </Button>
+            </Flex>
           </Form.Item>
           <Form.Item style={{ flex: 1 }} name="group_name" label="会话名称">
             <Input />
@@ -255,7 +247,7 @@ export const Setting = ({
                 width={screenSize.screenWidth}
                 height={screenSize.screenHeight}
                 trigger={
-                  <Button block style={{ width: 'min(220px, 40vw)' }}>
+                  <Button block style={{ width: 'min(220px, 40vw)'}}>
                     设置
                   </Button>
                 }
@@ -499,10 +491,18 @@ export const Setting = ({
                       </Form.Item>
                     </div>
                     <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_limit_pre_height" valuePropName="checked" label="代码块限高">
+                        <Switch />
+                      </Form.Item>
+                      <Form.Item style={{ flex: '1' }} name="config_auto_wrap_code" valuePropName="checked" label="代码块自动换行">
+                        <Switch />
+                      </Form.Item>
+                    </div>
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
                       <Form.Item style={{ flex: '1' }} name="config_disable_strikethrough" valuePropName="checked" label="禁用删除线">
                         <Switch />
                       </Form.Item>
-                      <Form.Item style={{ flex: '1' }} name="config_limit_pre_height" valuePropName="checked" label="代码块限高">
+                      <Form.Item style={{ flex: '1' }} name="config_use_virtual_role_img" valuePropName="checked" label="角色卡设为背景">
                         <Switch />
                       </Form.Item>
                     </div>
@@ -514,9 +514,6 @@ export const Setting = ({
                             { label: '文档', value: 'document' },
                           ]}
                         />
-                      </Form.Item>
-                      <Form.Item style={{ flex: '1' }} name="config_use_virtual_role_img" valuePropName="checked" label="角色卡图片做背景">
-                        <Switch />
                       </Form.Item>
                     </div>
                   </div>

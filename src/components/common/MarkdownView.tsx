@@ -78,7 +78,7 @@ let processor = unified()
             code: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
                 const { className, children } = props;
                 return (
-                    <code className={className}>
+                    <code className={className} >
                         <SkipExport>
                             <CopyOutlined
                                 onClick={() => {

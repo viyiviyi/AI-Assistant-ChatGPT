@@ -1,33 +1,16 @@
-import { getUuid } from "@/core/utils/utils";
-import { CtxRole } from "@/Models/CtxRole";
-import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { VirtualRoleSettingItem } from "@/Models/VirtualRoleSettingItem";
-import {
-  DeleteOutlined,
-  PlusOutlined,
-  QuestionOutlined
-} from "@ant-design/icons";
+import { getUuid } from '@/core/utils/utils';
+import { CtxRole } from '@/Models/CtxRole';
+import { VirtualRoleSetting } from '@/Models/VirtualRoleSetting';
+import { VirtualRoleSettingItem } from '@/Models/VirtualRoleSettingItem';
+import { DeleteOutlined, PlusOutlined, QuestionOutlined } from '@ant-design/icons';
 
-import {
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  message,
-  Popconfirm,
-  Segmented,
-  Select,
-  Space,
-  Tag,
-  theme,
-  Tooltip
-} from "antd";
-import copy from "copy-to-clipboard";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { DragItem, DragList } from "../common/DragList";
-import { Hidden } from "../common/Hidden";
-import { Modal } from "../common/Modal";
-import { SkipExport } from "../common/SkipExport";
+import { Button, Checkbox, Form, Input, message, Popconfirm, Segmented, Select, Space, Tag, theme, Tooltip } from 'antd';
+import copy from 'copy-to-clipboard';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DragItem, DragList } from '../common/DragList';
+import { Hidden } from '../common/Hidden';
+import { Modal } from '../common/Modal';
+import { SkipExport } from '../common/SkipExport';
 const ContentItem = ({
   item,
   idx,
@@ -43,7 +26,7 @@ const ContentItem = ({
   const [text, setText] = useState(item.content);
   const [role, setRole] = useState(item.role);
   const [checked, setChecked] = useState(item.checked);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   useEffect(() => {
     setText(item.content);
     setRole(item.role);
@@ -52,16 +35,16 @@ const ContentItem = ({
   return (
     <div
       style={{
-        position: "relative",
+        position: 'relative',
         marginBottom: 0,
         marginLeft: 10,
-        width: "100%",
+        width: '100%',
       }}
     >
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
+          display: 'flex',
+          justifyContent: 'space-between',
           marginBottom: 6,
         }}
       >
@@ -69,16 +52,16 @@ const ContentItem = ({
           <Segmented
             disabled={disabledEdit}
             size="small"
-            value={role ? role : "null"}
+            value={role ? role : 'null'}
             onChange={(val) => {
-              item.role = val != "null" ? (val as CtxRole) : undefined;
+              item.role = val != 'null' ? (val as CtxRole) : undefined;
               setRole(item.role);
             }}
             options={[
-              { label: "助理", value: "assistant" },
-              { label: "系统", value: "system" },
-              { label: "用户", value: "user" },
-              ...(idx > 0 ? [{ label: "向上合并", value: "null" }] : []),
+              { label: '助理', value: 'assistant' },
+              { label: '系统', value: 'system' },
+              { label: '用户', value: 'user' },
+              ...(idx > 0 ? [{ label: '向上合并', value: 'null' }] : []),
             ]}
           />
         </Form.Item>
@@ -87,7 +70,7 @@ const ContentItem = ({
           <SkipExport>
             <Hidden hidden={disabledEdit}>
               <Popconfirm
-                overlayInnerStyle={{ whiteSpace: "nowrap" }}
+                overlayInnerStyle={{ whiteSpace: 'nowrap' }}
                 title="确定删除？"
                 placement="topRight"
                 onConfirm={() => {
@@ -98,7 +81,7 @@ const ContentItem = ({
               </Popconfirm>
             </Hidden>
           </SkipExport>
-          <span style={{ marginLeft: "15px" }}></span>
+          <span style={{ marginLeft: '15px' }}></span>
           <Form.Item noStyle>
             <Checkbox
               checked={checked}
@@ -126,11 +109,11 @@ const ContentItem = ({
           ))}
           <Input
             type="search"
-            enterKeyHint={"enter"}
+            enterKeyHint={'enter'}
             size="small"
             autoCorrect="off"
             autoCapitalize="off"
-            placeholder={"关键词"}
+            placeholder={'关键词'}
             // autoFocus={true}
             style={{
               height: 30,
@@ -139,28 +122,21 @@ const ContentItem = ({
             onChange={(e) => setInputValue(e.target.value)}
             onBlur={(e) => {
               if (!inputValue) return;
-              Array.isArray(item.keyWords)
-                ? item.keyWords.push(inputValue)
-                : (item.keyWords = [inputValue]);
+              Array.isArray(item.keyWords) ? item.keyWords.push(inputValue) : (item.keyWords = [inputValue]);
               item.keyWords = Array.from(new Set(item.keyWords));
-              setInputValue("");
+              setInputValue('');
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 e.preventDefault();
                 if (!inputValue) return;
-                Array.isArray(item.keyWords)
-                  ? item.keyWords.push(inputValue)
-                  : (item.keyWords = [inputValue]);
+                Array.isArray(item.keyWords) ? item.keyWords.push(inputValue) : (item.keyWords = [inputValue]);
                 item.keyWords = Array.from(new Set(item.keyWords));
-                setInputValue("");
+                setInputValue('');
               }
             }}
           />
-          <Tooltip
-            trigger={"click"}
-            title="关键词用于自动选中设定，仅在设定开启【自动】且勾选时生效"
-          >
+          <Tooltip trigger={'click'} title="关键词用于自动选中设定，仅在设定开启【自动】且勾选时生效">
             <QuestionOutlined
               style={{
                 paddingLeft: 10,
@@ -169,19 +145,15 @@ const ContentItem = ({
           </Tooltip>
         </Space>
       </div>
-      <Form.Item
-        valuePropName="content"
-        validateTrigger={["onChange", "onBlur"]}
-        noStyle
-      >
+      <Form.Item valuePropName="content" validateTrigger={['onChange', 'onBlur']} noStyle>
         <Input.TextArea
           readOnly={disabledEdit}
           placeholder="追加内容"
           autoSize={{ maxRows: 10 }}
           value={text}
           style={{
-            paddingRight: "1em",
-            paddingLeft: "1em",
+            paddingRight: '1em',
+            paddingLeft: '1em',
           }}
           onChange={(e) => {
             setText(e.target.value);
@@ -210,7 +182,7 @@ export function EditVirtualRoleSetting({
   item = useMemo(() => ({ ...item }), [item]);
   const [tags, setTags] = useState<string[]>(item.tags);
   const { token } = theme.useToken();
-  const [filterText, setFilterText] = useState("");
+  const [filterText, setFilterText] = useState('');
   const [ctx, setCtx] = useState<
     {
       key: string;
@@ -265,9 +237,9 @@ export function EditVirtualRoleSetting({
       width="min(860px, 100%)"
       onCancel={onCancel}
       bodyStyle={{
-        maxHeight: "calc(100vh - 200px)",
-        minHeight: "50vh",
-        overflow: "auto",
+        maxHeight: 'calc(100vh - 200px)',
+        minHeight: '50vh',
+        overflow: 'auto',
       }}
     >
       {contextHolder}
@@ -285,11 +257,11 @@ export function EditVirtualRoleSetting({
                     )
                   )
                 ) {
-                  messageApi.success("已复制");
+                  messageApi.success('已复制');
                 }
               }}
             >
-              {"复制"}
+              {'复制'}
             </Button>
 
             <Hidden hidden={disabledEdit}>
@@ -300,7 +272,7 @@ export function EditVirtualRoleSetting({
                       try {
                         if (!text) return;
                         let res: VirtualRoleSetting = JSON.parse(text);
-                        if (typeof res == "string") res = JSON.parse(res);
+                        if (typeof res == 'string') res = JSON.parse(res);
                         if (!res || !res.ctx) return;
                         setTags(res.tags);
                         setTitle(res.title);
@@ -308,18 +280,18 @@ export function EditVirtualRoleSetting({
                       } catch (err) {
                         item.ctx.push({
                           key: getUuid(),
-                          role: "system",
+                          role: 'system',
                           content: text,
                           checked: true,
                         });
                       }
                     });
                   } catch (error) {
-                    messageApi.warning("读取剪切板失败");
+                    messageApi.warning('读取剪切板失败');
                   }
                 }}
               >
-                {"粘贴"}
+                {'粘贴'}
               </Button>
             </Hidden>
           </Button.Group>
@@ -333,12 +305,9 @@ export function EditVirtualRoleSetting({
               setTags([...tags]);
             }}
           >
-            {"上下文"}
+            {'上下文'}
             <span onClick={(e) => e.stopPropagation()}>
-              <Tooltip
-                trigger={"click"}
-                title="开启后将会作为上下文，受到上下文数量限制，一般用于第一条引导性设定。"
-              >
+              <Tooltip trigger={'click'} title="开启后将会作为上下文，受到上下文数量限制，一般用于第一条引导性设定。">
                 <QuestionOutlined />
               </Tooltip>
             </span>
@@ -352,10 +321,10 @@ export function EditVirtualRoleSetting({
               setTags([...tags]);
             }}
           >
-            {"动态"}
+            {'动态'}
             <span onClick={(e) => e.stopPropagation()}>
               <Tooltip
-                trigger={"click"}
+                trigger={'click'}
                 title="设为动态设定后，此设定明细是否剩下将受到关键词影响，仅至少能匹配一个关键词勾选才会生效，至少有一个明细被匹配时整个内容才会生效；可以使用all关键词来让某个设定永久被匹配。"
               >
                 <QuestionOutlined />
@@ -365,9 +334,9 @@ export function EditVirtualRoleSetting({
         </Form.Item>
         <Form.Item style={{ marginBottom: 10 }}>
           <Input.Search
-            type={"search"}
+            type={'search'}
             enterKeyHint="search"
-            placeholder={"搜索关键字"}
+            placeholder={'搜索关键字'}
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             onSearch={(val) => {
@@ -375,7 +344,7 @@ export function EditVirtualRoleSetting({
             }}
           />
         </Form.Item>
-        <Form.Item validateTrigger={["onChange", "onBlur"]}>
+        <Form.Item validateTrigger={['onChange', 'onBlur']}>
           <Input.TextArea
             readOnly={disabledEdit}
             placeholder="标题，不影响上下文，可不填"
@@ -385,27 +354,27 @@ export function EditVirtualRoleSetting({
               setTitle(e.target.value);
             }}
             style={{
-              paddingRight: "1em",
-              paddingLeft: "1em",
+              paddingRight: '1em',
+              paddingLeft: '1em',
             }}
           />
         </Form.Item>
         <Form.Item>
           <Select
-            placeholder={"tag 按下Enter新增新tag"}
+            placeholder={'tag 按下Enter新增新tag'}
             disabled={disabledEdit}
             mode="tags"
-            style={{ width: "100%" }}
+            style={{ width: '100%' }}
             value={tags}
             onChange={(vals) => {
               setTags(vals);
             }}
-            tokenSeparators={[","]}
+            tokenSeparators={[',']}
             options={allTags.map((v) => ({ label: v, value: v }))}
           />
         </Form.Item>
 
-        <div style={{ overflow: "auto" }}>
+        <div style={{ overflow: 'auto' }}>
           <Hidden hidden={ctx.length < 3 || disabledEdit}>
             <Form.Item>
               <Button
@@ -413,7 +382,7 @@ export function EditVirtualRoleSetting({
                 onClick={() => {
                   setCtx((v) => [
                     {
-                      content: "",
+                      content: '',
                       role: undefined,
                       key: getUuid(),
                       checked: true,
@@ -428,7 +397,7 @@ export function EditVirtualRoleSetting({
                   </SkipExport>
                 }
               >
-                {"增加设定"}
+                {'增加设定'}
               </Button>
             </Form.Item>
           </Hidden>
@@ -437,13 +406,13 @@ export function EditVirtualRoleSetting({
             readonly={disabledEdit}
             onChange={(data) => {
               data.forEach((item, idx) => {
-                if (idx == 0 && !item.role) item.role = "system";
+                if (idx == 0 && !item.role) item.role = 'system';
               });
               setCtx(data);
             }}
             style={{
               borderRadius: 8,
-              border: "1px solid " + token.colorBorder,
+              border: '1px solid ' + token.colorBorder,
               padding: 5,
               marginBottom: 8,
               // backgroundColor: token.colorFillContent,
@@ -458,8 +427,8 @@ export function EditVirtualRoleSetting({
                   setCtx((v) => [
                     ...v,
                     {
-                      content: "",
-                      role: v.length == 0 ? "system" : undefined,
+                      content: '',
+                      role: v.length == 0 ? 'system' : undefined,
                       key: getUuid(),
                       checked: true,
                     },
@@ -472,7 +441,7 @@ export function EditVirtualRoleSetting({
                   </SkipExport>
                 }
               >
-                {"增加设定"}
+                {'增加设定'}
               </Button>
             </Form.Item>
           </Hidden>

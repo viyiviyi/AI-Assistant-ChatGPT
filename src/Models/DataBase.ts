@@ -46,6 +46,7 @@ export interface GroupConfig {
   extensions?: string[];
   middleware?: string[];
   useVirtualRoleImgToBack?: boolean;
+  autoWrapCode?: boolean;
 }
 
 // 聊天消息表

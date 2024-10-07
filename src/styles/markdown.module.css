@@ -1,9 +1,11 @@
 .markdown em {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 .markdown img {
-    width: 100%;
+  width: 100%;
 }
 .markdown {
-    line-height: 1.4;
+  line-height: 1.4;
+  white-space: pre-wrap;
 }
+

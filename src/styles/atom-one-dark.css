@@ -26,7 +26,7 @@ code,
   padding: 0.2em 0.5em;
   margin: 0 0.2em;
   background: #282c34aa;
-  font-family: Consolas, "Courier New", monospace;
+  font-family: revert-layer;
   border-radius: 4px;
 }
 pre > code:hover > .code-copy {
@@ -120,7 +120,7 @@ pre > code:hover > .code-copy {
 }
 .hljs-link {
   color: #61aeee;
-  text-decoration: "underline";
+  text-decoration: 'underline';
 }
 .hljs-meta {
   color: #61aeee;
@@ -132,8 +132,8 @@ pre > code:hover > .code-copy {
   color: #61aeee;
 }
 .hljs-emphasis {
-  font-style: "italic";
+  font-style: 'italic';
 }
 .hljs-strong {
-  font-weight: "bold";
+  font-weight: 'bold';
 }

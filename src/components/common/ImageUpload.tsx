@@ -1,20 +1,22 @@
-import { useScreenSize } from "@/core/hooks/hooks";
-import { Avatar, Modal, Space, Upload } from "antd";
-import React, { useEffect, useState } from "react";
-import AvatarEditor from "react-avatar-editor";
+import { useScreenSize } from '@/core/hooks/hooks';
+import { Avatar, Modal, Upload } from 'antd';
+import React, { useEffect, useState } from 'react';
+import AvatarEditor from 'react-avatar-editor';
 
 const ImageUpload = ({
   onSave,
-  avatar = "",
+  avatar = '',
   width = 96,
   height = 96,
   trigger,
+  style,
 }: {
   avatar?: string;
   onSave: (img: string) => void;
   width?: number;
   height?: number;
   trigger?: React.ReactNode | undefined;
+  style?: React.CSSProperties | undefined;
 }) => {
   const [image, setImage] = useState<File | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -44,7 +46,7 @@ const ImageUpload = ({
   const handleSave = () => {
     if (editor) {
       const canvas = editor.getImageScaledToCanvas();
-      const croppedImage = canvas.toDataURL("image/png");
+      const croppedImage = canvas.toDataURL('image/png');
       // 将croppedImage保存到服务器或本地存储中
       onSave(croppedImage);
       setShowModal(false);
@@ -52,7 +54,7 @@ const ImageUpload = ({
   };
 
   return (
-    <Space>
+    <div style={style}>
       <Upload
         accept=".png,.jpg,.gif"
         {...{
@@ -65,11 +67,7 @@ const ImageUpload = ({
           showUploadList: false,
         }}
       >
-        {trigger ? (
-          trigger
-        ) : (
-          <Avatar size={"large"} src={avatar || undefined}></Avatar>
-        )}
+        {trigger ? trigger : <Avatar size={'large'} src={avatar || undefined}></Avatar>}
       </Upload>
       <Modal
         open={showModal}
@@ -77,15 +75,12 @@ const ImageUpload = ({
         centered={true}
         onCancel={() => setShowModal(false)}
         width={
-          (renderSize.width / renderSize.height) *
-            (Math.min(renderSize.height, screenSize.height) -
-              210 / screenSize.devicePixelRatio) +
-          40
+          (renderSize.width / renderSize.height) * (Math.min(renderSize.height, screenSize.height) - 210 / screenSize.devicePixelRatio) + 40
         }
       >
-        <div style={{ marginTop: "30px", width: "100%" }}>
+        <div style={{ marginTop: '30px', width: '100%' }}>
           <input
-            style={{ width: "100%" }}
+            style={{ width: '100%' }}
             type="range"
             id="scale"
             name="scale"
@@ -100,9 +95,9 @@ const ImageUpload = ({
           />
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              margin: "10px auto",
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '10px auto',
             }}
           >
             {width > screenSize.width ? (
@@ -110,9 +105,9 @@ const ImageUpload = ({
                 style={{
                   maxWidth:
                     (renderSize.width / renderSize.height) *
-                    (Math.min(renderSize.height, screenSize.height) -
-                      210 / screenSize.devicePixelRatio)-40,
-                  height: "auto",
+                      (Math.min(renderSize.height, screenSize.height) - 210 / screenSize.devicePixelRatio) -
+                    40,
+                  height: 'auto',
                 }}
                 ref={(editor) => setEditor(editor)}
                 image={image!}
@@ -130,9 +125,8 @@ const ImageUpload = ({
                 style={{
                   maxWidth:
                     (renderSize.width / renderSize.height) *
-                    (Math.min(renderSize.height, screenSize.height) -
-                      210 / screenSize.devicePixelRatio),
-                  height: "auto",
+                    (Math.min(renderSize.height, screenSize.height) - 210 / screenSize.devicePixelRatio),
+                  height: 'auto',
                 }}
                 ref={(editor) => setEditor(editor)}
                 image={image!}
@@ -148,7 +142,7 @@ const ImageUpload = ({
           </div>
         </div>
       </Modal>
-    </Space>
+    </div>
   );
 };
 

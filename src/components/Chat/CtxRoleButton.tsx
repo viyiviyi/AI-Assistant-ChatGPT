@@ -1,5 +1,5 @@
 import { CtxRole } from "@/Models/CtxRole";
-import { Segmented, Space } from "antd";
+import { Flex, Segmented } from "antd";
 import { CSSProperties } from "react";
 
 export function CtxRoleButton({
@@ -14,7 +14,7 @@ export function CtxRoleButton({
   inputRef?: React.RefObject<HTMLInputElement>;
 }) {
   return (
-    <Space size={10} style={style}>
+    <Flex gap={10} style={style}>
       <Segmented
         value={value[0]}
         onChange={(val) => {
@@ -38,6 +38,6 @@ export function CtxRoleButton({
           { label: "离线", value: "false" },
         ]}
       />
-    </Space>
+    </Flex>
   );
 }
