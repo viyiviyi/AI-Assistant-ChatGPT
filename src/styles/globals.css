@@ -81,6 +81,9 @@ a {
   line-height: 1.5 !important;
   font-family: revert-layer !important;
 }
+p .q {
+  color: orange;
+}
 h1,
 h2,
 h3,
