@@ -41,10 +41,14 @@ function toTxt(node: React.ReactNode): string {
   }
   return str;
 }
-function pauseMes(mes: string): string {
-  return mes.replace(/「[\s\S]*?」|".+?"|\u201C.+?\u201D/gm, function (match, p1, p2) {
-    return '<span class="q">' +match + '</span>';
-  });
+function pauseMes(mes: React.ReactNode): React.ReactNode {
+  if (typeof mes == 'string') {
+    let html = mes.replace(/「[\s\S]*?」|".+?"|\u201C.+?\u201D/gm, function (match, p1, p2) {
+      return `<span class="q">${match}</span>`;
+    });
+    return <span dangerouslySetInnerHTML={{ __html: html || '' }}></span>;
+  }
+  return mes;
 }
 let processor = unified()
   .use(remarkParse)
@@ -100,8 +104,8 @@ let processor = unified()
       },
       p: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { children } = props;
-        let html = pauseMes(children?.toString() || '');
-        return <p {...{ ...(props as any), children: undefined }} dangerouslySetInnerHTML={{ __html: html || '' }}></p>;
+        let _children = Array.isArray(children) ? children.map((v) => pauseMes(v)) : pauseMes(children);
+        return <p {...{ ...(props as any), children: undefined }}>{_children}</p>;
       },
     },
   });
