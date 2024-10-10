@@ -42,11 +42,61 @@ function toTxt(node: React.ReactNode): string {
   return str;
 }
 function pauseMes(mes: React.ReactNode): React.ReactNode {
+  let reg = /「[\s\S]*?」|".+?"|\u201C.+?\u201D/gm;
+  let regLeft = /「|"|\u201C/;
+  let regRight = /」|"|\u201D/;
   if (typeof mes == 'string') {
-    let html = mes.replace(/「[\s\S]*?」|".+?"|\u201C.+?\u201D/gm, function (match, p1, p2) {
+    let html = mes.replace(reg, function (match) {
       return `<span class="q">${match}</span>`;
     });
     return <span dangerouslySetInnerHTML={{ __html: html || '' }}></span>;
+  }
+  if (Array.isArray(mes)) {
+    let arr: React.ReactNode[] = [];
+    let str = '';
+    let cache: React.ReactNode[] = [];
+    for (let i = 0; i < mes.length; i++) {
+      if (typeof mes[i] == 'string' && reg.test(mes[i])) {
+        arr.push(pauseMes(mes[i]));
+        str = '';
+        cache = [];
+      } else if ((typeof mes[i] == 'string' && regLeft.test(mes[i])) || str) {
+        str += toTxt(mes[i]);
+        cache.push(mes[i]);
+      } else {
+        arr.push(pauseMes(mes[i]));
+      }
+      if (reg.test(str) && typeof mes[i] == 'string' && regRight.test(mes[i])) {
+        let first = cache.shift() as string;
+        let idx = first.search(regLeft);
+        let last = cache.pop() as string;
+        let endIdx = last.search(regRight);
+        arr.push(
+          <>
+            {first.substring(0, idx)}
+            <span className="q">
+              {first.substring(idx)}
+              {...cache}
+              {last.substring(0, endIdx + 1)}
+            </span>
+            {last.substring(endIdx + 1)}
+          </>
+        );
+        str = '';
+        cache = [];
+      } else if (reg.test(str)) {
+        arr.push(pauseMes(str));
+        str = '';
+        cache = [];
+      }
+    }
+    if (str) arr.push(...cache);
+    return arr;
+  }
+  if (mes && typeof mes == 'object' && 'props' in mes && 'children' in mes.props && Array.isArray(mes.props.children)) {
+    let arr = pauseMes(mes.props.children) as React.ReactNode[];
+    mes.props.children.length = []; 
+    mes.props.children.push(...arr);
   }
   return mes;
 }
@@ -104,7 +154,7 @@ let processor = unified()
       },
       p: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { children } = props;
-        let _children = Array.isArray(children) ? children.map((v) => pauseMes(v)) : pauseMes(children);
+        let _children = pauseMes(children);
         return <p {...{ ...(props as any), children: undefined }}>{_children}</p>;
       },
     },
@@ -189,6 +239,11 @@ const renderPipes: Array<(input: string, chatMgt: ChatManagement) => string> = [
   // (input) => {
   //     return input.replace(/\n/g, "  \n");
   //     // return input.replace(/([!\?~。！？】）～：；”……」])\n([^\n])/g, "$1\n\n$2");
+  // },
+  // (input) => {
+  //   return input.replace(/「[\s\S]*?」|".+?"|\u201C.+?\u201D/gm, function (match, p1, p2) {
+  //     return `<span class="q">${match}</span>`;
+  //   });
   // },
   (input, chatMgt: ChatManagement) => {
     return onRender(chatMgt as any, input);
