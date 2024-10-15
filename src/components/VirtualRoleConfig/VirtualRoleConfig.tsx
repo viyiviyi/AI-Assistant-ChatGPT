@@ -116,7 +116,11 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
         // 传入的新setting
         charData.setting.forEach((v) => {
           if (v.extensionId) {
-            if (oldChubSetting[v.extensionId]) v.checked = oldChubSetting[v.extensionId].checked;
+            if (oldChubSetting[v.extensionId]) {
+              v.checked = oldChubSetting[v.extensionId].checked;
+              v.dynamic = userVariableSetting[v.extensionId].dynamic;
+              v.autoCtx = userVariableSetting[v.extensionId].autoCtx;
+            }
             if (v.extensionId == 'chub.HistoricalScene') {
               if (oldChubSetting[v.extensionId] && oldChubSetting[v.extensionId].ctx.length > 2) {
                 v.ctx = [oldChubSetting[v.extensionId].ctx[0], ...v.ctx.slice(1, -1), oldChubSetting[v.extensionId].ctx.slice(-1)[0]];
@@ -124,6 +128,8 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
             }
             if (userVariableSetting[v.extensionId] && !replace) {
               v.checked = userVariableSetting[v.extensionId].checked;
+              v.dynamic = userVariableSetting[v.extensionId].dynamic;
+              v.autoCtx = userVariableSetting[v.extensionId].autoCtx;
               let newCtx = v.ctx.filter(
                 (c) =>
                   userVariableSetting[v.extensionId!].ctx.findIndex(
