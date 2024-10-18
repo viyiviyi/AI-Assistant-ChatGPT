@@ -118,8 +118,8 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
           if (v.extensionId) {
             if (oldChubSetting[v.extensionId]) {
               v.checked = oldChubSetting[v.extensionId].checked;
-              v.dynamic = userVariableSetting[v.extensionId].dynamic;
-              v.autoCtx = userVariableSetting[v.extensionId].autoCtx;
+              v.dynamic = oldChubSetting[v.extensionId].dynamic;
+              v.autoCtx = oldChubSetting[v.extensionId].autoCtx;
             }
             if (v.extensionId == 'chub.HistoricalScene') {
               if (oldChubSetting[v.extensionId] && oldChubSetting[v.extensionId].ctx.length > 2) {
