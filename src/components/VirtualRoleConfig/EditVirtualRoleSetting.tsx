@@ -217,32 +217,8 @@ export function EditVirtualRoleSetting({
     [disabledEdit, filterText]
   );
   const [title, setTitle] = useState(item.title);
-  if (!visible) return <></>;
-  return (
-    <Modal
-      open={visible}
-      onOk={() => {
-        setCtx((ctx) => {
-          ctx.forEach((v) => (v.content = v.content?.trim()));
-          let next_ctx = ctx.filter((f) => f.content);
-          onSave({
-            ...item,
-            tags,
-            ctx: next_ctx,
-            title: title,
-          });
-          return next_ctx;
-        });
-      }}
-      width="min(860px, 100%)"
-      onCancel={onCancel}
-      bodyStyle={{
-        maxHeight: 'calc(100vh - 200px)',
-        minHeight: '50vh',
-        overflow: 'auto',
-      }}
-    >
-      {contextHolder}
+  const modalContent = useMemo(
+    () => (
       <div>
         <Form.Item>
           <Button.Group>
@@ -447,6 +423,35 @@ export function EditVirtualRoleSetting({
           </Hidden>
         </div>
       </div>
+    ),
+    [allTags, ctx, disabledEdit, filterText, item, messageApi, renderItem, tags, title, token.colorBorder]
+  );
+  return (
+    <Modal
+      open={visible}
+      onOk={() => {
+        setCtx((ctx) => {
+          ctx.forEach((v) => (v.content = v.content?.trim()));
+          let next_ctx = ctx.filter((f) => f.content);
+          onSave({
+            ...item,
+            tags,
+            ctx: next_ctx,
+            title: title,
+          });
+          return next_ctx;
+        });
+      }}
+      width="min(860px, 100%)"
+      onCancel={onCancel}
+      bodyStyle={{
+        maxHeight: 'calc(100dvh - 200px)',
+        minHeight: '50dvh',
+        overflow: 'auto',
+      }}
+    >
+      {contextHolder}
+      {modalContent}
     </Modal>
   );
 }

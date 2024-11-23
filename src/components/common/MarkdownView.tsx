@@ -41,6 +41,7 @@ function toTxt(node: React.ReactNode): string {
   }
   return str;
 }
+let a = 1;
 function pauseMes(mes: React.ReactNode): React.ReactNode {
   let reg = /「[\s\S]*?」|".+?"|\u201C.+?\u201D/gm;
   let regLeft = /「|"|\u201C/;
@@ -49,7 +50,7 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
     let html = mes.replace(reg, function (match) {
       return `<span class="q">${match}</span>`;
     });
-    return <span dangerouslySetInnerHTML={{ __html: html || '' }}></span>;
+    return <span key={a++} dangerouslySetInnerHTML={{ __html: html || '' }}></span>;
   }
   if (Array.isArray(mes)) {
     let arr: React.ReactNode[] = [];
@@ -72,7 +73,7 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
         let last = cache.pop() as string;
         let endIdx = last.search(regRight);
         arr.push(
-          <>
+          <span key={a++}>
             {first.substring(0, idx)}
             <span className="q">
               {first.substring(idx)}
@@ -80,7 +81,7 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
               {last.substring(0, endIdx + 1)}
             </span>
             {last.substring(endIdx + 1)}
-          </>
+          </span>
         );
         str = '';
         cache = [];
@@ -95,7 +96,7 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
   }
   if (mes && typeof mes == 'object' && 'props' in mes && 'children' in mes.props && Array.isArray(mes.props.children)) {
     let arr = pauseMes(mes.props.children) as React.ReactNode[];
-    mes.props.children.length = []; 
+    mes.props.children.length = [];
     mes.props.children.push(...arr);
   }
   return mes;

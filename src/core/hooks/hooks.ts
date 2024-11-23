@@ -1,22 +1,24 @@
-import { reloadTopic } from "@/components/Chat/Message/MessageList";
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import {
-  onReader,
-  onReaderAfter,
-  onReaderFirst,
-  onSendBefore
-} from "@/middleware/execMiddleware";
-import { CtxRole } from "@/Models/CtxRole";
-import { Message } from "@/Models/DataBase";
-import { App } from "antd";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { TopicMessage } from "../../Models/Topic";
-import { aiServices } from "../AiService/ServiceProvider";
-import {
-  createThrottleAndDebounce,
-  getUuid,
-  scrollToBotton
-} from "../utils/utils";
+import { reloadTopic } from '@/components/Chat/Message/MessageList';
+import { ChatContext, ChatManagement } from '@/core/ChatManagement';
+import { onReader, onReaderAfter, onReaderFirst, onSendBefore } from '@/middleware/execMiddleware';
+import { CtxRole } from '@/Models/CtxRole';
+import { Message } from '@/Models/DataBase';
+import { App } from 'antd';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { TopicMessage } from '../../Models/Topic';
+import { aiServices } from '../AiService/ServiceProvider';
+import { createThrottleAndDebounce, getUuid, scrollToBotton } from '../utils/utils';
+
+const retrieved = { current: false };
+const screenData = {
+  current: {
+    width: 0,
+    height: 0,
+    screenWidth: 0,
+    screenHeight: 0,
+    devicePixelRatio: 1,
+  },
+};
 
 export function useScreenSize() {
   const [obj, setObj] = useState<{
@@ -25,35 +27,31 @@ export function useScreenSize() {
     screenWidth: number;
     screenHeight: number;
     devicePixelRatio: number;
-  }>({
-    width: 0,
-    height: 0,
-    screenWidth: 0,
-    screenHeight: 0,
-    devicePixelRatio: 1,
-  });
+  }>(screenData.current);
   const timeout = useRef<any>();
-  const retrieved = useRef(false);
   useEffect(() => {
     if (retrieved.current) return;
     retrieved.current = true;
-    setObj({
+    screenData.current = {
       width: window.innerWidth,
       height: window.innerHeight,
       screenWidth: window.innerWidth * window.devicePixelRatio,
       screenHeight: window.innerHeight * window.devicePixelRatio,
       devicePixelRatio: window.devicePixelRatio,
-    });
-    window.addEventListener("resize", () => {
+    };
+    setObj(screenData.current);
+
+    window.addEventListener('resize', () => {
       clearTimeout(timeout.current);
       timeout.current = setTimeout(() => {
-        setObj({
+        screenData.current = {
           width: window.innerWidth,
           height: window.innerHeight,
           screenWidth: window.innerWidth * window.devicePixelRatio,
           screenHeight: window.innerHeight * window.devicePixelRatio,
           devicePixelRatio: window.devicePixelRatio,
-        });
+        };
+        setObj(screenData.current);
       }, 1000);
     });
   }, []);
@@ -65,13 +63,10 @@ export function useDark() {
   useEffect(() => {
     if (retrieved.current) return;
     retrieved.current = true;
-    setObj(
-      window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-    );
+    setObj(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (window.matchMedia) {
-      window.matchMedia("(prefers-color-scheme: dark)").onchange = function () {
-        setObj(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      window.matchMedia('(prefers-color-scheme: dark)').onchange = function () {
+        setObj(window.matchMedia('(prefers-color-scheme: dark)').matches);
       };
     }
   }, []);
@@ -79,8 +74,7 @@ export function useDark() {
   return obj;
 }
 
-export const env: "dev" | "prod" =
-  process.env.NEXT_PUBLIC_DOMAIN_ENV === "production" ? "prod" : "dev";
+export const env: 'dev' | 'prod' = process.env.NEXT_PUBLIC_DOMAIN_ENV === 'production' ? 'prod' : 'dev';
 
 // 整理idx之后的message的timestamp的值, 并获取一个可以使用的值，因为这个值用于排序用，如果前后顺序相同时，需要将后一个+0.01 并且需要递归只到最后一个或者与下一个不一样为止
 export function useReloadIndex(chat: ChatManagement) {
@@ -88,8 +82,7 @@ export function useReloadIndex(chat: ChatManagement) {
     (topic: TopicMessage, idx: number) => {
       if (idx + 1 >= topic.messages.length) return;
       if (idx < 0) return;
-      if (topic.messages[idx].timestamp < topic.messages[idx + 1].timestamp)
-        return;
+      if (topic.messages[idx].timestamp < topic.messages[idx + 1].timestamp) return;
       topic.messages[idx + 1].timestamp = topic.messages[idx].timestamp + 0.001;
       chat.pushMessage(topic.messages[idx + 1]);
       reloadIndex(topic, idx + 1);
@@ -102,7 +95,7 @@ export function useReloadIndex(chat: ChatManagement) {
 }
 
 export const loadingMessages: { [key: string]: boolean } = {};
-const currentPullMessage = { id: "" }; // 最新一条消息的id 用于自动滚动
+const currentPullMessage = { id: '' }; // 最新一条消息的id 用于自动滚动
 
 export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
@@ -122,31 +115,23 @@ export function useSendMessage(chat: ChatManagement) {
         idx = topic.messages.length - 1;
       }
       let time = Date.now();
-      if (idx < 0 && topic.messages.length)
-        time = topic.messages[0].timestamp - 1;
-      if (idx >= 0 && idx < topic.messages.length)
-        time = topic.messages[idx].timestamp + 0.001;
+      if (idx < 0 && topic.messages.length) time = topic.messages[0].timestamp - 1;
+      if (idx >= 0 && idx < topic.messages.length) time = topic.messages[idx].timestamp + 0.001;
       let result: Message = {
         id: getUuid(),
         groupId: chat.group.id,
-        ctxRole: "assistant",
-        text: "",
+        ctxRole: 'assistant',
+        text: '',
         timestamp: time,
         topicId: topic.id,
       };
       result = onReaderFirst(chat.getChat(), topic.messages[idx], result);
       if (
         topic.messages
-          .slice(
-            Math.max(
-              0,
-              chat.gptConfig.msgCount == 0 ? 0 : idx - chat.gptConfig.msgCount
-            ),
-            idx + 1
-          )
+          .slice(Math.max(0, chat.gptConfig.msgCount == 0 ? 0 : idx - chat.gptConfig.msgCount), idx + 1)
           .findIndex((f) => loadingMessages[f.id]) != -1
       )
-        return message.info("上下文中存在未完成的消息");
+        return message.info('上下文中存在未完成的消息');
       // 因为回调函数引用了chat，而编辑配置时会创建新的chat，导致旧的chat不能被回收，导致内存溢出
       let currentChat: { current: ChatManagement | undefined } = {
         current: chat,
@@ -169,16 +154,12 @@ export function useSendMessage(chat: ChatManagement) {
       let save = createThrottleAndDebounce((isEnd) => {
         if (currentChat.current) {
           if (isEnd) {
-            onReaderAfter(currentChat.current.getChat(), [result]).forEach(
-              (res, idx) => {
-                currentChat.current &&
-                  currentChat.current
-                    .pushMessage(res, idx + 1 + idx)
-                    .then((r) => {
-                      Object.assign(result, r);
-                    });
-              }
-            );
+            onReaderAfter(currentChat.current.getChat(), [result]).forEach((res, idx) => {
+              currentChat.current &&
+                currentChat.current.pushMessage(res, idx + 1 + idx).then((r) => {
+                  Object.assign(result, r);
+                });
+            });
           } else {
             currentChat.current.pushMessage(result, idx + 1).then((r) => {
               Object.assign(result, r);
@@ -186,10 +167,7 @@ export function useSendMessage(chat: ChatManagement) {
           }
         }
       }, 100);
-      let { allCtx: ctx, history } = currentChat.current!.getAskContext(
-        topic,
-        idx + 1
-      );
+      let { allCtx: ctx, history } = currentChat.current!.getAskContext(topic, idx + 1);
       ctx = onSendBefore(chat.getChat(), { allCtx: ctx, history }) as {
         role: CtxRole;
         content: string;
@@ -200,10 +178,7 @@ export function useSendMessage(chat: ChatManagement) {
         context: ctx,
         async onMessage(res) {
           if (currentChat.current) {
-            result.text = onReader(
-              currentChat.current.getChat(),
-              res.text || ""
-            );
+            result.text = onReader(currentChat.current.getChat(), res.text || '');
           } else if (res.stop) {
             res.stop();
           }
@@ -211,11 +186,7 @@ export function useSendMessage(chat: ChatManagement) {
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;
             result.cloudTopicId = res.cloud_topic_id;
-            currentChat.current?.saveTopic(
-              topic.id,
-              topic.name,
-              res.cloud_topic_id
-            );
+            currentChat.current?.saveTopic(topic.id, topic.name, res.cloud_topic_id);
           }
           if (res.searchQueries) {
             result.searchQueries = res.searchQueries;
@@ -248,7 +219,7 @@ export function useSendMessage(chat: ChatManagement) {
         config: {
           channel_id: currentChat.current!.config.cloudChannelId,
           ...currentChat.current!.gptConfig,
-          user: "user",
+          user: 'user',
           messages: [],
         },
       });
@@ -272,13 +243,7 @@ export function usePushMessage(chat: ChatManagement) {
      * @param pushCallback
      * @returns
      */
-    async function (
-      text: string,
-      idx: number,
-      topic: TopicMessage,
-      role: [CtxRole, boolean],
-      pushCallback: (msg: Message) => void
-    ) {
+    async function (text: string, idx: number, topic: TopicMessage, role: [CtxRole, boolean], pushCallback: (msg: Message) => void) {
       if (idx < 0) return;
       text = text.trim();
       const aiService = aiServices.current;
@@ -290,12 +255,10 @@ export function usePushMessage(chat: ChatManagement) {
       const skipRequest = !role[1];
       text = ChatManagement.parseText(text);
       let time = Date.now();
-      if (idx == 0 && idx + 1 < topic.messages.length)
-        time = topic.messages[idx + 1].timestamp - 1;
-      if (idx > 0 && idx < topic.messages.length)
-        time = topic.messages[idx - 1].timestamp + 0.001;
+      if (idx == 0 && idx + 1 < topic.messages.length) time = topic.messages[idx + 1].timestamp - 1;
+      if (idx > 0 && idx < topic.messages.length) time = topic.messages[idx - 1].timestamp + 0.001;
       let msg: Message = {
-        id: "",
+        id: '',
         groupId: chat.group.id,
         ctxRole: role[0],
         text: text,
@@ -327,7 +290,7 @@ export function useGetHistory(chat: ChatManagement) {
       let now = Date.now();
       if (aiService?.history && topic.cloudTopicId) {
         // 获取历史记录
-        let oldTs: string = "0";
+        let oldTs: string = '0';
         if (topic.messages.length) {
           for (let index = topic.messages.length - 1; index >= 0; index--) {
             const item = topic.messages[index];
@@ -341,9 +304,9 @@ export function useGetHistory(chat: ChatManagement) {
           async onMessage(text, isAi, cloudId, err) {
             if (!topic) return;
             await chat.pushMessage({
-              id: "",
+              id: '',
               groupId: chat.group.id,
-              ctxRole: isAi ? "assistant" : "user",
+              ctxRole: isAi ? 'assistant' : 'user',
               text: text,
               timestamp: now++,
               topicId: topic.id,
@@ -356,7 +319,7 @@ export function useGetHistory(chat: ChatManagement) {
           config: {
             channel_id: chat.config.cloudChannelId,
             ...chat.gptConfig,
-            user: "user",
+            user: 'user',
             messages: [],
           },
         });

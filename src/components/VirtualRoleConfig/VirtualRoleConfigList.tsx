@@ -127,20 +127,23 @@ export const VirtualRoleConfigList = ({
             cursor: 'pointer',
           }}
         >
-          <EditVirtualRoleSetting
-            item={item}
-            allTags={tags}
-            visible={item.edit}
-            disabledEdit={disabledEdit}
-            onCancel={() => {
-              item.edit = false;
-              setVirtualRole_settings((v) => [...v]);
-            }}
-            onSave={(_item) => {
-              _item.edit = false;
-              saveSettings((v) => v.map((a) => (a.key == _item.key ? _item : a)));
-            }}
-          />
+          {item.edit && (
+            <EditVirtualRoleSetting
+              item={item}
+              allTags={tags}
+              visible={item.edit}
+              disabledEdit={disabledEdit}
+              onCancel={() => {
+                item.edit = false;
+                setVirtualRole_settings((v) => [...v]);
+              }}
+              onSave={(_item) => {
+                item.edit = false;
+                _item.edit = false;
+                saveSettings((v) => v.map((a) => (a.key == _item.key ? _item : a)));
+              }}
+            />
+          )}
           <div
             style={{ flex: 1, width: 0 }}
             onClick={() => {

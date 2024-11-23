@@ -1,22 +1,18 @@
-import { useScreenSize } from "@/core/hooks/hooks";
-import { CloseOutlined } from "@ant-design/icons";
-import { Button, Drawer, theme, Typography } from "antd";
-import React, {
-  CSSProperties,
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useRef
-} from "react";
-import { Hidden } from "./Hidden";
+import { useScreenSize } from '@/core/hooks/hooks';
+import { CloseOutlined } from '@ant-design/icons';
+import { Button, Drawer, theme, Typography } from 'antd';
+import { useRouter } from 'next/router';
+import React, { CSSProperties, MutableRefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Hidden } from './Hidden';
 
 export type ModalCallback = MutableRefObject<{
   okCallback: () => void;
   cancelCallback: () => void;
   cancel: () => void;
 }>;
-
-export const useModalContext = () => {};
+let zIndex = 100;
+let urlHistory: string[] = [];
 
 export const Modal = ({
   open = false,
@@ -50,14 +46,24 @@ export const Modal = ({
   width?: string | number | undefined;
 }) => {
   const { token } = theme.useToken();
+  const router = useRouter();
+  const [_, setUrl] = useState('');
+
   const screenSize = useScreenSize();
-  const cancel = useCallback(() => {
-    callback.current.cancelCallback();
-    onCancel();
-  }, [onCancel]);
+  const cancel = useCallback(
+    (rb = true) => {
+      if (rb) handleBackButton('pop');
+      onCancel();
+      callback.current.cancelCallback();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onCancel]
+  );
   const ok = useCallback(() => {
+    handleBackButton('pop');
     callback.current.okCallback();
     onOk();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onOk]);
   const callback = useRef({
     okCallback: () => {},
@@ -67,19 +73,74 @@ export const Modal = ({
   useEffect(() => {
     callback.current.cancel = cancel;
   }, [cancel]);
+
+  useEffect(() => {
+    setUrl((url) => {
+      if (open) {
+        if (urlHistory.includes(url)) return url;
+        let _url = router.asPath.split('#')[0] + '#' + zIndex;
+        router.push(_url);
+        urlHistory.push(_url);
+        zIndex++;
+        return _url;
+      }
+      return url;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+  const handleBackButton = useMemo(() => {
+    return (ev: PopStateEvent | string) => {
+      if (!urlHistory.length) return;
+      let lastUrl = urlHistory.slice(-1)[0];
+      if (!lastUrl) return;
+      setUrl((currUrl) => {
+        if (typeof ev == 'string') {
+          if (lastUrl == currUrl && ev == 'pop') {
+            router.back();
+            setTimeout(() => {
+              zIndex--;
+              // 延迟删除历史记录 防止异常关闭全部弹窗
+              urlHistory.pop();
+            }, 20);
+            return ''
+          }
+        } else {
+          ev.preventDefault();
+          if (lastUrl == currUrl) {
+            setTimeout(() => {
+              zIndex--;
+              urlHistory.pop();
+            }, 20);
+            cancel(false);
+          }
+        }
+        return currUrl;
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cancel]);
+
+  useEffect(() => {
+    window.addEventListener('popstate', handleBackButton);
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [handleBackButton]);
+
+  if (!open) return <></>;
   if (screenSize.width <= 500)
     return (
       <Drawer
         title={title}
-        placement={"bottom"}
+        placement={'bottom'}
         destroyOnClose={true}
         closable={false}
         maskClosable={maskClosable}
-        onClose={cancel}
-        height={maxHight ? maxHight : "auto"}
+        onClose={() => cancel()}
+        height={maxHight ? maxHight : 'auto'}
         style={{
           padding: 0,
-          borderRadius: "10px 10px 0 0 ",
+          borderRadius: '10px 10px 0 0 ',
           ...style,
         }}
         width={width}
@@ -94,10 +155,10 @@ export const Modal = ({
             paddingTop: token.paddingSM * 3,
             paddingBottom: token.paddingSM * 2,
             backgroundColor: token.colorBgElevated,
-            maxHeight: maxHight ? maxHight : "calc(100% - 40px)",
-            overflow: "auto",
-            width: "min(100%, 500px)",
-            position: "relative",
+            maxHeight: maxHight ? maxHight : 'calc(100% - 40px)',
+            overflow: 'auto',
+            width: 'min(100%, 500px)',
+            position: 'relative',
           }}
         >
           <Hidden hidden={closable === false}>
@@ -108,7 +169,7 @@ export const Modal = ({
               type="text"
               icon={<CloseOutlined />}
               style={{
-                position: "absolute",
+                position: 'absolute',
                 zIndex: 999,
                 top: 8,
                 right: 8,
@@ -120,7 +181,7 @@ export const Modal = ({
             <Typography.Title level={4}>{title}</Typography.Title>
           </Hidden>
           <div style={{ ...bodyStyle }}>{children || items(callback)}</div>
-          <Button.Group style={{ width: "100%", marginTop: 12 }}>
+          <Button.Group style={{ width: '100%', marginTop: 12 }}>
             <Hidden hidden={cancelText === null}>
               <Button
                 block
@@ -129,7 +190,7 @@ export const Modal = ({
                   cancel();
                 }}
               >
-                {cancelText || "关闭"}
+                {cancelText || '关闭'}
               </Button>
             </Hidden>
             <Hidden hidden={okText === null}>
@@ -140,108 +201,106 @@ export const Modal = ({
                   ok();
                 }}
               >
-                {okText ?? "保存"}
+                {okText ?? '保存'}
               </Button>
             </Hidden>
           </Button.Group>
         </div>
       </Drawer>
     );
-
-  return (
-    <Hidden hidden={!open}>
+  const wrap = (
+    <div
+      onClick={
+        maskClosable !== false
+          ? () => {
+              cancel();
+            }
+          : undefined
+      }
+      style={{
+        position: 'fixed',
+        width: '100vw',
+        minHeight: '100%',
+        maxHeight: '100%',
+        height: '100%',
+        left: 0,
+        top: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        backgroundColor: token.colorBgMask,
+        alignItems: screenSize.width < 500 ? 'end' : 'center',
+        zIndex: zIndex,
+        ...style,
+      }}
+    >
       <div
-        onClick={
-          maskClosable !== false
-            ? () => {
-                cancel();
-              }
-            : undefined
-        }
+        onClick={(e) => e.stopPropagation()}
         style={{
-          position: "fixed",
-          width: "100vw",
-          minHeight: "100%",
-          maxHeight: "100%",
-          height: "100%",
-          left: 0,
-          top: 0,
-          display: "flex",
-          justifyContent: "center",
-          backgroundColor: token.colorBgMask,
-          alignItems: screenSize.width < 500 ? "end" : "center",
-          zIndex: 999,
-          ...style,
+          paddingLeft: token.paddingLG,
+          paddingRight: token.paddingLG,
+          paddingTop: token.paddingSM * 3,
+          paddingBottom: token.paddingSM * 2,
+          backgroundColor: token.colorBgElevated,
+          borderRadius: token.borderRadiusLG,
+          width: width || 'min(100%, 500px)',
+          position: 'relative',
         }}
       >
-        <div
-          onClick={(e) => e.stopPropagation()}
+        <Hidden hidden={closable === false}>
+          <Button
+            onClick={() => {
+              cancel();
+            }}
+            type="text"
+            icon={<CloseOutlined />}
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              opacity: 0.5,
+              zIndex: 999,
+            }}
+          ></Button>
+        </Hidden>
+        <Hidden hidden={!title}>
+          <Typography.Text>{title}</Typography.Text>
+        </Hidden>
+        <div style={{ ...bodyStyle }}>{children || items(callback)}</div>
+        <Button.Group
           style={{
-            paddingLeft: token.paddingLG,
-            paddingRight: token.paddingLG,
-            paddingTop: token.paddingSM * 3,
-            paddingBottom: token.paddingSM * 2,
-            backgroundColor: token.colorBgElevated,
-            borderRadius: token.borderRadiusLG,
-            width: width || "min(100%, 500px)",
-            position: "relative",
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: 12,
           }}
         >
-          <Hidden hidden={closable === false}>
+          <Hidden hidden={cancelText === null}>
             <Button
-              onClick={() => {
+              block
+              style={{ maxWidth: 200 }}
+              onClick={(e) => {
+                e.stopPropagation();
                 cancel();
               }}
-              type="text"
-              icon={<CloseOutlined />}
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                opacity: 0.5,
-                zIndex: 999,
+            >
+              {cancelText || '关闭'}
+            </Button>
+          </Hidden>
+          <Hidden hidden={okText === null}>
+            <Button
+              block
+              style={{ maxWidth: 200 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                ok();
               }}
-            ></Button>
+            >
+              {okText ?? '保存'}
+            </Button>
           </Hidden>
-          <Hidden hidden={!title}>
-            <Typography.Text>{title}</Typography.Text>
-          </Hidden>
-          <div style={{ ...bodyStyle }}>{children || items(callback)}</div>
-          <Button.Group
-            style={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: 12,
-            }}
-          >
-            <Hidden hidden={cancelText === null}>
-              <Button
-                block
-                style={{ maxWidth: 200 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  cancel();
-                }}
-              >
-                {cancelText || "关闭"}
-              </Button>
-            </Hidden>
-            <Hidden hidden={okText === null}>
-              <Button
-                block
-                style={{ maxWidth: 200 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  ok();
-                }}
-              >
-                {okText ?? "保存"}
-              </Button>
-            </Hidden>
-          </Button.Group>
-        </div>
+        </Button.Group>
       </div>
-    </Hidden>
+    </div>
   );
+  return createPortal(wrap as any, document.body);
 };

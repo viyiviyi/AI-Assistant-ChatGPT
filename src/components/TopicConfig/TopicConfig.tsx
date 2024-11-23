@@ -211,7 +211,7 @@ export const TopicConfig = ({
       <Tabs
         type="card"
         defaultActiveKey="virtualRole"
-        style={{ minHeight: "calc(70vh - 118px)" }}
+        style={{ minHeight: "calc(70dvh - 118px)" }}
         items={[
           {
             label: "话题设置",

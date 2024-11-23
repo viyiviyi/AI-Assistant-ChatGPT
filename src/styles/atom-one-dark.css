@@ -9,7 +9,7 @@ pre > code.hljs {
 }
 .limt-hight pre > code,
 .limt-hight pre > code.hljs {
-  max-height: 50vh;
+  max-height: 50dvh;
   overflow-y: auto;
 }
 .code-copy {

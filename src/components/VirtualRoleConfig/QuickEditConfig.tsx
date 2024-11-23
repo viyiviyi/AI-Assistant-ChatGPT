@@ -61,7 +61,7 @@ export const QuickEditConfig = () => {
                       </p>
                       <Form
                         style={{
-                          height: "calc(100vh - 233px)",
+                          height: "calc(100dvh - 233px)",
                           overflow: "auto",
                         }}
                       >
@@ -82,7 +82,7 @@ export const QuickEditConfig = () => {
             children: (
               <>
                 <Form
-                  style={{ height: "calc(100vh - 233px)", overflow: "auto" }}
+                  style={{ height: "calc(100dvh - 233px)", overflow: "auto" }}
                 >
                   <VirtualRoleConfigList autoSave={true} />
                 </Form>

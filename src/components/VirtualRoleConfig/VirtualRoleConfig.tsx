@@ -597,7 +597,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
           <Tabs
             type="card"
             defaultActiveKey="settings"
-            style={{ minHeight: 'calc(70vh - 118px)' }}
+            style={{ minHeight: 'calc(70dvh - 118px)' }}
             items={[
               {
                 label: `助理设定`,
@@ -649,8 +649,8 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
         }}
         okText={null}
         bodyStyle={{
-          maxHeight: 'calc(100vh - 200px)',
-          minHeight: '50vh',
+          maxHeight: 'calc(100dvh - 200px)',
+          minHeight: '50dvh',
           overflow: 'auto',
           padding: 0,
         }}
