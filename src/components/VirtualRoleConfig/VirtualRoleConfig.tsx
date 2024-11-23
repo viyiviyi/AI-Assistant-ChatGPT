@@ -253,15 +253,23 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
           </Form.Item>
         </div>
       </div>
-      <Form.Item name="virtualRole_bio" label="助理设定" extra="当助理模式开启时，所有发送的内容都将以此内容开头">
+      <Form.Item
+        name="virtualRole_bio"
+        label="助理设定"
+        extra={
+          <>
+            <div>
+              {virtualRoleTags.map((v) => (
+                <Tag style={{ marginTop: 5 }} key={'role_tag_' + v} color="green">
+                  {v}
+                </Tag>
+              ))}
+            </div>
+            <p>{'当助理模式开启时，所有发送的内容都将以此内容开头'}</p>
+          </>
+        }
+      >
         <Input.TextArea autoSize />
-        <div>
-          {virtualRoleTags.map((v) => (
-            <Tag style={{ marginTop: 5 }} key={'role_tag_' + v} color="green">
-              {v}
-            </Tag>
-          ))}
-        </div>
       </Form.Item>
       <Form.Item name="user_en_bio" label="用户设定" extra="当导入角色卡片时，这个内容将作为用户设定导入，其他时候此内容无效。">
         <Input.TextArea autoSize />
