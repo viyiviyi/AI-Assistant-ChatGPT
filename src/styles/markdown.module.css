@@ -6,17 +6,7 @@
 }
 .markdown {
   line-height: 1.4;
-  user-select: none;
 }
-/* .markdown::after {
-  content: '';
-  user-select: none;
-}
-.markdown::before {
-  content: '';
-  user-select: none;
-} */
 .markdown p {
   white-space: pre-wrap;
-  user-select: text;
 }
