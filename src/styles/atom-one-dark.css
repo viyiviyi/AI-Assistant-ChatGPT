@@ -1,11 +1,16 @@
 pre {
   position: relative;
+  user-select: none;
 }
 pre > code,
 pre > code.hljs {
   display: block;
   padding: 1em 2em 1em 0.5em;
   margin: 0;
+}
+pre > code:focus-visible {
+  outline: none;
+  user-select: contain;
 }
 .limt-hight pre > code,
 .limt-hight pre > code.hljs {

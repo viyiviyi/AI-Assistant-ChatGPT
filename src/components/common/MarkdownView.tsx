@@ -1,5 +1,5 @@
 import { CopyOutlined } from '@ant-design/icons';
-import { MenuProps, message, Typography } from 'antd';
+import { MenuProps, message, Modal, Typography } from 'antd';
 import copy from 'copy-to-clipboard';
 import bash from 'highlight.js/lib/languages/bash';
 import dart from 'highlight.js/lib/languages/dart';
@@ -14,7 +14,16 @@ import sql from 'highlight.js/lib/languages/sql';
 import typescript from 'highlight.js/lib/languages/typescript';
 import xml from 'highlight.js/lib/languages/xml';
 import yaml from 'highlight.js/lib/languages/yaml';
-import React, { createElement, Fragment, MouseEventHandler, useContext, useMemo, useState } from 'react';
+import React, {
+  createElement,
+  DetailedHTMLProps,
+  Fragment,
+  ImgHTMLAttributes,
+  MouseEventHandler,
+  useContext,
+  useMemo,
+  useState
+} from 'react';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax';
 import rehypeReact from 'rehype-react';
@@ -30,6 +39,7 @@ import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import markdownStyle from '../../styles/markdown.module.css';
 import { SkipExport } from './SkipExport';
+import { ZoomImage } from './zoom-image';
 function toTxt(node: React.ReactNode): string {
   let str = '';
   if (Array.isArray(node)) {
@@ -101,6 +111,7 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
   }
   return mes;
 }
+function useImage() {}
 let processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -157,6 +168,55 @@ let processor = unified()
         const { children } = props;
         let _children = pauseMes(children);
         return <p {...{ ...(props as any), children: undefined }}>{_children}</p>;
+      },
+      img(props: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>) {
+        const img = (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={props.src}
+            alt={props.alt}
+            onClick={(e) => {
+              e.stopPropagation();
+              let modal = Modal.success({
+                icon: null,
+                footer: null,
+                title: null,
+                width: '100vw',
+                style: { top: 0 },
+                styles: {
+                  content: { padding: 0 },
+                },
+                content: (
+                  <>
+                    <div
+                      style={{
+                        position: 'fixed',
+                        left: 0,
+                        top: 0,
+                        width: '100%',
+                        height: '100dvh',
+                        overflow: 'auto',
+                        zIndex: 99,
+                      }}
+                    >
+                      <span
+                        style={{ cursor: 'pointer', position: 'fixed', top: 0, right: 10, padding: 10, zIndex: 1 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          modal.destroy();
+                        }}
+                      >
+                        ✖
+                      </span>
+                      <ZoomImage src={props.src} alt={props.alt} img={img} />
+                    </div>
+                  </>
+                ),
+              });
+            }}
+          />
+        );
+        return img;
       },
     },
   });

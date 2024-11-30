@@ -44,19 +44,40 @@ export const DraePopup = ({
   }, [text]);
 
   return (
-    <Drawer forceRender={false} open={open} size={'large'} onClose={() => onClose()} placement={screenWidth > 600 ? 'right' : 'bottom'}>
-      <Flex gap={10} style={{ padding: 10, justifyContent: 'flex-end' }} onClick={(e) => {}}>
-        <Button
-          type="primary"
-          onClick={() => {
-            saveTxt2ImgParmas(params);
-            saveSdApiBaseUrl(baseUrl);
-            txt2img(topic, msg, params);
-          }}
-        >
-          生成图片
-        </Button>
-      </Flex>
+    <Drawer
+      forceRender={false}
+      open={open}
+      size={'large'}
+      onClose={() => onClose()}
+      placement={screenWidth > 600 ? 'right' : 'bottom'}
+      height={'70%'}
+      footer={
+        <>
+          <Flex gap={10} style={{ padding: 10, justifyContent: 'flex-end' }}>
+            <Button onClick={() => onClose()}>取消</Button>
+            <Button
+              type="primary"
+              onClick={() => {
+                saveTxt2ImgParmas(params);
+                saveSdApiBaseUrl(baseUrl);
+              }}
+            >
+              保存配置
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => {
+                saveTxt2ImgParmas(params);
+                saveSdApiBaseUrl(baseUrl);
+                txt2img(topic, msg, params);
+              }}
+            >
+              生成图片
+            </Button>
+          </Flex>
+        </>
+      }
+    >
       <Spin spinning={loading}>
         <InputPane params={params!} />
       </Spin>
@@ -64,17 +85,6 @@ export const DraePopup = ({
         <Form.Item label="服务地址">
           <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
         </Form.Item>
-        <Flex gap={10} style={{ padding: 10, justifyContent: 'flex-end' }} onClick={(e) => {}}>
-          <Button
-            type="primary"
-            onClick={() => {
-              saveTxt2ImgParmas(params);
-              saveSdApiBaseUrl(baseUrl);
-            }}
-          >
-            保存配置
-          </Button>
-        </Flex>
       </Form>
     </Drawer>
   );

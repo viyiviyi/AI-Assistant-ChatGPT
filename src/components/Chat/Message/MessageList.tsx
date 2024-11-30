@@ -249,7 +249,7 @@ export function MessageList({
         </div>
       </Hidden>
       {drawPopupProps.text && (
-        <FloatButton.Group style={{ right: 30, bottom: 90 }}>
+        <FloatButton.Group style={{ right: 10, bottom: 120 }}>
           <Button
             size="large"
             icon={<PictureOutlined />}

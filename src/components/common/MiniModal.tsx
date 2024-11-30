@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 let zIndex = 99;
 const modalIdxList: number[] = [];
 
-export const Modal = ({ open, content, onClose }: { open: boolean; content: React.ReactNode; onClose: () => void }) => {
+export const MiniModal = ({ open, content, onClose }: { open: boolean; content: React.ReactNode; onClose: () => void }) => {
     const router = useRouter();
     const [index, setIndex] = useState(0);
     const [show, setShow] = useState(false);
