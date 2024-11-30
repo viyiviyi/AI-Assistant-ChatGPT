@@ -14,36 +14,40 @@ export function useTxt2Img(chat: ChatManagement) {
     init(url).then(() => {});
   }, []);
   const { reloadIndex } = useReloadIndex(chat);
-  const txt2img = useCallback(async function (topic: TopicMessage, msg: Message, param: Img2ImgParams) {
-    let idx = topic.messages.indexOf(msg);
-    let imgMsg: Message = {
-      id: getUuid(),
-      groupId: msg.groupId,
-      topicId: topic.id,
-      ctxRole: 'system',
-      createTime: Date.now(),
-      timestamp: msg.timestamp + 0.001,
-      text: '正在生成图片...',
-      skipCtx: true,
-    };
-    topic.messages.splice(idx, 1, ...[msg, imgMsg]);
-    topic.messageMap[imgMsg.id] = imgMsg;
-    reloadIndex(topic, idx);
-    reloadTopic(topic.id);
-    ApiInstance.current
-      .text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param })
-      .then((res) => {
-        imgMsg.text = '';
-        res.images?.forEach((base64) => {
-          imgMsg.text += `![${res.info}](data:image/png;base64,${base64})\n`;
+  const txt2img = useCallback(
+    async function (topic: TopicMessage, msg: Message, param: Img2ImgParams) {
+      let idx = topic.messages.indexOf(msg);
+      let imgMsg: Message = {
+        id: getUuid(),
+        groupId: msg.groupId,
+        topicId: topic.id,
+        ctxRole: 'system',
+        createTime: Date.now(),
+        timestamp: msg.timestamp + 0.001,
+        text: '正在生成图片...',
+        skipCtx: true,
+      };
+      topic.messages.splice(idx, 1, ...[msg, imgMsg]);
+      topic.messageMap[imgMsg.id] = imgMsg;
+      reloadIndex(topic, idx);
+      reloadTopic(topic.id);
+      ApiInstance.current
+        .text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param })
+        .then((res) => {
+          imgMsg.text = '';
+          res.images?.forEach((base64) => {
+            imgMsg.text += `![${res.info}](data:image/png;base64,${base64})\n`;
+          });
+          chat.pushMessage(imgMsg);
+          reloadTopic(topic.id, imgMsg.id);
+        })
+        .catch((err) => {
+          console.error(err);
+          imgMsg.text = '生成图片失败 err:' + err.status;
+          reloadTopic(topic.id, imgMsg.id);
         });
-        chat.pushMessage(imgMsg);
-        reloadTopic(topic.id, imgMsg.id);
-      })
-      .catch((a) => {
-        imgMsg.text = '生成图片失败';
-        reloadTopic(topic.id, imgMsg.id);
-      });
-  }, []);
+    },
+    [chat, reloadIndex]
+  );
   return { txt2img };
 }

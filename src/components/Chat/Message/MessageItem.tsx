@@ -193,6 +193,7 @@ export const MessageItem = ({
 
   // 下方悬浮按钮
   const Extend = useMemo(() => {
+    if (msg.skipCtx) return <></>;
     return (
       <div className={styleCss.message_extend_but} style={{ ...style, zIndex: 9 }}>
         <Divider style={{ margin: 0 }}>
@@ -223,7 +224,7 @@ export const MessageItem = ({
         </Divider>
       </div>
     );
-  }, [aiService?.customContext, onPush, onSned, style]);
+  }, [aiService?.customContext, msg.skipCtx, onPush, onSned, style]);
   const EditUtil = useMemo(
     () => (
       <div
@@ -667,7 +668,7 @@ export const MessageItem = ({
           </div>
         </div>
       </div>
-      <Hidden hidden={!!loadingMsgs[msg.id] || msg.skipCtx}>{Extend}</Hidden>
+      <Hidden hidden={!!loadingMsgs[msg.id]}>{Extend}</Hidden>
     </div>
   );
 };
