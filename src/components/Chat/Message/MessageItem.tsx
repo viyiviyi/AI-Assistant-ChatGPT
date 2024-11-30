@@ -667,7 +667,7 @@ export const MessageItem = ({
           </div>
         </div>
       </div>
-      <Hidden hidden={!!loadingMsgs[msg.id]}>{Extend}</Hidden>
+      <Hidden hidden={!!loadingMsgs[msg.id] || msg.skipCtx}>{Extend}</Hidden>
     </div>
   );
 };

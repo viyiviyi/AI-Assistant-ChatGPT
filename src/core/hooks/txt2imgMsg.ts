@@ -6,12 +6,14 @@ import { ChatManagement } from '../ChatManagement';
 import { init } from '../drawApi/init';
 import { ApiInstance, getSdApiBaseUrl, Img2ImgParams } from '../drawApi/storage';
 import { getUuid } from '../utils/utils';
+import { useReloadIndex } from './hooks';
 
 export function useTxt2Img(chat: ChatManagement) {
   useEffect(() => {
     let url = getSdApiBaseUrl();
     init(url).then(() => {});
   }, []);
+  const { reloadIndex } = useReloadIndex(chat);
   const txt2img = useCallback(async function (topic: TopicMessage, msg: Message, param: Img2ImgParams) {
     let idx = topic.messages.indexOf(msg);
     let imgMsg: Message = {
@@ -20,11 +22,13 @@ export function useTxt2Img(chat: ChatManagement) {
       topicId: topic.id,
       ctxRole: 'system',
       createTime: Date.now(),
-      timestamp: msg.timestamp + 1,
+      timestamp: msg.timestamp + 0.001,
       text: '正在生成图片...',
       skipCtx: true,
     };
     topic.messages.splice(idx, 1, ...[msg, imgMsg]);
+    topic.messageMap[imgMsg.id] = imgMsg;
+    reloadIndex(topic, idx);
     reloadTopic(topic.id);
     ApiInstance.current
       .text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param })
@@ -33,6 +37,7 @@ export function useTxt2Img(chat: ChatManagement) {
         res.images?.forEach((base64) => {
           imgMsg.text += `![${res.info}](data:image/png;base64,${base64})\n`;
         });
+        chat.pushMessage(imgMsg);
         reloadTopic(topic.id, imgMsg.id);
       })
       .catch((a) => {

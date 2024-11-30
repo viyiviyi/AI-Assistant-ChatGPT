@@ -148,8 +148,29 @@ let processor = unified()
       },
       code: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { className, children } = props;
+        let times = 0;
+        let timer = setTimeout(() => {}, 0);
         return (
-          <code className={className}>
+          <code
+            className={className}
+            onClick={(e) => {
+              times++;
+              if (times > 2) {
+                let selection = window.getSelection();
+                if (selection == null) return;
+                let range = document.createRange();
+                range.selectNodeContents(e.target as any);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                times = 0;
+                return;
+              }
+              clearTimeout(timer);
+              timer = setTimeout(() => {
+                times = 0;
+              }, 400);
+            }}
+          >
             <SkipExport>
               <CopyOutlined
                 onClick={() => {
@@ -167,7 +188,32 @@ let processor = unified()
       p: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { children } = props;
         let _children = pauseMes(children);
-        return <p {...{ ...(props as any), children: undefined }}>{_children}</p>;
+        let times = 0;
+        let timer = setTimeout(() => {}, 0);
+        return (
+          <p
+            {...{ ...(props as any), children: undefined }}
+            onClick={(e) => {
+              times++;
+              if (times > 2) {
+                let selection = window.getSelection();
+                if (selection == null) return;
+                let range = document.createRange();
+                range.selectNodeContents(e.target as any);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                times = 0;
+                return;
+              }
+              clearTimeout(timer);
+              timer = setTimeout(() => {
+                times = 0;
+              }, 400);
+            }}
+          >
+            {_children}
+          </p>
+        );
       },
       img(props: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>) {
         const img = (
@@ -267,7 +313,7 @@ const _MarkdownView = ({
     setTimer(
       setTimeout(() => {
         setChrckTimes(0);
-      }, 500)
+      }, 400)
     );
   };
   return (
