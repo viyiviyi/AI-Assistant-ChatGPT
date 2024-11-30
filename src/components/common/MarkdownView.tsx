@@ -208,7 +208,7 @@ let processor = unified()
                       >
                         ✖
                       </span>
-                      <ZoomImage src={props.src} alt={props.alt} img={img} />
+                      <ZoomImage src={props.src} alt={props.alt} />
                     </div>
                   </>
                 ),
