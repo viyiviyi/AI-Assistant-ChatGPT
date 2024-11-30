@@ -60,7 +60,7 @@ export const DraePopup = ({
       <Spin spinning={loading}>
         <InputPane params={params!} />
       </Spin>
-      <Form>
+      <Form style={{ padding: 8 }}>
         <Form.Item label="服务地址">
           <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
         </Form.Item>

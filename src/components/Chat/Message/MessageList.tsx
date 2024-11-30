@@ -251,6 +251,7 @@ export function MessageList({
       {drawPopupProps.text && (
         <FloatButton.Group style={{ right: 30, bottom: 90 }}>
           <Button
+            size="large"
             icon={<PictureOutlined />}
             onClick={(e) => {
               drawPopupProps.open = true;
