@@ -81,6 +81,15 @@ a {
   line-height: 1.5 !important;
   font-family: revert-layer !important;
 }
+.ant-input-number {
+  width: 100%;
+}
+.ant-select-selector {
+  width: 100%;
+}
+.ant-form-item-label {
+  padding: 0 !important;
+}
 p .q {
   color: orange;
 }

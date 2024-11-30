@@ -122,7 +122,7 @@ export const MessageItem = ({
       </Hidden>
       <span style={{ marginLeft: 16 }}></span>
       <SkipExport>
-        <Hidden hidden={!!loadingMsgs[msg.id]}>
+        <Hidden hidden={!!loadingMsgs[msg.id] || msg.skipCtx}>
           <EditOutlined
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
@@ -134,24 +134,28 @@ export const MessageItem = ({
       </SkipExport>
       <span style={{ marginLeft: 16 }}></span>
       <SkipExport>
-        <CopyOutlined
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => {
-            if (copy(msg.text.toString())) {
-              messageApi.success('已复制');
-            }
-          }}
-        />
+        {msg.skipCtx || (
+          <CopyOutlined
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              if (copy(msg.text.toString())) {
+                messageApi.success('已复制');
+              }
+            }}
+          />
+        )}
       </SkipExport>
       <span style={{ marginLeft: 16 }}></span>
       <SkipExport>
-        <RollbackOutlined
-          onMouseDown={(e) => e.preventDefault()}
-          style={{ cursor: 'pointer' }}
-          onClick={() => {
-            rBak(msg);
-          }}
-        />
+        {msg.skipCtx || (
+          <RollbackOutlined
+            onMouseDown={(e) => e.preventDefault()}
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              rBak(msg);
+            }}
+          />
+        )}
       </SkipExport>
       <span style={{ marginLeft: '30px' }}></span>
       {loadingMsgs[msg.id] ? (
@@ -374,7 +378,7 @@ export const MessageItem = ({
               markdown={chat.config.disableStrikethrough ? successLines.replaceAll('~', '～') : successLines}
               doubleClick={() => {
                 setMessage({ text: msg.text });
-                setEdit(true);
+                if (!msg.skipCtx) setEdit(true);
               }}
               // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
             />

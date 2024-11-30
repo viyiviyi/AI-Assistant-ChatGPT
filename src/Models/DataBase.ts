@@ -57,6 +57,7 @@ export interface Message {
   topicId: string; // 话题ID
   ctxRole: CtxRole;
   text: string; // 消息内容
+  createTime?: number;
   timestamp: number; // 时间戳
   updateTime?: number;
   deleteTime?: number;
@@ -72,6 +73,7 @@ export interface Message {
     timestamp: string;
     snippet: string;
   }[];
+  skipCtx?: boolean;
 }
 
 export interface Topic {

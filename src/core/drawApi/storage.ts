@@ -1,0 +1,42 @@
+import { DefaultApi, Img2imgapiSdapiV1Img2imgPostRequest } from './apis';
+import { PromptStyleItem, SamplerItem, SchedulerItem, SdModelItem, SdVaeItem, UpscalerItem } from './models';
+import { Configuration } from './runtime';
+
+export type Img2ImgParams = Img2imgapiSdapiV1Img2imgPostRequest['stableDiffusionProcessingImg2Img'] & {
+  overrideSettings: { [key: string]: string | number | boolean };
+};
+
+export const cacheStore: {
+  samplerList?: SamplerItem[];
+  scheduleTypeList?: SchedulerItem[];
+  upscalers?: UpscalerItem[];
+  styles?: PromptStyleItem[];
+  modelList?: SdModelItem[];
+  vaeList?: SdVaeItem[];
+  isInit: boolean;
+} = { isInit: false };
+
+export let ApiInstance = { current: new DefaultApi(new Configuration({})) };
+
+let baseUrl = '';
+export const saveSdApiBaseUrl = (url: string) => {
+  baseUrl = url;
+  if (window) localStorage.setItem('sdApiBaseUrl', url);
+};
+export const getSdApiBaseUrl = () => {
+  if (baseUrl) return baseUrl;
+  if (window) baseUrl = localStorage.getItem('sdApiBaseUrl') || '';
+  return baseUrl;
+};
+
+let txt2ImgParams:Img2ImgParams;
+export const getTxt2ImgParmas = () => {
+  if (txt2ImgParams) return txt2ImgParams;
+  if (window) txt2ImgParams = JSON.parse(localStorage.getItem('txt2ImgParams') || '{}');
+  return txt2ImgParams;
+};
+
+export const saveTxt2ImgParmas = (params: Img2ImgParams) => {
+  txt2ImgParams = params;
+  if (window) localStorage.setItem('txt2ImgParams', JSON.stringify(params));
+};

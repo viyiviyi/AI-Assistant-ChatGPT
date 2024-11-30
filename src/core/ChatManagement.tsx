@@ -1,47 +1,36 @@
-import { IndexedDB } from "@/core/db/IndexDb";
-import { Extensions } from "@/extensions/Extensions";
-import { NameMacrosPrompt } from "@/middleware/scripts/NameMacrosPrompt.middleware";
-import { CtxRole } from "@/Models/CtxRole";
-import {
-  GptConfig,
-  Group,
-  GroupConfig,
-  Message,
-  Topic,
-  User,
-  VirtualRole
-} from "@/Models/DataBase";
-import { TopicMessage } from "@/Models/Topic";
-import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { VirtualRoleSettingItem } from "@/Models/VirtualRoleSettingItem";
-import React from "react";
-import { BgConfig } from "./BgImageStore";
-import {
-  getDbInstance as getInstance,
-  setSkipDbSave
-} from "./db/IndexDbInstance";
-import { getUuid } from "./utils/utils";
+import { IndexedDB } from '@/core/db/IndexDb';
+import { Extensions } from '@/extensions/Extensions';
+import { NameMacrosPrompt } from '@/middleware/scripts/NameMacrosPrompt.middleware';
+import { CtxRole } from '@/Models/CtxRole';
+import { GptConfig, Group, GroupConfig, Message, Topic, User, VirtualRole } from '@/Models/DataBase';
+import { TopicMessage } from '@/Models/Topic';
+import { VirtualRoleSetting } from '@/Models/VirtualRoleSetting';
+import { VirtualRoleSettingItem } from '@/Models/VirtualRoleSettingItem';
+import React from 'react';
+import { BgConfig } from './BgImageStore';
+import { getDbInstance as getInstance, setSkipDbSave } from './db/IndexDbInstance';
+import { getUuid } from './utils/utils';
 
 const defaultChat: IChat = {
-  id: "",
-  user: { id: "", name: "", groupId: "" },
-  group: { id: "", name: "", index: 0 },
-  virtualRole: { id: "", name: "", groupId: "", bio: "", settings: [] },
+  id: '',
+  user: { id: '', name: '', groupId: '' },
+  group: { id: '', name: '', index: 0 },
+  virtualRole: { id: '', name: '', groupId: '', bio: '', settings: [] },
   topics: [],
   config: {
-    id: "",
-    groupId: "",
-    defaultVirtualRole: "",
+    id: '',
+    groupId: '',
+    defaultVirtualRole: '',
     enableVirtualRole: false,
-    activityTopicId: "",
-    baseUrl: "",
-    botType: "ChatGPT",
+    activityTopicId: '',
+    baseUrl: '',
+    botType: 'ChatGPT',
   },
   gptConfig: {
-    id: "",
-    groupId: "",
-    model: "",
-    role: "user",
+    id: '',
+    groupId: '',
+    model: '',
+    role: 'user',
     n: 1,
     msgCount: 1,
   },
@@ -91,23 +80,23 @@ export class ChatManagement {
       await IndexedDB.init();
       const groups = await getInstance()
         .queryAll<Group>({
-          tableName: "Group",
+          tableName: 'Group',
         })
         .then((gs) => gs.sort((l, n) => (l.index || 0) - (n.index || 0)));
       if (!groups.length) {
         await this.createGroup().then((v) => groups.push(v));
       }
       const users = await getInstance()?.queryAll<User>({
-        tableName: "User",
+        tableName: 'User',
       });
       const groupConfigs = await getInstance()?.queryAll<GroupConfig>({
-        tableName: "GroupConfig",
+        tableName: 'GroupConfig',
       });
       const virtualRoles = await getInstance()?.queryAll<VirtualRole>({
-        tableName: "VirtualRole",
+        tableName: 'VirtualRole',
       });
       const gptConfigs = await getInstance()?.queryAll<GptConfig>({
-        tableName: "GptConfig",
+        tableName: 'GptConfig',
       });
       for (let i = 0; i < groups.length; i++) {
         let g = groups[i];
@@ -122,7 +111,7 @@ export class ChatManagement {
         let virtualRole = virtualRoles.find((f) => f.groupId == g.id);
         if (!virtualRole) virtualRole = await this.createVirtualRoleBio(g.id);
         virtualRole.settings = virtualRole.settings.map((v) => {
-          if (typeof v == "string") {
+          if (typeof v == 'string') {
             return {
               checked: true,
               key: getUuid(),
@@ -137,13 +126,11 @@ export class ChatManagement {
               ],
             };
           } else {
-            v.ctx.forEach(
-              (i) => (i.checked = i.checked === undefined ? true : i.checked)
-            );
+            v.ctx.forEach((i) => (i.checked = i.checked === undefined ? true : i.checked));
           }
           return v;
         });
-        if (!config.botType) config.botType = "ChatGPT";
+        if (!config.botType) config.botType = 'ChatGPT';
         let topics: TopicMessage[] = [];
         const chat: IChat = {
           id: g.id,
@@ -156,7 +143,7 @@ export class ChatManagement {
         };
         if (!chat.group.createTime) {
           chat.group.createTime = Date.now();
-          chat.gptConfig.role = "user";
+          chat.gptConfig.role = 'user';
         }
         if (i == 0) await this.loadTopics(chat);
         this.chatList.push(chat);
@@ -169,7 +156,7 @@ export class ChatManagement {
     let topics: TopicMessage[] = [];
     topics = await getInstance()
       .query<Topic>({
-        tableName: "Topic",
+        tableName: 'Topic',
         condition: (v) => v.groupId == chat.group.id,
       })
       .then((v) => {
@@ -184,8 +171,7 @@ export class ChatManagement {
       });
     chat.topics = topics;
     for (let i = 0; i < topics.length; i++) {
-      if (topics[i].id == chat.config.activityTopicId)
-        await this.loadMessage(topics[i], true);
+      if (topics[i].id == chat.config.activityTopicId) await this.loadMessage(topics[i], true);
       // else this.loadMessage(topics[i], true);
     }
   }
@@ -198,14 +184,13 @@ export class ChatManagement {
     // if (topic.loadAll) return;
     topic.loadAll = true;
     let msgs = await getInstance()?.query<Message>({
-      tableName: "Message",
-      condition: (v) =>
-        v.groupId == topic.groupId && v.topicId == topic.id && !v.deleteTime,
+      tableName: 'Message',
+      condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id && !v.deleteTime,
       //  && (!onlyTitle || /^#{1,5}\s/.test(v.text)),
     });
     // 排序
     msgs
-      .sort((s, n) => s.timestamp - n.timestamp)
+      .sort((s, n) => s.timestamp - n.timestamp || (n.createTime || 0) - (s.createTime || 0))
       .forEach((v) => {
         topic.messageMap[v.id] = v;
       });
@@ -222,7 +207,7 @@ export class ChatManagement {
       let m = v.text.match(/^#+/);
       topic.titleTree.push({
         lv: m![0].length as 1 | 2 | 3 | 4 | 5,
-        title: v.text.substring(0, 50).replace(/^#+/, "").trim(),
+        title: v.text.substring(0, 50).replace(/^#+/, '').trim(),
         msgId: v.id,
         index: idx,
       });
@@ -264,13 +249,7 @@ export class ChatManagement {
       name: string;
     }>;
   } {
-    return ChatManagement.getAskContext(
-      this.virtualRole,
-      topic,
-      index,
-      this.gptConfig.msgCount,
-      this.config.enableVirtualRole
-    );
+    return ChatManagement.getAskContext(this.virtualRole, topic, index, this.gptConfig.msgCount, this.config.enableVirtualRole);
   }
   static getAskContext(
     virtualRole: VirtualRole,
@@ -320,11 +299,7 @@ export class ChatManagement {
       content: string;
       name: string;
     }> = [];
-    if (
-      topic.overrideSettings?.useConfig === undefined
-        ? enableVirtualRole
-        : topic.overrideSettings?.useConfig
-    ) {
+    if (topic.overrideSettings?.useConfig === undefined ? enableVirtualRole : topic.overrideSettings?.useConfig) {
       // 在设定内的动态上下文
       let autoCtxBefore: Message[] = [];
       let autoCtxAfter: Message[] = [];
@@ -334,9 +309,9 @@ export class ChatManagement {
           topic.overrideVirtualRole
         ).map((v) => {
           return {
-            id: "",
-            groupId: "",
-            topicId: "",
+            id: '',
+            groupId: '',
+            topicId: '',
             ctxRole: v.role,
             text: v.content,
             timestamp: 0,
@@ -349,9 +324,9 @@ export class ChatManagement {
           undefined
         ).map((v) => {
           return {
-            id: "",
-            groupId: "",
-            topicId: "",
+            id: '',
+            groupId: '',
+            topicId: '',
             ctxRole: v.role,
             text: v.content,
             timestamp: 0,
@@ -364,9 +339,9 @@ export class ChatManagement {
           undefined
         ).map((v) => {
           return {
-            id: "",
-            groupId: "",
-            topicId: "",
+            id: '',
+            groupId: '',
+            topicId: '',
             ctxRole: v.role,
             text: v.content,
             timestamp: 0,
@@ -379,9 +354,9 @@ export class ChatManagement {
           topic.overrideVirtualRole
         ).map((v) => {
           return {
-            id: "",
-            groupId: "",
-            topicId: "",
+            id: '',
+            groupId: '',
+            topicId: '',
             ctxRole: v.role,
             text: v.content,
             timestamp: 0,
@@ -391,41 +366,31 @@ export class ChatManagement {
       messages = [...autoCtxBefore, ...messages, ...autoCtxAfter];
     }
     // 按照消息上下文限制截断消息
-    let ctxCount =
-      topic.overrideSettings?.msgCount === undefined
-        ? historyLength
-        : topic.overrideSettings?.msgCount;
+    let ctxCount = topic.overrideSettings?.msgCount === undefined ? historyLength : topic.overrideSettings?.msgCount;
     if (ctxCount > 0 && messages.length > ctxCount) {
       // 不在记忆范围内 且勾选了的消息
-      let checkedMessage = messages
-        .slice(0, messages.length - ctxCount)
-        .filter((v) => v.checked);
+      let checkedMessage = messages.slice(0, messages.length - ctxCount).filter((v) => v.checked);
       // 记忆范围内的消息
       messages = [...checkedMessage, ...messages.slice(-ctxCount)];
     }
-    history = messages.map((v) => {
-      return {
-        role: v.ctxRole,
-        content: v.text,
-        name: this.getNameByRole(v.ctxRole, virtualRole),
-      };
-    });
-    if (
-      topic.overrideSettings?.useConfig === undefined
-        ? enableVirtualRole
-        : topic.overrideSettings?.useConfig
-    ) {
-      let ctxContent = history.map((v) => v.content).join(" \n");
+    history = messages
+      .filter((f) => !f.skipCtx)
+      .map((v) => {
+        return {
+          role: v.ctxRole,
+          content: v.text,
+          name: this.getNameByRole(v.ctxRole, virtualRole),
+        };
+      });
+    if (topic.overrideSettings?.useConfig === undefined ? enableVirtualRole : topic.overrideSettings?.useConfig) {
+      let ctxContent = history.map((v) => v.content).join(' \n');
       historyBefore = [
         ...(virtualRole.bio
           ? [
               {
-                role: ChatManagement.parseTextToRole(virtualRole.bio, "system"),
+                role: ChatManagement.parseTextToRole(virtualRole.bio, 'system'),
                 content: ChatManagement.parseText(virtualRole.bio),
-                name: this.getNameByRole(
-                  ChatManagement.parseTextToRole(virtualRole.bio, "system"),
-                  virtualRole
-                ),
+                name: this.getNameByRole(ChatManagement.parseTextToRole(virtualRole.bio, 'system'), virtualRole),
               },
             ]
           : []),
@@ -493,16 +458,9 @@ export class ChatManagement {
   }
 
   static getNameByRole(role?: CtxRole, virtualRole?: VirtualRole, user?: User) {
-    return role === "system"
-      ? "system"
-      : role === "assistant"
-      ? virtualRole?.enName || "assistant"
-      : user?.enName || "user";
+    return role === 'system' ? 'system' : role === 'assistant' ? virtualRole?.enName || 'assistant' : user?.enName || 'user';
   }
-  static mgSetting(
-    ctxList: VirtualRoleSettingItem[],
-    start: number
-  ): VirtualRoleSettingItem | undefined {
+  static mgSetting(ctxList: VirtualRoleSettingItem[], start: number): VirtualRoleSettingItem | undefined {
     let lastSetting: VirtualRoleSettingItem | undefined = undefined;
     if (ctxList.length <= start || start <= 0) return;
     if (!ctxList[start].role) return;
@@ -516,14 +474,11 @@ export class ChatManagement {
    * @param item
    * @returns
    */
-  static calcChecked(
-    item: VirtualRoleSettingItem,
-    ctxTxt: string | undefined
-  ): boolean {
+  static calcChecked(item: VirtualRoleSettingItem, ctxTxt: string | undefined): boolean {
     if (!ctxTxt) return false;
     if (!item.keyWords || item.keyWords.length == 0) return false;
-    if (item.keyWords.includes("all")) return true;
-    let isDynamic = new RegExp(item.keyWords.join("|")).test(ctxTxt);
+    if (item.keyWords.includes('all')) return true;
+    let isDynamic = new RegExp(item.keyWords.join('|')).test(ctxTxt);
     return isDynamic;
   }
   static parseSetting(
@@ -541,31 +496,17 @@ export class ChatManagement {
     }[] = [];
 
     inputSettings
-      .filter((v) =>
-        overrideCheck
-          ? overrideCheck.findIndex((f) => f.key == v.key) >= 0
-          : v.checked
-      )
+      .filter((v) => (overrideCheck ? overrideCheck.findIndex((f) => f.key == v.key) >= 0 : v.checked))
       // 如果开启动态匹配，则整个设定至少需要有一项能匹配才会生效
-      .filter(
-        (v) =>
-          !v.dynamic || v.ctx.findIndex((f) => this.calcChecked(f, ctxTxt)) >= 0
-      )
-      .map(
-        (v) =>
-          (v.extensionId
-            ? Extensions.getExtension(v.extensionId)?.getSettings() || v
-            : v) as VirtualRoleSetting
-      )
+      .filter((v) => !v.dynamic || v.ctx.findIndex((f) => this.calcChecked(f, ctxTxt)) >= 0)
+      .map((v) => (v.extensionId ? Extensions.getExtension(v.extensionId)?.getSettings() || v : v) as VirtualRoleSetting)
       .forEach((v) => {
         let overrideCtx = overrideCheck?.find((f) => f.key == v.key);
         let lastSetting: VirtualRoleSettingItem | undefined = undefined;
         v.ctx
           .map((c) => ({
             ...c,
-            checked: overrideCtx
-              ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0
-              : c.checked,
+            checked: overrideCtx ? overrideCtx.ctx.findIndex((f) => f.key == c.key) >= 0 : c.checked,
           }))
           .forEach((c) => {
             let checked = this.calcChecked(c, ctxTxt);
@@ -578,12 +519,8 @@ export class ChatManagement {
                 lastSetting.checked = c.checked && !v.dynamic; // 如果开启了动态匹配，先设置为false，因为可能出现向上合并的项一个都不能匹配到
               }
             } else {
-              if (
-                lastSetting &&
-                c.checked &&
-                (!v.dynamic || !c?.keyWords?.length || checked)
-              ) {
-                lastSetting.content += "\n" + c.content;
+              if (lastSetting && c.checked && (!v.dynamic || !c?.keyWords?.length || checked)) {
+                lastSetting.content += '\n' + c.content;
                 if (checked) lastSetting.checked = true;
               }
             }
@@ -597,29 +534,25 @@ export class ChatManagement {
   static parseText(text: string): string {
     return text
       .trim()
-      .replace(/^\//, "")
-      .replace(/^\\/, "")
-      .replace(/^::?/, "")
-      .replace(/^\/::?/, "");
+      .replace(/^\//, '')
+      .replace(/^\\/, '')
+      .replace(/^::?/, '')
+      .replace(/^\/::?/, '');
   }
-  static parseTextToRole(text: string, defaultRole: CtxRole = "user"): CtxRole {
-    if (text.startsWith("::") || text.startsWith("/::")) return "system";
-    if (text.startsWith("/")) return "assistant";
-    if (text.startsWith("\\")) return "user";
+  static parseTextToRole(text: string, defaultRole: CtxRole = 'user'): CtxRole {
+    if (text.startsWith('::') || text.startsWith('/::')) return 'system';
+    if (text.startsWith('/')) return 'assistant';
+    if (text.startsWith('\\')) return 'user';
     return defaultRole;
   }
 
   async newTopic(name: string) {
-    let topic = await ChatManagement.createTopic(
-      this.group.id,
-      name.substring(0, 100) || new Date().toLocaleString(),
-      {
-        id: getUuid(),
-        groupId: this.group.id,
-        name: name.substring(0, 100) || new Date().toLocaleString(),
-        createdAt: Date.now(),
-      }
-    );
+    let topic = await ChatManagement.createTopic(this.group.id, name.substring(0, 100) || new Date().toLocaleString(), {
+      id: getUuid(),
+      groupId: this.group.id,
+      name: name.substring(0, 100) || new Date().toLocaleString(),
+      createdAt: Date.now(),
+    });
     let _topic: TopicMessage = {
       ...topic,
       messages: [],
@@ -631,10 +564,7 @@ export class ChatManagement {
     return _topic;
   }
   getActivityTopic(): TopicMessage | undefined {
-    return (
-      this.topics.find((f) => f.id === this.config.activityTopicId) ||
-      this.topics.slice(-1)[0]
-    );
+    return this.topics.find((f) => f.id === this.config.activityTopicId) || this.topics.slice(-1)[0];
   }
   async saveTopic(topicId: string, name: string, cloudTopicId?: string) {
     const t = this.topics.find((f) => f.id == topicId);
@@ -643,7 +573,7 @@ export class ChatManagement {
       t.cloudTopicId = cloudTopicId || t.cloudTopicId;
       t.updateTime = Date.now();
       await getInstance()?.update_by_primaryKey<Topic>({
-        tableName: "Topic",
+        tableName: 'Topic',
         value: t.id,
         handle: (r) => {
           return Object.assign(r, t, {
@@ -657,7 +587,7 @@ export class ChatManagement {
   }
   async saveConfig() {
     await getInstance()?.update_by_primaryKey<GroupConfig>({
-      tableName: "GroupConfig",
+      tableName: 'GroupConfig',
       value: this.config.id,
       handle: (r) => {
         this.config.updateTime = Date.now();
@@ -668,7 +598,7 @@ export class ChatManagement {
   }
   async saveUser() {
     await getInstance()?.update_by_primaryKey<User>({
-      tableName: "User",
+      tableName: 'User',
       value: this.user.id,
       handle: (r) => {
         this.user.updateTime = Date.now();
@@ -679,7 +609,7 @@ export class ChatManagement {
   }
   async saveGroup() {
     await getInstance()?.update_by_primaryKey<Group>({
-      tableName: "Group",
+      tableName: 'Group',
       value: this.group.id,
       handle: (r) => {
         this.group.updateTime = Date.now();
@@ -690,7 +620,7 @@ export class ChatManagement {
   }
   async saveVirtualRoleBio() {
     await getInstance()?.update_by_primaryKey<VirtualRole>({
-      tableName: "VirtualRole",
+      tableName: 'VirtualRole',
       value: this.virtualRole.id,
       handle: (r) => {
         this.virtualRole.updateTime = Date.now();
@@ -701,7 +631,7 @@ export class ChatManagement {
   }
   async saveGptConfig() {
     await getInstance()?.update_by_primaryKey<GptConfig>({
-      tableName: "GptConfig",
+      tableName: 'GptConfig',
       value: this.gptConfig.id,
       handle: (r) => {
         this.gptConfig.updateTime = Date.now();
@@ -710,35 +640,28 @@ export class ChatManagement {
       },
     });
   }
-  static async createTopic(
-    groupId: string,
-    name?: string,
-    topic?: Topic
-  ): Promise<Topic> {
+  static async createTopic(groupId: string, name?: string, topic?: Topic): Promise<Topic> {
     const data: Topic = topic || {
       id: getUuid(),
       groupId,
-      name: name || "",
+      name: name || '',
       createdAt: Date.now(),
     };
-    await getInstance()?.insert<Topic>({ tableName: "Topic", data });
+    await getInstance()?.insert<Topic>({ tableName: 'Topic', data });
     return data;
   }
-  static async createConfig(
-    groupId: string,
-    groupConfig?: GroupConfig
-  ): Promise<GroupConfig> {
+  static async createConfig(groupId: string, groupConfig?: GroupConfig): Promise<GroupConfig> {
     const data: GroupConfig = groupConfig || {
       id: getUuid(),
       groupId,
       enableVirtualRole: false,
-      baseUrl: "",
-      activityTopicId: "",
-      botType: "ChatGPT",
+      baseUrl: '',
+      activityTopicId: '',
+      botType: 'ChatGPT',
       middleware: [NameMacrosPrompt.key],
     };
     await getInstance()?.insert<GroupConfig>({
-      tableName: "GroupConfig",
+      tableName: 'GroupConfig',
       data,
     });
     return data;
@@ -747,48 +670,42 @@ export class ChatManagement {
     const data: User = user || {
       id: getUuid(),
       groupId,
-      name: "用户",
+      name: '用户',
     };
-    await getInstance()?.insert<User>({ tableName: "User", data });
+    await getInstance()?.insert<User>({ tableName: 'User', data });
     return data;
   }
   static async createGroup(group?: Group): Promise<Group> {
     if (group && !group.createTime) group.createTime = Date.now();
     const data: Group = group || {
       id: getUuid(),
-      name: "新建会话",
+      name: '新建会话',
       index: this.chatList.length,
       createTime: Date.now(),
     };
-    await getInstance()?.insert<Group>({ tableName: "Group", data });
+    await getInstance()?.insert<Group>({ tableName: 'Group', data });
     return data;
   }
-  static async createVirtualRoleBio(
-    groupId: string,
-    virtualRole?: VirtualRole
-  ): Promise<VirtualRole> {
+  static async createVirtualRoleBio(groupId: string, virtualRole?: VirtualRole): Promise<VirtualRole> {
     const data: VirtualRole = virtualRole || {
       id: getUuid(),
-      name: "助理",
+      name: '助理',
       groupId,
       bio: ``,
       settings: [],
     };
     await getInstance()?.insert<VirtualRole>({
-      tableName: "VirtualRole",
+      tableName: 'VirtualRole',
       data,
     });
     return data;
   }
-  static async createGptConfig(
-    groupId: string,
-    gptConfig?: GptConfig
-  ): Promise<GptConfig> {
+  static async createGptConfig(groupId: string, gptConfig?: GptConfig): Promise<GptConfig> {
     const data: GptConfig = gptConfig || {
       id: getUuid(),
       groupId,
-      role: "user",
-      model: "gpt-3.5-turbo",
+      role: 'user',
+      model: 'gpt-3.5-turbo',
       max_tokens: 1024,
       top_p: 0.5,
       temperature: 0.7,
@@ -797,12 +714,12 @@ export class ChatManagement {
       presence_penalty: 0.7,
       frequency_penalty: 1.0,
     };
-    await getInstance()?.insert<GptConfig>({ tableName: "GptConfig", data });
+    await getInstance()?.insert<GptConfig>({ tableName: 'GptConfig', data });
     return data;
   }
   static async createMessage(message: Message) {
     await getInstance()?.insert<Message>({
-      tableName: "Message",
+      tableName: 'Message',
       data: message,
     });
   }
@@ -824,10 +741,7 @@ export class ChatManagement {
     this.chatList.push(chat);
     return chat;
   }
-  async pushMessage(
-    message: Message,
-    insertIndex: number = -1
-  ): Promise<Message> {
+  async pushMessage(message: Message, insertIndex: number = -1): Promise<Message> {
     message.text = message.text.trim();
     // 让纯xml内容显示正常
     let topic = this.topics.find((f) => f.id == message.topicId);
@@ -841,7 +755,7 @@ export class ChatManagement {
       let msg = topic.messageMap[message.id]; //.messages.find((f) => f.id == message.id);
       if (msg) {
         await getInstance()?.update_by_primaryKey<Message>({
-          tableName: "Message",
+          tableName: 'Message',
           value: msg.id,
           handle: (r) => {
             if (r.text != message.text) message.updateTime = Date.now();
@@ -855,8 +769,7 @@ export class ChatManagement {
     } else {
       message.id = getUuid();
     }
-    if (insertIndex !== -1)
-      topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
+    if (insertIndex !== -1) topic.messages.splice(insertIndex, 1, ...[message, previousMessage!]);
     else topic.messages.push(message);
     topic.messageMap[message.id] = message;
     message.updateTime = Date.now();
@@ -874,7 +787,7 @@ export class ChatManagement {
     }
     if (this.config.enableSync) {
       return getInstance()?.update_by_primaryKey<Message>({
-        tableName: "Message",
+        tableName: 'Message',
         value: message.id,
         handle: (r) => {
           message.deleteTime = Date.now();
@@ -885,7 +798,7 @@ export class ChatManagement {
     }
     if (message.id) {
       return getInstance()?.delete_by_primaryKey({
-        tableName: "Message",
+        tableName: 'Message',
         value: message.id,
       });
     }
@@ -895,7 +808,7 @@ export class ChatManagement {
     if (delIdx > -1) {
       this.topics.splice(delIdx, 1);
       await getInstance()?.delete_by_primaryKey({
-        tableName: "Topic",
+        tableName: 'Topic',
         value: topic.id,
       });
     }
@@ -903,7 +816,7 @@ export class ChatManagement {
   static async saveSort() {
     this.chatList.forEach((chat, idx) => {
       getInstance()?.update_by_primaryKey<Group>({
-        tableName: "Group",
+        tableName: 'Group',
         value: chat.group.id,
         handle: (r) => {
           r.index = idx;
@@ -914,31 +827,31 @@ export class ChatManagement {
   }
   static async remove(groupId: string, replace?: IChat) {
     await getInstance()?.delete<User>({
-      tableName: "User",
+      tableName: 'User',
       condition: (v) => v.groupId == groupId,
     });
     await getInstance()?.delete<Group>({
-      tableName: "Group",
+      tableName: 'Group',
       condition: (v) => v.id == groupId,
     });
     await getInstance()?.delete<GroupConfig>({
-      tableName: "GroupConfig",
+      tableName: 'GroupConfig',
       condition: (v) => v.groupId == groupId,
     });
     await getInstance()?.delete<VirtualRole>({
-      tableName: "VirtualRole",
+      tableName: 'VirtualRole',
       condition: (v) => v.groupId == groupId,
     });
     await getInstance()?.delete<GptConfig>({
-      tableName: "GptConfig",
+      tableName: 'GptConfig',
       condition: (v) => v.groupId == groupId,
     });
     await getInstance()?.delete<Topic>({
-      tableName: "Topic",
+      tableName: 'Topic',
       condition: (v) => v.groupId == groupId,
     });
     await getInstance()?.delete<Message>({
-      tableName: "Message",
+      tableName: 'Message',
       condition: (v) => v.groupId == groupId,
     });
     let delIdx = this.chatList.findIndex((f) => f.group.id == groupId);
@@ -979,7 +892,7 @@ export class ChatManagement {
     );
   }
   async fromJson(json: IChat, isToFirst = true) {
-    if (!json.group.createTime) json.gptConfig.role = "user";
+    if (!json.group.createTime) json.gptConfig.role = 'user';
     let gid = this.group.id;
     const _this: IChat = JSON.parse(JSON.stringify(this.toJson()));
     await ChatManagement.remove(_this.group.id, _this);
@@ -995,10 +908,7 @@ export class ChatManagement {
       id: virtualRoleIdMap[json.virtualRole.id],
       groupId: _this.group.id,
     });
-    await ChatManagement.createVirtualRoleBio(
-      _this.group.id,
-      _this.virtualRole
-    );
+    await ChatManagement.createVirtualRoleBio(_this.group.id, _this.virtualRole);
     Object.assign(_this.gptConfig, json.gptConfig, {
       id: getUuid(),
       groupId: _this.group.id,
@@ -1011,15 +921,10 @@ export class ChatManagement {
     });
     await ChatManagement.createUser(_this.group.id, _this.user);
     _this.topics.splice(0, _this.topics.length);
-    if (
-      Array.isArray((json as any).topic) &&
-      Array.isArray((json as any).messages)
-    ) {
-      (json as any)["topics"] = (json as any).topic.map((t: Topic) => ({
+    if (Array.isArray((json as any).topic) && Array.isArray((json as any).messages)) {
+      (json as any)['topics'] = (json as any).topic.map((t: Topic) => ({
         ...t,
-        messages: (json as any).messages.filter(
-          (f: Message) => f.topicId == t.id
-        ),
+        messages: (json as any).messages.filter((f: Message) => f.topicId == t.id),
       }));
     }
     _this.topics.push(...json.topics);
@@ -1069,16 +974,16 @@ let context = {
     obj.topic = topic;
   },
   bgConfig: {
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    backgroundSize: "cover",
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
     opacity: 0.5,
   } as BgConfig,
   setBgConfig: (img?: string) => {},
   loadingMsgs: {} as { [key: string]: { stop: () => void } },
   navList: [],
   reloadNav: (topic: TopicMessage) => {},
-  currentGroup: "",
+  currentGroup: '',
   setCurrentGroup: (groupId: string) => {},
   /**
   这个参数是用来让首页正常渲染的，请不要随便将值设置为 true , 因为会导致渲染全部的消息（包括隐藏的）

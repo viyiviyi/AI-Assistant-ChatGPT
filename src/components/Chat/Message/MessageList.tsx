@@ -1,29 +1,23 @@
-import { Hidden } from "@/components/common/Hidden";
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { useSendMessage } from "@/core/hooks/hooks";
-import {
-  activityScroll,
-  createThrottleAndDebounce,
-  pagesUtil
-} from "@/core/utils/utils";
-import { Message } from "@/Models/DataBase";
-import { TopicMessage } from "@/Models/Topic";
-import { Button } from "antd";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { MessageContext } from "../Chat";
-import { useInput } from "../InputUtil";
-import { MemoInsertInput } from "../InsertInput";
-import { MemoMessageItem } from "./MessageItem";
+import { Hidden } from '@/components/common/Hidden';
+import { DraePopup } from '@/components/drawimg/DrawPopup';
+import { ChatContext, ChatManagement } from '@/core/ChatManagement';
+import { useSendMessage } from '@/core/hooks/hooks';
+import { activityScroll, createThrottleAndDebounce, pagesUtil } from '@/core/utils/utils';
+import { Message } from '@/Models/DataBase';
+import { TopicMessage } from '@/Models/Topic';
+import { PictureOutlined } from '@ant-design/icons';
+import { Button, FloatButton } from 'antd';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { MessageContext } from '../Chat';
+import { useInput } from '../InputUtil';
+import { MemoInsertInput } from '../InsertInput';
+import { MemoMessageItem } from './MessageItem';
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
 const topicRender: {
   [key: string]: (messageId?: string | number, reloadStatus?: boolean) => void;
 } = {};
-export function reloadTopic(
-  topicId: string,
-  messageId?: string | number,
-  reloadStatus: boolean = false
-) {
+export function reloadTopic(topicId: string, messageId?: string | number, reloadStatus: boolean = false) {
   topicRender[topicId] && topicRender[topicId](messageId, reloadStatus);
 }
 
@@ -40,8 +34,7 @@ export function MessageList({
   const { setCite } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
   const [pageConf, setPageConf] = useState({
-    totalPages:
-      Math.ceil(topic.messages.length / (chat.config.pageSize || 20)) || 1,
+    totalPages: Math.ceil(topic.messages.length / (chat.config.pageSize || 20)) || 1,
     pageSize: chat.config.pageSize || 20,
     pageNumber: 1,
     repect: chat.config.pageRepect || 0,
@@ -53,6 +46,7 @@ export function MessageList({
   const renderMessage = useMemo<{
     [key: string]: (reloadStatus?: boolean) => void;
   }>(() => ({}), []);
+  const [drawPopupProps, serDrawPopupProps] = useState({ text: '', open: false, msg: topic.messages[0] });
 
   const msgIdIdxMap = useMemo(() => new Map<string, number>(), []);
   const { sendMessage } = useSendMessage(chat);
@@ -85,7 +79,7 @@ export function MessageList({
     );
     msgIdIdxMap.clear();
     topic.messages.forEach((m, idx) => {
-      msgIdIdxMap.set(m.id + "", idx);
+      msgIdIdxMap.set(m.id + '', idx);
     });
     pageConf.totalPages = totalPages;
     pageConf.pageNumber = pageIndex;
@@ -120,18 +114,7 @@ export function MessageList({
    */
   const rBak = useCallback(
     (v: Message) => {
-      setInput(
-        (m) =>
-          (m ? m + "\n" : m) +
-          (!m
-            ? v.ctxRole == "system"
-              ? "/::"
-              : v.ctxRole == "assistant"
-              ? "/"
-              : ""
-            : "") +
-          v.text
-      );
+      setInput((m) => (m ? m + '\n' : m) + (!m ? (v.ctxRole == 'system' ? '/::' : v.ctxRole == 'assistant' ? '/' : '') : '') + v.text);
       inputRef.current?.focus();
     },
     [inputRef, setInput]
@@ -144,10 +127,7 @@ export function MessageList({
       chat.removeMessage(msg)?.then(() => {
         let idx = msgIdIdxMap.get(msg.id);
         delete renderMessage[msg.id];
-        pageConf.pageNumber = Math.min(
-          Math.ceil(((idx || 0) + 1) / pageConf.pageSize),
-          pageConf.totalPages
-        );
+        pageConf.pageNumber = Math.min(Math.ceil(((idx || 0) + 1) / pageConf.pageSize), pageConf.totalPages);
         setPageConf(pageConf);
         reloadNav(topic);
       });
@@ -161,22 +141,14 @@ export function MessageList({
     let reload = createThrottleAndDebounce((conf) => {
       setPageConf({ ...conf });
     }, 50);
-    topicRender[topic.id] = (
-      messageId?: string | number,
-      reloadStatus: boolean = false
-    ) => {
-      if (typeof messageId == "number") {
-        pageConf.pageNumber = Math.min(
-          Math.ceil((messageId + 1 || 1) / pageConf.pageSize),
-          pageConf.totalPages
-        );
+    topicRender[topic.id] = (messageId?: string | number, reloadStatus: boolean = false) => {
+      if (typeof messageId == 'number') {
+        pageConf.pageNumber = Math.min(Math.ceil((messageId + 1 || 1) / pageConf.pageSize), pageConf.totalPages);
         reload(pageConf);
         return;
       }
       if (messageId) {
-        return (
-          renderMessage[messageId] && renderMessage[messageId](reloadStatus)
-        );
+        return renderMessage[messageId] && renderMessage[messageId](reloadStatus);
       }
       pageConf.pageNumber = pageConf.totalPages;
       reload(pageConf);
@@ -189,7 +161,7 @@ export function MessageList({
   return (
     <>
       {pageConf.pageNumber > 1 ? (
-        <Button.Group style={{ width: "100%" }}>
+        <Button.Group style={{ width: '100%' }}>
           <Button
             block
             type="text"
@@ -222,7 +194,25 @@ export function MessageList({
         let idx = msgIdIdxMap.get(v.id);
         if (idx === undefined) idx = messages.length - 1;
         return (
-          <div key={v.id}>
+          <div
+            key={v.id}
+            onMouseUp={(e) => {
+              setTimeout(() => {
+                let text = window.getSelection?.()?.toString();
+                drawPopupProps.text = text || '';
+                drawPopupProps.msg = v;
+                serDrawPopupProps({ ...drawPopupProps });
+              }, 200);
+            }}
+            onTouchEnd={(e) => {
+              setTimeout(() => {
+                let text = window.getSelection?.()?.toString();
+                drawPopupProps.text = text || '';
+                drawPopupProps.msg = v;
+                serDrawPopupProps({ ...drawPopupProps });
+              }, 200);
+            }}
+          >
             <MemoMessageItem
               renderMessage={renderMessage}
               msg={v}
@@ -239,7 +229,7 @@ export function MessageList({
             ></MemoMessageItem>
             {idx === insertIndex && (
               <MemoInsertInput
-                key={"insert_input"}
+                key={'insert_input'}
                 insertIndex={idx + 1}
                 topic={topic}
                 chat={chat}
@@ -248,25 +238,39 @@ export function MessageList({
                 }}
               />
             )}
-            {i == messages.length - 1 && (
-              <div style={{ marginTop: "2em" }}></div>
-            )}
+            {i == messages.length - 1 && <div style={{ marginTop: '2em' }}></div>}
           </div>
         );
       })}
-      <Hidden
-        hidden={
-          (topic.overrideSettings?.renderType || chat.config.renderType) !=
-            "document" || topic.messages.length < 1
-        }
-      >
-        <div style={{ fontSize: ".8em", textAlign: "center", opacity: 0.5 }}>
+      <Hidden hidden={(topic.overrideSettings?.renderType || chat.config.renderType) != 'document' || topic.messages.length < 1}>
+        <div style={{ fontSize: '.8em', textAlign: 'center', opacity: 0.5 }}>
           <span>总字数：{countChar}</span>
           <span style={{ marginLeft: 16 }}>上下文：{ctxCountChar}</span>
         </div>
       </Hidden>
+      {drawPopupProps.text && (
+        <FloatButton.Group style={{ right: 30, bottom: 90 }}>
+          <Button
+            icon={<PictureOutlined />}
+            onClick={(e) => {
+              drawPopupProps.open = true;
+              serDrawPopupProps({ ...drawPopupProps });
+            }}
+          ></Button>
+        </FloatButton.Group>
+      )}
+      <DraePopup
+        {...drawPopupProps}
+        topic={topic}
+        onClose={() => {
+          serDrawPopupProps((v) => {
+            v.open = false;
+            return { ...v };
+          });
+        }}
+      ></DraePopup>
       {pageConf.pageNumber < pageConf.totalPages ? (
-        <Button.Group style={{ width: "100%", marginTop: "2em" }}>
+        <Button.Group style={{ width: '100%', marginTop: '2em' }}>
           <Button
             block
             type="text"
