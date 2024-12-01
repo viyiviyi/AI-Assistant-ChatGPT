@@ -8,6 +8,10 @@ import { ApiInstance, getSdApiBaseUrl, Img2ImgParams } from '../drawApi/storage'
 import { getUuid } from '../utils/utils';
 import { useReloadIndex } from './hooks';
 
+let runing = new Promise((resolve) => {
+  resolve(true);
+});
+
 export function useTxt2Img(chat: ChatManagement) {
   useEffect(() => {
     let url = getSdApiBaseUrl();
@@ -31,7 +35,8 @@ export function useTxt2Img(chat: ChatManagement) {
       topic.messageMap[imgMsg.id] = imgMsg;
       reloadIndex(topic, idx);
       reloadTopic(topic.id);
-      ApiInstance.current
+      if (runing) await runing;
+      runing = ApiInstance.current
         .text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param })
         .then((res) => {
           imgMsg.text = '';
