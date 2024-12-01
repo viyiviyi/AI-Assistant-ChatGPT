@@ -1,6 +1,7 @@
 import { LocalDbImg } from '@/components/common/LocalDbImg';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { ChatContext } from '@/core/ChatManagement';
+import { ImageStore } from '@/core/db/ImageDb';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
 import { createThrottleAndDebounce, onTextareaTab } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
@@ -421,6 +422,9 @@ export const MessageItem = ({
                   <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
                   <DeleteOutlined
                     onClick={() => {
+                      if (msg.imageIds![current] != 'error' && msg.imageIds![current] != 'loading') {
+                        ImageStore.getInstance().deleteImage([msg.imageIds![current]]);
+                      }
                       msg.imageIds?.splice(current, 1);
                       chat.pushMessage(msg);
                     }}
