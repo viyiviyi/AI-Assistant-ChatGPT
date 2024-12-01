@@ -36,12 +36,14 @@ export const DraePopup = ({
     init(url).then(() => {
       let param = getTxt2ImgParmas() || {};
       param.overrideSettings = param?.overrideSettings || {};
-      param.prompt = text;
       setParams(param);
       setBaseUrl(url);
       setLoading(false);
     });
-  }, [text]);
+  }, []);
+  useEffect(() => {
+    params.prompt = text;
+  }, [params, text]);
 
   return (
     <Drawer
@@ -69,7 +71,7 @@ export const DraePopup = ({
               onClick={() => {
                 saveTxt2ImgParmas(params);
                 saveSdApiBaseUrl(baseUrl);
-                txt2img(topic, msg, params);
+                txt2img(topic, msg, {...params});
               }}
             >
               生成图片

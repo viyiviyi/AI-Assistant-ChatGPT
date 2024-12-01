@@ -9,7 +9,6 @@ export class ImageStore {
     var id = getUuid();
     cache[id] = imageBase64;
     if (!window) return id;
-    console.log('saveImage');
     getInstance().insert<KeyValue>({
       tableName: 'ImageStorage',
       data: { id, data: imageBase64 },
