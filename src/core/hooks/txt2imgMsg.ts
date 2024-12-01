@@ -3,11 +3,10 @@ import { Message } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
 import { useCallback, useEffect } from 'react';
 import { ChatManagement } from '../ChatManagement';
+import { ImageStore } from '../db/ImageDb';
 import { init } from '../drawApi/init';
 import { ApiInstance, getSdApiBaseUrl, Img2ImgParams } from '../drawApi/storage';
 import { TaskQueue } from '../utils/TaskQueue';
-import { getUuid } from '../utils/utils';
-import { useReloadIndex } from './hooks';
 
 let quequ = new TaskQueue();
 
@@ -16,43 +15,34 @@ export function useTxt2Img(chat: ChatManagement) {
     let url = getSdApiBaseUrl();
     init(url).then(() => {});
   }, []);
-  const { reloadIndex } = useReloadIndex(chat);
   const txt2img = useCallback(
     async function (topic: TopicMessage, msg: Message, param: Img2ImgParams) {
-      let idx = topic.messages.indexOf(msg);
-      let imgMsg: Message = {
-        id: getUuid(),
-        groupId: msg.groupId,
-        topicId: topic.id,
-        ctxRole: 'system',
-        createTime: Date.now(),
-        timestamp: msg.timestamp + 0.001, // 正常排序最小间隔是0.01
-        text: '正在生成图片...',
-        skipCtx: true,
-      };
-      topic.messages.splice(idx, 1, ...[msg, imgMsg]);
-      topic.messageMap[imgMsg.id] = imgMsg;
-      reloadIndex(topic, idx);
-      reloadTopic(topic.id);
+      if (msg.imageIds) msg.imageIds.push('loading');
+      else msg.imageIds = ['loading'];
+      reloadTopic(topic.id, msg.id);
       quequ
         .enqueue(async () => {
           return await ApiInstance.current.text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param });
         })
         .then((res) => {
-          imgMsg.text = '';
           res.images?.forEach((base64) => {
-            imgMsg.text += `![${res.info}](data:image/png;base64,${base64})\n`;
+            base64 = 'data:image/png;base64,' + base64;
+            let imgId = ImageStore.getInstance().saveImage(base64);
+            msg.imageIds!.push(imgId);
           });
-          ChatManagement.createMessage(imgMsg);
-          reloadTopic(topic.id, imgMsg.id);
+          let firstLoadingIdx = msg.imageIds!.indexOf('loading');
+          msg.imageIds!.splice(firstLoadingIdx, 1);
+          chat.pushMessage(msg);
+          reloadTopic(topic.id, msg.id);
         })
         .catch((err) => {
           console.error(err);
-          imgMsg.text = '生成图片失败 err:' + (err.status || err.toString());
-          reloadTopic(topic.id, imgMsg.id);
+          let firstLoadingIdx = msg.imageIds!.indexOf('loading');
+          msg.imageIds!.splice(firstLoadingIdx, 1, 'error');
+          reloadTopic(topic.id, msg.id);
         });
     },
-    [reloadIndex]
+    [chat]
   );
   return { txt2img };
 }

@@ -216,6 +216,7 @@ let processor = unified()
         );
       },
       img(props: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>) {
+        let imgSrc = props.src;
         const img = (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -254,7 +255,7 @@ let processor = unified()
                       >
                         ✖
                       </span>
-                      <ZoomImage src={props.src} alt={props.alt} />
+                      <ZoomImage src={imgSrc} alt={props.alt} />
                     </div>
                   </>
                 ),

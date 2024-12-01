@@ -8,6 +8,7 @@ import { VirtualRoleSetting } from '@/Models/VirtualRoleSetting';
 import { VirtualRoleSettingItem } from '@/Models/VirtualRoleSettingItem';
 import React from 'react';
 import { BgConfig } from './BgImageStore';
+import { ImageStore } from './db/ImageDb';
 import { getDbInstance as getInstance, setSkipDbSave } from './db/IndexDbInstance';
 import { getUuid } from './utils/utils';
 
@@ -785,6 +786,7 @@ export class ChatManagement {
       }
       delete topic.messageMap[message.id];
     }
+    ImageStore.getInstance().deleteImage(message.imageIds);
     if (this.config.enableSync) {
       return getInstance()?.update_by_primaryKey<Message>({
         tableName: 'Message',

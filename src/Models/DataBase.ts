@@ -74,6 +74,7 @@ export interface Message {
     snippet: string;
   }[];
   skipCtx?: boolean;
+  imageIds?: string[];
 }
 
 export interface Topic {

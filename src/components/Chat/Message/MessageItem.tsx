@@ -1,3 +1,4 @@
+import { LocalDbImg } from '@/components/common/LocalDbImg';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { ChatContext } from '@/core/ChatManagement';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
@@ -14,9 +15,28 @@ import {
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  RotateLeftOutlined,
+  RotateRightOutlined,
+  SaveOutlined,
+  SwapOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined
 } from '@ant-design/icons';
-import { Avatar, Button, Checkbox, Divider, Flex, message, Popconfirm, Segmented, theme, Tooltip, Typography } from 'antd';
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  Divider,
+  Flex,
+  Image as AntdImage,
+  message,
+  Popconfirm,
+  Segmented,
+  Space,
+  theme,
+  Tooltip,
+  Typography
+} from 'antd';
 import copy from 'copy-to-clipboard';
 import Image from 'next/image';
 import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -122,7 +142,7 @@ export const MessageItem = ({
       </Hidden>
       <span style={{ marginLeft: 16 }}></span>
       <SkipExport>
-        <Hidden hidden={!!loadingMsgs[msg.id] || msg.skipCtx}>
+        <Hidden hidden={!!loadingMsgs[msg.id]}>
           <EditOutlined
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
@@ -134,7 +154,7 @@ export const MessageItem = ({
       </SkipExport>
       <span style={{ marginLeft: 16 }}></span>
       <SkipExport>
-        {msg.skipCtx || (
+        {
           <CopyOutlined
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {
@@ -143,11 +163,11 @@ export const MessageItem = ({
               }
             }}
           />
-        )}
+        }
       </SkipExport>
       <span style={{ marginLeft: 16 }}></span>
       <SkipExport>
-        {msg.skipCtx || (
+        {
           <RollbackOutlined
             onMouseDown={(e) => e.preventDefault()}
             style={{ cursor: 'pointer' }}
@@ -155,7 +175,7 @@ export const MessageItem = ({
               rBak(msg);
             }}
           />
-        )}
+        }
       </SkipExport>
       <span style={{ marginLeft: '30px' }}></span>
       {loadingMsgs[msg.id] ? (
@@ -379,15 +399,54 @@ export const MessageItem = ({
               markdown={chat.config.disableStrikethrough ? successLines.replaceAll('~', '～') : successLines}
               doubleClick={() => {
                 setMessage({ text: msg.text });
-                if (!msg.skipCtx) setEdit(true);
+                setEdit(true);
               }}
               // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
             />
           </>
         )}
+        <Flex gap={10} wrap={'wrap'}>
+          <AntdImage.PreviewGroup
+            preview={{
+              toolbarRender: (
+                _,
+                { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
+              ) => (
+                <Space size={12} className="toolbar-wrapper">
+                  <SwapOutlined rotate={90} onClick={onFlipY} />
+                  <SwapOutlined onClick={onFlipX} />
+                  <RotateLeftOutlined onClick={onRotateLeft} />
+                  <RotateRightOutlined onClick={onRotateRight} />
+                  <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
+                  <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
+                  <DeleteOutlined
+                    onClick={() => {
+                      msg.imageIds?.splice(current, 1);
+                      chat.pushMessage(msg);
+                    }}
+                  />
+                </Space>
+              ),
+            }}
+          >
+            {msg.imageIds?.map((id, i) => {
+              if (id == 'error') {
+                return <AntdImage key={id + i} height={100} src={'/images/error.png'} />;
+              }
+              if (id == 'loading') {
+                return <AntdImage key={id + i} height={100} src={'/images/loading.gif'} />;
+              }
+              return (
+                <>
+                  <LocalDbImg key={id + i} id={id} />
+                </>
+              );
+            })}
+          </AntdImage.PreviewGroup>
+        </Flex>
       </div>
     );
-  }, [edit, EditUtil, renderType, messageText, chat.config.disableStrikethrough, successLines, msg, saveMsg, ctxRole]);
+  }, [edit, EditUtil, renderType, messageText, chat, successLines, msg, saveMsg, ctxRole]);
   if (renderType == 'document') {
     return (
       <>
