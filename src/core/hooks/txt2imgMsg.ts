@@ -5,12 +5,11 @@ import { useCallback, useEffect } from 'react';
 import { ChatManagement } from '../ChatManagement';
 import { init } from '../drawApi/init';
 import { ApiInstance, getSdApiBaseUrl, Img2ImgParams } from '../drawApi/storage';
+import { TaskQueue } from '../utils/TaskQueue';
 import { getUuid } from '../utils/utils';
 import { useReloadIndex } from './hooks';
 
-let runing = new Promise((resolve) => {
-  resolve(true);
-});
+let quequ = new TaskQueue();
 
 export function useTxt2Img(chat: ChatManagement) {
   useEffect(() => {
@@ -35,9 +34,10 @@ export function useTxt2Img(chat: ChatManagement) {
       topic.messageMap[imgMsg.id] = imgMsg;
       reloadIndex(topic, idx);
       reloadTopic(topic.id);
-      if (runing) await runing;
-      runing = ApiInstance.current
-        .text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param })
+      quequ
+        .enqueue(async () => {
+          return await ApiInstance.current.text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param });
+        })
         .then((res) => {
           imgMsg.text = '';
           res.images?.forEach((base64) => {
