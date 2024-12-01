@@ -1,6 +1,6 @@
-import { cacheStore, Img2ImgParams } from '@/core/drawApi/storage';
-import { CaretRightOutlined } from '@ant-design/icons';
-import { Collapse, Flex, Form, Input, InputNumber, Select } from 'antd';
+import { ApiInstance, cacheStore, Img2ImgParams } from '@/core/drawApi/storage';
+import { CaretRightOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons';
+import { Button, Collapse, Flex, Form, Input, InputNumber, Select } from 'antd';
 import { useState } from 'react';
 import { SkipExport } from '../common/SkipExport';
 const panlProp = {
@@ -11,6 +11,8 @@ const panlProp = {
 export const InputPane = ({ params }: { params: Img2ImgParams }) => {
   const [activityKey, setActivityKey] = useState<string[]>(['append_prompt', 'draw_params', 'models', 'other_params']);
   const [_, reload] = useState([]);
+  const [syncModelIng, setSyncModelIng] = useState(false);
+  const [syncVaeIng, setSyncVaeIng] = useState(false);
   return (
     <Form labelCol={{ xl: 6 }}>
       <Form.Item label={'正面提示词'} labelCol={{ xl: 3 }}>
@@ -136,26 +138,61 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
             ...panlProp,
             children: (
               <>
-                <Form.Item label="大模型"  labelCol={{ xl: 3 }}>
-                  <Select
-                    value={params.overrideSettings['sd_model_checkpoint']}
-                    onChange={(e) => ((params.overrideSettings['sd_model_checkpoint'] = e), reload([]))}
-                  >
-                    {cacheStore.modelList?.map((v) => (
-                      <Select.Option key={v.modelName} value={v.modelName}>
-                        {v.modelName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                <Form.Item label="大模型" labelCol={{ xl: 3 }}>
+                  <Flex>
+                    <Select
+                      value={params.overrideSettings['sd_model_checkpoint']}
+                      onChange={(e) => ((params.overrideSettings['sd_model_checkpoint'] = e), reload([]))}
+                      allowClear
+                    >
+                      {cacheStore.modelList?.map((v) => (
+                        <Select.Option key={v.modelName} value={v.modelName}>
+                          {v.modelName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    <Button
+                      onClick={() => {
+                        if (syncModelIng) return;
+                        setSyncModelIng(true);
+                        ApiInstance.current.refreshCheckpointsSdapiV1RefreshCheckpointsPost().then(() => {
+                          ApiInstance.current.getSdModelsSdapiV1SdModelsGet().then((res) => {
+                            cacheStore.modelList = res;
+                            setSyncModelIng(false);
+                          });
+                        });
+                      }}
+                      icon={syncModelIng ? <LoadingOutlined /> : <SyncOutlined />}
+                    ></Button>
+                  </Flex>
                 </Form.Item>
-                <Form.Item label="VAE"  labelCol={{ xl: 3 }}>
-                  <Select value={params.overrideSettings['sd_vae']} onChange={(e) => ((params.overrideSettings['sd_vae'] = e), reload([]))}>
-                    {cacheStore.vaeList?.map((v) => (
-                      <Select.Option key={v.modelName} value={v.modelName}>
-                        {v.modelName}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                <Form.Item label="VAE" labelCol={{ xl: 3 }}>
+                  <Flex>
+                    <Select
+                      value={params.overrideSettings['sd_vae']}
+                      onChange={(e) => ((params.overrideSettings['sd_vae'] = e), reload([]))}
+                      allowClear
+                    >
+                      {cacheStore.vaeList?.map((v) => (
+                        <Select.Option key={v.modelName} value={v.modelName}>
+                          {v.modelName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    <Button
+                      onClick={() => {
+                        if (syncVaeIng) return;
+                        setSyncVaeIng(true);
+                        ApiInstance.current.refreshVaeSdapiV1RefreshVaePost().then(() => {
+                          ApiInstance.current.getSdVaesSdapiV1SdVaeGet().then((res) => {
+                            cacheStore.vaeList = res;
+                            setSyncVaeIng(false);
+                          });
+                        });
+                      }}
+                      icon={syncVaeIng ? <LoadingOutlined /> : <SyncOutlined />}
+                    ></Button>
+                  </Flex>
                 </Form.Item>
               </>
             ),
@@ -172,7 +209,7 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
             ...panlProp,
             children: (
               <>
-                <Form.Item label="CLIP 跳过层"  labelCol={{ xl: 3 }}>
+                <Form.Item label="CLIP 跳过层" labelCol={{ xl: 3 }}>
                   <InputNumber
                     min={1}
                     step={1}

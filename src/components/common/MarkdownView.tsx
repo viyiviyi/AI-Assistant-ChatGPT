@@ -246,7 +246,7 @@ let processor = unified()
                       }}
                     >
                       <span
-                        style={{ cursor: 'pointer', position: 'fixed', top: 0, right: 10, padding: 10, zIndex: 1 }}
+                        style={{ cursor: 'pointer', position: 'fixed', top: 0, right: 10, padding: 10, zIndex: 1, color: '#fff' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           modal.destroy();
