@@ -27,7 +27,7 @@ export function useTxt2Img(chat: ChatManagement) {
         topicId: topic.id,
         ctxRole: 'system',
         createTime: Date.now(),
-        timestamp: msg.timestamp + 0.001,
+        timestamp: msg.timestamp + 0.001, // 正常排序最小间隔是0.01
         text: '正在生成图片...',
         skipCtx: true,
       };
@@ -43,16 +43,16 @@ export function useTxt2Img(chat: ChatManagement) {
           res.images?.forEach((base64) => {
             imgMsg.text += `![${res.info}](data:image/png;base64,${base64})\n`;
           });
-          chat.pushMessage(imgMsg);
+          ChatManagement.createMessage(imgMsg);
           reloadTopic(topic.id, imgMsg.id);
         })
         .catch((err) => {
           console.error(err);
-          imgMsg.text = '生成图片失败 err:' + err.status;
+          imgMsg.text = '生成图片失败 err:' + (err.status || err.toString());
           reloadTopic(topic.id, imgMsg.id);
         });
     },
-    [chat, reloadIndex]
+    [reloadIndex]
   );
   return { txt2img };
 }
