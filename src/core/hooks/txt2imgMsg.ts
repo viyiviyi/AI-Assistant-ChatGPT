@@ -22,11 +22,13 @@ export function useTxt2Img(chat: ChatManagement) {
       reloadTopic(topic.id, msg.id);
       quequ
         .enqueue(async () => {
-          if (!topic.messageMap[msg.id]) return { images: [] };
-          if (!msg.imageIds?.includes('loading')) return { images: [] };
+          if (!topic.messageMap[msg.id]) return { images: undefined };
+          if (!msg.imageIds?.includes('loading')) return { images: undefined };
           return await ApiInstance.current.text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param });
         })
         .then((res) => {
+          if (!topic.messageMap[msg.id]) return;
+          if (!res.images) return;
           res.images?.forEach((base64) => {
             base64 = 'data:image/png;base64,' + base64;
             let imgId = ImageStore.getInstance().saveImage(base64);
@@ -39,6 +41,7 @@ export function useTxt2Img(chat: ChatManagement) {
         })
         .catch((err) => {
           console.error(err);
+          if (!topic.messageMap[msg.id]) return;
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
           if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1, 'error');
           reloadTopic(topic.id, msg.id);
