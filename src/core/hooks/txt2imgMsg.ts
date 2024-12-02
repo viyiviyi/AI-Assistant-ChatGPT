@@ -22,6 +22,8 @@ export function useTxt2Img(chat: ChatManagement) {
       reloadTopic(topic.id, msg.id);
       quequ
         .enqueue(async () => {
+          if (!topic.messageMap[msg.id]) return { images: [] };
+          if (!msg.imageIds?.includes('loading')) return { images: [] };
           return await ApiInstance.current.text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param });
         })
         .then((res) => {
@@ -31,14 +33,14 @@ export function useTxt2Img(chat: ChatManagement) {
             msg.imageIds!.push(imgId);
           });
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
-          msg.imageIds!.splice(firstLoadingIdx, 1);
+          if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1);
           chat.pushMessage(msg);
           reloadTopic(topic.id, msg.id);
         })
         .catch((err) => {
           console.error(err);
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
-          msg.imageIds!.splice(firstLoadingIdx, 1, 'error');
+          if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1, 'error');
           reloadTopic(topic.id, msg.id);
         });
     },
