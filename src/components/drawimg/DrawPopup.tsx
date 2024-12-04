@@ -70,6 +70,8 @@ export const DraePopup = ({
                 }
                 if (extraUrl) {
                   ApiInstance.extra = new DefaultApi(new Configuration({ basePath: extraUrl.replace(/\/+$/, '') }));
+                } else {
+                  ApiInstance.extra = undefined;
                 }
               }}
             >
@@ -102,7 +104,7 @@ export const DraePopup = ({
         <Form.Item label="服务地址">
           <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
         </Form.Item>
-        <Form.Item label="临时服务地址">
+        <Form.Item label="临时地址">
           <Input value={extraUrl} onChange={(e) => setExtraUrl(e.target.value)} />
         </Form.Item>
       </Form>
