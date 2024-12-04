@@ -9,7 +9,7 @@ const panlProp = {
 };
 
 export const InputPane = ({ params }: { params: Img2ImgParams }) => {
-  const [activityKey, setActivityKey] = useState<string[]>(['append_prompt', 'draw_params', 'models', 'other_params']);
+  const [activityKey, setActivityKey] = useState<string[]>(['draw_params']);
   const [_, reload] = useState([]);
   const [syncModelIng, setSyncModelIng] = useState(false);
   const [syncVaeIng, setSyncVaeIng] = useState(false);

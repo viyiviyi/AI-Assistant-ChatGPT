@@ -1,6 +1,7 @@
 import { ChatContext } from '@/core/ChatManagement';
+import { Configuration, DefaultApi } from '@/core/drawApi';
 import { init } from '@/core/drawApi/init';
-import { getSdApiBaseUrl, getTxt2ImgParmas, Img2ImgParams, saveSdApiBaseUrl, saveTxt2ImgParmas } from '@/core/drawApi/storage';
+import { ApiInstance, getSdApiBaseUrl, getTxt2ImgParmas, Img2ImgParams, saveSdApiBaseUrl, saveTxt2ImgParmas } from '@/core/drawApi/storage';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { useTxt2Img } from '@/core/hooks/txt2imgMsg';
 import { Message } from '@/Models/DataBase';
@@ -29,6 +30,8 @@ export const DraePopup = ({
   });
   const [loading, setLoading] = useState(true);
   const [baseUrl, setBaseUrl] = useState('');
+  const [extraUrl, setExtraUrl] = useState('');
+  const [url, setUrl] = useState('');
   const { chatMgt } = useContext(ChatContext);
   const { txt2img } = useTxt2Img(chatMgt);
   useEffect(() => {
@@ -40,7 +43,7 @@ export const DraePopup = ({
       setBaseUrl(url);
       setLoading(false);
     });
-  }, []);
+  }, [url]);
   useEffect(() => {
     params.prompt = text;
   }, [params, text]);
@@ -62,6 +65,12 @@ export const DraePopup = ({
               onClick={() => {
                 saveTxt2ImgParmas(params);
                 saveSdApiBaseUrl(baseUrl);
+                if (baseUrl != url) {
+                  setUrl(baseUrl);
+                }
+                if (extraUrl) {
+                  ApiInstance.extra = new DefaultApi(new Configuration({ basePath: extraUrl.replace(/\/+$/, '') }));
+                }
               }}
             >
               保存配置
@@ -71,7 +80,13 @@ export const DraePopup = ({
               onClick={() => {
                 saveTxt2ImgParmas(params);
                 saveSdApiBaseUrl(baseUrl);
-                txt2img(topic, msg, {...params});
+                if (baseUrl != url) {
+                  init(baseUrl).then(() => {
+                    txt2img(topic, msg, { ...params });
+                  });
+                } else {
+                  txt2img(topic, msg, { ...params });
+                }
               }}
             >
               生成图片
@@ -86,6 +101,9 @@ export const DraePopup = ({
       <Form style={{ padding: 8 }}>
         <Form.Item label="服务地址">
           <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
+        </Form.Item>
+        <Form.Item label="临时服务地址">
+          <Input value={extraUrl} onChange={(e) => setExtraUrl(e.target.value)} />
         </Form.Item>
       </Form>
     </Drawer>

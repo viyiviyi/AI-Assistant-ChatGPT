@@ -9,7 +9,8 @@ import { ApiInstance, getSdApiBaseUrl, Img2ImgParams } from '../drawApi/storage'
 import { TaskQueue } from '../utils/TaskQueue';
 
 let quequ = new TaskQueue();
-
+let extraQuequ = new TaskQueue();
+let currentQuequ = quequ;
 export function useTxt2Img(chat: ChatManagement) {
   useEffect(() => {
     let url = getSdApiBaseUrl();
@@ -20,11 +21,19 @@ export function useTxt2Img(chat: ChatManagement) {
       if (msg.imageIds) msg.imageIds.push('loading');
       else msg.imageIds = ['loading'];
       reloadTopic(topic.id, msg.id);
-      quequ
+      currentQuequ = currentQuequ == extraQuequ ? quequ : ApiInstance.extra ? extraQuequ : quequ;
+      console.log(currentQuequ)
+      currentQuequ
         .enqueue(async () => {
           if (!topic.messageMap[msg.id]) return { images: undefined };
           if (!msg.imageIds?.includes('loading')) return { images: undefined };
-          return await ApiInstance.current.text2imgapiSdapiV1Txt2imgPost({ stableDiffusionProcessingTxt2Img: param });
+          console.log(currentQuequ == extraQuequ && ApiInstance.extra ? ApiInstance.extra : ApiInstance.current);
+          return await (currentQuequ == extraQuequ && ApiInstance.extra
+            ? ApiInstance.extra
+            : ApiInstance.current
+          ).text2imgapiSdapiV1Txt2imgPost({
+            stableDiffusionProcessingTxt2Img: param,
+          });
         })
         .then((res) => {
           if (!topic.messageMap[msg.id]) return;

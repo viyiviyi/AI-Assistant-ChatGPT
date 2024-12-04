@@ -16,7 +16,7 @@ export const cacheStore: {
   isInit: boolean;
 } = { isInit: false };
 
-export let ApiInstance = { current: new DefaultApi(new Configuration({})) };
+export let ApiInstance: { current: DefaultApi; extra?: DefaultApi } = { current: new DefaultApi(new Configuration({})), extra: undefined };
 
 let baseUrl = '';
 export const saveSdApiBaseUrl = (url: string) => {
@@ -29,7 +29,7 @@ export const getSdApiBaseUrl = () => {
   return baseUrl;
 };
 
-let txt2ImgParams:Img2ImgParams;
+let txt2ImgParams: Img2ImgParams;
 export const getTxt2ImgParmas = () => {
   if (txt2ImgParams) return txt2ImgParams;
   if (window) txt2ImgParams = JSON.parse(localStorage.getItem('txt2ImgParams') || '{}');
