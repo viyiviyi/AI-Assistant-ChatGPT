@@ -366,7 +366,7 @@ export const MessageItem = ({
             _,
             { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
           ) => (
-            <Space size={12} className="toolbar-wrapper">
+            <Space size={18} className="toolbar-wrapper" style={{fontSize:25}}>
               <SwapOutlined rotate={90} onClick={onFlipY} />
               <SwapOutlined onClick={onFlipX} />
               <RotateLeftOutlined onClick={onRotateLeft} />
