@@ -22,12 +22,10 @@ export function useTxt2Img(chat: ChatManagement) {
       else msg.imageIds = ['loading'];
       reloadTopic(topic.id, msg.id);
       currentQuequ = currentQuequ == extraQuequ ? quequ : ApiInstance.extra ? extraQuequ : quequ;
-      console.log(currentQuequ)
       currentQuequ
         .enqueue(async () => {
           if (!topic.messageMap[msg.id]) return { images: undefined };
           if (!msg.imageIds?.includes('loading')) return { images: undefined };
-          console.log(currentQuequ == extraQuequ && ApiInstance.extra ? ApiInstance.extra : ApiInstance.current);
           return await (currentQuequ == extraQuequ && ApiInstance.extra
             ? ApiInstance.extra
             : ApiInstance.current
@@ -45,15 +43,18 @@ export function useTxt2Img(chat: ChatManagement) {
           });
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
           if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1);
-          chat.pushMessage(msg);
-          reloadTopic(topic.id, msg.id);
+          chat.pushMessage(msg).then(() => {
+            reloadTopic(topic.id, msg.id);
+          });
         })
         .catch((err) => {
           console.error(err);
           if (!topic.messageMap[msg.id]) return;
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
           if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1, 'error');
-          reloadTopic(topic.id, msg.id);
+          chat.pushMessage(msg).then(() => {
+            reloadTopic(topic.id, msg.id);
+          });
         });
     },
     [chat]

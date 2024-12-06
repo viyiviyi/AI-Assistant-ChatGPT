@@ -358,46 +358,7 @@ export const MessageItem = ({
       </div>
     );
   };
-  const Images = (
-    <Flex gap={10} wrap={'wrap'}>
-      <AntdImage.PreviewGroup
-        preview={{
-          toolbarRender: (
-            _,
-            { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
-          ) => (
-            <Space size={18} className="toolbar-wrapper" style={{fontSize:25}}>
-              <SwapOutlined rotate={90} onClick={onFlipY} />
-              <SwapOutlined onClick={onFlipX} />
-              <RotateLeftOutlined onClick={onRotateLeft} />
-              <RotateRightOutlined onClick={onRotateRight} />
-              <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
-              <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
-              <DeleteOutlined
-                onClick={() => {
-                  if (msg.imageIds![current] != 'error' && msg.imageIds![current] != 'loading') {
-                    ImageStore.getInstance().deleteImage([msg.imageIds![current]]);
-                  }
-                  msg.imageIds?.splice(current, 1);
-                  chat.pushMessage(msg);
-                }}
-              />
-            </Space>
-          ),
-        }}
-      >
-        {msg.imageIds?.map((id, i) => {
-          if (id == 'error') {
-            return <AntdImage key={id + i} height={100} src={'/images/error.png'} />;
-          }
-          if (id == 'loading') {
-            return <AntdImage key={id + i} height={100} src={'/images/loading.gif'} />;
-          }
-          return <LocalDbImg key={id + i} id={id} />;
-        })}
-      </AntdImage.PreviewGroup>
-    </Flex>
-  );
+
   // 内容显示
   const Content = useMemo(() => {
     return (
@@ -557,7 +518,7 @@ export const MessageItem = ({
                 </Tooltip>
                 {Content}
                 <RuningText></RuningText>
-                {Images}
+                <Images msg={msg} />
                 <div
                   style={{
                     display: 'flex',
@@ -590,7 +551,7 @@ export const MessageItem = ({
         {contextHolder}
         {Content}
         <RuningText></RuningText>
-        {Images}
+        <Images msg={msg} />
         <div
           style={{
             display: 'flex',
@@ -718,7 +679,7 @@ export const MessageItem = ({
           >
             {Content}
             <RuningText></RuningText>
-            {Images}
+            <Images msg={msg} />
             <div
               style={{
                 display: 'flex',
@@ -736,5 +697,56 @@ export const MessageItem = ({
     </div>
   );
 };
-
+const Images = ({ msg }: { msg: Message }) => {
+  const [currentIdx, setCurrentIdx] = useState<number | undefined>(undefined);
+  const { chatMgt: chat } = useContext(ChatContext);
+  return (
+    <Flex gap={10} wrap={'wrap'}>
+      <AntdImage.PreviewGroup
+        preview={{
+          current: currentIdx,
+          onVisibleChange(value, prevValue, current) {
+            setCurrentIdx(value ? current : undefined);
+          },
+          onChange(current) {
+            setCurrentIdx(current);
+          },
+          toolbarRender: (
+            _,
+            { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
+          ) => (
+            <Space size={18} className="toolbar-wrapper" style={{ fontSize: 25 }}>
+              <SwapOutlined rotate={90} onClick={onFlipY} />
+              <SwapOutlined onClick={onFlipX} />
+              <RotateLeftOutlined onClick={onRotateLeft} />
+              <RotateRightOutlined onClick={onRotateRight} />
+              <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
+              <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
+              <DeleteOutlined
+                onClick={() => {
+                  if (msg.imageIds![current] != 'error' && msg.imageIds![current] != 'loading') {
+                    ImageStore.getInstance().deleteImage([msg.imageIds![current]]);
+                  }
+                  msg.imageIds?.splice(current, 1);
+                  setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
+                  chat.pushMessage(msg);
+                }}
+              />
+            </Space>
+          ),
+        }}
+      >
+        {msg.imageIds?.map((id, i) => {
+          if (id == 'error') {
+            return <AntdImage key={id + i} height={100} src={'/images/error.png'} />;
+          }
+          if (id == 'loading') {
+            return <AntdImage key={id + i} height={100} src={'/images/loading.gif'} />;
+          }
+          return <LocalDbImg key={id + i} id={id} />;
+        })}
+      </AntdImage.PreviewGroup>
+    </Flex>
+  );
+};
 export const MemoMessageItem = React.memo(MessageItem);
