@@ -1,7 +1,15 @@
 import { ChatContext } from '@/core/ChatManagement';
 import { Configuration, DefaultApi } from '@/core/drawApi';
 import { init } from '@/core/drawApi/init';
-import { ApiInstance, getSdApiBaseUrl, getTxt2ImgParmas, Img2ImgParams, saveSdApiBaseUrl, saveTxt2ImgParmas } from '@/core/drawApi/storage';
+import {
+  ApiInstance,
+  cacheStore,
+  getSdApiBaseUrl,
+  getTxt2ImgParmas,
+  Img2ImgParams,
+  saveSdApiBaseUrl,
+  saveTxt2ImgParmas
+} from '@/core/drawApi/storage';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { useTxt2Img } from '@/core/hooks/txt2imgMsg';
 import { Message } from '@/Models/DataBase';
@@ -66,6 +74,7 @@ export const DraePopup = ({
                 saveTxt2ImgParmas(params);
                 saveSdApiBaseUrl(baseUrl);
                 if (baseUrl != url) {
+                  cacheStore.isInit = false;
                   setUrl(baseUrl);
                 }
                 if (extraUrl) {
@@ -83,7 +92,9 @@ export const DraePopup = ({
                 saveTxt2ImgParmas(params);
                 saveSdApiBaseUrl(baseUrl);
                 if (baseUrl != url) {
+                  cacheStore.isInit = false;
                   init(baseUrl).then(() => {
+                    setUrl(baseUrl);
                     txt2img(topic, msg, { ...params });
                   });
                 } else {
