@@ -30,7 +30,10 @@ export function useTxt2Img(chat: ChatManagement) {
             ? ApiInstance.extra
             : ApiInstance.current
           ).text2imgapiSdapiV1Txt2imgPost({
-            stableDiffusionProcessingTxt2Img: { ...param, prompt: param.prePrompt + ' ,' + param.prompt + ' ,' + param.extraPrompt },
+            stableDiffusionProcessingTxt2Img: {
+              ...param,
+              prompt: (param.prePrompt ? param.prePrompt + ' ,' : '') + param.prompt + (param.extraPrompt ? ' ,' + param.extraPrompt : ''),
+            },
           });
         })
         .then((res) => {
