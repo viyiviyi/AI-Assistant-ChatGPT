@@ -752,7 +752,7 @@ const Images = ({ msg }: { msg: Message }) => {
             return (
               <AntdImage
                 key={id + i}
-                style={{ paddingTop: 25, paddingBottom: 25, paddingLeft: 10, paddingRight: 10 }}
+                style={{ paddingTop: 25, paddingBottom: 25, paddingLeft: 8, paddingRight: 8 }}
                 height={100}
                 src={'/images/loading.gif'}
               />
