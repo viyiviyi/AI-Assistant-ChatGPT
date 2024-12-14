@@ -9,7 +9,7 @@ export const LocalDbImg = ({ id }: { id: string }) => {
       .getImage(id)
       .then((res) => setSrc(res || 'miss'));
   }, [id]);
-  if (!src) return <Image height={100} src={'/images/loading.gif'} alt="img" />;
+  if (!src) return <Image height={100} style={{ padding: 25 }} src={'/images/loading.gif'} alt="img" />;
   if (src == 'miss') {
     return <Image height={100} src={'/images/error.png'} alt="img" />;
   }

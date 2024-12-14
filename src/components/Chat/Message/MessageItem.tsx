@@ -728,6 +728,7 @@ const Images = ({ msg }: { msg: Message }) => {
                     ImageStore.getInstance().deleteImage([msg.imageIds![current]]);
                   }
                   msg.imageIds?.splice(current, 1);
+                  msg.imageIds = [...(msg.imageIds || [])];
                   setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
                   chat.pushMessage(msg);
                 }}
@@ -738,10 +739,24 @@ const Images = ({ msg }: { msg: Message }) => {
       >
         {msg.imageIds?.map((id, i) => {
           if (id == 'error') {
-            return <AntdImage key={id + i} height={100} src={'/images/error.png'} />;
+            return (
+              <AntdImage
+                key={id + i}
+                style={{ paddingTop: 25, paddingBottom: 25, paddingLeft: 5, paddingRight: 5 }}
+                height={100}
+                src={'/images/error.png'}
+              />
+            );
           }
           if (id == 'loading') {
-            return <AntdImage key={id + i} height={100} src={'/images/loading.gif'} />;
+            return (
+              <AntdImage
+                key={id + i}
+                style={{ paddingTop: 25, paddingBottom: 25, paddingLeft: 10, paddingRight: 10 }}
+                height={100}
+                src={'/images/loading.gif'}
+              />
+            );
           }
           return <LocalDbImg key={id + i} id={id} />;
         })}
