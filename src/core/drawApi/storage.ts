@@ -4,6 +4,8 @@ import { Configuration } from './runtime';
 
 export type Img2ImgParams = Img2imgapiSdapiV1Img2imgPostRequest['stableDiffusionProcessingImg2Img'] & {
   overrideSettings: { [key: string]: string | number | boolean };
+  extraPrompt?: string;
+  prePrompt?: string;
 };
 
 export const cacheStore: {

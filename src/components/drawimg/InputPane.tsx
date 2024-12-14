@@ -46,7 +46,18 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
             ...panlProp,
             children: (
               <>
-                <Form.Item label="Styles" labelCol={{ xl: 3 }}>
+                <Form.Item
+                  label="Styles"
+                  labelCol={{ xl: 3 }}
+                  extra={
+                    <>
+                      <p>prompt: {params.styles?.map((v) => cacheStore.styles?.find((f) => f.name == v)?.prompt).join(' ,')}</p>
+                      <p>
+                        negativePrompt: {params.styles?.map((v) => cacheStore.styles?.find((f) => f.name == v)?.negativePrompt).join(' ,')}
+                      </p>
+                    </>
+                  }
+                >
                   <Select
                     mode="tags"
                     showSearch
@@ -63,6 +74,20 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
                       </Select.Option>
                     ))}
                   </Select>
+                </Form.Item>
+                <Form.Item label={'前置正面'} labelCol={{ xl: 3 }}>
+                  <Input.TextArea
+                    autoSize={{ minRows: 1, maxRows: 6 }}
+                    value={params.prePrompt}
+                    onChange={(e) => ((params.prePrompt = e.target.value), reload([]))}
+                  />
+                </Form.Item>
+                <Form.Item label={'后置正面'} labelCol={{ xl: 3 }}>
+                  <Input.TextArea
+                    autoSize={{ minRows: 1, maxRows: 6 }}
+                    value={params.extraPrompt}
+                    onChange={(e) => ((params.extraPrompt = e.target.value), reload([]))}
+                  />
                 </Form.Item>
               </>
             ),
@@ -97,36 +122,38 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
                   <Form.Item label="迭代步数" style={{ width: '50%' }}>
                     <InputNumber
                       value={params.steps}
-                      min={1}
                       defaultValue={20}
                       step={1}
-                      onChange={(e) => ((params.steps = e ?? 1), reload([]))}
+                      onChange={(e) => ((params.steps = Math.max(1, e ?? 1)), reload([]))}
                     />
                   </Form.Item>
                   <Form.Item label="提示词相关性" style={{ width: '50%' }}>
                     <InputNumber
                       value={params.cfgScale}
-                      min={1}
                       step={0.1}
                       defaultValue={7}
-                      onChange={(e) => ((params.cfgScale = e ?? 1), reload([]))}
+                      onChange={(e) => ((params.cfgScale = Math.max(1, e ?? 1)), reload([]))}
                     />
                   </Form.Item>
                 </Flex>
                 <Flex gap={10}>
                   <Form.Item label="图像宽度" style={{ width: '50%' }}>
-                    <InputNumber value={params.width} min={64} step={64} onChange={(e) => ((params.width = e ?? 64), reload([]))} />
+                    <InputNumber value={params.width} step={64} onChange={(e) => ((params.width = e ?? undefined), reload([]))} />
                   </Form.Item>
                   <Form.Item label="图像高度" style={{ width: '50%' }}>
-                    <InputNumber value={params.height} min={64} step={64} onChange={(e) => ((params.height = e ?? 64), reload([]))} />
+                    <InputNumber value={params.height} step={64} onChange={(e) => ((params.height = e ?? undefined), reload([]))} />
                   </Form.Item>
                 </Flex>
                 <Flex gap={10}>
                   <Form.Item label="随机种子" style={{ width: '50%' }}>
-                    <InputNumber value={params.seed} min={-1} step={1} onChange={(e) => ((params.seed = e ?? -1), reload([]))} />
+                    <InputNumber value={params.seed} step={1} onChange={(e) => ((params.seed = Math.max(-1, e ?? -1)), reload([]))} />
                   </Form.Item>
                   <Form.Item label="生成数量" style={{ width: '50%' }}>
-                    <InputNumber value={params.batchSize} min={1} step={1} onChange={(e) => ((params.batchSize = e ?? 1), reload([]))} />
+                    <InputNumber
+                      value={params.batchSize}
+                      step={1}
+                      onChange={(e) => ((params.batchSize = Math.max(1, e ?? 1)), reload([]))}
+                    />
                   </Form.Item>
                 </Flex>
               </>
