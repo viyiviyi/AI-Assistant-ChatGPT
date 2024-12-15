@@ -701,7 +701,7 @@ const Images = ({ msg }: { msg: Message }) => {
   const [currentIdx, setCurrentIdx] = useState<number | undefined>(undefined);
   const { chatMgt: chat } = useContext(ChatContext);
   return (
-    <Flex gap={10} wrap={'wrap'}>
+    <Flex gap={5} wrap={'wrap'}>
       <AntdImage.PreviewGroup
         preview={{
           current: currentIdx,
