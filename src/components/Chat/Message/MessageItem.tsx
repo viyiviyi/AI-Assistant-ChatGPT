@@ -700,6 +700,10 @@ export const MessageItem = ({
 const Images = ({ msg }: { msg: Message }) => {
   const [currentIdx, setCurrentIdx] = useState<number | undefined>(undefined);
   const { chatMgt: chat } = useContext(ChatContext);
+  const [imageIds, setImageIds] = useState(msg.imageIds || []);
+  useEffect(() => {
+    setImageIds(msg.imageIds || []);
+  }, [msg.imageIds]);
   return (
     <Flex gap={5} wrap={'wrap'}>
       <AntdImage.PreviewGroup
@@ -724,12 +728,12 @@ const Images = ({ msg }: { msg: Message }) => {
               <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
               <DeleteOutlined
                 onClick={() => {
-                  if (msg.imageIds![current] != 'error' && msg.imageIds![current] != 'loading') {
-                    ImageStore.getInstance().deleteImage([msg.imageIds![current]]);
+                  if (imageIds![current] != 'error' && imageIds![current] != 'loading') {
+                    ImageStore.getInstance().deleteImage([imageIds![current]]);
                   }
-                  msg.imageIds?.splice(current, 1);
-                  msg.imageIds = [...(msg.imageIds || [])];
-                  setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
+                  imageIds?.splice(current, 1);
+                  msg.imageIds = [...(imageIds || [])];
+                  setCurrentIdx(current == imageIds?.length ? current - 1 : current);
                   chat.pushMessage(msg);
                 }}
               />
@@ -737,7 +741,7 @@ const Images = ({ msg }: { msg: Message }) => {
           ),
         }}
       >
-        {msg.imageIds?.map((id, i) => {
+        {imageIds?.map((id, i) => {
           if (id == 'error') {
             return (
               <AntdImage

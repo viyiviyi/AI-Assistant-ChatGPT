@@ -808,6 +808,15 @@ export class ChatManagement {
   async removeTopic(topic: Topic) {
     const delIdx = this.topics.findIndex((f) => f.id == topic.id);
     if (delIdx > -1) {
+      let msgs = await getInstance()?.query<Message>({
+        tableName: 'Message',
+        condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id && !v.deleteTime,
+      });
+      msgs.forEach((m) => ImageStore.getInstance().deleteImage(m.imageIds));
+      await getInstance()?.delete<Message>({
+        tableName: 'Message',
+        condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id,
+      });
       this.topics.splice(delIdx, 1);
       await getInstance()?.delete_by_primaryKey({
         tableName: 'Topic',
@@ -852,6 +861,11 @@ export class ChatManagement {
       tableName: 'Topic',
       condition: (v) => v.groupId == groupId,
     });
+    let msgs = await getInstance()?.query<Message>({
+      tableName: 'Message',
+      condition: (v) => v.groupId == groupId,
+    });
+    msgs.forEach((m) => ImageStore.getInstance().deleteImage(m.imageIds));
     await getInstance()?.delete<Message>({
       tableName: 'Message',
       condition: (v) => v.groupId == groupId,
