@@ -47,7 +47,7 @@ export function useTxt2Img(chat: ChatManagement) {
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
           if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1);
           msg.imageIds = [...(msg.imageIds || [])];
-          chat.pushMessage(msg).then(() => {
+          chat.pushMessage(msg).then((msg) => {
             reloadTopic(topic.id, msg.id);
           });
         })
@@ -57,7 +57,7 @@ export function useTxt2Img(chat: ChatManagement) {
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
           if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1, 'error');
           msg.imageIds = [...(msg.imageIds || [])];
-          chat.pushMessage(msg).then(() => {
+          chat.pushMessage(msg).then((msg) => {
             reloadTopic(topic.id, msg.id);
           });
         });

@@ -732,16 +732,18 @@ const Images = ({ msg }: { msg: Message }) => {
                     ImageStore.getInstance().deleteImage([imageIds![current]]);
                   }
                   imageIds?.splice(current, 1);
-                  msg.imageIds = [...(imageIds || [])];
+                  msg.imageIds = imageIds;
                   setCurrentIdx(current == imageIds?.length ? current - 1 : current);
-                  chat.pushMessage(msg);
+                  chat.pushMessage(msg).then((msg) => {
+                    setImageIds([...(msg.imageIds || [])]);
+                  });
                 }}
               />
             </Space>
           ),
         }}
       >
-        {imageIds?.map((id, i) => {
+        {imageIds.map((id, i) => {
           if (id == 'error') {
             return (
               <AntdImage
