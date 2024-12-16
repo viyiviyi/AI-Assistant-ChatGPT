@@ -20,6 +20,7 @@ export function useTxt2Img(chat: ChatManagement) {
     async function (topic: TopicMessage, msg: Message, param: Img2ImgParams) {
       if (msg.imageIds) msg.imageIds.push('loading');
       else msg.imageIds = ['loading'];
+      msg.imageIds = [...msg.imageIds];
       reloadTopic(topic.id, msg.id);
       currentQuequ = currentQuequ == extraQuequ ? quequ : ApiInstance.extra ? extraQuequ : quequ;
       currentQuequ
