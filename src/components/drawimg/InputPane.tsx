@@ -1,6 +1,6 @@
 import { ApiInstance, cacheStore, Img2ImgParams } from '@/core/drawApi/storage';
 import { CaretRightOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons';
-import { Button, Collapse, Flex, Form, Input, InputNumber, Select } from 'antd';
+import { Button, Checkbox, Collapse, Flex, Form, Input, InputNumber, Select } from 'antd';
 import { useState } from 'react';
 import { SkipExport } from '../common/SkipExport';
 const panlProp = {
@@ -224,12 +224,51 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
               </>
             ),
           },
-          // {
-          //   key: 'hyper_resolution',
-          //   label: <Checkbox >{'超分辨率'}</Checkbox>,
-          //   ...panlProp,
-          //   children: <></>,
-          // },
+          {
+            key: 'hyper_resolution',
+            label: (
+              <Checkbox checked={params.enableHr} onChange={(e) => ((params.enableHr = e.target.checked), reload([]))}>
+                {'超分辨率'}
+              </Checkbox>
+            ),
+            ...panlProp,
+            children: (
+              <>
+                <Form.Item label="超分算法" labelCol={{ xl: 3 }}>
+                  <Select value={params.hrUpscaler} onChange={(e) => ((params.hrUpscaler = e), reload([]))} allowClear>
+                    {cacheStore.upscalers?.map((v) => (
+                      <Select.Option key={v.name} value={v.name}>
+                        {v.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Flex gap={10}>
+                  <Form.Item label="重绘幅度" labelCol={{ xl: 6 }} style={{ width: '50%' }}>
+                    <InputNumber
+                      value={params.denoisingStrength}
+                      step={0.01}
+                      onChange={(e) => ((params.denoisingStrength = Math.max(0.57, e ?? 1)), reload([]))}
+                    />
+                  </Form.Item>
+                  <Form.Item label="放大倍率" labelCol={{ xl: 6 }} style={{ width: '50%' }}>
+                    <InputNumber
+                      value={params.hrScale}
+                      step={0.01}
+                      onChange={(e) => ((params.hrScale = Math.max(1.5, e ?? 1)), reload([]))}
+                    />
+                  </Form.Item>
+                </Flex>
+                <Form.Item label="迭代步数" labelCol={{ xl: 3 }}>
+                  <InputNumber
+                    value={params.hrSecondPassSteps}
+                    step={1}
+                    onChange={(e) => ((params.hrSecondPassSteps = Math.max(0, e ?? 1)), reload([]))}
+                  />
+                </Form.Item>
+              </>
+            ),
+          },
           {
             key: 'other_params',
             label: '其他参数',

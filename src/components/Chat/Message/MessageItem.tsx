@@ -1,11 +1,15 @@
 import { LocalDbImg } from '@/components/common/LocalDbImg';
+import { TempDraePopup } from '@/components/drawimg/TempDrawPopup';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { ChatContext } from '@/core/ChatManagement';
 import { ImageStore } from '@/core/db/ImageDb';
+import { StableDiffusionProcessingTxt2Img, StableDiffusionProcessingTxt2ImgFromJSONTyped } from '@/core/drawApi';
+import { getTxt2ImgParmas } from '@/core/drawApi/storage';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
 import { createThrottleAndDebounce, onTextareaTab } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { Message } from '@/Models/DataBase';
+import { TopicMessage } from '@/Models/Topic';
 import styleCss from '@/styles/index.module.css';
 import {
   CopyOutlined,
@@ -518,7 +522,7 @@ export const MessageItem = ({
                 </Tooltip>
                 {Content}
                 <RuningText></RuningText>
-                <Images msg={msg} />
+                <Images msg={msg} topic={topic} />
                 <div
                   style={{
                     display: 'flex',
@@ -551,7 +555,7 @@ export const MessageItem = ({
         {contextHolder}
         {Content}
         <RuningText></RuningText>
-        <Images msg={msg} />
+        <Images msg={msg} topic={topic} />
         <div
           style={{
             display: 'flex',
@@ -679,7 +683,7 @@ export const MessageItem = ({
           >
             {Content}
             <RuningText></RuningText>
-            <Images msg={msg} />
+            <Images msg={msg} topic={topic} />
             <div
               style={{
                 display: 'flex',
@@ -697,15 +701,18 @@ export const MessageItem = ({
     </div>
   );
 };
-const Images = ({ msg }: { msg: Message }) => {
+const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
   const [currentIdx, setCurrentIdx] = useState<number | undefined>(undefined);
   const { chatMgt: chat } = useContext(ChatContext);
   const [imageIds, setImageIds] = useState(msg.imageIds || []);
+  const [popup, setPopup] = useState(false);
+  const [info, setInfo] = useState<StableDiffusionProcessingTxt2Img>({});
   useEffect(() => {
     setImageIds(msg.imageIds || []);
   }, [msg.imageIds]);
   return (
     <Flex gap={5} wrap={'wrap'}>
+      <TempDraePopup open={popup} info={info} msg={msg} topic={topic} onClose={() => setPopup(false)} />
       <AntdImage.PreviewGroup
         preview={{
           current: currentIdx,
@@ -720,6 +727,24 @@ const Images = ({ msg }: { msg: Message }) => {
             { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
           ) => (
             <Space size={18} className="toolbar-wrapper" style={{ fontSize: 25 }}>
+              {(msg.imagesAlts || {})[imageIds[currentIdx || 0]] && (
+                <CopyOutlined
+                  disabled={scale === 50}
+                  onClick={() => {
+                    let info = (msg.imagesAlts || {})[imageIds[currentIdx || 0]];
+                    if (!info) return;
+                    let json = info ? JSON.parse(info) : {};
+                    let defaultParam = getTxt2ImgParmas() || {};
+                    let param = StableDiffusionProcessingTxt2ImgFromJSONTyped(json, false);
+                    param.samplerIndex = param.samplerName;
+                    param.scheduler = param.scheduler || 'automatic';
+                    param.overrideSettings = param.overrideSettings || defaultParam.overrideSettings || {};
+                    // console.log(param);
+                    setInfo(param);
+                    setPopup(true);
+                  }}
+                />
+              )}
               <SwapOutlined rotate={90} onClick={onFlipY} />
               <SwapOutlined onClick={onFlipX} />
               <RotateLeftOutlined onClick={onRotateLeft} />
@@ -764,7 +789,7 @@ const Images = ({ msg }: { msg: Message }) => {
               />
             );
           }
-          return <LocalDbImg key={id + i} id={id} />;
+          return <LocalDbImg key={id + i} id={id} alt={(msg.imagesAlts || {})[id]} />;
         })}
       </AntdImage.PreviewGroup>
     </Flex>

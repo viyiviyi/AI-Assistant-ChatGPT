@@ -44,6 +44,7 @@ export function useTxt2Img(chat: ChatManagement) {
             base64 = 'data:image/png;base64,' + base64;
             let imgId = ImageStore.getInstance().saveImage(base64);
             msg.imageIds!.push(imgId);
+            msg.imagesAlts = { ...msg.imagesAlts, [imgId]: res.info };
           });
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
           if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1);

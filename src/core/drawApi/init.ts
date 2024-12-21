@@ -8,11 +8,17 @@ export async function init(serverUrl: string) {
   const Api = ApiInstance.current;
   cacheStore.isInit = true;
   try {
+    cacheStore.upscalers = [];
     await Promise.all([
       Api.getSamplersSdapiV1SamplersGet().then((res) => (cacheStore.samplerList = res)),
       Api.getSchedulersSdapiV1SchedulersGet().then((res) => (cacheStore.scheduleTypeList = res)),
       Api.getPromptStylesSdapiV1PromptStylesGet().then((res) => (cacheStore.styles = res)),
-      Api.getUpscalersSdapiV1UpscalersGet().then((res) => (cacheStore.upscalers = res)),
+      Api.getUpscalersSdapiV1UpscalersGet().then((res) => {
+        cacheStore.upscalers = [...(cacheStore.upscalers ?? []), ...res.filter((f) => f.name != 'None')];
+      }),
+      Api.getLatentUpscaleModesSdapiV1LatentUpscaleModesGet().then((res) => {
+        cacheStore.upscalers = [...res, ...(cacheStore.upscalers ?? [])];
+      }),
       Api.getSdModelsSdapiV1SdModelsGet().then((res) => (cacheStore.modelList = res)),
       Api.getSdVaesSdapiV1SdVaeGet().then((res) => (cacheStore.vaeList = res)),
     ]).then(() => {

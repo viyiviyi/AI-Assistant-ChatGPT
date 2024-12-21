@@ -1,8 +1,16 @@
-import { DefaultApi, Img2imgapiSdapiV1Img2imgPostRequest } from './apis';
-import { PromptStyleItem, SamplerItem, SchedulerItem, SdModelItem, SdVaeItem, UpscalerItem } from './models';
+import { DefaultApi } from './apis';
+import {
+  PromptStyleItem,
+  SamplerItem,
+  SchedulerItem,
+  SdModelItem,
+  SdVaeItem,
+  StableDiffusionProcessingTxt2Img,
+  UpscalerItem
+} from './models';
 import { Configuration } from './runtime';
 
-export type Img2ImgParams = Img2imgapiSdapiV1Img2imgPostRequest['stableDiffusionProcessingImg2Img'] & {
+export type Img2ImgParams = StableDiffusionProcessingTxt2Img & {
   overrideSettings: { [key: string]: string | number | boolean };
   extraPrompt?: string;
   prePrompt?: string;

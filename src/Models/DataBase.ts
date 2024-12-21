@@ -75,6 +75,7 @@ export interface Message {
   }[];
   skipCtx?: boolean;
   imageIds?: string[];
+  imagesAlts?: { [key: string]: string };
 }
 
 export interface Topic {
