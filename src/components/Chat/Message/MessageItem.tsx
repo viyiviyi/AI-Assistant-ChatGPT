@@ -753,12 +753,12 @@ const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
               <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
               <DeleteOutlined
                 onClick={() => {
-                  if (imageIds![current] != 'error' && imageIds![current] != 'loading') {
-                    ImageStore.getInstance().deleteImage([imageIds![current]]);
+                  let id = imageIds![current];
+                  if (id != 'error' && id != 'loading') {
+                    ImageStore.getInstance().deleteImage([id]);
                   }
-                  imageIds?.splice(current, 1);
-                  msg.imageIds = imageIds;
-                  setCurrentIdx(current == imageIds?.length ? current - 1 : current);
+                  msg.imageIds?.splice(current, 1);
+                  setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
                   chat.pushMessage(msg).then((msg) => {
                     setImageIds([...(msg.imageIds || [])]);
                   });
