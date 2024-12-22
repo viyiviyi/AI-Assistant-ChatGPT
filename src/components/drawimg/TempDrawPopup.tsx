@@ -55,7 +55,6 @@ export const TempDraePopup = ({
       onClose={() => onClose()}
       placement={screenWidth > 600 ? 'right' : 'bottom'}
       height={'70%'}
-      getContainer={document.body}
       footer={
         <>
           <Flex gap={10} style={{ padding: 10, justifyContent: 'flex-end' }}>
