@@ -41,12 +41,12 @@ export const getSdApiBaseUrl = () => {
 
 let txt2ImgParams: Img2ImgParams;
 export const getTxt2ImgParmas = () => {
-  if (txt2ImgParams) return txt2ImgParams;
+  if (txt2ImgParams) return { ...txt2ImgParams, overrideSettings: { ...txt2ImgParams.overrideSettings } };
   if (window) txt2ImgParams = JSON.parse(localStorage.getItem('txt2ImgParams') || '{}');
-  return txt2ImgParams;
+  return { ...txt2ImgParams, overrideSettings: { ...txt2ImgParams.overrideSettings } };
 };
 
 export const saveTxt2ImgParmas = (params: Img2ImgParams) => {
-  txt2ImgParams = params;
+  txt2ImgParams = { ...params, overrideSettings: { ...params.overrideSettings } };
   if (window) localStorage.setItem('txt2ImgParams', JSON.stringify(params));
 };
