@@ -38,15 +38,6 @@ export const TempDraePopup = ({
       setLoading(false);
     });
   }, [url]);
-  useEffect(() => {
-    let antImagePreviewRoot = document.getElementsByClassName('ant-image-preview-operations-wrapper')[0];
-    if (!antImagePreviewRoot) return;
-    if (open) {
-      antImagePreviewRoot.setAttribute('style', 'display:none');
-    } else {
-      antImagePreviewRoot.setAttribute('style', 'display:block');
-    }
-  });
   return (
     <Drawer
       forceRender={false}
