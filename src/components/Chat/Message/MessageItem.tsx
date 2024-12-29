@@ -714,68 +714,65 @@ const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
     <Flex gap={5} wrap={'wrap'}>
       <TempDraePopup open={popup} info={info} msg={msg} topic={topic} onClose={() => setPopup(false)} />
       <AntdImage.PreviewGroup
-        preview={
-          popup
-            ? false
-            : {
-                current: currentIdx,
-                onVisibleChange(value, prevValue, current) {
-                  setCurrentIdx(value ? current : undefined);
-                },
-                onChange(current) {
-                  setCurrentIdx(current);
-                },
-                toolbarRender: (
-                  _,
-                  { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
-                ) => (
-                  <Space size={18} className="toolbar-wrapper" style={{ fontSize: 25 }}>
-                    {(msg.imagesAlts || {})[imageIds[currentIdx || 0]] && (
-                      <CopyOutlined
-                        disabled={scale === 50}
-                        onClick={() => {
-                          let info = (msg.imagesAlts || {})[imageIds[currentIdx || 0]];
-                          if (!info) return;
-                          let json = info ? JSON.parse(info) : {};
-                          let defaultParam = getTxt2ImgParmas() || {};
-                          let param = StableDiffusionProcessingTxt2ImgFromJSONTyped(json, false);
-                          param.samplerIndex = param.samplerName;
-                          param.scheduler = param.scheduler || 'automatic';
-                          param.overrideSettings = param.overrideSettings || defaultParam.overrideSettings || {};
-                          param.enableHr = param.enableHr || defaultParam.enableHr;
-                          param.hrScale = param.hrScale || defaultParam.hrScale;
-                          param.hrScheduler = param.hrScheduler || defaultParam.hrScheduler;
-                          param.hrSecondPassSteps = param.hrSecondPassSteps || defaultParam.hrSecondPassSteps;
-                          param.denoisingStrength = param.denoisingStrength || defaultParam.denoisingStrength;
-                          // console.log(param);
-                          setInfo(param);
-                          setPopup(true);
-                        }}
-                      />
-                    )}
-                    <SwapOutlined rotate={90} onClick={onFlipY} />
-                    <SwapOutlined onClick={onFlipX} />
-                    <RotateLeftOutlined onClick={onRotateLeft} />
-                    <RotateRightOutlined onClick={onRotateRight} />
-                    <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
-                    <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
-                    <DeleteOutlined
-                      onClick={() => {
-                        let id = imageIds![current];
-                        if (id != 'error' && id != 'loading') {
-                          ImageStore.getInstance().deleteImage([id]);
-                        }
-                        msg.imageIds?.splice(current, 1);
-                        setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
-                        chat.pushMessage(msg).then((msg) => {
-                          setImageIds([...(msg.imageIds || [])]);
-                        });
-                      }}
-                    />
-                  </Space>
-                ),
-              }
-        }
+        preview={{
+          visible: !popup,
+          current: currentIdx,
+          onVisibleChange(value, prevValue, current) {
+            setCurrentIdx(value ? current : undefined);
+          },
+          onChange(current) {
+            setCurrentIdx(current);
+          },
+          toolbarRender: (
+            _,
+            { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
+          ) => (
+            <Space size={18} className="toolbar-wrapper" style={{ fontSize: 25 }}>
+              {(msg.imagesAlts || {})[imageIds[currentIdx || 0]] && (
+                <CopyOutlined
+                  disabled={scale === 50}
+                  onClick={() => {
+                    let info = (msg.imagesAlts || {})[imageIds[currentIdx || 0]];
+                    if (!info) return;
+                    let json = info ? JSON.parse(info) : {};
+                    let defaultParam = getTxt2ImgParmas() || {};
+                    let param = StableDiffusionProcessingTxt2ImgFromJSONTyped(json, false);
+                    param.samplerIndex = param.samplerName;
+                    param.scheduler = param.scheduler || 'automatic';
+                    param.overrideSettings = param.overrideSettings || defaultParam.overrideSettings || {};
+                    param.enableHr = param.enableHr || defaultParam.enableHr;
+                    param.hrScale = param.hrScale || defaultParam.hrScale;
+                    param.hrScheduler = param.hrScheduler || defaultParam.hrScheduler;
+                    param.hrSecondPassSteps = param.hrSecondPassSteps || defaultParam.hrSecondPassSteps;
+                    param.denoisingStrength = param.denoisingStrength || defaultParam.denoisingStrength;
+                    // console.log(param);
+                    setInfo(param);
+                    setPopup(true);
+                  }}
+                />
+              )}
+              <SwapOutlined rotate={90} onClick={onFlipY} />
+              <SwapOutlined onClick={onFlipX} />
+              <RotateLeftOutlined onClick={onRotateLeft} />
+              <RotateRightOutlined onClick={onRotateRight} />
+              <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
+              <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} />
+              <DeleteOutlined
+                onClick={() => {
+                  let id = imageIds![current];
+                  if (id != 'error' && id != 'loading') {
+                    ImageStore.getInstance().deleteImage([id]);
+                  }
+                  msg.imageIds?.splice(current, 1);
+                  setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
+                  chat.pushMessage(msg).then((msg) => {
+                    setImageIds([...(msg.imageIds || [])]);
+                  });
+                }}
+              />
+            </Space>
+          ),
+        }}
       >
         {imageIds.map((id, i) => {
           if (id == 'error') {
