@@ -715,7 +715,7 @@ const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
       <TempDraePopup open={popup} info={info} msg={msg} topic={topic} onClose={() => setPopup(false)} />
       <AntdImage.PreviewGroup
         preview={{
-          visible: !popup,
+          visible: !popup && currentIdx !== undefined,
           current: currentIdx,
           onVisibleChange(value, prevValue, current) {
             setCurrentIdx(value ? current : undefined);
