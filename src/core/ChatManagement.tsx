@@ -702,9 +702,8 @@ export class ChatManagement {
     return data;
   }
   static async createGptConfig(groupId: string, gptConfig?: GptConfig): Promise<GptConfig> {
+    let firstConfig = this.chatList[0];
     const data: GptConfig = gptConfig || {
-      id: getUuid(),
-      groupId,
       role: 'user',
       model: 'gpt-3.5-turbo',
       max_tokens: 1024,
@@ -714,6 +713,9 @@ export class ChatManagement {
       msgCount: 11,
       presence_penalty: 0.7,
       frequency_penalty: 1.0,
+      ...((firstConfig?.gptConfig || {}) as any),
+      groupId,
+      id: getUuid(),
     };
     await getInstance()?.insert<GptConfig>({ tableName: 'GptConfig', data });
     return data;

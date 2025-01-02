@@ -32,8 +32,8 @@ export const Modal = ({
 }: {
   open: boolean;
   items?: (cbs: ModalCallback) => React.ReactNode;
-  onCancel?: () => void;
-  onOk?: () => void;
+  onCancel?: () => false | void;
+  onOk?: () => void | false;
   maxHight?: string;
   style?: CSSProperties;
   bodyStyle?: CSSProperties;
@@ -47,78 +47,75 @@ export const Modal = ({
 }) => {
   const { token } = theme.useToken();
   const router = useRouter();
-  const [_, setUrl] = useState('');
+  const [thisHash, setUrlHash] = useState('');
+  const [show, setShow] = useState(open);
 
   const screenSize = useScreenSize();
-  const cancel = useCallback(
-    (rb = true) => {
-      if (rb) handleBackButton('pop');
-      onCancel();
-      callback.current.cancelCallback();
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onCancel]
-  );
-  const ok = useCallback(() => {
-    handleBackButton('pop');
-    callback.current.okCallback();
-    onOk();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onOk]);
+  useEffect(() => {
+    setShow(open);
+  }, [open]);
+
   const callback = useRef({
     okCallback: () => {},
     cancelCallback: () => {},
-    cancel: cancel,
+    cancel: () => {},
   });
-  useEffect(() => {
-    callback.current.cancel = cancel;
-  }, [cancel]);
+
+  const okClose = useCallback(() => {
+    setShow((v) => {
+      if (onOk() === false) {
+        return v;
+      }
+      callback.current.okCallback();
+      if (location.href.includes('#')) router.back();
+      return false;
+    });
+  }, [onOk, router]);
+
+  const cancelClose = useCallback(() => {
+    setShow((v) => {
+      if (onCancel() === false) {
+        return v;
+      }
+      callback.current.cancelCallback();
+      if (location.href.includes('#')) router.back();
+      return false;
+    });
+  }, [onCancel, router]);
 
   useEffect(() => {
-    setUrl((url) => {
-      if (open) {
-        if (urlHistory.includes(url)) return url;
-        let _url = router.asPath.split('#')[0] + '#' + zIndex;
-        router.push(_url);
-        urlHistory.push(_url);
-        zIndex++;
-        return _url;
-      }
-      return url;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+    callback.current.cancel = async () => cancelClose();
+  }, [cancelClose]);
+
+  useEffect(() => {
+    if (thisHash) return;
+    if (urlHistory.includes(thisHash)) return;
+    if (show) {
+      let _hash = '#' + zIndex;
+      location.hash = _hash;
+      urlHistory.push(_hash);
+      zIndex++;
+      setUrlHash(_hash);
+    }
+  }, [show, thisHash]);
+
   const handleBackButton = useMemo(() => {
     return (ev: PopStateEvent | string) => {
+      if (!thisHash) return;
       if (!urlHistory.length) return;
-      let lastUrl = urlHistory.slice(-1)[0];
-      if (!lastUrl) return;
-      setUrl((currUrl) => {
-        if (typeof ev == 'string') {
-          if (lastUrl == currUrl && ev == 'pop') {
-            router.back();
-            setTimeout(() => {
-              zIndex--;
-              // 延迟删除历史记录 防止异常关闭全部弹窗
-              urlHistory.pop();
-            }, 20);
-            return ''
-          }
-        } else {
-          ev.preventDefault();
-          if (lastUrl == currUrl) {
-            setTimeout(() => {
-              zIndex--;
-              urlHistory.pop();
-            }, 20);
-            cancel(false);
-          }
-        }
-        return currUrl;
-      });
+      let lastUrlHash = urlHistory.slice(-1)[0];
+      if (!lastUrlHash) return;
+      if (thisHash != lastUrlHash) return;
+      zIndex--;
+      setTimeout(() => {
+        // 延迟删除历史记录 防止异常关闭全部弹窗
+        urlHistory.pop();
+      }, 20);
+      setUrlHash('');
+      setShow(false);
+      cancelClose();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cancel]);
+  }, [cancelClose, thisHash]);
 
   useEffect(() => {
     window.addEventListener('popstate', handleBackButton);
@@ -127,7 +124,7 @@ export const Modal = ({
     };
   }, [handleBackButton]);
 
-  if (!open) return <></>;
+  if (!show) return <></>;
   if (screenSize.width <= 500)
     return (
       <Drawer
@@ -136,7 +133,7 @@ export const Modal = ({
         destroyOnClose={true}
         closable={false}
         maskClosable={maskClosable}
-        onClose={() => cancel()}
+        onClose={() => cancelClose()}
         height={maxHight ? maxHight : 'auto'}
         style={{
           padding: 0,
@@ -145,7 +142,7 @@ export const Modal = ({
         }}
         width={width}
         styles={{ body: { padding: 0 } }}
-        open={open}
+        open={show}
       >
         <div
           onClick={(e) => e.stopPropagation()}
@@ -164,7 +161,7 @@ export const Modal = ({
           <Hidden hidden={closable === false}>
             <Button
               onClick={() => {
-                cancel();
+                cancelClose();
               }}
               type="text"
               icon={<CloseOutlined />}
@@ -187,7 +184,7 @@ export const Modal = ({
                 block
                 onClick={(e) => {
                   e.stopPropagation();
-                  cancel();
+                  cancelClose();
                 }}
               >
                 {cancelText || '关闭'}
@@ -198,7 +195,7 @@ export const Modal = ({
                 block
                 onClick={(e) => {
                   e.stopPropagation();
-                  ok();
+                  okClose();
                 }}
               >
                 {okText ?? '保存'}
@@ -213,7 +210,7 @@ export const Modal = ({
       onClick={
         maskClosable !== false
           ? () => {
-              cancel();
+              cancelClose();
             }
           : undefined
       }
@@ -249,7 +246,7 @@ export const Modal = ({
         <Hidden hidden={closable === false}>
           <Button
             onClick={() => {
-              cancel();
+              cancelClose();
             }}
             type="text"
             icon={<CloseOutlined />}
@@ -280,7 +277,7 @@ export const Modal = ({
               style={{ maxWidth: 200 }}
               onClick={(e) => {
                 e.stopPropagation();
-                cancel();
+                cancelClose();
               }}
             >
               {cancelText || '关闭'}
@@ -292,7 +289,7 @@ export const Modal = ({
               style={{ maxWidth: 200 }}
               onClick={(e) => {
                 e.stopPropagation();
-                ok();
+                okClose();
               }}
             >
               {okText ?? '保存'}

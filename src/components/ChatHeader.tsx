@@ -1,22 +1,17 @@
-import { ChatContext } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks/hooks";
-import {
-  SearchOutlined,
-  SettingOutlined,
-  UnorderedListOutlined,
-  UserAddOutlined
-} from "@ant-design/icons";
-import { Avatar, Drawer, Layout, theme, Typography } from "antd";
-import Image from "next/image";
-import React, { useContext, useState } from "react";
-import { reloadTopic } from "./Chat/Message/MessageList";
-import { ChatList } from "./ChatList";
-import { MemoBackgroundImage } from "./common/BackgroundImage";
-import { Modal } from "./common/Modal";
-import { SkipExport } from "./common/SkipExport";
-import { MemoSearchWrap } from "./Search/Search";
-import { Setting } from "./Setting/Setting";
-import { VirtualRoleConfig } from "./VirtualRoleConfig/VirtualRoleConfig";
+import { ChatContext } from '@/core/ChatManagement';
+import { useScreenSize } from '@/core/hooks/hooks';
+import { SearchOutlined, SettingOutlined, UnorderedListOutlined, UserAddOutlined } from '@ant-design/icons';
+import { Avatar, Drawer, Layout, theme, Typography } from 'antd';
+import Image from 'next/image';
+import React, { useContext, useState } from 'react';
+import { reloadTopic } from './Chat/Message/MessageList';
+import { ChatList } from './ChatList';
+import { MemoBackgroundImage } from './common/BackgroundImage';
+import { Modal } from './common/Modal';
+import { SkipExport } from './common/SkipExport';
+import { MemoSearchWrap } from './Search/Search';
+import { Setting } from './Setting/Setting';
+import { VirtualRoleConfig } from './VirtualRoleConfig/VirtualRoleConfig';
 
 export const ChatHeader = () => {
   const { chatMgt: chat, activityTopic } = useContext(ChatContext);
@@ -29,19 +24,18 @@ export const ChatHeader = () => {
   return (
     <Layout.Header
       style={{
-        flexWrap: "nowrap",
+        flexWrap: 'nowrap',
         // gap: "16px",
-        width: "100%",
-        justifyContent: "flex-end",
-        display: "flex",
-        alignItems: "center",
-        marginBottom: "3px",
-        padding: "0 10px",
+        width: '100%',
+        justifyContent: 'flex-end',
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '3px',
+        padding: '0 10px',
         height: 50,
-        position: "relative",
+        position: 'relative',
         color: token.colorText,
-        borderRadius:
-          "0" + " 0 " + token.borderRadius + "px " + token.borderRadius + "px",
+        borderRadius: '0' + ' 0 ' + token.borderRadius + 'px ' + token.borderRadius + 'px',
         backgroundColor: token.colorFillContent,
       }}
     >
@@ -50,9 +44,9 @@ export const ChatHeader = () => {
           setRoleConfigShow(!roleConfigShow);
         }}
         size={48}
-        style={{ minWidth: "32px", minHeight: "32px" ,marginTop:2}}
+        style={{ minWidth: '32px', minHeight: '32px', marginTop: 2 }}
         src={chat.group.avatar || chat?.virtualRole.avatar || undefined}
-        icon={<Image width={32} height={32} src={"/logo.png"} alt="logo" />}
+        icon={<Image width={32} height={32} src={'/logo.png'} alt="logo" />}
       ></Avatar>
       <span style={{ marginLeft: 10 }}></span>
       <Typography.Text ellipsis onClick={() => setSettingShow(!settingIsShow)}>
@@ -60,19 +54,16 @@ export const ChatHeader = () => {
       </Typography.Text>
       <span style={{ flex: 1 }}></span>
       <SkipExport>
-        <SearchOutlined
-          style={{ padding: "5px 10px" }}
-          onClick={() => setOpenSearch(true)}
-        />
+        <SearchOutlined style={{ padding: '5px 10px' }} onClick={() => setOpenSearch(true)} />
       </SkipExport>
       <Drawer
-        placement={"right"}
+        placement={'right'}
         closable={false}
         width={Math.min(screenSize.width - 40, 400)}
-        key={"search_nav_drawer"}
-        styles={{ body: { padding: "1em 0" } }}
+        key={'search_nav_drawer'}
+        styles={{ body: { padding: '1em 0' } }}
         open={openSearch}
-        maskStyle={{ backgroundColor: "#0000" }}
+        maskStyle={{ backgroundColor: '#0000' }}
         onClose={() => {
           setOpenSearch(false);
         }}
@@ -80,8 +71,8 @@ export const ChatHeader = () => {
         <MemoBackgroundImage />
         <div
           style={{
-            position: "relative",
-            height: "100%",
+            position: 'relative',
+            height: '100%',
             zIndex: 99,
           }}
         >
@@ -89,23 +80,17 @@ export const ChatHeader = () => {
         </div>
       </Drawer>
       <SkipExport>
-        <UserAddOutlined
-          style={{ padding: "5px 10px" }}
-          onClick={() => setRoleConfigShow(!roleConfigShow)}
-        />
+        <UserAddOutlined style={{ padding: '5px 10px' }} onClick={() => setRoleConfigShow(!roleConfigShow)} />
       </SkipExport>
       <SkipExport>
-        <SettingOutlined
-          onClick={() => setSettingShow(!settingIsShow)}
-          style={{ padding: "5px 10px" }}
-        />
+        <SettingOutlined onClick={() => setSettingShow(!settingIsShow)} style={{ padding: '5px 10px' }} />
       </SkipExport>
       <SkipExport>
         <UnorderedListOutlined
           onClick={() => {
             setlistIsShow(!listIsShow);
           }}
-          style={{ padding: "5px 10px" }}
+          style={{ padding: '5px 10px' }}
         />
       </SkipExport>
       <Modal
@@ -119,9 +104,7 @@ export const ChatHeader = () => {
           if (activityTopic) reloadTopic(activityTopic.id);
         }}
         items={(cbs) => {
-          return (
-            <VirtualRoleConfig cbs={cbs} chatMgt={chat}></VirtualRoleConfig>
-          );
+          return <VirtualRoleConfig cbs={cbs} chatMgt={chat}></VirtualRoleConfig>;
         }}
       ></Modal>
       <Modal
