@@ -88,16 +88,15 @@ export const Modal = ({
   }, [cancelClose]);
 
   useEffect(() => {
+    if (!show) return;
     if (thisHash) return;
     if (urlHistory.includes(thisHash)) return;
-    if (show) {
-      let _hash = '#' + zIndex;
-      location.hash = _hash;
-      urlHistory.push(_hash);
-      zIndex++;
-      setUrlHash(_hash);
-    }
-  }, [show, thisHash]);
+    let _hash = '#' + zIndex;
+    router.push(location.href.split('#')[0] + _hash);
+    urlHistory.push(_hash);
+    zIndex++;
+    setUrlHash(_hash);
+  }, [router, show, thisHash]);
 
   const handleBackButton = useMemo(() => {
     return (ev: PopStateEvent | string) => {
