@@ -41,10 +41,16 @@ export function useTxt2Img(chat: ChatManagement) {
           if (!topic.messageMap[msg.id]) return;
           if (!res.images) return;
           res.images?.forEach((base64) => {
-            base64 = 'data:image/png;base64,' + base64;
-            let imgId = ImageStore.getInstance().saveImage(base64);
+            // base64 = 'data:image/png;base64,' + base64;
+            const imageBuffer = Buffer.from(base64, 'base64');
+            const imageView = new Uint8Array(imageBuffer);
+            let image = new Blob([imageView], { type: 'image/png' });
+            let imgId = ImageStore.getInstance().saveImage(image);
             msg.imageIds!.push(imgId);
-            msg.imagesAlts = { ...msg.imagesAlts, [imgId]: res.info };
+            msg.imagesAlts = {
+              ...msg.imagesAlts,
+              [imgId]: JSON.stringify({ ...res.parameters, infotexts: JSON.parse(res.info).infotexts }),
+            };
           });
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
           if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1);
