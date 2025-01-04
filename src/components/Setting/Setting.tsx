@@ -247,7 +247,7 @@ export const Setting = ({
                 width={screenSize.screenWidth}
                 height={screenSize.screenHeight}
                 trigger={
-                  <Button block style={{ width: 'min(220px, 40vw)'}}>
+                  <Button block style={{ width: 'min(220px, 40vw)' }}>
                     设置
                   </Button>
                 }
@@ -579,36 +579,6 @@ export const Setting = ({
                 ),
               },
               {
-                key: 'Slack',
-                label: 'Slack配置',
-                ...panlProp,
-                children: (
-                  <div>
-                    <Form.Item
-                      name="config_channel_id"
-                      label="Slack配置：频道id (channel_id)"
-                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
-                    >
-                      <Input type="text" autoComplete="off" />
-                    </Form.Item>
-                    <Form.Item
-                      name="slack_claude_id"
-                      label="Slack配置：ClaudeID (全局生效)"
-                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-                    >
-                      <Input type="text" autoComplete="off" />
-                    </Form.Item>
-                    <Form.Item
-                      name="slack_user_token"
-                      label="Slack配置：用户token (user-token) (全局生效)"
-                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
-                    >
-                      <Input.Password autoComplete="off" type="text" />
-                    </Form.Item>
-                  </div>
-                ),
-              },
-              {
                 key: 'token',
                 label: '秘钥配置',
                 ...panlProp,
@@ -674,19 +644,49 @@ export const Setting = ({
                       <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
                     <Form.Item
-                      name="setting_slack_proxy_url"
-                      label="Slack配置： 接口访问地址 (全局生效)"
-                      extra="api代理地址 (反向代理了 https://slack.com 的地址)"
+                      name="setting_api_transfer_url"
+                      label="第三方API服务地址 (全局生效)"
+                      extra="如果使用第三方API，可以将地址设置在这里，比如 https://oneapi.huinong.co ; 如果地址不允许跨域访问，可以在地址前面拼接 https://proxy.eaias.com/ ; 如： https://proxy.eaias.com/https://oneapi.huinong.co"
                     >
                       <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
-                    <Form.Item name="setting_user_server_url" label="自定义服务地址" extra="用于访问自建AI服务的地址，比如ChatGLM">
+                    <Form.Item name="setting_user_server_url" label="自定义服务地址" extra="此地址会覆盖除以上设置之外的API服务地址">
                       <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: 'Slack',
+                label: 'Slack配置',
+                ...panlProp,
+                children: (
+                  <div>
                     <Form.Item
-                      name="setting_api_transfer_url"
-                      label="API中转服务地址 (全局生效)"
-                      extra="如果使用API中转服务，可以将地址设置在这里，比如 https://oneapi.huinong.co ; 如果中转地址不允许跨域访问，可以在地址前面拼接 https://proxy.eaias.com/ ; 如： https://proxy.eaias.com/https://oneapi.huinong.co"
+                      name="config_channel_id"
+                      label="Slack配置：频道id (channel_id)"
+                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main 和获取Claude的差不多"
+                    >
+                      <Input type="text" autoComplete="off" />
+                    </Form.Item>
+                    <Form.Item
+                      name="slack_claude_id"
+                      label="Slack配置：ClaudeID (全局生效)"
+                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+                    >
+                      <Input type="text" autoComplete="off" />
+                    </Form.Item>
+                    <Form.Item
+                      name="slack_user_token"
+                      label="Slack配置：用户token (user-token) (全局生效)"
+                      extra="获取方式参考： https://github.com/bincooo/claude-api/tree/main"
+                    >
+                      <Input.Password autoComplete="off" type="text" />
+                    </Form.Item>
+                    <Form.Item
+                      name="setting_slack_proxy_url"
+                      label="Slack配置： 接口访问地址 (全局生效)"
+                      extra="api代理地址 (反向代理了 https://slack.com 的地址)"
                     >
                       <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>

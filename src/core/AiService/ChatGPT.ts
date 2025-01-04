@@ -1,8 +1,8 @@
-import { getToken, nextToken } from "@/core/tokens";
-import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage, OpenAIApi } from "openai";
-import { IAiService, InputConfig } from "./IAiService";
-import { aiServiceType, ServiceTokens } from "./ServiceProvider";
+import { getToken, nextToken } from '@/core/tokens';
+import { Message } from '@/Models/DataBase';
+import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
+import { IAiService, InputConfig } from './IAiService';
+import { aiServiceType, ServiceTokens } from './ServiceProvider';
 export class ChatGPT implements IAiService {
   customContext = true;
   history = undefined;
@@ -13,15 +13,15 @@ export class ChatGPT implements IAiService {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
     this.client = new OpenAIApi({
-      basePath: baseUrl + "/v1",
+      basePath: baseUrl + '/v1',
       apiKey: tokens.openai?.apiKey,
       isJsonMime: (mime: string) => {
         return true;
       },
       baseOptions: {
         headers: {
-          Authorization: "Bearer " + tokens.openai?.apiKey,
-          "ngrok-skip-browser-warning": 0,
+          Authorization: 'Bearer ' + tokens.openai?.apiKey,
+          'ngrok-skip-browser-warning': 0,
         },
         timeout: 1000 * 60 * 5,
       },
@@ -29,7 +29,7 @@ export class ChatGPT implements IAiService {
   }
   severConfig: any;
   setConfig?: ((config: any) => void) | undefined;
-  serverType: aiServiceType = "ChatGPT";
+  serverType: aiServiceType = 'ChatGPT';
   static modelCache: string[] = [];
   models = async () => {
     if (ChatGPT.modelCache.length) return ChatGPT.modelCache;
@@ -39,15 +39,15 @@ export class ChatGPT implements IAiService {
       return [];
     }
     this.client = new OpenAIApi({
-      basePath: this.baseUrl + "/v1",
+      basePath: this.baseUrl + '/v1',
       apiKey: this.tokens.openai?.apiKey,
       isJsonMime: (mime: string) => {
         return true;
       },
       baseOptions: {
         headers: {
-          Authorization: "Bearer " + token.current,
-          "ngrok-skip-browser-warning": 0,
+          Authorization: 'Bearer ' + token.current,
+          'ngrok-skip-browser-warning': 0,
         },
         timeout: 1000 * 60 * 5,
       },
@@ -56,30 +56,29 @@ export class ChatGPT implements IAiService {
       .listModels()
       .then((res) => res.data)
       .then((res) => {
-        ChatGPT.modelCache = (res.data || [])
-          .map((m) => m.id)
-          .filter(
-            (f) =>
-              f.toLowerCase().includes("gpt") ||
-              f.toLowerCase().includes("text") ||
-              f.toLowerCase().includes("code")
-          );
+        ChatGPT.modelCache = (res.data || []).map((m) => m.id);
+        // .filter(
+        //   (f) =>
+        //     f.toLowerCase().includes("gpt") ||
+        //     f.toLowerCase().includes("text") ||
+        //     f.toLowerCase().includes("code")
+        // );
         return ChatGPT.modelCache;
       })
       .catch((err) => this.defaultModels);
   };
   defaultModels = [
-    "gpt-3.5-turbo",
-    "gpt-3.5-turbo-0301",
-    "gpt-3.5-turbo-16k",
-    "gpt-3.5-turbo-0613",
-    "gpt-3.5-turbo-16k-0613",
-    "gpt-4",
-    "gpt-4-0314",
-    "gpt-4-32k",
-    "gpt-4-32k-0314",
-    "text-davinci-003",
-    "text-davinci-002	",
+    'gpt-3.5-turbo',
+    'gpt-3.5-turbo-0301',
+    'gpt-3.5-turbo-16k',
+    'gpt-3.5-turbo-0613',
+    'gpt-3.5-turbo-16k-0613',
+    'gpt-4',
+    'gpt-4-0314',
+    'gpt-4-32k',
+    'gpt-4-32k-0314',
+    'text-davinci-003',
+    'text-davinci-002	',
   ];
   async sendMessage({
     context,
@@ -88,42 +87,37 @@ export class ChatGPT implements IAiService {
   }: {
     msg: Message;
     context: ChatCompletionRequestMessage[];
-    onMessage: (msg: {
-      error: boolean;
-      text: string;
-      end: boolean;
-      stop?: (() => void) | undefined;
-    }) => Promise<void>;
+    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     var token = getToken(this.serverType);
     if (context.length == 0) {
-      return onMessage({ error: true, end: true, text: "请勿发送空内容。" });
+      return onMessage({ error: true, end: true, text: '请勿发送空内容。' });
     }
     if (!token.current) {
       return onMessage({
         error: true,
         end: true,
-        text: "请填写API key后继续使用。",
+        text: '请填写API key后继续使用。',
       });
     }
     this.tokens.openai!.apiKey = token.current;
     nextToken(token);
-    if (config.model.startsWith("gpt-3")) {
+    if (config.model.startsWith('gpt-3')) {
       await this.generateChatStream(context, config, onMessage);
-    } else if (config.model.startsWith("gpt-4")) {
+    } else if (config.model.startsWith('gpt-4')) {
       await this.generateChatStream(context, config, onMessage);
     } else {
       this.client = new OpenAIApi({
-        basePath: this.baseUrl + "/v1",
+        basePath: this.baseUrl + '/v1',
         apiKey: this.tokens.openai?.apiKey,
         isJsonMime: (mime: string) => {
           return true;
         },
         baseOptions: {
           headers: {
-            Authorization: "Bearer " + this.tokens.openai?.apiKey,
-            "ngrok-skip-browser-warning": 0,
+            Authorization: 'Bearer ' + this.tokens.openai?.apiKey,
+            'ngrok-skip-browser-warning': 0,
           },
           timeout: 1000 * 60 * 5,
         },
@@ -131,7 +125,7 @@ export class ChatGPT implements IAiService {
       try {
         let res = await this.client.createCompletion({
           model: config.model,
-          prompt: context.map((v) => v.content).join("\n"),
+          prompt: context.map((v) => v.content).join('\n'),
           stream: false,
           temperature: config.temperature,
           top_p: config.top_p,
@@ -144,7 +138,7 @@ export class ChatGPT implements IAiService {
         await onMessage({
           end: true,
           error: false,
-          text: res.data.choices[0].text || "",
+          text: res.data.choices[0].text || '',
         });
       } catch (error: any) {
         await onMessage({
@@ -152,9 +146,7 @@ export class ChatGPT implements IAiService {
           error: true,
           text:
             error.response && error.response.data
-              ? "```json\n" +
-                JSON.stringify(error.response.data, null, 4) +
-                "\n```"
+              ? '```json\n' + JSON.stringify(error.response.data, null, 4) + '\n```'
               : error.message || error,
         });
       }
@@ -163,17 +155,12 @@ export class ChatGPT implements IAiService {
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
-    onMessage: (msg: {
-      error: boolean;
-      text: string;
-      end: boolean;
-      stop?: () => void;
-    }) => Promise<void>
+    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: () => void }) => Promise<void>
   ) {
-    let full_response = "";
+    let full_response = '';
     const headers = {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
     const data = {
       model: config.model,
@@ -190,14 +177,14 @@ export class ChatGPT implements IAiService {
     const controller = new AbortController();
     try {
       let response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
-        method: "POST",
+        method: 'POST',
         headers: headers,
         body: JSON.stringify(data),
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
         signal: controller.signal,
       });
       if (!response.ok) {
@@ -205,16 +192,14 @@ export class ChatGPT implements IAiService {
           error: true,
           end: true,
           text:
-            "\n\n 请求发生错误。\n\n" +
-            "token: ... " +
-            headers.Authorization.slice(
-              Math.max(-headers.Authorization.length, -10)
-            ) +
-            "\n\n" +
+            '\n\n 请求发生错误。\n\n' +
+            'token: ... ' +
+            headers.Authorization.slice(Math.max(-headers.Authorization.length, -10)) +
+            '\n\n' +
             response.status +
-            " " +
+            ' ' +
             response.statusText +
-            "\n\n" +
+            '\n\n' +
             (await response.text()),
         });
         return;
@@ -236,13 +221,13 @@ export class ChatGPT implements IAiService {
             });
             break;
           }
-          const decodedValue = new TextDecoder("utf-8").decode(value);
-          const lines = decodedValue.split("\n");
+          const decodedValue = new TextDecoder('utf-8').decode(value);
+          const lines = decodedValue.split('\n');
           for (const line of lines) {
-            if (line.trim() === "") {
+            if (line.trim() === '') {
               continue;
             }
-            if (line.trim() === "data: [DONE]") {
+            if (line.trim() === 'data: [DONE]') {
               await onMessage({
                 error: false,
                 end: true,
@@ -265,7 +250,7 @@ export class ChatGPT implements IAiService {
               if (!delta) {
                 continue;
               }
-              if ("content" in delta) {
+              if ('content' in delta) {
                 const content = delta.content;
                 full_response += content;
                 await onMessage({
@@ -277,7 +262,7 @@ export class ChatGPT implements IAiService {
               }
             } catch (error) {
               console.error(error);
-              console.error("出错的内容：", line);
+              console.error('出错的内容：', line);
               continue;
             }
           }
@@ -285,17 +270,17 @@ export class ChatGPT implements IAiService {
         return full_response;
       }
     } catch (error: any) {
-      if (error.name === "AbortError") {
+      if (error.name === 'AbortError') {
         onMessage({
           error: true,
           end: true,
-          text: full_response + "\n\n 请求已终止。",
+          text: full_response + '\n\n 请求已终止。',
         });
       } else {
         onMessage({
           error: true,
           end: true,
-          text: full_response + "\n\n 请求发生错误。\n\n" + error,
+          text: full_response + '\n\n 请求发生错误。\n\n' + error,
         });
       }
     }

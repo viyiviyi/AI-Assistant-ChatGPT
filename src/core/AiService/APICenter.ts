@@ -1,8 +1,8 @@
-import { getToken, nextToken } from "@/core/tokens";
-import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage, OpenAIApi } from "openai";
-import { IAiService, InputConfig } from "./IAiService";
-import { aiServiceType, ServiceTokens } from "./ServiceProvider";
+import { getToken, nextToken } from '@/core/tokens';
+import { Message } from '@/Models/DataBase';
+import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
+import { IAiService, InputConfig } from './IAiService';
+import { aiServiceType, ServiceTokens } from './ServiceProvider';
 export class APICenter implements IAiService {
   customContext = true;
   history = undefined;
@@ -16,7 +16,7 @@ export class APICenter implements IAiService {
   }
   severConfig: any;
   setConfig?: ((config: any) => void) | undefined;
-  serverType: aiServiceType = "APICenter";
+  serverType: aiServiceType = 'APICenter';
   static modelCache: string[] = [];
   models = async () => {
     if (APICenter.modelCache.length) return APICenter.modelCache;
@@ -26,15 +26,15 @@ export class APICenter implements IAiService {
       return [];
     }
     this.client = new OpenAIApi({
-      basePath: this.baseUrl + "/v1",
+      basePath: this.baseUrl + '/v1',
       apiKey: this.tokens.openai?.apiKey,
       isJsonMime: (mime: string) => {
         return true;
       },
       baseOptions: {
         headers: {
-          Authorization: "Bearer " + token.current,
-          "ngrok-skip-browser-warning": 0,
+          Authorization: 'Bearer ' + token.current,
+          'ngrok-skip-browser-warning': 0,
         },
         timeout: 1000 * 60 * 5,
       },
@@ -43,16 +43,15 @@ export class APICenter implements IAiService {
       .listModels()
       .then((res) => res.data)
       .then((res) => {
-        APICenter.modelCache = (res.data || [])
-          .map((m) => m.id)
-          .filter(
-            (f) =>
-              f.toLowerCase().includes("gpt") ||
-              f.toLowerCase().includes("text") ||
-              f.toLowerCase().includes("code") ||
-              f.toLowerCase().includes("claude") ||
-              f.toLowerCase().includes("glm")
-          );
+        APICenter.modelCache = (res.data || []).map((m) => m.id);
+        // .filter(
+        //   (f) =>
+        //     f.toLowerCase().includes("gpt") ||
+        //     f.toLowerCase().includes("text") ||
+        //     f.toLowerCase().includes("code") ||
+        //     f.toLowerCase().includes("claude") ||
+        //     f.toLowerCase().includes("glm")
+        // );
         return APICenter.modelCache;
       })
       .catch((err) => []);
@@ -64,12 +63,7 @@ export class APICenter implements IAiService {
   }: {
     msg: Message;
     context: ChatCompletionRequestMessage[];
-    onMessage: (msg: {
-      error: boolean;
-      text: string;
-      end: boolean;
-      stop?: (() => void) | undefined;
-    }) => Promise<void>;
+    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     var token = getToken(this.serverType);
@@ -77,89 +71,34 @@ export class APICenter implements IAiService {
       return await onMessage({
         error: true,
         end: true,
-        text: "请勿发送空内容。",
+        text: '请勿发送空内容。',
       });
     }
     if (!token.current) {
       return await onMessage({
         error: true,
         end: true,
-        text: "请填写API key后继续使用。",
+        text: '请填写API key后继续使用。',
       });
     }
     await onMessage({
       end: false,
       error: false,
-      text: "",
+      text: '',
     });
     this.tokens.openai!.apiKey = token.current;
     nextToken(token);
-    if (
-      config.model.toLowerCase().includes("claude") ||
-      config.model.toLowerCase().includes("gpt")
-    ) {
-      await this.generateChatStream(context, config, onMessage);
-    } else {
-      this.client = new OpenAIApi({
-        basePath: this.baseUrl + "/v1",
-        apiKey: this.tokens.openai?.apiKey,
-        isJsonMime: (mime: string) => {
-          return true;
-        },
-        baseOptions: {
-          headers: {
-            Authorization: "Bearer " + this.tokens.openai?.apiKey,
-            "ngrok-skip-browser-warning": 0,
-          },
-          timeout: 1000 * 60 * 5,
-        },
-      });
-      try {
-        let res = await this.client.createCompletion({
-          model: config.model,
-          prompt: context.map((v) => v.content).join("\n"),
-          stream: false,
-          temperature: config.temperature,
-          top_p: config.top_p,
-          max_tokens: config.max_tokens,
-          n: config.n,
-          user: config.user,
-          frequency_penalty: config.frequency_penalty || 0,
-          presence_penalty: config.presence_penalty || 0,
-        });
-        await onMessage({
-          end: true,
-          error: false,
-          text: res.data.choices[0].text || "",
-        });
-      } catch (error: any) {
-        await onMessage({
-          end: true,
-          error: true,
-          text:
-            error.response && error.response.data
-              ? "```json\n" +
-                JSON.stringify(error.response.data, null, 4) +
-                "\n```"
-              : error.message || error,
-        });
-      }
-    }
+    await this.generateChatStream(context, config, onMessage);
   }
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
-    onMessage: (msg: {
-      error: boolean;
-      text: string;
-      end: boolean;
-      stop?: () => void;
-    }) => Promise<void>
+    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: () => void }) => Promise<void>
   ) {
-    let full_response = "";
+    let full_response = '';
     const headers = {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
     const data = {
       model: config.model,
@@ -176,14 +115,14 @@ export class APICenter implements IAiService {
     const controller = new AbortController();
     try {
       let response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
-        method: "POST",
+        method: 'POST',
         headers: headers,
         body: JSON.stringify(data),
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
         signal: controller.signal,
       });
       if (!response.ok) {
@@ -191,16 +130,14 @@ export class APICenter implements IAiService {
           error: true,
           end: true,
           text:
-            "\n\n 请求发生错误。\n\n" +
-            "token: ... " +
-            headers.Authorization.slice(
-              Math.max(-headers.Authorization.length, -10)
-            ) +
-            "\n\n" +
+            '\n\n 请求发生错误。\n\n' +
+            'token: ... ' +
+            headers.Authorization.slice(Math.max(-headers.Authorization.length, -10)) +
+            '\n\n' +
             response.status +
-            " " +
+            ' ' +
             response.statusText +
-            "\n\n" +
+            '\n\n' +
             (await response.text()),
         });
         return;
@@ -222,13 +159,13 @@ export class APICenter implements IAiService {
             });
             break;
           }
-          const decodedValue = new TextDecoder("utf-8").decode(value);
-          const lines = decodedValue.split("\n");
+          const decodedValue = new TextDecoder('utf-8').decode(value);
+          const lines = decodedValue.split('\n');
           for (const line of lines) {
-            if (line.trim() === "") {
+            if (line.trim() === '') {
               continue;
             }
-            if (line.trim() === "data: [DONE]") {
+            if (line.trim() === 'data: [DONE]') {
               await onMessage({
                 error: false,
                 end: true,
@@ -251,7 +188,7 @@ export class APICenter implements IAiService {
               if (!delta) {
                 continue;
               }
-              if ("content" in delta) {
+              if ('content' in delta) {
                 const content = delta.content;
                 full_response += content;
                 await onMessage({
@@ -263,7 +200,7 @@ export class APICenter implements IAiService {
               }
             } catch (error) {
               console.error(error);
-              console.error("出错的内容：", line);
+              console.error('出错的内容：', line);
               continue;
             }
           }
@@ -271,17 +208,17 @@ export class APICenter implements IAiService {
         return full_response;
       }
     } catch (error: any) {
-      if (error.name === "AbortError") {
+      if (error.name === 'AbortError') {
         onMessage({
           error: true,
           end: true,
-          text: full_response + "\n\n 请求已终止。",
+          text: full_response + '\n\n 请求已终止。',
         });
       } else {
         onMessage({
           error: true,
           end: true,
-          text: full_response + "\n\n 请求发生错误。\n\n" + error,
+          text: full_response + '\n\n 请求发生错误。\n\n' + error,
         });
       }
     }
