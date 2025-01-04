@@ -46,10 +46,19 @@ export function useTxt2Img(chat: ChatManagement) {
             const imageView = new Uint8Array(imageBuffer);
             let image = new Blob([imageView], { type: 'image/png' });
             let imgId = ImageStore.getInstance().saveImage(image);
+            let imgInfo = JSON.parse(res.info);
             msg.imageIds!.push(imgId);
             msg.imagesAlts = {
               ...msg.imagesAlts,
-              [imgId]: JSON.stringify({ ...res.parameters, infotexts: JSON.parse(res.info).infotexts }),
+              [imgId]: JSON.stringify({
+                ...res.parameters,
+                infotexts: imgInfo.infotexts,
+                seed: imgInfo.seed,
+                sampler_name: imgInfo.sampler_name,
+                subseed: imgInfo.subseed,
+                subseed_strength: imgInfo.subseed_strength,
+                override_settings: { ...(res.parameters as any).override_settings, ...imgInfo.override_settings },
+              }),
             };
           });
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');

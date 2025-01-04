@@ -4,7 +4,6 @@ import { useService } from '@/core/AiService/ServiceProvider';
 import { ChatContext } from '@/core/ChatManagement';
 import { ImageStore } from '@/core/db/ImageDb';
 import { StableDiffusionProcessingTxt2Img, StableDiffusionProcessingTxt2ImgFromJSONTyped } from '@/core/drawApi';
-import { getTxt2ImgParmas } from '@/core/drawApi/storage';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
 import { createThrottleAndDebounce, downloadBase64Image, downloadBlob, onTextareaTab } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
@@ -734,17 +733,7 @@ const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
                     let info = (msg.imagesAlts || {})[imageIds[current || 0]];
                     if (!info) return;
                     let json = info ? JSON.parse(info) : {};
-                    let defaultParam = getTxt2ImgParmas() || {};
                     let param = StableDiffusionProcessingTxt2ImgFromJSONTyped(json, false);
-                    param.samplerIndex = param.samplerName;
-                    param.scheduler = param.scheduler || 'automatic';
-                    param.overrideSettings = param.overrideSettings || defaultParam.overrideSettings || {};
-                    param.enableHr = param.enableHr || defaultParam.enableHr;
-                    param.hrScale = param.hrScale || defaultParam.hrScale;
-                    param.hrScheduler = param.hrScheduler || defaultParam.hrScheduler;
-                    param.hrSecondPassSteps = param.hrSecondPassSteps || defaultParam.hrSecondPassSteps;
-                    param.denoisingStrength = param.denoisingStrength || defaultParam.denoisingStrength;
-                    // console.log(param);
                     setInfo(param);
                     setPopup(true);
                   }}
