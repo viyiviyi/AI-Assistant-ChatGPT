@@ -58,6 +58,9 @@ export function useTxt2Img(chat: ChatManagement) {
                 subseed: imgInfo.subseed,
                 subseed_strength: imgInfo.subseed_strength,
                 override_settings: { ...(res.parameters as any).override_settings, ...imgInfo.override_settings },
+                prompt: imgInfo.prompt,
+                negative_prompt: imgInfo.negative_prompt,
+                styles: [],
               }),
             };
           });
