@@ -40,6 +40,7 @@ export function useTxt2Img(chat: ChatManagement) {
         .then((res) => {
           if (!topic.messageMap[msg.id]) return;
           if (!res.images) return;
+          let imageIds: string[] = [];
           res.images?.forEach((base64) => {
             // base64 = 'data:image/png;base64,' + base64;
             const imageBuffer = Buffer.from(base64, 'base64');
@@ -47,7 +48,7 @@ export function useTxt2Img(chat: ChatManagement) {
             let image = new Blob([imageView], { type: 'image/png' });
             let imgId = ImageStore.getInstance().saveImage(image);
             let imgInfo = JSON.parse(res.info);
-            msg.imageIds!.push(imgId);
+            imageIds.push(imgId);
             msg.imagesAlts = {
               ...msg.imagesAlts,
               [imgId]: JSON.stringify({
@@ -65,7 +66,7 @@ export function useTxt2Img(chat: ChatManagement) {
             };
           });
           let firstLoadingIdx = msg.imageIds!.indexOf('loading');
-          if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1);
+          if (firstLoadingIdx != -1) msg.imageIds!.splice(firstLoadingIdx, 1, ...imageIds);
           msg.imageIds = [...(msg.imageIds || [])];
           chat.pushMessage(msg).then((msg) => {
             reloadTopic(topic.id, msg.id);

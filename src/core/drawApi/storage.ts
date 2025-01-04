@@ -10,6 +10,8 @@ import {
 } from './models';
 import { Configuration } from './runtime';
 
+let overrideSettingsKeys = ['CLIP_stop_at_last_layers', 'sd_model_checkpoint', 'sd_vae'];
+
 export type Img2ImgParams = StableDiffusionProcessingTxt2Img & {
   overrideSettings: { [key: string]: string | number | boolean };
   extraPrompt?: string;
@@ -41,12 +43,22 @@ export const getSdApiBaseUrl = () => {
 
 let txt2ImgParams: Img2ImgParams;
 export const getTxt2ImgParmas = () => {
-  if (txt2ImgParams) return { ...txt2ImgParams, overrideSettings: { ...txt2ImgParams.overrideSettings } };
-  if (window) txt2ImgParams = JSON.parse(localStorage.getItem('txt2ImgParams') || '{}');
-  return { ...txt2ImgParams, overrideSettings: { ...txt2ImgParams.overrideSettings } };
+  if (!txt2ImgParams) {
+    if (window) txt2ImgParams = JSON.parse(localStorage.getItem('txt2ImgParams') || '{}');
+  }
+  txt2ImgParams.overrideSettings = txt2ImgParams.overrideSettings || {};
+  let overrideSettings: { [key: string]: string | number | boolean } = {};
+  overrideSettingsKeys.forEach((key) => {
+    overrideSettings[key] = txt2ImgParams.overrideSettings[key];
+  });
+  return { ...txt2ImgParams, overrideSettings: overrideSettings };
 };
 
 export const saveTxt2ImgParmas = (params: Img2ImgParams) => {
-  txt2ImgParams = { ...params, overrideSettings: { ...params.overrideSettings } };
+  let overrideSettings: { [key: string]: string | number | boolean } = {};
+  overrideSettingsKeys.forEach((key) => {
+    overrideSettings[key] = params.overrideSettings[key];
+  });
+  txt2ImgParams = { ...params, overrideSettings: overrideSettings };
   if (window) localStorage.setItem('txt2ImgParams', JSON.stringify(params));
 };

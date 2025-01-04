@@ -100,7 +100,11 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
               <>
                 <Flex gap={10}>
                   <Form.Item label="采样器(Sampler)" style={{ width: '50%' }}>
-                    <Select value={params.samplerIndex} onChange={(e) => ((params.samplerIndex = e), reload([]))} allowClear>
+                    <Select
+                      value={params.samplerIndex || params.samplerName}
+                      onChange={(e) => ((params.samplerName = params.samplerIndex = e), reload([]))}
+                      allowClear
+                    >
                       {cacheStore.samplerList?.map((v) => (
                         <Select.Option key={v.name} value={v.name}>
                           {v.name}
