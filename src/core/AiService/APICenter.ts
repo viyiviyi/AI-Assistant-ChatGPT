@@ -17,9 +17,9 @@ export class APICenter implements IAiService {
   severConfig: any;
   setConfig?: ((config: any) => void) | undefined;
   serverType: aiServiceType = 'APICenter';
-  static modelCache: string[] = [];
+   modelCache: string[] = [];
   models = async () => {
-    if (APICenter.modelCache.length) return APICenter.modelCache;
+    if (this.modelCache.length) return this.modelCache;
     var token = getToken(this.serverType);
     if (!token.current) {
       nextToken(token);
@@ -43,7 +43,7 @@ export class APICenter implements IAiService {
       .listModels()
       .then((res) => res.data)
       .then((res) => {
-        APICenter.modelCache = (res.data || []).map((m) => m.id);
+        this.modelCache = (res.data || []).map((m) => m.id);
         // .filter(
         //   (f) =>
         //     f.toLowerCase().includes("gpt") ||
@@ -52,7 +52,7 @@ export class APICenter implements IAiService {
         //     f.toLowerCase().includes("claude") ||
         //     f.toLowerCase().includes("glm")
         // );
-        return APICenter.modelCache;
+        return this.modelCache;
       })
       .catch((err) => []);
   };

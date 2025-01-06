@@ -16,7 +16,8 @@ import {
   DownloadOutlined,
   EditOutlined,
   ForwardOutlined,
-  InfoCircleOutlined, MessageOutlined,
+  InfoCircleOutlined,
+  MessageOutlined,
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
@@ -388,12 +389,12 @@ export const MessageItem = ({
                   }));
                 }
               }}
-              onFocus={(e) => {
-                e.target.selectionStart = msg.text.length;
-                e.target.selectionEnd = msg.text.length;
-              }}
+              // onFocus={(e) => {
+              //   e.target.selectionStart = msg.text.length;
+              //   e.target.selectionEnd = msg.text.length;
+              // }}
               // ref={inputRef}
-              autoFocus={true}
+              // autoFocus={true}
             />
           </>
         ) : (
@@ -738,7 +739,7 @@ const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
                     setPopup(true);
                   }}
                 />
-              )}  
+              )}
               {(msg.imagesAlts || {})[imageIds[current || 0]] && (
                 <InfoCircleOutlined
                   disabled={scale === 50}
