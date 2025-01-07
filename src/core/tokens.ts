@@ -1,8 +1,8 @@
-import { aiServiceType } from "@/core/AiService/ServiceProvider";
-import { getInstance } from "ts-indexdb";
-import { aiServerList } from "./AiService/ServiceProvider";
-import { KeyValue } from "./db/IndexDb";
-import { KeyValueData } from "./db/KeyValueData";
+import { aiServiceType } from '@/core/AiService/ServiceProvider';
+import { getInstance } from 'ts-indexdb';
+import { aiServerList } from './AiService/ServiceProvider';
+import { KeyValue } from './db/IndexDb';
+import { KeyValueData } from './db/KeyValueData';
 
 export type TokenStore = {
   current: string;
@@ -13,25 +13,30 @@ const cache: { [key in aiServiceType]?: TokenStore } = {};
 let isInit = false;
 export async function initTokenStore() {
   const tokens = await getInstance().queryAll<KeyValue>({
-    tableName: "GlobalTokens",
+    tableName: 'GlobalTokens',
   });
   tokens.forEach((v) => {
     let ket: aiServiceType = v.id as aiServiceType;
     cache[ket] = v.data;
   });
   let gptTolen = KeyValueData.instance().getApiKey();
-  if (gptTolen && gptTolen != "undefined") {
-    cache["ChatGPT"] = getToken("ChatGPT");
-    if (!cache["ChatGPT"].tokens.includes(gptTolen)) {
-      cache["ChatGPT"].tokens.push(gptTolen);
-      if (!cache["ChatGPT"].current) cache["ChatGPT"].current = gptTolen;
-      saveToken("ChatGPT", cache["ChatGPT"]);
+  if (gptTolen && gptTolen != 'undefined') {
+    cache['ChatGPT'] = getToken('ChatGPT');
+    if (!cache['ChatGPT'].tokens.includes(gptTolen)) {
+      cache['ChatGPT'].tokens.push(gptTolen);
+      if (!cache['ChatGPT'].current) cache['ChatGPT'].current = gptTolen;
+      saveToken('ChatGPT', cache['ChatGPT']);
     }
   }
-  aiServerList.forEach((s) => {
+  [
+    ...aiServerList,
+    ...KeyValueData.instance()
+      .getaiServerList()
+      .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
+  ].forEach((s) => {
     if (!cache[s.key]) {
       cache[s.key] = getToken(s.key);
-      saveToken("Slack", cache[s.key]!);
+      saveToken('Slack', cache[s.key]!);
     }
   });
   isInit = true;
@@ -40,7 +45,7 @@ export function getTokens() {
   return Object.values(cache);
 }
 export function getToken(botType: aiServiceType): TokenStore {
-  return cache[botType] || { current: "", tokens: [] };
+  return cache[botType] || { current: '', tokens: [] };
 }
 export function nextToken(token: TokenStore): TokenStore {
   if (token.tokens.length > 1) {
@@ -62,7 +67,7 @@ export function saveToken(botType: aiServiceType, token: TokenStore) {
   let tokensCache = getToken(botType);
   Object.assign(tokensCache, token);
   getInstance().insert<KeyValue>({
-    tableName: "GlobalTokens",
+    tableName: 'GlobalTokens',
     data: { id: botType, data: tokensCache },
   });
 }

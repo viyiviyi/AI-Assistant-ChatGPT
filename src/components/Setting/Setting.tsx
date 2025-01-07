@@ -108,7 +108,12 @@ export const Setting = ({
       group_name: chatMgt?.group.name,
       ...(() => {
         let d: { [key: string]: string[] } = {};
-        aiServerList.forEach((v) => {
+        [
+          ...aiServerList,
+          ...KeyValueData.instance()
+            .getaiServerList()
+            .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
+        ].forEach((v) => {
           let t = getToken(v.key);
           d['global_tokens_' + v.key] = t.tokens;
         });
@@ -149,6 +154,7 @@ export const Setting = ({
     chatMgt.gptConfig.frequency_penalty = values.GptConfig_frequency_penalty;
     if (aiServices.current?.setConfig) {
       chatMgt.gptConfig.aiServerConfig = aiServices.current?.setConfig({
+        model: chatMgt.gptConfig.model,
         connectors: values.chat_connectors?.map((v) => ({ id: v })) ?? [],
       });
     }

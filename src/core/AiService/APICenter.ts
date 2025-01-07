@@ -1,5 +1,5 @@
 import { getToken, nextToken } from '@/core/tokens';
-import { Message } from '@/Models/DataBase';
+import { GptConfig, Message } from '@/Models/DataBase';
 import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
@@ -9,15 +9,23 @@ export class APICenter implements IAiService {
   client: OpenAIApi;
   baseUrl: string;
   tokens: ServiceTokens;
-  constructor(baseUrl: string, tokens: ServiceTokens) {
+  constructor(baseUrl: string, tokens: ServiceTokens, config?: GptConfig) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
     this.client = new OpenAIApi();
+    this.severConfig = config?.aiServerConfig || { model: '' };
   }
-  severConfig: any;
-  setConfig?: ((config: any) => void) | undefined;
+  severConfig: { model: string } = { model: '' };
+  setConfig?: ((config: any) => void) | undefined = (config: any) => {
+    if (typeof config === 'object' && 'model' in config) {
+      if (Array.isArray(config.model)) {
+        this.severConfig.model = config.model;
+        return this.severConfig;
+      }
+    }
+  };
   serverType: aiServiceType = 'APICenter';
-   modelCache: string[] = [];
+  modelCache: string[] = [];
   models = async () => {
     if (this.modelCache.length) return this.modelCache;
     var token = getToken(this.serverType);
@@ -44,6 +52,9 @@ export class APICenter implements IAiService {
       .then((res) => res.data)
       .then((res) => {
         this.modelCache = (res.data || []).map((m) => m.id);
+        if (!this.modelCache.includes(this.severConfig.model) && this.modelCache.length) {
+          this.severConfig.model = this.modelCache[0];
+        }
         // .filter(
         //   (f) =>
         //     f.toLowerCase().includes("gpt") ||
@@ -101,7 +112,7 @@ export class APICenter implements IAiService {
       'Content-Type': 'application/json',
     };
     const data = {
-      model: config.model,
+      model: this.severConfig.model || config.model,
       messages: context,
       stream: true,
       max_tokens: config.max_tokens,

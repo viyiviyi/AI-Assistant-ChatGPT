@@ -3,7 +3,7 @@ import { KeyValueData } from '../db/KeyValueData';
 import { ChatGLM_API } from './ChatGLM_API';
 import { Kamiya } from './Kamiya API';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { env } from '../hooks/hooks';
 import { getToken } from '../tokens';
 import { IChat } from './../ChatManagement';
@@ -154,7 +154,9 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
     case 'None':
       return undefined;
     default:
-      return new APICenter(botType, tokens);
+      const s = new APICenter(botType, tokens, chat.gptConfig);
+      s.serverType = botType;
+      return s;
   }
 }
 
@@ -166,17 +168,17 @@ export function useService() {
     setService(_service);
     aiServices.current = _service;
   }, []);
-  useEffect(() => {
-    let ls = KeyValueData.instance().getaiServerList();
-    ls.map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })).forEach((v) => {
-      let item = aiServerList.find((v2) => v2.key == v.key);
-      if (item) {
-        Object.assign(item, v);
-      } else {
-        aiServerList.push(v);
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   let ls = KeyValueData.instance().getaiServerList();
+  //   ls.map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })).forEach((v) => {
+  //     let item = aiServerList.find((v2) => v2.key == v.key);
+  //     if (item) {
+  //       Object.assign(item, v);
+  //     } else {
+  //       aiServerList.push(v);
+  //     }
+  //   });
+  // }, []);
 
   return { reloadService, aiService: aiServices.current };
 }
