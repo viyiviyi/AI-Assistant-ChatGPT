@@ -28,6 +28,8 @@
 - [ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api)
 - 可以使用[Chub](https://chub.ai)的角色设定了，在设定的扩展里打开相关的功能即可，在用来角色扮演时会更好用，不过依然比不上类酒馆软件。
 - 支持使用[cohere.ai](https://dashboard.cohere.com/api-keys)的api key 来使用cohere.ai的模型，参数合设定写法有些差异，需要适当调整。
+- 可以自己添加兼容ChatGPT接口的APi服务，并可独立配置token和切换
+- 增加了可调用Stable-Diffusion-Webui Api 绘图的功能，当选中文字时可以打开弹窗配置地址和参数并生成图片
 
 ![主界面截图](./主界面预览.webp)
 

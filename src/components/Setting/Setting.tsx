@@ -41,7 +41,11 @@ export const Setting = ({
   });
   const [group_background, setGroup_background] = useState(chatMgt?.group.background);
   const [background, setBackground] = useState<string>();
+  const [userAiServer, setUserAiServer] = useState<string[]>([]);
   const { token } = theme.useToken();
+  useEffect(() => {
+    setUserAiServer(KeyValueData.instance().getaiServerList());
+  }, []);
   const [form] = Form.useForm<{
     setting_apitoken: string;
     GptConfig_msgCount: number;
@@ -175,7 +179,11 @@ export const Setting = ({
     KeyValueData.instance().setSlackUserToken(values.slack_user_token, values.config_saveKey);
     KeyValueData.instance().setSlackProxyUrl(values.setting_slack_proxy_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
     KeyValueData.instance().setApiTransferUrl(values.setting_api_transfer_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
-    aiServerList.forEach((v) => {
+    KeyValueData.instance().setaiServerList(userAiServer.filter((f) => f && f != '|'));
+    let userAiServerList = userAiServer
+      .filter((f) => f && f != '|')
+      .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true }));
+    [...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)), ...userAiServerList].forEach((v) => {
       let t = getToken(v.key);
       t.tokens = ((values as any)['global_tokens_' + v.key] as Array<string>)?.filter((v) => v) || [];
       if (!t.tokens.includes(t.current)) t.current = t.tokens[0];
@@ -430,7 +438,10 @@ export const Setting = ({
                   });
               }}
             >
-              {aiServerList.map((v) => (
+              {[
+                ...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)),
+                ...userAiServer.filter((f) => f && f != '|').map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
+              ].map((v) => (
                 <Select.Option key={'ai_type' + v.key} value={v.key}>
                   {v.name}
                 </Select.Option>
@@ -587,7 +598,12 @@ export const Setting = ({
                     <Form.Item style={{ flex: '1' }} name="config_saveKey" valuePropName="checked" label="保存秘钥到浏览器">
                       <Switch />
                     </Form.Item>
-                    {aiServerList
+                    {[
+                      ...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)),
+                      ...userAiServer
+                        .filter((f) => f && f != '|')
+                        .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
+                    ]
                       .filter((s) => s.hasToken)
                       .map((s) => {
                         return (
@@ -650,8 +666,70 @@ export const Setting = ({
                     >
                       <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
                     </Form.Item>
-                    <Form.Item name="setting_user_server_url" label="自定义服务地址" extra="此地址会覆盖除以上设置之外的API服务地址">
+                    <Form.Item
+                      name="setting_user_server_url"
+                      label="自定义服务地址"
+                      extra="此地址会覆盖除以上和自定义服务之外的API服务地址"
+                    >
                       <Input type="text" placeholder="https://xxxx.xx.xx" autoComplete="off" />
+                    </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: 'userAiServer',
+                label: '其他AI服务',
+                ...panlProp,
+                children: (
+                  <div style={{ overflow: 'auto' }}>
+                    {userAiServer.map((val, index) => {
+                      let [name, url] = val.split('|');
+                      return (
+                        <div key={index}>
+                          <Form.Item label={index + 1 + ' 名称'}>
+                            <Input
+                              type="text"
+                              value={name}
+                              onChange={(e) => {
+                                setUserAiServer((v) => {
+                                  v[index] = e.target.value.trim() + '|' + url.trim().replace(/\/+$/, '');
+                                  return [...v];
+                                });
+                              }}
+                              autoComplete="off"
+                            />
+                          </Form.Item>
+                          <Form.Item label={index + 1 + ' 接口地址'}>
+                            <Input
+                              type="text"
+                              value={url}
+                              onChange={(e) => {
+                                setUserAiServer((v) => {
+                                  v[index] = name.trim() + '|' + e.target.value.trim().replace(/\/+$/, '');
+                                  return [...v];
+                                });
+                              }}
+                              autoComplete="off"
+                            />
+                          </Form.Item>
+                        </div>
+                      );
+                    })}
+                    <Form.Item extra="仅支持兼容ChatGPT类型的API服务，如果地址需要跨域，可以尝试在地址前加 https://proxy.eaias.com/">
+                      <Button
+                        type="dashed"
+                        onClick={() => {
+                          setUserAiServer((v) => [...v, '|']);
+                        }}
+                        block
+                        icon={
+                          <SkipExport>
+                            <PlusOutlined />
+                          </SkipExport>
+                        }
+                      >
+                        增加
+                      </Button>
                     </Form.Item>
                   </div>
                 ),

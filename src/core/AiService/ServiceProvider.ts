@@ -3,7 +3,7 @@ import { KeyValueData } from '../db/KeyValueData';
 import { ChatGLM_API } from './ChatGLM_API';
 import { Kamiya } from './Kamiya API';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { env } from '../hooks/hooks';
 import { getToken } from '../tokens';
 import { IChat } from './../ChatManagement';
@@ -64,7 +64,8 @@ export type aiServiceType =
   | 'APICenter'
   | 'CohereAi'
   | 'Oauther'
-  | 'ChatGPT_API';
+  | 'ChatGPT_API'
+  | string;
 export const aiServerList: {
   key: aiServiceType;
   name: string;
@@ -152,6 +153,8 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
       return new APICenter(KeyValueData.instance().getApiTransferUrl() || '', tokens);
     case 'None':
       return undefined;
+    default:
+      return new APICenter(botType, tokens);
   }
 }
 
@@ -162,6 +165,17 @@ export function useService() {
     let _service: IAiService | undefined = getServiceInstance(chat.config.botType, chat);
     setService(_service);
     aiServices.current = _service;
+  }, []);
+  useEffect(() => {
+    let ls = KeyValueData.instance().getaiServerList();
+    ls.map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })).forEach((v) => {
+      let item = aiServerList.find((v2) => v2.key == v.key);
+      if (item) {
+        Object.assign(item, v);
+      } else {
+        aiServerList.push(v);
+      }
+    });
   }, []);
 
   return { reloadService, aiService: aiServices.current };
