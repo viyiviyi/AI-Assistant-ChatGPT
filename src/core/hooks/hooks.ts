@@ -142,13 +142,13 @@ export function useSendMessage(chat: ChatManagement) {
           delete loadingMsgs[result.id];
           delete loadingMessages[result.id];
           currentChat.current = undefined;
-          reloadIndex(topic, idx);
+          reloadIndex(topic, idx + 1);
         },
       };
       chat.pushMessage(result, idx + 1).then((r) => {
         currentPullMessage.id = r.id;
         Object.assign(result, r);
-        reloadTopic(topic.id, idx);
+        reloadTopic(topic.id, idx + 1);
         scrollToBotton(result.id);
       });
       let save = createThrottleAndDebounce((isEnd) => {
