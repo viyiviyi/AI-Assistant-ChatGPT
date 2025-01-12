@@ -148,7 +148,7 @@ export function useSendMessage(chat: ChatManagement) {
       chat.pushMessage(result, idx + 1).then((r) => {
         currentPullMessage.id = r.id;
         Object.assign(result, r);
-        reloadTopic(topic.id);
+        reloadTopic(topic.id, idx);
         scrollToBotton(result.id);
       });
       let save = createThrottleAndDebounce((isEnd) => {

@@ -47,7 +47,6 @@ import { Hidden } from '../../common/Hidden';
 import { MarkdownView } from '../../common/MarkdownView';
 import { SkipExport } from '../../common/SkipExport';
 import { TextEditor } from '../../common/TextEditor';
-import { reloadTopic } from './MessageList';
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -98,7 +97,6 @@ export const MessageItem = ({
           var topic = chat.topics.find((f) => f.id === msg.topicId);
           if (topic) reloadNav(topic);
         }
-        reloadTopic(msg.topicId, msg.id);
         setEdit(false);
         setMessage({ text: res.text });
         setSuccessLines(msg.text);
@@ -114,7 +112,9 @@ export const MessageItem = ({
         checked={msg.checked || false}
         onChange={(e) => {
           msg.checked = e.target.checked;
-          setMessage({ text: messageText.text });
+          chat.pushMessage(msg).then((msg) => {
+            setMessage({ text: messageText.text });
+          });
         }}
       >
         <Hidden hidden={renderType != 'document'}>
@@ -389,12 +389,11 @@ export const MessageItem = ({
                   }));
                 }
               }}
-              // onFocus={(e) => {
-              //   e.target.selectionStart = msg.text.length;
-              //   e.target.selectionEnd = msg.text.length;
-              // }}
-              // ref={inputRef}
-              // autoFocus={true}
+              onFocus={(e) => {
+                e.target.selectionStart = msg.text.length;
+                e.target.selectionEnd = msg.text.length;
+              }}
+              autoFocus={true}
             />
           </>
         ) : (

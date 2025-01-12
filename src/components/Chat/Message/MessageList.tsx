@@ -13,6 +13,8 @@ import { useInput } from '../InputUtil';
 import { MemoInsertInput } from '../InsertInput';
 import { MemoMessageItem } from './MessageItem';
 
+let selectTimer = setTimeout(() => {}, 0);
+
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
 const topicRender: {
   [key: string]: (messageId?: string | number, reloadStatus?: boolean) => void;
@@ -197,20 +199,26 @@ export function MessageList({
           <div
             key={v.id}
             onMouseUp={(e) => {
-              setTimeout(() => {
+              clearTimeout(selectTimer);
+              selectTimer = setTimeout(() => {
                 let text = window.getSelection?.()?.toString();
-                drawPopupProps.text = text || '';
-                drawPopupProps.msg = v;
-                serDrawPopupProps({ ...drawPopupProps });
-              }, 200);
+                if (drawPopupProps.text != text) {
+                  drawPopupProps.text = text || '';
+                  drawPopupProps.msg = v;
+                  serDrawPopupProps({ ...drawPopupProps });
+                }
+              }, 400);
             }}
             onTouchEnd={(e) => {
-              setTimeout(() => {
+              clearTimeout(selectTimer);
+              selectTimer = setTimeout(() => {
                 let text = window.getSelection?.()?.toString();
-                drawPopupProps.text = text || '';
-                drawPopupProps.msg = v;
-                serDrawPopupProps({ ...drawPopupProps });
-              }, 200);
+                if (drawPopupProps.text != text) {
+                  drawPopupProps.text = text || '';
+                  drawPopupProps.msg = v;
+                  serDrawPopupProps({ ...drawPopupProps });
+                }
+              }, 400);
             }}
           >
             <MemoMessageItem

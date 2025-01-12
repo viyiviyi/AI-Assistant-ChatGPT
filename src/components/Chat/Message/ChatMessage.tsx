@@ -63,7 +63,6 @@ export const ChatMessage = () => {
         setActivityTopic(next_t);
         if (next_t && !activityKey.includes(next_t?.id || '')) setActivityKey((k) => [next_t!.id, ...k]);
         reloadNav(next_t!);
-        reloadTopic;
         setNone([]);
       });
     },
@@ -85,7 +84,7 @@ export const ChatMessage = () => {
           }}
         >
           <Hidden hidden={!showTitle}>
-            <MemoTopicTitle topic={topic} onClick={() => {}}></MemoTopicTitle>
+            <MemoTopicTitle topic={topic} ></MemoTopicTitle>
             <div style={{ marginTop: 3 }}>
               <MemoTopUtil topic={topic} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
             </div>
@@ -112,7 +111,7 @@ export const ChatMessage = () => {
       items={chat.topics.map((v) => ({
         forceRender: forceRender,
         key: v.id,
-        style: { border: 'none', width: '100%', },
+        style: { border: 'none', width: '100%' },
         label: <MemoTopicTitle topic={v} onClick={() => onClickTopicTitle(v)}></MemoTopicTitle>,
         children: (
           <div id={v.id}>
@@ -271,7 +270,7 @@ function TopUtil({
   );
 }
 
-function TopicTitle({ topic, onClick }: { topic: TopicMessage; onClick: () => void }) {
+function TopicTitle({ topic, onClick = () => {} }: { topic: TopicMessage; onClick?: () => void }) {
   const { token } = theme.useToken();
   const { chatMgt: chat } = useContext(ChatContext);
   const [title, setTitle] = useState(topic.name);
