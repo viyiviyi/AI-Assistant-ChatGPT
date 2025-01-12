@@ -39,20 +39,6 @@ export const ChatMessage = () => {
     },
     [setActivityTopic, setCloasAll]
   );
-  useEffect(() => {
-    if (closeAll) {
-      setActivityKey([]);
-    } else {
-      if (activityTopic?.id && activityTopic?.id != topicId)
-        setActivityKey((v) => {
-          if (v.includes(activityTopic.id)) {
-            return v.filter((v) => v != activityTopic.id);
-          } else {
-            return [...v, activityTopic.id];
-          }
-        });
-    }
-  }, [activityTopic?.id, closeAll, topicId]);
   const handlerDelete = useCallback(
     (topic: TopicMessage) => {
       chat.removeTopic(topic!).then(() => {
@@ -84,7 +70,7 @@ export const ChatMessage = () => {
           }}
         >
           <Hidden hidden={!showTitle}>
-            <MemoTopicTitle topic={topic} ></MemoTopicTitle>
+            <MemoTopicTitle topic={topic}></MemoTopicTitle>
             <div style={{ marginTop: 3 }}>
               <MemoTopUtil topic={topic} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
             </div>

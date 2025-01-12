@@ -32,6 +32,7 @@ export function MessageList({
   chat: ChatManagement;
   firstMsgIdxRef: React.MutableRefObject<number | undefined>;
 }) {
+  console.log('MessageList');
   const { reloadNav, forceRender } = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
@@ -55,7 +56,7 @@ export function MessageList({
   /**
    * 更新字数统计 最小更新间隔： 两秒
    */
-  const resetCharCount = useMemo(() => {
+  const resetCharCount = useCallback(() => {
     return createThrottleAndDebounce(() => {
       let charCount = 0;
       topic.messages.forEach((m, idx) => {
@@ -92,13 +93,17 @@ export function MessageList({
   useEffect(() => {
     let pgs = Math.max(0, chat.config.pageSize || 0) || 20;
     let totalPages = Math.ceil(topic.messages.length / pgs) || 1;
-    setPageConf((conf) => ({
+    let conf: any = {
       pageSize: pgs,
       repect: Math.max(0, chat.config.pageRepect || 0) || 0,
       totalPages: totalPages,
       pageNumber: totalPages,
       repectInEnd: true,
-    }));
+    };
+    setPageConf((c) => {
+      if (Object.keys(c).filter((k) => (c as any)[k] != conf[k])) return { ...conf };
+      return c;
+    });
   }, [chat.config.pageSize, chat.config.pageRepect, topic.messages.length]);
 
   useEffect(() => {
@@ -141,7 +146,10 @@ export function MessageList({
      * 用于在其他组件刷新话题或消息
      */
     let reload = createThrottleAndDebounce((conf) => {
-      setPageConf({ ...conf });
+      setPageConf((c) => {
+        if (Object.keys(c).filter((k) => (c as any)[k] != conf[k])) return { ...conf };
+        return c;
+      });
     }, 50);
     topicRender[topic.id] = (messageId?: string | number, reloadStatus: boolean = false) => {
       if (typeof messageId == 'number') {
