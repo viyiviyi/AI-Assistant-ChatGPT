@@ -36,14 +36,12 @@ export async function initTokenStore() {
   ].forEach((s) => {
     if (!cache[s.key]) {
       cache[s.key] = getToken(s.key);
-      saveToken('Slack', cache[s.key]!);
+      saveToken(s.key, cache[s.key]!);
     }
   });
   isInit = true;
 }
-export function getTokens() {
-  return Object.values(cache);
-}
+
 export function getToken(botType: aiServiceType): TokenStore {
   return cache[botType] || { current: '', tokens: [] };
 }
@@ -66,6 +64,7 @@ export function saveToken(botType: aiServiceType, token: TokenStore) {
   if (!isInit) return;
   let tokensCache = getToken(botType);
   Object.assign(tokensCache, token);
+  cache[botType] = tokensCache;
   getInstance().insert<KeyValue>({
     tableName: 'GlobalTokens',
     data: { id: botType, data: tokensCache },

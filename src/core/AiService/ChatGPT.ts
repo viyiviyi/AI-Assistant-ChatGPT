@@ -131,7 +131,7 @@ export class ChatGPT implements IAiService {
           top_p: config.top_p,
           max_tokens: config.max_tokens,
           n: config.n,
-          user: config.user,
+          // user: config.user,
           frequency_penalty: config.frequency_penalty || 0,
           presence_penalty: config.presence_penalty || 0,
         });
@@ -170,7 +170,7 @@ export class ChatGPT implements IAiService {
       temperature: config.temperature,
       top_p: config.top_p,
       n: config.n,
-      user: config.user,
+      // user: config.user,
       frequency_penalty: config.frequency_penalty || 0,
       presence_penalty: config.presence_penalty || 0,
     };

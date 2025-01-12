@@ -26,6 +26,9 @@ export class APICenter implements IAiService {
   };
   serverType: aiServiceType = 'APICenter';
   modelCache: string[] = [];
+  needV1Str = (url: string) => {
+    return !/\/v\d/.test(url);
+  };
   models = async () => {
     if (this.modelCache.length) return this.modelCache;
     var token = getToken(this.serverType);
@@ -34,7 +37,7 @@ export class APICenter implements IAiService {
       return [];
     }
     this.client = new OpenAIApi({
-      basePath: this.baseUrl + '/v1',
+      basePath: this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : ''),
       apiKey: this.tokens.openai?.apiKey,
       isJsonMime: (mime: string) => {
         return true;
@@ -117,15 +120,14 @@ export class APICenter implements IAiService {
       stream: true,
       max_tokens: config.max_tokens,
       temperature: config.temperature,
-      top_p: config.top_p,
+      top_p: config.top_p || undefined,
       n: config.n,
-      user: config.user,
-      frequency_penalty: config.frequency_penalty || 0,
-      presence_penalty: config.presence_penalty || 0,
+      frequency_penalty: config.frequency_penalty || undefined,
+      presence_penalty: config.presence_penalty || undefined,
     };
     const controller = new AbortController();
     try {
-      let response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+      let response = await fetch(`${this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : '')}/chat/completions`, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(data),

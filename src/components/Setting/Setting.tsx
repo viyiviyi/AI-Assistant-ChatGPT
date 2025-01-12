@@ -459,7 +459,12 @@ export const Setting = ({
               <Select options={models.map((v) => ({ value: v, label: v }))} />
             </Form.Item>
           ) : (
-            <></>
+            <Form.Item label="Chat模型名称" name={'GptConfig_model'}>
+              <Input
+                type="text"
+                autoComplete="off"
+              />
+            </Form.Item>
           )}
           {connectors.length ? (
             <Form.Item label="Chat连接器" name={'chat_connectors'}>
