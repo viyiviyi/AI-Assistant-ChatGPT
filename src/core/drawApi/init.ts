@@ -35,6 +35,8 @@ export async function init(serverUrl: string) {
       params.overrideSettings['sd_model_checkpoint'] =
         params.overrideSettings['sd_model_checkpoint'] || (cacheStore.modelList || [{}])[0]?.modelName || '';
       params.overrideSettings.CLIP_stop_at_last_layers = params.overrideSettings.CLIP_stop_at_last_layers || 1;
+    }).catch(err => {
+      console.log('初始化sd接口失败')
     });
   } catch (error) {
     cacheStore.isInit = false;

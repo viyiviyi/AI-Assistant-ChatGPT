@@ -185,7 +185,7 @@ export const Setting = ({
     KeyValueData.instance().setSlackUserToken(values.slack_user_token, values.config_saveKey);
     KeyValueData.instance().setSlackProxyUrl(values.setting_slack_proxy_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
     KeyValueData.instance().setApiTransferUrl(values.setting_api_transfer_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
-    KeyValueData.instance().setaiServerList(userAiServer.filter((f) => f && f != '|'));
+    KeyValueData.instance().setaiServerList(userAiServer.filter((f) => f && f != '|').map((v) => v.replace(/\/+$/, '')));
     let userAiServerList = userAiServer
       .filter((f) => f && f != '|')
       .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true }));
@@ -460,10 +460,7 @@ export const Setting = ({
             </Form.Item>
           ) : (
             <Form.Item label="Chat模型名称" name={'GptConfig_model'}>
-              <Input
-                type="text"
-                autoComplete="off"
-              />
+              <Input type="text" autoComplete="off" />
             </Form.Item>
           )}
           {connectors.length ? (
@@ -703,7 +700,7 @@ export const Setting = ({
                               value={name}
                               onChange={(e) => {
                                 setUserAiServer((v) => {
-                                  v[index] = e.target.value.trim() + '|' + url.trim().replace(/\/+$/, '');
+                                  v[index] = e.target.value.trim() + '|' + url.trim();
                                   return [...v];
                                 });
                               }}
@@ -716,7 +713,7 @@ export const Setting = ({
                               value={url}
                               onChange={(e) => {
                                 setUserAiServer((v) => {
-                                  v[index] = name.trim() + '|' + e.target.value.trim().replace(/\/+$/, '');
+                                  v[index] = name.trim() + '|' + e.target.value.trim();
                                   return [...v];
                                 });
                               }}
