@@ -177,8 +177,12 @@ export function useSendMessage(chat: ChatManagement) {
         msg: topic.messages[idx],
         context: ctx,
         async onMessage(res) {
+          let hasChange = false;
           if (currentChat.current) {
-            result.text = onReader(currentChat.current.getChat(), res.text || '');
+            const content = onReader(currentChat.current.getChat(), res.text || '');
+            hasChange = result.text != content || result.reasoning_content != res.reasoning_content;
+            result.text = content;
+            result.reasoning_content = res.reasoning_content || '';
           } else if (res.stop) {
             res.stop();
           }
@@ -199,7 +203,7 @@ export function useSendMessage(chat: ChatManagement) {
           }
           loadingMsgs[result.id] = {
             stop: () => {
-              res.stop();
+              if (res.stop) res.stop();
               delete loadingMsgs[result.id];
               delete loadingMessages[result.id];
               currentChat.current = undefined;
@@ -208,13 +212,16 @@ export function useSendMessage(chat: ChatManagement) {
           };
           save(res.end);
           if (res.end) {
+            hasChange = true;
             delete loadingMsgs[result.id];
             delete loadingMessages[result.id];
             currentChat.current = undefined;
             reloadIndex(topic, idx);
           }
-          reloadTopic(topic.id, result.id, res.end);
-          scrollToBotton(currentPullMessage.id);
+          if (hasChange) {
+            reloadTopic(topic.id, result.id, res.end);
+            scrollToBotton(currentPullMessage.id);
+          }
         },
         config: {
           channel_id: currentChat.current!.config.cloudChannelId,

@@ -1,11 +1,8 @@
-import { aiServiceType } from "@/core/AiService/ServiceProvider";
-import { CtxRole } from "@/Models/CtxRole";
-import {
-  ChatCompletionRequestMessage,
-  CreateChatCompletionRequest
-} from "openai";
-import { Message } from "../../Models/DataBase";
-import { ServiceTokens } from "./ServiceProvider";
+import { aiServiceType } from '@/core/AiService/ServiceProvider';
+import { CtxRole } from '@/Models/CtxRole';
+import { ChatCompletionRequestMessage, CreateChatCompletionRequest } from 'openai';
+import { Message } from '../../Models/DataBase';
+import { ServiceTokens } from './ServiceProvider';
 export interface IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
@@ -27,6 +24,7 @@ export interface IAiService {
     onMessage: (msg: {
       error: boolean;
       text: string;
+      reasoning_content?: string;
       end: boolean;
       cloud_topic_id?: string;
       cloud_send_id?: string;
@@ -45,12 +43,7 @@ export interface IAiService {
   history?: (input: {
     lastMsgCloudId?: string;
     topicCloudId: string;
-    onMessage: (
-      text: string,
-      isAiMsg: boolean,
-      msgCloudId: string,
-      error: boolean
-    ) => Promise<void>;
+    onMessage: (text: string, isAiMsg: boolean, msgCloudId: string, error: boolean) => Promise<void>;
     config: InputConfig;
   }) => Promise<void>;
 }

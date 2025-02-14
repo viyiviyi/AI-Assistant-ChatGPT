@@ -77,7 +77,13 @@ export class APICenter implements IAiService {
   }: {
     msg: Message;
     context: ChatCompletionRequestMessage[];
-    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
+    onMessage: (msg: {
+      error: boolean;
+      text: string;
+      reasoning_content?: string;
+      end: boolean;
+      stop?: (() => void) | undefined;
+    }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     var token = getToken(this.serverType);
@@ -107,9 +113,10 @@ export class APICenter implements IAiService {
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
-    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: () => void }) => Promise<void>
+    onMessage: (msg: { error: boolean; text: string; reasoning_content: string; end: boolean; stop?: () => void }) => Promise<void>
   ) {
     let full_response = '';
+    let reasoning_content = '';
     const headers = {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
       'Content-Type': 'application/json',
@@ -152,6 +159,7 @@ export class APICenter implements IAiService {
             response.statusText +
             '\n\n' +
             (await response.text()),
+          reasoning_content,
         });
         return;
       }
@@ -169,6 +177,7 @@ export class APICenter implements IAiService {
               error: false,
               end: true,
               text: full_response,
+              reasoning_content,
             });
             break;
           }
@@ -183,6 +192,7 @@ export class APICenter implements IAiService {
                 error: false,
                 end: true,
                 text: full_response,
+                reasoning_content,
               });
               break;
             }
@@ -201,16 +211,21 @@ export class APICenter implements IAiService {
               if (!delta) {
                 continue;
               }
-              if ('content' in delta) {
+              if ('content' in delta && delta.content && delta.content != 'null') {
                 const content = delta.content;
                 full_response += content;
-                await onMessage({
-                  error: false,
-                  end: false,
-                  text: full_response,
-                  stop: stop,
-                });
               }
+              if ('reasoning_content' in delta && delta.reasoning_content && delta.reasoning_content != 'null') {
+                const content = delta.reasoning_content;
+                reasoning_content += content;
+              }
+              await onMessage({
+                error: false,
+                end: false,
+                text: full_response,
+                reasoning_content,
+                stop: stop,
+              });
             } catch (error) {
               console.error(error);
               console.error('出错的内容：', line);
@@ -226,12 +241,14 @@ export class APICenter implements IAiService {
           error: true,
           end: true,
           text: full_response + '\n\n 请求已终止。',
+          reasoning_content,
         });
       } else {
         onMessage({
           error: true,
           end: true,
           text: full_response + '\n\n 请求发生错误。\n\n' + error,
+          reasoning_content,
         });
       }
     }

@@ -56,6 +56,7 @@ export interface Message {
   groupId: string; // 分组ID
   topicId: string; // 话题ID
   ctxRole: CtxRole;
+  reasoning_content?: string;
   text: string; // 消息内容
   createTime?: number;
   timestamp: number; // 时间戳

@@ -110,11 +110,11 @@ export const aiServerList: {
     name: 'cohere.ai',
     hasToken: true,
   },
-  {
-    key: 'ChatGLM',
-    name: 'ChatGLM',
-    hasToken: false,
-  },
+  // {
+  //   key: 'ChatGLM',
+  //   name: 'ChatGLM',
+  //   hasToken: false,
+  // },
 ];
 
 export const aiServices: {
@@ -138,7 +138,7 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
         openai: { apiKey: '123' },
       });
     case 'ChatGPT':
-      return new ChatGPT(chat.config.baseUrl || baseUrl.chatGPT, tokens);
+      return new APICenter(chat.config.baseUrl || baseUrl.chatGPT, tokens);
     case 'Kamiya':
       return new Kamiya(baseUrl.Kamiya, tokens);
     case 'ChatGLM':

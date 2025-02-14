@@ -68,6 +68,7 @@ export const MessageItem = ({
   onSned: () => void;
   style?: CSSProperties | undefined;
 }) => {
+  console.log('MessageItem');
   const { chatMgt: chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const topic = useMemo(() => chat.topics.find((f) => f.id == msg.topicId)!, [chat.topics, msg.topicId]);
   const { aiService } = useService();
@@ -315,6 +316,9 @@ export const MessageItem = ({
               setSuccessLines(successText);
             }
           }
+          if (msg.reasoning_content) {
+            setMessage({ text: msg.text });
+          }
         } else {
           if (!reloadStatus) setMessage({ text: msg.text });
           setSuccessLines(msg.text);
@@ -360,7 +364,34 @@ export const MessageItem = ({
       </div>
     );
   };
-
+  const ReasoningContent = ({ msg }: { msg: Message }) => {
+    return (
+      <>
+        {msg.reasoning_content && (
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              padding: '10px 16px',
+              flexDirection: 'column',
+              boxSizing: 'border-box',
+              borderRadius: token.borderRadiusLG,
+              border: '1px solid ' + token.colorFillAlter,
+              backgroundColor: token.colorInfoBg,
+              marginBottom: 2,
+              boxShadow: token.boxShadowTertiary,
+              lineHeight: 1.4,
+            }}
+          >
+            <MemoMarkdownView
+              markdown={chat.config.disableStrikethrough ? msg.reasoning_content.replaceAll('~', '～') : msg.reasoning_content}
+              // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
+            />
+          </div>
+        )}
+      </>
+    );
+  };
   // 内容显示
   const Content = useMemo(() => {
     return (
@@ -501,6 +532,7 @@ export const MessageItem = ({
                     ))}
                   </Hidden>
                 </Hidden>
+                <ReasoningContent msg={msg} />
                 <Tooltip
                   placement="rightBottom"
                   title={msg.ctxRole == 'assistant' ? '助理' : msg.ctxRole == 'user' ? '用户' : msg.ctxRole == 'system' ? '系统' : ''}
@@ -661,6 +693,7 @@ export const MessageItem = ({
               </Hidden>
             </div>
           </Hidden>
+          <ReasoningContent msg={msg} />
           <div
             style={{
               flex: 1,
