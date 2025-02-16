@@ -68,7 +68,6 @@ export const MessageItem = ({
   onSned: () => void;
   style?: CSSProperties | undefined;
 }) => {
-  console.log('MessageItem');
   const { chatMgt: chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const topic = useMemo(() => chat.topics.find((f) => f.id == msg.topicId)!, [chat.topics, msg.topicId]);
   const { aiService } = useService();
@@ -362,34 +361,6 @@ export const MessageItem = ({
           )}
         </div>
       </div>
-    );
-  };
-  const ReasoningContent = ({ msg }: { msg: Message }) => {
-    return (
-      <>
-        {msg.reasoning_content && (
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              padding: '10px 16px',
-              flexDirection: 'column',
-              boxSizing: 'border-box',
-              borderRadius: token.borderRadiusLG,
-              border: '1px solid ' + token.colorFillAlter,
-              backgroundColor: token.colorInfoBg,
-              marginBottom: 2,
-              boxShadow: token.boxShadowTertiary,
-              lineHeight: 1.4,
-            }}
-          >
-            <MemoMarkdownView
-              markdown={chat.config.disableStrikethrough ? msg.reasoning_content.replaceAll('~', '～') : msg.reasoning_content}
-              // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
-            />
-          </div>
-        )}
-      </>
     );
   };
   // 内容显示
@@ -860,3 +831,62 @@ const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
   );
 };
 export const MemoMessageItem = React.memo(MessageItem);
+
+const ReasoningContent = ({ msg }: { msg: Message }) => {
+  const { token } = theme.useToken();
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      {msg.reasoning_content && (
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            padding: 10,
+            flexDirection: 'column',
+            boxSizing: 'border-box',
+            borderRadius: token.borderRadiusLG,
+            border: '1px solid ' + token.colorFillAlter,
+            backgroundColor: token.colorInfoBg,
+            marginBottom: 2,
+            boxShadow: token.boxShadowTertiary,
+            lineHeight: 1.4,
+          }}
+        >
+          <Flex style={{ marginBottom: 6 }} gap={16}>
+            <a style={{ fontWeight: 400, fontSize: '1.3em', color: token.colorTextLabel }}>
+              {msg.text ? <>已</> : <></>}深度思考{msg.text ? <></> : <span>中......</span>}
+            </a>
+            <span style={{ flex: 1 }}></span>
+            <Button
+              type="link"
+              size="small"
+              style={{ padding: 0, marginLeft: 4 }}
+              onClick={() => {
+                setExpanded((v) => !v);
+              }}
+            >
+              {expanded ? '隐藏' : '查看'}
+            </Button>
+            <Button
+              type="link"
+              size="small"
+              style={{ padding: 0, marginLeft: 4 }}
+              onClick={() => {
+                copy(msg.reasoning_content || '');
+              }}
+            >
+              复制
+            </Button>
+          </Flex>
+          {expanded && (
+            <MemoMarkdownView
+              markdown={msg.reasoning_content}
+              // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
+            />
+          )}
+        </div>
+      )}
+    </>
+  );
+};

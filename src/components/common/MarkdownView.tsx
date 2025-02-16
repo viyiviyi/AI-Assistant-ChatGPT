@@ -29,7 +29,6 @@ import rehypeMathjax from 'rehype-mathjax';
 import rehypeReact from 'rehype-react';
 // import rehypeStringify from "rehype-stringify";
 // import remarkFrontmatter from "remark-frontmatter";
-// import rehypeFormat from 'rehype-format';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { onRender } from '@/middleware/execMiddleware';
 import remarkGfm from 'remark-gfm';
@@ -111,12 +110,13 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
   }
   return mes;
 }
-function useImage() {}
+
 let processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
   .use(remarkMath)
   .use(remarkRehype)
+  // .use(rehypeFormat, { indent: 4 })
   .use(rehypeHighlight, {
     ignoreMissing: true,
     plainText: ['txt', 'text'],
@@ -138,7 +138,6 @@ let processor = unified()
   })
   .use(rehypeMathjax)
   // .use(remarkFrontmatter, ["yaml", "toml"])
-  // .use(rehypeFormat, {indent:4})
   .use(rehypeReact, {
     createElement,
     Fragment,
@@ -148,6 +147,9 @@ let processor = unified()
       },
       code: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { className, children } = props;
+        const _children = Array.isArray(children)
+          ? children.map((v) => (typeof v == 'string' ? v.replace(/\n\s+/g, (s) => '\n' + ' '.repeat(s.length - 2)) : v))
+          : children;
         let times = 0;
         let timer = setTimeout(() => {}, 0);
         return (
@@ -181,7 +183,7 @@ let processor = unified()
                 className="code-copy"
               />
             </SkipExport>
-            {children}
+            {_children}
           </code>
         );
       },
@@ -317,6 +319,7 @@ const _MarkdownView = ({
       }, 400)
     );
   };
+  // return <div style={{ whiteSpace: 'pre-wrap' }}>{markdown}</div>;
   return (
     <div className={markdownStyle.markdown} onClick={click}>
       {renderedContent}
@@ -355,6 +358,11 @@ const renderPipes: Array<(input: string, chatMgt: ChatManagement) => string> = [
   // },
   (input, chatMgt: ChatManagement) => {
     return onRender(chatMgt as any, input);
+  },
+  (input, chatMgt: ChatManagement) => {
+    return input.replace(/\n\s\s+/g, (substring: string, ...args: any[]) => {
+      return '\n' + '\u00A0'.repeat(substring.length);
+    });
   },
 ];
 
