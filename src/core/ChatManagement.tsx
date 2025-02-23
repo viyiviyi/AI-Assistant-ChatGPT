@@ -232,22 +232,22 @@ export class ChatManagement {
     allCtx: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
     historyBefore: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
     history: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
     historyAfter: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
   } {
     return ChatManagement.getAskContext(this.virtualRole, topic, index, this.gptConfig.msgCount, this.config.enableVirtualRole);
@@ -262,22 +262,22 @@ export class ChatManagement {
     allCtx: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
     historyBefore: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
     history: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
     historyAfter: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }>;
   } {
     let messages: Message[] = [];
@@ -288,17 +288,17 @@ export class ChatManagement {
     let history: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }> = [];
     let historyBefore: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }> = [];
     let historyAfter: Array<{
       role: CtxRole;
       content: string;
-      name: string;
+      name?: string;
     }> = [];
     if (topic.overrideSettings?.useConfig === undefined ? enableVirtualRole : topic.overrideSettings?.useConfig) {
       // 在设定内的动态上下文
@@ -459,7 +459,7 @@ export class ChatManagement {
   }
 
   static getNameByRole(role?: CtxRole, virtualRole?: VirtualRole, user?: User) {
-    return role === 'system' ? 'system' : role === 'assistant' ? virtualRole?.enName || 'assistant' : user?.enName || 'user';
+    return role === 'system' ? undefined : role === 'assistant' ? undefined : user?.enName || 'user';
   }
   static mgSetting(ctxList: VirtualRoleSettingItem[], start: number): VirtualRoleSettingItem | undefined {
     let lastSetting: VirtualRoleSettingItem | undefined = undefined;
