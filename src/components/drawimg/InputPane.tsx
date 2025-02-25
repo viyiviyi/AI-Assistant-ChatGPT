@@ -186,12 +186,18 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
                       onClick={() => {
                         if (syncModelIng) return;
                         setSyncModelIng(true);
-                        ApiInstance.current.refreshCheckpointsSdapiV1RefreshCheckpointsPost().then(() => {
-                          ApiInstance.current.getSdModelsSdapiV1SdModelsGet().then((res) => {
-                            cacheStore.modelList = res;
-                            setSyncModelIng(false);
-                          });
-                        });
+                        ApiInstance.current
+                          .refreshCheckpointsSdapiV1RefreshCheckpointsPost()
+                          .then(() => {
+                            ApiInstance.current
+                              .getSdModelsSdapiV1SdModelsGet()
+                              .then((res) => {
+                                cacheStore.modelList = res;
+                                setSyncModelIng(false);
+                              })
+                              .catch(() => {});
+                          })
+                          .catch(() => {});
                       }}
                       icon={syncModelIng ? <LoadingOutlined /> : <SyncOutlined />}
                     ></Button>
@@ -214,12 +220,18 @@ export const InputPane = ({ params }: { params: Img2ImgParams }) => {
                       onClick={() => {
                         if (syncVaeIng) return;
                         setSyncVaeIng(true);
-                        ApiInstance.current.refreshVaeSdapiV1RefreshVaePost().then(() => {
-                          ApiInstance.current.getSdVaesSdapiV1SdVaeGet().then((res) => {
-                            cacheStore.vaeList = res;
-                            setSyncVaeIng(false);
-                          });
-                        });
+                        ApiInstance.current
+                          .refreshVaeSdapiV1RefreshVaePost()
+                          .then(() => {
+                            ApiInstance.current
+                              .getSdVaesSdapiV1SdVaeGet()
+                              .then((res) => {
+                                cacheStore.vaeList = res;
+                                setSyncVaeIng(false);
+                              })
+                              .catch(() => {});
+                          })
+                          .catch(() => {});
                       }}
                       icon={syncVaeIng ? <LoadingOutlined /> : <SyncOutlined />}
                     ></Button>

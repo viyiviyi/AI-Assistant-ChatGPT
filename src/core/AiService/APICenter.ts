@@ -1,6 +1,7 @@
 import { getToken, nextToken } from '@/core/tokens';
 import { GptConfig, Message } from '@/Models/DataBase';
-import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
+import axios from 'axios';
+import { ChatCompletionRequestMessage, ListModelsResponse, OpenAIApi } from 'openai';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
 export class APICenter implements IAiService {
@@ -36,39 +37,20 @@ export class APICenter implements IAiService {
       nextToken(token);
       return [];
     }
-    this.client = new OpenAIApi({
-      basePath: this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : ''),
-      apiKey: this.tokens.openai?.apiKey,
-      isJsonMime: (mime: string) => {
-        return true;
-      },
-      baseOptions: {
-        headers: {
-          Authorization: 'Bearer ' + token.current,
-          'ngrok-skip-browser-warning': 0,
-        },
+    return axios
+      .get(this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : '') + '/models?t=' + Date.now(), {
+        headers: { Authorization: 'Bearer ' + token.current, 'ngrok-skip-browser-warning': 0 },
         timeout: 1000 * 60 * 5,
-      },
-    });
-    return this.client
-      .listModels()
+        responseType: 'json',
+      })
       .then((res) => res.data)
-      .then((res) => {
+      .then((res: ListModelsResponse) => {
         this.modelCache = (res.data || []).map((m) => m.id);
         if (!this.modelCache.includes(this.severConfig.model) && this.modelCache.length) {
           this.severConfig.model = this.modelCache[0];
         }
-        // .filter(
-        //   (f) =>
-        //     f.toLowerCase().includes("gpt") ||
-        //     f.toLowerCase().includes("text") ||
-        //     f.toLowerCase().includes("code") ||
-        //     f.toLowerCase().includes("claude") ||
-        //     f.toLowerCase().includes("glm")
-        // );
         return this.modelCache;
-      })
-      .catch((err) => []);
+      });
   };
   async sendMessage({
     context,
