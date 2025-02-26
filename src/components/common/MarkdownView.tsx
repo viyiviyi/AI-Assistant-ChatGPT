@@ -363,8 +363,8 @@ const renderPipes: Array<(input: string, chatMgt: ChatManagement) => string> = [
     return input.replace(/\n\s+```/g, '\n```');
   },
   (input, chatMgt: ChatManagement) => {
-    return input.replace(/\n\s\s+/g, (substring: string, ...args: any[]) => {
-      return '\n' + '\u00A0'.repeat(substring.length);
+    return input.replace(/\n\s\s+([a-zA-Z#/*{}()])/g, (substring: string, ...args: any[]) => {
+      return '\n' + '\u00A0'.repeat(substring.length - 1) + args[0];
     });
   },
 ];
