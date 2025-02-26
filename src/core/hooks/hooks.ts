@@ -150,6 +150,7 @@ export function useSendMessage(chat: ChatManagement) {
         Object.assign(result, r);
         reloadTopic(topic.id, idx + 1);
         scrollToBotton(result.id);
+        reloadIndex(topic, idx);
       });
       let save = createThrottleAndDebounce((isEnd) => {
         if (currentChat.current) {
