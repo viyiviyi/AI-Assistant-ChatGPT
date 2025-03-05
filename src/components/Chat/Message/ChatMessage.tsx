@@ -102,7 +102,7 @@ export const ChatMessage = () => {
         children: (
           <div id={v.id}>
             <>
-              <MemoTopUtil topic={v} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
+              <TopUtil topic={v} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
               <MemoMessageList chat={chat} topic={v} firstMsgIdxRef={firstMsgIdx}></MemoMessageList>
             </>
           </div>
@@ -142,6 +142,14 @@ function TopUtil({
           padding: '0 10px',
         }}
       >
+        <Checkbox
+          style={{ marginRight: 12 }}
+          defaultChecked={v.messages.length == v.messages.filter((f) => f.checked).length}
+          onChange={(e) => {
+            v.messages.forEach((m) => (m.checked = e.target.checked));
+            reloadTopic(v.id);
+          }}
+        ></Checkbox>
         <Button
           shape="circle"
           type="text"

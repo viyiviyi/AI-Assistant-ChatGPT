@@ -12,9 +12,10 @@ import {
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined
 } from '@ant-design/icons';
-import { Button, Drawer, theme, Typography } from 'antd';
+import { Button, Drawer, Flex, theme, Typography } from 'antd';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { MemoBackgroundImage } from '../common/BackgroundImage';
+import { Hidden } from '../common/Hidden';
 import { SkipExport } from '../common/SkipExport';
 import { TextEditor } from '../common/TextEditor';
 import { MemoNavigation } from '../Nav/Navigation';
@@ -308,6 +309,24 @@ export function InputUtil() {
             onKeyUp={(e) => (e.key === 's' && e.altKey && onSubmit(false)) || (e.key === 'Enter' && e.ctrlKey && onSubmit(true))}
           />
         </div>
+        <Flex style={{ width: '100%', marginTop: 5 }}>
+          <Hidden hidden={chat.config.buttomTool?.sendBtn != true}>
+            <Button
+              block
+              onMouseDown={(e) => e.preventDefault()}
+              icon={
+                <SkipExport>
+                  <MessageOutlined />
+                </SkipExport>
+              }
+              onClick={() => {
+                onSubmit(false);
+              }}
+            >
+              发送
+            </Button>
+          </Hidden>
+        </Flex>
       </div>
     </>
   );

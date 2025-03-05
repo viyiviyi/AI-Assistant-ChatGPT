@@ -47,6 +47,7 @@ export interface GroupConfig {
   middleware?: string[];
   useVirtualRoleImgToBack?: boolean;
   autoWrapCode?: boolean;
+  buttomTool?: { sendBtn: boolean };
 }
 
 // 聊天消息表
@@ -114,7 +115,7 @@ export interface GptConfig {
   id: string;
   groupId: string;
   role: CtxRole;
-  model: string;
+  model: string | { [key: string]: string };
   max_tokens?: number; // max 4096
   top_p?: number; // 0-1
   temperature?: number; // 0-1

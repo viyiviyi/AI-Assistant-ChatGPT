@@ -66,6 +66,7 @@ export const Setting = ({
     config_page_repect: number;
     config_limit_pre_height: boolean;
     config_auto_wrap_code: boolean;
+    config_buttom_tool_send: boolean;
     setting_user_server_url: string;
     slack_claude_id: string;
     group_name: string;
@@ -77,6 +78,7 @@ export const Setting = ({
     config_use_virtual_role_img: boolean;
   }>();
   const formValus = useMemo(() => {
+    const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[chatMgt.config.botType];
     return {
       setting_apitoken: KeyValueData.instance().getApiKey(),
       GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
@@ -85,7 +87,7 @@ export const Setting = ({
       GptConfig_top_p: chatMgt?.gptConfig.top_p,
       GptConfig_temperature: chatMgt?.gptConfig.temperature,
       GptConfig_n: chatMgt?.gptConfig.n,
-      GptConfig_model: chatMgt?.gptConfig.model,
+      GptConfig_model: model,
       GptConfig_frequency_penalty: chatMgt?.gptConfig.frequency_penalty || 0,
       GptConfig_presence_penalty: chatMgt?.gptConfig.presence_penalty || 0,
       config_saveKey: true,
@@ -100,6 +102,7 @@ export const Setting = ({
       config_disable_renderType: chatMgt?.config.renderType,
       config_use_virtual_role_img: chatMgt?.config.useVirtualRoleImgToBack || false,
       config_auto_wrap_code: chatMgt?.config.autoWrapCode,
+      config_buttom_tool_send: chatMgt?.config.buttomTool?.sendBtn,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
       chat_connectors: aiServices.current?.getCurrentConnectors?.call(aiServices.current?.getCurrentConnectors).map((v) => v.id),
@@ -123,9 +126,10 @@ export const Setting = ({
   }, [chatMgt]);
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
+    const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[chatMgt.config.botType];
     aiServices.current?.models().then((res) => {
       setModels(res);
-      if (!res.includes(chatMgt?.gptConfig.model || '') && res.length) {
+      if (!res.includes(model || '') && res.length) {
         formValus.GptConfig_model = res[0];
         form.setFieldsValue(formValus);
       }
@@ -143,7 +147,11 @@ export const Setting = ({
   async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    chatMgt.gptConfig.model = values.GptConfig_model || chatMgt.gptConfig.model;
+    const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[values.config_bot_type];
+    chatMgt.gptConfig.model = {
+      ...(typeof chatMgt?.gptConfig.model == 'object' ? chatMgt?.gptConfig.model : {}),
+      [values.config_bot_type]: values.GptConfig_model || model,
+    };
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
     chatMgt.gptConfig.role = values.GptConfig_role;
@@ -171,6 +179,7 @@ export const Setting = ({
     chatMgt.config.renderType = values.config_disable_renderType as 'default' | 'document';
     chatMgt.config.useVirtualRoleImgToBack = values.config_use_virtual_role_img;
     chatMgt.config.autoWrapCode = values.config_auto_wrap_code;
+    chatMgt.config.buttomTool = { sendBtn: values.config_buttom_tool_send };
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -431,11 +440,11 @@ export const Setting = ({
               onChange={(value, o) => {
                 setModels([]);
                 let server = getServiceInstance(value, chatMgt!.getChat());
+                const model =
+                  typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[value] || '';
+                form.setFieldValue('GptConfig_model', model || server?.defaultModel);
                 server?.models().then((res) => {
                   setModels(res);
-                  if (res.length && !res.includes(form.getFieldValue('GptConfig_model'))) {
-                    form.setFieldValue('GptConfig_model', server?.defaultModel || res[0]);
-                  }
                 });
                 setConnectors([]);
                 server?.getConnectors &&
@@ -533,6 +542,9 @@ export const Setting = ({
                             { label: '文档', value: 'document' },
                           ]}
                         />
+                      </Form.Item>
+                      <Form.Item style={{ flex: '1' }} name="config_buttom_tool_send" valuePropName="checked" label="下方发送按钮">
+                        <Switch />
                       </Form.Item>
                     </div>
                   </div>

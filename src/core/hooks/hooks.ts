@@ -227,6 +227,10 @@ export function useSendMessage(chat: ChatManagement) {
         config: {
           channel_id: currentChat.current!.config.cloudChannelId,
           ...currentChat.current!.gptConfig,
+          model:
+            typeof currentChat.current!.gptConfig.model == 'string'
+              ? currentChat.current!.gptConfig.model
+              : currentChat.current!.gptConfig.model[currentChat.current!.config.botType],
           user: 'user',
           messages: [],
         },
@@ -327,6 +331,7 @@ export function useGetHistory(chat: ChatManagement) {
           config: {
             channel_id: chat.config.cloudChannelId,
             ...chat.gptConfig,
+            model: typeof chat.gptConfig.model == 'string' ? chat.gptConfig.model : chat.gptConfig.model[chat.config.botType],
             user: 'user',
             messages: [],
           },
