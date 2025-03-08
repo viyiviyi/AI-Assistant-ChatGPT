@@ -6,8 +6,8 @@ import { activityScroll, createThrottleAndDebounce, pagesUtil } from '@/core/uti
 import { Message } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
 import { PictureOutlined } from '@ant-design/icons';
-import { Button, FloatButton } from 'antd';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Button, FloatButton, InputRef } from 'antd';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MessageContext } from '../Chat';
 import { useInput } from '../InputUtil';
 import { MemoInsertInput } from '../InsertInput';
@@ -22,6 +22,7 @@ const topicRender: {
 export function reloadTopic(topicId: string, messageId?: string | number, reloadStatus: boolean = false) {
   topicRender[topicId] && topicRender[topicId](messageId, reloadStatus);
 }
+export const ctxInsertInputRef = React.createRef<InputRef>();
 
 export function MessageList({
   topic,

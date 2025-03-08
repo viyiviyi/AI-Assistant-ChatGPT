@@ -1,15 +1,14 @@
-import { ChatManagement } from "@/core/ChatManagement";
-import { usePushMessage } from "@/core/hooks/hooks";
-import { activityScroll, onTextareaTab } from "@/core/utils/utils";
-import { CtxRole } from "@/Models/CtxRole";
-import { TopicMessage } from "@/Models/Topic";
-import { CloseOutlined, MessageOutlined } from "@ant-design/icons";
-import { Button, Input, theme } from "antd";
-import React, { useState } from "react";
-import { SkipExport } from "../common/SkipExport";
-import { CtxRoleButton } from "./CtxRoleButton";
+import { ChatManagement } from '@/core/ChatManagement';
+import { usePushMessage } from '@/core/hooks/hooks';
+import { activityScroll, onTextareaTab } from '@/core/utils/utils';
+import { CtxRole } from '@/Models/CtxRole';
+import { TopicMessage } from '@/Models/Topic';
+import { CloseOutlined, MessageOutlined } from '@ant-design/icons';
+import { Button, Input, theme } from 'antd';
+import React, { useState } from 'react';
+import { SkipExport } from '../common/SkipExport';
+import { CtxRoleButton } from './CtxRoleButton';
 
-// export const insertInputRef = React.createRef<HTMLInputElement>();
 function InsertInput({
   topic,
   chat,
@@ -21,18 +20,18 @@ function InsertInput({
   onHidden: () => void;
   insertIndex: number;
 }) {
-  const [insertText, setInsertText] = useState("");
+  const [insertText, setInsertText] = useState('');
   const { pushMessage } = usePushMessage(chat);
   const { token } = theme.useToken();
   const [insertInputRef] = useState(React.createRef<HTMLInputElement>());
-  const [role, setRole] = useState<[CtxRole, boolean]>(["user", true]);
+  const [role, setRole] = useState<[CtxRole, boolean]>(['user', true]);
 
   const onSubmit = (text: string, idx: number) => {
     if (!text.trim()) return;
     activityScroll({ botton: true });
     onHidden();
     pushMessage(text, idx, topic, role, () => {
-      setInsertText("");
+      setInsertText('');
     });
   };
 
@@ -40,19 +39,15 @@ function InsertInput({
     <>
       <div
         style={{
-          width: "calc(100%)",
+          width: 'calc(100%)',
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
-          padding: "2px",
-          marginTop: "20px",
+          padding: '2px',
+          marginTop: '20px',
         }}
       >
-        <div style={{ display: "flex", marginBottom: 5 }}>
-          <CtxRoleButton
-            value={role}
-            onChange={setRole}
-            inputRef={insertInputRef}
-          />
+        <div style={{ display: 'flex', marginBottom: 5 }}>
+          <CtxRoleButton value={role} onChange={setRole} inputRef={insertInputRef} />
           <span style={{ flex: 1 }}></span>
           <Button
             shape="circle"
@@ -89,23 +84,15 @@ function InsertInput({
           autoFocus={true}
           value={insertText}
           onKeyUp={(e) =>
-            (e.key === "s" && e.altKey && onSubmit(insertText, insertIndex)) ||
-            (e.key === "Enter" &&
-              e.ctrlKey &&
-              onSubmit(insertText, insertIndex))
+            (e.key === 's' && e.altKey && onSubmit(insertText, insertIndex)) ||
+            (e.key === 'Enter' && e.ctrlKey && onSubmit(insertText, insertIndex))
           }
           onChange={(e) => setInsertText(e.target.value)}
           onKeyDown={(e) =>
-            e.key === "Tab" &&
+            e.key === 'Tab' &&
             (e.preventDefault(),
             setInsertText((v) =>
-              onTextareaTab(
-                v,
-                e.currentTarget?.selectionStart,
-                e.currentTarget?.selectionEnd,
-                e.currentTarget,
-                e.shiftKey
-              )
+              onTextareaTab(v, e.currentTarget?.selectionStart, e.currentTarget?.selectionEnd, e.currentTarget, e.shiftKey)
             ))
           }
         />

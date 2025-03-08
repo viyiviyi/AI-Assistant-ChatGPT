@@ -312,7 +312,6 @@ export function InputUtil() {
         <Flex style={{ width: '100%', marginTop: 5 }}>
           <Hidden hidden={chat.config.buttomTool?.sendBtn != true}>
             <Button
-              block
               onMouseDown={(e) => e.preventDefault()}
               icon={
                 <SkipExport>

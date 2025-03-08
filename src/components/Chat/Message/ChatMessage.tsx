@@ -125,6 +125,8 @@ function TopUtil({
   const [showInsert0, setShowInsert0] = useState(false);
   const { chatMgt: chat } = useContext(ChatContext);
   const { sendMessage } = useSendMessage(chat);
+  const [allCheck, setAllCheck] = useState(v.messages.length > 0 && v.messages.filter((f) => f.checked).length == v.messages.length);
+  const [indeterminate, setIndeterminate] = useState(!allCheck && v.messages.filter((f) => f.checked).length > 0);
   const [selectRoles, setSelectRoles] = useState({
     assistant: true,
     system: true,
@@ -144,9 +146,17 @@ function TopUtil({
       >
         <Checkbox
           style={{ marginRight: 12 }}
-          defaultChecked={v.messages.length == v.messages.filter((f) => f.checked).length}
+          indeterminate={indeterminate}
+          defaultChecked={allCheck}
           onChange={(e) => {
-            v.messages.forEach((m) => (m.checked = e.target.checked));
+            v.messages.forEach((m) => {
+              if (m.checked != e.target.checked) {
+                m.checked = e.target.checked;
+                chat.pushMessage(m);
+              }
+            });
+            setAllCheck(e.target.checked);
+            setIndeterminate(false);
             reloadTopic(v.id);
           }}
         ></Checkbox>
