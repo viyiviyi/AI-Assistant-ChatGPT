@@ -96,11 +96,11 @@ export const aiServerList: {
   //   name: "众神之谷",
   //   hasToken: true,
   // },
-  {
-    key: 'QWen',
-    name: '通义千问',
-    hasToken: true,
-  },
+  // {
+  //   key: 'QWen',
+  //   name: '通义千问',
+  //   hasToken: true,
+  // },
   // {
   //   key: "GPTFree",
   //   name: "ChatGPT(免费)",

@@ -71,7 +71,9 @@ export class KeyValueData {
   private _aiServerList: string[] = [];
   getaiServerList(): string[] {
     if (this._aiServerList.length) return this._aiServerList;
-    let r = this.provider.getItem(this.dataKeyPrefix + 'AiServerList') || '[]';
+    let r =
+      this.provider.getItem(this.dataKeyPrefix + 'AiServerList') ||
+      '["DeepSeek|https://api.deepseek.com","Kimi|https://proxy.eaias.com/https://api.moonshot.cn","阿里云百炼模型|https://dashscope.aliyuncs.com/compatible-mode/v1","X.AI|https://proxy.eaias.com/https://api.x.ai/v1","Gemini|https://proxy.eaias.com/https://generativelanguage.googleapis.com/v1beta/openai"]';
     this._aiServerList = JSON.parse(r);
     return this._aiServerList;
   }
