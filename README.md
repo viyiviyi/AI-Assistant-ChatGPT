@@ -11,7 +11,7 @@
 - 以对话的形式使用，可以在任意位置发起任意次数的对话，方便反复提问或挑选高质量内容。
 - 可以任意的编辑所有内容，可以以任意身份插入内容到任意位置，方便创作。
 - 可以导出为markdown文档，快速的生成博客、小说、或对话。
-- 可以导出为json格式用于备份或在设备间传递，因为没有后台，就没有在线同步功能（在准备写了）。
+- 可以导出为json格式用于备份或在设备间传递，因为没有后台，就没有在线同步功能。
 - 支持自定义上下文数量，且可以将任意对话或提示词加入到上下文中。
 - 使用 会话-话题 的方式管理对话，一个会话有多个话题，大部分配置都安照会话做区分。
 - 可以为每个会话独立的配置各种设定，工作娱乐分开进行。
@@ -22,13 +22,8 @@
 
 - 可以访问 [https://eaias.com](https://eaias.com) 直接使用。
 - 如果你需要自己部署，请看[这里](#独立部署)
-- 如果要使用ChatGLM作为机器人，可以看这个项目：[ChatGLM-6B_Api_kaggle](https://github.com/viyiviyi/ChatGLM-6B_Api_kaggle) 并将得到的地址填到ChatGPT的代理地址里就可以使用ChatGLM作为免费的AI助理。
-- 一个有很多助理设定的网站[https://ai.usesless.com/scene](https://zl.aizj.cc/) [https://xn--o0uq09burn.com/](https://xn--o0uq09burn.com/) 
-- [一个购买key的商店（询问过卖家可以挂上来）,一个5刀的key就可以用半个月了。](https://gptnb.net)
-- [ClaudeApi调用相关的key获取方式，我也是从这学会的](https://github.com/bincooo/claude-api)
 - 可以使用[Chub](https://chub.ai)的角色设定了，在设定的扩展里打开相关的功能即可，在用来角色扮演时会更好用，不过依然比不上类酒馆软件。
-- 支持使用[cohere.ai](https://dashboard.cohere.com/api-keys)的api key 来使用cohere.ai的模型，参数合设定写法有些差异，需要适当调整。
-- 可以自己添加兼容ChatGPT接口的APi服务，并可独立配置token和切换
+- 可以自己添加任何兼容ChatGPT接口的APi服务，并可独立配置token和切换，如阿里云百炼大模型、Kimi、DeepSeek
 - 增加了可调用Stable-Diffusion-Webui Api 绘图的功能，当选中文字时可以打开弹窗配置地址和参数并生成图片
 
 ![主界面截图](./主界面预览.webp)
@@ -70,12 +65,9 @@
 - 可配置接口代理地址(因为没有使用服务器转发的方式，而是直接由浏览器请求，所有代理地址需要将此网站加入允许跨域访问的名单)，同ip多人访问可能产生封号危险，所有这里你可以使用你自己的代理地址。参考[chatgptProxyAPI](https://github.com/x-dr/chatgptProxyAPI)
 - 除标注的几个配置外，其他配置都是仅当前会话生效。
 
-## 接下来要做的事情 （可能）
+## 缺少的可能重要的功能
 
-- 引用：可以引用单条内容单独询问助理或ChatGPT，独立于当前上下文
-- 数据同步：打算是采用第三方云盘或者webdav或者git，因为不想数据流转到代理服务器，所有需要使用客户端才能跨域访问第三方服务。
-- 自动助理配置：类似AutoGPT，将在插件功能后以插件的形式实现
-- **如果你有什么需求也可以在[issues](https://github.com/viyiviyi/AI-Assistant-ChatGPT/issues)提，我会收到邮件的。**
+- 数据云存储和同步：因为只是一个静态网页，没有服务器，数据全部存在浏览器里面，清除浏览器数据时也会清除。
 
 ## [一些助理的配置参考](./%E5%8A%A9%E7%90%86%E8%AE%BE%E5%AE%9A.md)  
 
@@ -99,45 +91,50 @@
 - 如果你需要二次修改，请随意。这是一个MIT开源协议的项目。
 
 
-## cloudflare反向代理
+## cloudflare反向代理 这也是一个可以代理几乎所有api的通用代理，通过在访问地址后面接需要代理的api地址进行访问
 
 ```javascript
-
-const TELEGRAPH_URL = 'https://api.openai.com';
 
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
 
 async function handleRequest(request) {
-  const url = new URL(request.url);
-  url.host = TELEGRAPH_URL.replace(/^https?:\/\//, '');
-  let old_request_headers = new Headers(request.headers);
-  let new_request_headers = new Headers();
-  new_request_headers.set('Host', 'https://api.openai.com');
-  new_request_headers.set('Orgin', 'https://api.openai.com');
-  new_request_headers.set('Referer', '');
-  new_request_headers.set('user-agent', '');
-  new_request_headers.set('Authorization', old_request_headers.get('Authorization'));
-  new_request_headers.set('Accept-Language', old_request_headers.get('Accept-Language'));
-  new_request_headers.set('Accept-Encoding', old_request_headers.get('Accept-Encoding'));
-  new_request_headers.set('Content-Type', old_request_headers.get('Content-Type'));
+  let url = new URL(request.url);
+  if (url.pathname == '/') {
+    return new Response('not found', { status: 404 })
+  }
+  let lastHost = url.origin;
+  url = new URL(url.href.substring(url.href.indexOf('http', 4)));
 
+  let new_request_headers = new Headers(request.headers);
+  new_request_headers.set('Host', url.host);
+  new_request_headers.set('Orgin', url.origin);
+  new_request_headers.set('Referer', '');
+  new_request_headers.set('X-Forwarded-For', '');
+  new_request_headers.set('X-Real-IP', '');
+  [...new_request_headers.keys()].forEach(key => {
+    new_request_headers.set(key, new_request_headers.get(key).replace(lastHost + '/', ''))
+  })
   const modifiedRequest = new Request(url.toString(), {
     headers: new_request_headers,
     method: request.method,
     body: request.body,
     redirect: 'follow'
   });
-
-  const response = await fetch(modifiedRequest);
+  
+  let response = new Response(null,{status:200});
+  if (request.method == 'OPTIONS') response = new Response(null,{status:200});
+  else response = await fetch(modifiedRequest);
 
   const modifiedResponse = new Response(response.body, response);
+
   // 添加允许跨域访问的响应头
   modifiedResponse.headers.set('Access-Control-Allow-Origin', "*");
   modifiedResponse.headers.set('cache-control', 'public, max-age=14400')
   modifiedResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  modifiedResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type,Content-Length, Authorization, Accept,X-Requested-With');
+  modifiedResponse.headers.set('Access-Control-Allow-Headers', '*');
+  // modifiedResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type,Content-Length, Authorization, Accept,X-Requested-With');
   modifiedResponse.headers.set('access-control-allow-credentials', 'true');
   modifiedResponse.headers.delete('content-security-policy');
   modifiedResponse.headers.delete('content-security-policy-report-only');
@@ -145,55 +142,4 @@ async function handleRequest(request) {
   return modifiedResponse;
 }
 
-```
-
-## nginx反向代理
-
-```conf
-server
-{
-    listen 80;
-		listen 443 ssl http2;
-		listen [::]:443 ssl http2;
-    listen [::]:80;
-    server_name slack.domain.com; # 这里写用来代理的域名
-
-#     ssl证书地址
-    ssl_certificate            "xxx.pem"; # pem文件的路径
-    ssl_certificate_key        "xxx.key"; # key文件的路径
-
-#     ssl验证相关配置
-    ssl_protocols              TLSv1 TLSv1.1 TLSv1.2;
-    ssl_ciphers                ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
-    ssl_prefer_server_ciphers  on;
-    ssl_session_cache          shared:SSL:10m;
-    ssl_session_timeout        10m;
-
-    add_header Access-Control-Allow-Origin * always;
-    add_header Access-Control-Allow-Headers *;
-    add_header Access-Control-Allow-Methods "GET, POST, PUT, OPTIONS";
-
-    if ($request_method = 'OPTIONS') {
-        return 200;
-    }
-
-    location /
-    {
-        proxy_pass https://slack.com;
-        proxy_set_header Host slack.com;
-        proxy_set_header REMOTE-HOST $remote_addr;
-        proxy_set_header   Upgrade $http_upgrade;
-        proxy_set_header   Connection upgrade;
-
-        if ($request_method = OPTIONS){
-						return 200;
-				}
-        # 自定义cors允许的域名 end
-        proxy_http_version 1.1;
-    }
-    location ~ ^/(\.user.ini|\.htaccess|\.git|\.env|\.svn|\.project|LICENSE|README.md)
-    {
-        return 404;
-    }
-}
 ```
