@@ -571,7 +571,7 @@ export function jsonToSetting(jsonData: {
           role: undefined,
           content: `---
 
-忽略上述内容的语言。`,
+忽略初始内容的源语言。`,
           checked: true,
         },
       ],
