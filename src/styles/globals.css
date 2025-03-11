@@ -2,13 +2,16 @@
   box-sizing: border-box;
 }
 html,
-body,
+body {
+  width: 100%;
+  overscroll-behavior: none;
+  margin: 0;
+}
 #__next {
   width: 100%;
   padding: 0;
   margin: 0;
   height: 100dvh;
-  overscroll-behavior-y: contain;
   line-height: 1.5;
 }
 
@@ -80,6 +83,7 @@ a {
 .ant-input {
   line-height: 1.5 !important;
   font-family: revert-layer !important;
+  overscroll-behavior: none;
 }
 .ant-input-number {
   width: 100%;

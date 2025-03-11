@@ -11,6 +11,7 @@ import { DragItem, DragList } from '../common/DragList';
 import { Hidden } from '../common/Hidden';
 import { Modal } from '../common/Modal';
 import { SkipExport } from '../common/SkipExport';
+import { TextEditor } from '../common/TextEditor';
 const ContentItem = ({
   item,
   idx,
@@ -146,7 +147,8 @@ const ContentItem = ({
         </Space>
       </div>
       <Form.Item valuePropName="content" validateTrigger={['onChange', 'onBlur']} noStyle>
-        <Input.TextArea
+        <TextEditor
+          input={{ text: text }}
           readOnly={disabledEdit}
           placeholder="追加内容"
           autoSize={{ maxRows: 10 }}

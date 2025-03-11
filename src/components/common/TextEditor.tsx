@@ -6,6 +6,7 @@ import React, { Ref, useEffect, useState } from 'react';
 
 export const TextEditor = React.forwardRef((props: TextAreaProps & { input: { text: string } }, ref: Ref<TextAreaRef> | undefined) => {
   const [text, setText] = useState(props.input.text);
+  const [autoSize, setAutoSize] = useState(true);
   useEffect(() => {
     setText(props.input.text);
   }, [props.input]);
@@ -13,6 +14,13 @@ export const TextEditor = React.forwardRef((props: TextAreaProps & { input: { te
     <Input.TextArea
       {...props}
       value={text}
+      autoSize={{ maxRows: autoSize ? 10 : 9999 }}
+      onFocus={() => {
+        setAutoSize(false);
+      }}
+      onBlur={() => {
+        setAutoSize(true);
+      }}
       onChange={(e) => {
         props.input.text = e.target.value;
         setText(props.input.text);

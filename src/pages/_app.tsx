@@ -1,42 +1,36 @@
-import { useDark } from "@/core/hooks/hooks";
-import {
-  legacyLogicalPropertiesTransformer,
-  StyleProvider
-} from "@ant-design/cssinjs";
+import { useDark } from '@/core/hooks/hooks';
+import { legacyLogicalPropertiesTransformer, StyleProvider } from '@ant-design/cssinjs';
 
-import "@/styles/globals.css";
-import { ConfigProvider, theme } from "antd";
-import "antd/dist/reset.css";
-import zhCN from "antd/locale/zh_CN";
-import type { AppProps } from "next/app";
-import Head from "next/head";
-import "../styles/atom-one-dark.css";
-import { useEffect } from "react";
-import { registerMiddleware } from "@/middleware/execMiddleware";
+import { registerMiddleware } from '@/middleware/execMiddleware';
+import '@/styles/globals.css';
+import { ConfigProvider, theme } from 'antd';
+import 'antd/dist/reset.css';
+import zhCN from 'antd/locale/zh_CN';
+import type { AppProps } from 'next/app';
+import Head from 'next/head';
+import { useEffect } from 'react';
+import '../styles/atom-one-dark.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   const isDark = useDark();
   useEffect(() => {
-    registerMiddleware()
-  })
+    registerMiddleware();
+  });
   return (
-    <StyleProvider
-      hashPriority="high"
-      transformers={[legacyLogicalPropertiesTransformer]}
-    >
+    <StyleProvider hashPriority="high" transformers={[legacyLogicalPropertiesTransformer]}>
       <ConfigProvider
         locale={zhCN}
         theme={{
           hashed: false,
           token: {
-            colorPrimary: "#00b96b",
-            colorInfoBg: isDark ? "#3338" : "#eee8",
-            colorTextBase: isDark ? "#cecece" : "#111",
-            colorBgElevated: isDark ? "#222" : "#eee",
-            colorLink: "#59ccccd5",
-            colorLinkActive: "#41CECED5",
+            colorPrimary: '#00b96b',
+            colorInfoBg: isDark ? '#3338' : '#eee8',
+            colorTextBase: isDark ? '#cecece' : '#111',
+            colorBgElevated: isDark ? '#222' : '#eee',
+            colorLink: '#59ccccd5',
+            colorLinkActive: '#41CECED5',
             fontSize: isDark ? 14 : 16,
-            colorLinkHover: "#66E6E6D5",
+            colorLinkHover: '#66E6E6D5',
             padding: isDark ? 12 : 10,
             paddingSM: isDark ? 8 : 10,
             paddingMD: isDark ? 10 : 12,
@@ -62,11 +56,11 @@ export default function App({ Component, pageProps }: AppProps) {
           },
           components: {
             Segmented: {
-              itemSelectedColor: isDark ? "#00b96b" : "#00b96b",
-              itemHoverColor: isDark ? "#00B96CA0" : "#00b96bA0",
+              itemSelectedColor: isDark ? '#00b96b' : '#00b96b',
+              itemHoverColor: isDark ? '#00B96CA0' : '#00b96bA0',
             },
             Tabs: {
-              colorBgContainer: "#0000",
+              colorBgContainer: '#0000',
             },
             Modal: {
               padding: 12,
@@ -76,11 +70,11 @@ export default function App({ Component, pageProps }: AppProps) {
         }}
       >
         <Head>
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
-          />
-
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <meta name="format-detection" content="telephone=no" />
+          <meta name="apple-touch-fullscreen" content="yes" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         </Head>
         <Component {...pageProps} />
       </ConfigProvider>
