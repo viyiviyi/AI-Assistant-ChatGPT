@@ -1,3 +1,4 @@
+import { useScreenSize } from '@/core/hooks/hooks';
 import { getUuid } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { VirtualRoleSetting } from '@/Models/VirtualRoleSetting';
@@ -28,6 +29,7 @@ const ContentItem = ({
   const [role, setRole] = useState(item.role);
   const [checked, setChecked] = useState(item.checked);
   const [inputValue, setInputValue] = useState('');
+  const screenSize = useScreenSize();
   useEffect(() => {
     setText(item.content);
     setRole(item.role);
@@ -148,6 +150,7 @@ const ContentItem = ({
       </div>
       <Form.Item valuePropName="content" validateTrigger={['onChange', 'onBlur']} noStyle>
         <TextEditor
+          autoFullSize={screenSize.width < 720}
           input={{ text: text }}
           readOnly={disabledEdit}
           placeholder="追加内容"

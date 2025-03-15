@@ -32,6 +32,7 @@ import {
   Divider,
   Flex,
   Image as AntdImage,
+  Input,
   message,
   Popconfirm,
   Segmented,
@@ -46,7 +47,6 @@ import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useS
 import { Hidden } from '../../common/Hidden';
 import { MarkdownView } from '../../common/MarkdownView';
 import { SkipExport } from '../../common/SkipExport';
-import { TextEditor } from '../../common/TextEditor';
 
 const MemoMarkdownView = React.memo(MarkdownView);
 export const MessageItem = ({
@@ -370,9 +370,9 @@ export const MessageItem = ({
         {edit ? (
           <>
             <Hidden hidden={!edit}>{EditUtil}</Hidden>
-            <TextEditor
-              autoSize={renderType == 'document' ? true : { maxRows: 10 }}
-              input={messageText}
+            <Input.TextArea
+              autoSize={renderType == 'document' ? true : { maxRows: 999 }}
+              value={messageText.text}
               onKeyDown={(e) => {
                 if (e.key === 's' && e.ctrlKey) {
                   e.preventDefault();
