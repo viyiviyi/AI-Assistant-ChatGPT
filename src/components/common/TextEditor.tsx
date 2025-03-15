@@ -8,19 +8,22 @@ export const TextEditor = React.forwardRef(
   (props: TextAreaProps & { input: { text: string }; autoFullSize?: boolean }, ref: Ref<TextAreaRef> | undefined) => {
     const [text, setText] = useState(props.input.text);
     const [autoSize, setAutoSize] = useState(true);
+    let _props = { ...props };
+    const autoFullSize = _props.autoFullSize;
+    if ('autoFullSize' in _props) delete _props.autoFullSize;
     useEffect(() => {
       setText(props.input.text);
     }, [props.input]);
     return (
       <Input.TextArea
-        {...props}
+        {..._props}
         value={text}
         autoSize={{ maxRows: autoSize ? 10 : 9999 }}
         onFocus={() => {
-          if (props.autoFullSize) setAutoSize(false);
+          if (autoFullSize) setAutoSize(false);
         }}
         onBlur={() => {
-          if (props.autoFullSize) setAutoSize(true);
+          if (autoFullSize) setAutoSize(true);
         }}
         onChange={(e) => {
           props.input.text = e.target.value;
