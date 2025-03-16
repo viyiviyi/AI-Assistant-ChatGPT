@@ -45,10 +45,10 @@ export class APICenter implements IAiService {
       })
       .then((res) => res.data)
       .then((res: ListModelsResponse) => {
-        this.modelCache = (res.data || []).map((m) => m.id);
-        if (!this.modelCache.includes(this.severConfig.model) && this.modelCache.length) {
-          this.severConfig.model = this.modelCache[0];
-        }
+        this.modelCache = [];
+        (res.data || []).forEach((m) => {
+          if (!this.modelCache.includes(m.id)) this.modelCache.push(m.id);
+        });
         return this.modelCache;
       });
   };
