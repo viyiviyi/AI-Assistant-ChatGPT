@@ -249,13 +249,7 @@ export function MessageList({
                     topic.messages.slice(0, idx! + 1).map((m) => {
                       return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
                     })
-                  ).then((mLs) => {
-                    var mMap: { [key: string]: Message } = {};
-                    mLs.forEach((v) => {
-                      mMap[v.id] = v;
-                    });
-                    setActivityTopic({ ...t, messages: mLs, messageMap: mMap, titleTree: [] });
-                  });
+                  ).then(() => setActivityTopic(t));
                 });
               }}
             ></MemoMessageItem>

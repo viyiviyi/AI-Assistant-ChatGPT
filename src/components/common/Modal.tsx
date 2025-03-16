@@ -111,7 +111,6 @@ export const Modal = ({
       // zIndex--;
       setTimeout(() => {
         // 延迟删除历史记录 防止异常关闭全部弹窗
-        console.log(' urlHistory.pop();');
         urlHistory.pop();
         cancelClose();
       }, 100);
