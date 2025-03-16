@@ -66,6 +66,9 @@ a {
     background-color: rgba(192, 192, 192, 0.1);
   }
 }
+.ant-checkbox-wrapper {
+  align-items: center;
+}
 .ant-collapse-content-box {
   padding: 8px 0 !important;
 }

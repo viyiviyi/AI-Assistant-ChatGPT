@@ -725,6 +725,7 @@ export class ChatManagement {
       tableName: 'Message',
       data: message,
     });
+    return message;
   }
   static async createChat(): Promise<IChat> {
     let group = await this.createGroup();
@@ -947,7 +948,7 @@ export class ChatManagement {
     }
     _this.topics.push(...json.topics);
     let proT: Promise<Topic>[] = [];
-    let proM: Promise<void>[] = [];
+    let proM: Promise<Message>[] = [];
     _this.topics.forEach((v) => {
       v.groupId = _this.group.id;
       v.id = getUuid();

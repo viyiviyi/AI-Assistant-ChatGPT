@@ -159,7 +159,8 @@ function TopUtil({
             setIndeterminate(false);
             reloadTopic(v.id);
           }}
-        ></Checkbox>
+        >
+        </Checkbox>
         <Button
           shape="circle"
           type="text"

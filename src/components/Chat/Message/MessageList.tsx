@@ -2,7 +2,7 @@ import { Hidden } from '@/components/common/Hidden';
 import { DraePopup } from '@/components/drawimg/DrawPopup';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { useSendMessage } from '@/core/hooks/hooks';
-import { activityScroll, createThrottleAndDebounce, pagesUtil } from '@/core/utils/utils';
+import { activityScroll, createThrottleAndDebounce, getUuid, pagesUtil } from '@/core/utils/utils';
 import { Message } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
 import { PictureOutlined } from '@ant-design/icons';
@@ -34,7 +34,7 @@ export function MessageList({
   firstMsgIdxRef: React.MutableRefObject<number | undefined>;
 }) {
   console.log('MessageList');
-  const { reloadNav, forceRender } = useContext(ChatContext);
+  const { reloadNav, forceRender, setActivityTopic } = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
   const [pageConf, setPageConf] = useState({
@@ -243,6 +243,21 @@ export function MessageList({
                 activityScroll({ botton: true });
                 sendMessage(idx!, topic);
               }}
+              onCopy={() => {
+                chat.newTopic(topic.name).then((t) => {
+                  Promise.all(
+                    topic.messages.slice(0, idx! + 1).map((m) => {
+                      return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
+                    })
+                  ).then((mLs) => {
+                    var mMap: { [key: string]: Message } = {};
+                    mLs.forEach((v) => {
+                      mMap[v.id] = v;
+                    });
+                    setActivityTopic({ ...t, messages: mLs, messageMap: mMap, titleTree: [] });
+                  });
+                });
+              }}
             ></MemoMessageItem>
             {idx === insertIndex && (
               <MemoInsertInput
@@ -265,6 +280,9 @@ export function MessageList({
           <span style={{ marginLeft: 16 }}>上下文：{ctxCountChar}</span>
         </div>
       </Hidden>
+      <span style={{ opacity: 0.5, position: 'absolute', bottom: 0, left: 10 }}>
+        {Math.min(topic.messages.length, topic.overrideSettings?.msgCount || chat.gptConfig.msgCount)}/{topic.messages.length}
+      </span>
       {drawPopupProps.text && (
         <FloatButton.Group style={{ right: 10, bottom: 120 }}>
           <Button

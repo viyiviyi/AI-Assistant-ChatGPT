@@ -160,6 +160,7 @@ export const Chat = () => {
                   backgroundColor: token.colorFillContent,
                   // width: "auto",
                   display: 'flex',
+                  position: 'relative',
                 }}
                 onTouchMove={() => {
                   activityScroll({});

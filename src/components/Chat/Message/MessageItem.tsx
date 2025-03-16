@@ -1,54 +1,33 @@
-import { LocalDbImg } from '@/components/common/LocalDbImg';
 import { TextEditor } from '@/components/common/TextEditor';
-import { TempDraePopup } from '@/components/drawimg/TempDrawPopup';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { ChatContext } from '@/core/ChatManagement';
-import { ImageStore } from '@/core/db/ImageDb';
-import { StableDiffusionProcessingTxt2Img, StableDiffusionProcessingTxt2ImgFromJSONTyped } from '@/core/drawApi';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
-import { createThrottleAndDebounce, downloadBase64Image, downloadBlob } from '@/core/utils/utils';
+import { createThrottleAndDebounce } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { Message } from '@/Models/DataBase';
-import { TopicMessage } from '@/Models/Topic';
 import styleCss from '@/styles/index.module.css';
 import {
   CopyOutlined,
   DeleteOutlined,
-  DownloadOutlined,
   EditOutlined,
   ForwardOutlined,
-  InfoCircleOutlined,
   MessageOutlined,
   PauseOutlined,
   PlusOutlined,
   RollbackOutlined,
-  RotateRightOutlined,
-  SaveOutlined,
-  SwapOutlined
+  SaveOutlined
 } from '@ant-design/icons';
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Divider,
-  Flex,
-  Image as AntdImage, message,
-  Popconfirm,
-  Segmented,
-  Space,
-  theme,
-  Tooltip,
-  Typography
-} from 'antd';
+import { Avatar, Button, Checkbox, Divider, Flex, message, Popconfirm, Segmented, theme, Tooltip, Typography } from 'antd';
 import copy from 'copy-to-clipboard';
 import Image from 'next/image';
 import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Hidden } from '../../common/Hidden';
 import { MarkdownView } from '../../common/MarkdownView';
 import { SkipExport } from '../../common/SkipExport';
+import { Images } from './Images';
+import { ReasoningContent } from './ReasoningContent';
 
-const MemoMarkdownView = React.memo(MarkdownView);
-export const MessageItem = ({
+const MessageItem = ({
   msg,
   renderMessage,
   rBak,
@@ -56,6 +35,7 @@ export const MessageItem = ({
   onCite,
   onPush,
   onSned,
+  onCopy,
   style,
 }: {
   msg: Message;
@@ -65,6 +45,7 @@ export const MessageItem = ({
   onCite: (message: Message) => void;
   onPush: () => void;
   onSned: () => void;
+  onCopy: () => void;
   style?: CSSProperties | undefined;
 }) => {
   const { chatMgt: chat, loadingMsgs, reloadNav } = useContext(ChatContext);
@@ -242,11 +223,25 @@ export const MessageItem = ({
               }
               onClick={onPush}
             ></Button>
+            {aiService?.customContext && (
+              <Button
+                shape="circle"
+                type="text"
+                icon={
+                  <SkipExport>
+                    <CopyOutlined />
+                  </SkipExport>
+                }
+                onClick={onCopy}
+              ></Button>
+            )}
           </Flex>
         </Divider>
       </div>
     );
-  }, [aiService?.customContext, msg.skipCtx, onPush, onSned, style]);
+  }, [aiService?.customContext, msg.skipCtx, onCopy, onPush, onSned, style]);
+
+  // 编辑时上方工具条
   const EditUtil = useMemo(
     () => (
       <div
@@ -294,6 +289,8 @@ export const MessageItem = ({
     ),
     [ctxRole, messageText, msg, onSned, saveMsg]
   );
+
+  // 正在输出的文本内容
   const RuningText = () => {
     const [runLines, setRunLines] = useState(msg.text.slice(successLines.length));
     useEffect(() => {
@@ -362,6 +359,7 @@ export const MessageItem = ({
       </div>
     );
   };
+
   // 内容显示
   const Content = useMemo(() => {
     return (
@@ -387,7 +385,7 @@ export const MessageItem = ({
           </>
         ) : (
           <>
-            <MemoMarkdownView
+            <MarkdownView
               markdown={chat.config.disableStrikethrough ? successLines.replaceAll('~', '～') : successLines}
               doubleClick={() => {
                 setMessage({ text: msg.text });
@@ -400,6 +398,7 @@ export const MessageItem = ({
       </div>
     );
   }, [edit, EditUtil, renderType, messageText, chat, successLines, msg, saveMsg, ctxRole]);
+
   if (renderType == 'document') {
     return (
       <>
@@ -529,6 +528,7 @@ export const MessageItem = ({
       </>
     );
   }
+
   if (msg.ctxRole === 'system') {
     return (
       <div
@@ -558,6 +558,7 @@ export const MessageItem = ({
       </div>
     );
   }
+
   return (
     <div
       className={styleCss.message_box + (chat.config.limitPreHeight ? ' limt-hight' : '')}
@@ -689,191 +690,5 @@ export const MessageItem = ({
     </div>
   );
 };
-const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
-  const [currentIdx, setCurrentIdx] = useState<number | undefined>(undefined);
-  const { chatMgt: chat } = useContext(ChatContext);
-  const [imageIds, setImageIds] = useState(msg.imageIds || []);
-  const [popup, setPopup] = useState(false);
-  const [info, setInfo] = useState<StableDiffusionProcessingTxt2Img>({});
-  const [messageApi, contextHolder] = message.useMessage();
-  useEffect(() => {
-    setImageIds([...(msg.imageIds || [])]);
-  }, [msg.imageIds]);
-  return (
-    <Flex gap={5} wrap={'wrap'}>
-      {contextHolder}
-      <TempDraePopup open={popup} info={info} msg={msg} topic={topic} onClose={() => setPopup(false)} />
-      <AntdImage.PreviewGroup
-        preview={{
-          visible: !popup && currentIdx !== undefined,
-          current: currentIdx,
-          onVisibleChange(value, prevValue, current) {
-            setCurrentIdx(value ? current : undefined);
-          },
-          onChange(current) {
-            setCurrentIdx(current);
-          },
-          toolbarRender: (
-            _,
-            { transform: { scale }, current, actions: { onFlipY, onFlipX, onRotateLeft, onRotateRight, onZoomOut, onZoomIn } }
-          ) => (
-            <Space size={18} className="toolbar-wrapper" style={{ fontSize: 25 }}>
-              {(msg.imagesAlts || {})[imageIds[current || 0]] && (
-                <PlusOutlined
-                  onClick={() => {
-                    let info = (msg.imagesAlts || {})[imageIds[current || 0]];
-                    if (!info) return;
-                    let json = info ? JSON.parse(info) : {};
-                    let param = StableDiffusionProcessingTxt2ImgFromJSONTyped(json, false);
-                    setInfo(param);
-                    setPopup(true);
-                  }}
-                />
-              )}
-              {(msg.imagesAlts || {})[imageIds[current || 0]] && (
-                <InfoCircleOutlined
-                  disabled={scale === 50}
-                  onClick={() => {
-                    let info = (msg.imagesAlts || {})[imageIds[current || 0]];
-                    if (!info) return;
-                    let json = info ? JSON.parse(info) : {};
-                    if (!json.infotexts) return messageApi.error('无可复制数据');
-                    if (copy(json.infotexts)) {
-                      messageApi.success('已复制参数');
-                    }
-                  }}
-                />
-              )}
-              <SwapOutlined rotate={90} onClick={onFlipY} />
-              <SwapOutlined onClick={onFlipX} />
-              {/* <RotateLeftOutlined onClick={onRotateLeft} /> */}
-              <RotateRightOutlined onClick={onRotateRight} />
-              <DownloadOutlined
-                onClick={() => {
-                  let info = (msg.imagesAlts || {})[imageIds[current || 0]];
-                  let json = info ? JSON.parse(info || '{}') : {};
-                  let param = StableDiffusionProcessingTxt2ImgFromJSONTyped(json, false);
-                  let id = msg.imageIds && msg.imageIds[current];
-                  if (id == 'error' || id == 'loading' || !id) return;
-                  ImageStore.getInstance()
-                    .getImage(id)
-                    .then((res) => {
-                      let fileName = `${new Date().getFullYear()}${(new Date().getMonth() + 1).toFixed(0).padStart(2, '0')}${new Date()
-                        .getDate()
-                        .toFixed(0)
-                        .padStart(2, '0')}.${(Date.now() / 1000).toFixed(0).substring(3)}.${param.width}.${param.height} + .png`;
-                      if (typeof res == 'string') {
-                        downloadBase64Image(res, fileName);
-                      } else if (typeof res == 'object') {
-                        downloadBlob(res, fileName);
-                      }
-                    });
-                }}
-              />
-              {/* <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
-              <ZoomInOutlined disabled={scale === 50} onClick={onZoomIn} /> */}
-              <DeleteOutlined
-                style={{ marginLeft: 20 }}
-                onClick={() => {
-                  let id = imageIds![current];
-                  if (id != 'error' && id != 'loading') {
-                    ImageStore.getInstance().deleteImage([id]);
-                  }
-                  msg.imageIds?.splice(current, 1);
-                  setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
-                  chat.pushMessage(msg).then((msg) => {
-                    setImageIds([...(msg.imageIds || [])]);
-                  });
-                }}
-              />
-            </Space>
-          ),
-        }}
-      >
-        {imageIds.map((id, i) => {
-          if (id == 'error') {
-            return (
-              <AntdImage
-                key={id + i}
-                style={{ paddingTop: 25, paddingBottom: 25, paddingLeft: 5, paddingRight: 5 }}
-                height={100}
-                src={'/images/error.png'}
-              />
-            );
-          }
-          if (id == 'loading') {
-            return (
-              <AntdImage
-                key={id + i}
-                style={{ paddingTop: 25, paddingBottom: 25, paddingLeft: 5, paddingRight: 5 }}
-                height={100}
-                src={'/images/loading.gif'}
-              />
-            );
-          }
-          return <LocalDbImg key={id + i} id={id} alt={(msg.imagesAlts || {})[id]} />;
-        })}
-      </AntdImage.PreviewGroup>
-    </Flex>
-  );
-};
-export const MemoMessageItem = React.memo(MessageItem);
 
-const ReasoningContent = ({ msg }: { msg: Message }) => {
-  const { token } = theme.useToken();
-  const [expanded, setExpanded] = useState(false);
-  return (
-    <>
-      {msg.reasoning_content && (
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            padding: 10,
-            flexDirection: 'column',
-            boxSizing: 'border-box',
-            borderRadius: token.borderRadiusLG,
-            border: '1px solid ' + token.colorFillAlter,
-            backgroundColor: token.colorInfoBg,
-            marginBottom: 2,
-            boxShadow: token.boxShadowTertiary,
-            lineHeight: 1.4,
-          }}
-        >
-          <Flex style={{ marginBottom: 6 }} gap={16}>
-            <a style={{ fontWeight: 400, fontSize: '1.3em', color: token.colorTextLabel }}>
-              {msg.text ? <>已</> : <></>}深度思考{msg.text ? <></> : <span>中......</span>}
-            </a>
-            <span style={{ flex: 1 }}></span>
-            <Button
-              type="link"
-              size="small"
-              style={{ padding: 0, marginLeft: 4 }}
-              onClick={() => {
-                setExpanded((v) => !v);
-              }}
-            >
-              {expanded ? '隐藏' : '查看'}
-            </Button>
-            <Button
-              type="link"
-              size="small"
-              style={{ padding: 0, marginLeft: 4 }}
-              onClick={() => {
-                copy(msg.reasoning_content || '');
-              }}
-            >
-              复制
-            </Button>
-          </Flex>
-          {expanded && (
-            <MemoMarkdownView
-              markdown={msg.reasoning_content}
-              // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
-            />
-          )}
-        </div>
-      )}
-    </>
-  );
-};
+export const MemoMessageItem = React.memo(MessageItem);
