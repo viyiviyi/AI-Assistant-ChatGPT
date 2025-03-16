@@ -19,22 +19,27 @@ export const TextEditor = React.forwardRef(
         {..._props}
         value={text}
         autoSize={{ maxRows: autoSize ? 10 : 9999 }}
-        onFocus={() => {
+        onFocus={(e) => {
           if (autoFullSize) setAutoSize(false);
+          if (props.onFocus) props.onFocus(e);
         }}
-        onBlur={() => {
+        onBlur={(e) => {
           if (autoFullSize) setAutoSize(true);
+          if (props.onBlur) props.onBlur(e);
         }}
         onChange={(e) => {
           props.input.text = e.target.value;
           setText(props.input.text);
           if (props.onChange) props.onChange(e);
+          props.onChange && props.onChange(e);
         }}
-        onKeyDown={(e) =>
-          e.key === 'Tab' &&
-          (e.preventDefault(),
-          setText((v) => onTextareaTab(v, e.currentTarget?.selectionStart, e.currentTarget?.selectionEnd, e.currentTarget, e.shiftKey)))
-        }
+        onKeyDown={(e) => {
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            setText((v) => onTextareaTab(v, e.currentTarget?.selectionStart, e.currentTarget?.selectionEnd, e.currentTarget, e.shiftKey));
+          }
+          if (props.onKeyDown) props.onKeyDown(e);
+        }}
         ref={ref}
       />
     );

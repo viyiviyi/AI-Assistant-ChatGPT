@@ -1,11 +1,12 @@
 import { LocalDbImg } from '@/components/common/LocalDbImg';
+import { TextEditor } from '@/components/common/TextEditor';
 import { TempDraePopup } from '@/components/drawimg/TempDrawPopup';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { ChatContext } from '@/core/ChatManagement';
 import { ImageStore } from '@/core/db/ImageDb';
 import { StableDiffusionProcessingTxt2Img, StableDiffusionProcessingTxt2ImgFromJSONTyped } from '@/core/drawApi';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
-import { createThrottleAndDebounce, downloadBase64Image, downloadBlob, onTextareaTab } from '@/core/utils/utils';
+import { createThrottleAndDebounce, downloadBase64Image, downloadBlob } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { Message } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
@@ -31,9 +32,7 @@ import {
   Checkbox,
   Divider,
   Flex,
-  Image as AntdImage,
-  Input,
-  message,
+  Image as AntdImage, message,
   Popconfirm,
   Segmented,
   Space,
@@ -370,25 +369,13 @@ export const MessageItem = ({
         {edit ? (
           <>
             <Hidden hidden={!edit}>{EditUtil}</Hidden>
-            <Input.TextArea
+            <TextEditor
               autoSize={renderType == 'document' ? true : { maxRows: 999 }}
-              value={messageText.text}
+              input={messageText}
               onKeyDown={(e) => {
                 if (e.key === 's' && e.ctrlKey) {
                   e.preventDefault();
                   saveMsg(msg, messageText.text, ctxRole);
-                }
-                if (e.key === 'Tab') {
-                  e.preventDefault();
-                  setMessage((v) => ({
-                    text: onTextareaTab(
-                      v.text,
-                      e.currentTarget?.selectionStart,
-                      e.currentTarget?.selectionEnd,
-                      e.currentTarget,
-                      e.shiftKey
-                    ),
-                  }));
                 }
               }}
               onFocus={(e) => {
