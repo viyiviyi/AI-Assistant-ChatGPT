@@ -47,7 +47,8 @@ export const Modal = ({
 }) => {
   const { token } = theme.useToken();
   const router = useRouter();
-  const [thisHash, setUrlHash] = useState('');
+  // const [thisHash, setUrlHash] = useState('');
+  const thisHash = useRef('');
   const [show, setShow] = useState(open);
 
   const screenSize = useScreenSize();
@@ -67,7 +68,9 @@ export const Modal = ({
         return v;
       }
       callback.current.okCallback();
-      if (location.href.includes('#')) router.back();
+      if (location.hash.includes(thisHash.current)) router.back();
+      zIndex--;
+      thisHash.current = '';
       return false;
     });
   }, [onOk, router]);
@@ -78,7 +81,9 @@ export const Modal = ({
         return v;
       }
       callback.current.cancelCallback();
-      if (location.href.includes('#')) router.back();
+      if (location.hash.includes(thisHash.current)) router.back();
+      zIndex--;
+      thisHash.current = '';
       return false;
     });
   }, [onCancel, router]);
@@ -89,32 +94,30 @@ export const Modal = ({
 
   useEffect(() => {
     if (!show) return;
-    if (thisHash) return;
-    if (urlHistory.includes(thisHash)) return;
+    if (thisHash.current) return;
+    if (urlHistory.includes(thisHash.current)) return;
     let _hash = '#' + zIndex;
     router.push(location.href.split('#')[0] + _hash);
     urlHistory.push(_hash);
     zIndex++;
-    setUrlHash(_hash);
-  }, [router, show, thisHash]);
+    thisHash.current = _hash;
+  }, [router, show]);
 
   const handleBackButton = useMemo(() => {
     return (ev: PopStateEvent | string) => {
-      if (!thisHash) return;
+      if (!thisHash.current) return;
       if (!urlHistory.length) return;
-      let lastUrlHash = urlHistory.slice(-1)[0];
-      if (!lastUrlHash) return;
-      if (thisHash != lastUrlHash) return;
-      zIndex--;
+      if (!urlHistory.join(',').endsWith(thisHash.current)) return;
+      // zIndex--;
       setTimeout(() => {
         // 延迟删除历史记录 防止异常关闭全部弹窗
+        console.log(' urlHistory.pop();');
         urlHistory.pop();
-      }, 20);
-      setUrlHash('');
-      setShow(false);
-      cancelClose();
+        cancelClose();
+      }, 100);
+      // thisHash.current = '';
     };
-  }, [cancelClose, thisHash]);
+  }, [cancelClose]);
 
   useEffect(() => {
     window.addEventListener('popstate', handleBackButton);
