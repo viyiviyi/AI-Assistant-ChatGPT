@@ -4,7 +4,6 @@
 html,
 body {
   width: 100%;
-  overscroll-behavior: none;
   margin: 0;
 }
 #__next {
@@ -86,7 +85,6 @@ a {
 .ant-input {
   line-height: 1.5 !important;
   font-family: revert-layer !important;
-  overscroll-behavior: none;
 }
 .ant-input-number {
   width: 100%;
