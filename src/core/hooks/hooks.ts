@@ -152,18 +152,18 @@ export function useSendMessage(chat: ChatManagement) {
         scrollToBotton(result.id);
         reloadIndex(topic, idx);
       });
-      let save = createThrottleAndDebounce((isEnd) => {
+      let save = createThrottleAndDebounce((isEnd, cb: () => void = () => {}) => {
         if (currentChat.current) {
           if (isEnd) {
             onReaderAfter(currentChat.current.getChat(), [result]).forEach((res, idx) => {
               currentChat.current &&
                 currentChat.current.pushMessage(res, idx + 1 + idx).then((r) => {
-                  Object.assign(result, r);
+                  cb();
                 });
             });
           } else {
             currentChat.current.pushMessage(result, idx + 1).then((r) => {
-              Object.assign(result, r);
+              cb();
             });
           }
         }
@@ -181,7 +181,7 @@ export function useSendMessage(chat: ChatManagement) {
           let hasChange = false;
           if (currentChat.current) {
             const content = onReader(currentChat.current.getChat(), res.text || '');
-            hasChange = result.text != content || result.reasoning_content != res.reasoning_content;
+            hasChange = !result.text.endsWith(content) || !result.reasoning_content?.endsWith(res.reasoning_content ?? '');
             result.text = content;
             result.reasoning_content = res.reasoning_content || '';
           } else if (res.stop) {
@@ -211,18 +211,19 @@ export function useSendMessage(chat: ChatManagement) {
               reloadIndex(topic, idx);
             },
           };
-          save(res.end);
-          if (res.end) {
-            hasChange = true;
-            delete loadingMsgs[result.id];
-            delete loadingMessages[result.id];
-            currentChat.current = undefined;
-            reloadIndex(topic, idx);
-          }
-          if (hasChange) {
-            reloadTopic(topic.id, result.id, res.end);
-            scrollToBotton(currentPullMessage.id);
-          }
+          save(res.end, () => {
+            if (res.end) {
+              hasChange = true;
+              delete loadingMsgs[result.id];
+              delete loadingMessages[result.id];
+              currentChat.current = undefined;
+              reloadIndex(topic, idx);
+            }
+            if (hasChange) {
+              reloadTopic(topic.id, result.id, res.end);
+              scrollToBotton(currentPullMessage.id);
+            }
+          });
         },
         config: {
           channel_id: currentChat.current!.config.cloudChannelId,
