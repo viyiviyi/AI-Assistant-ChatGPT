@@ -106,20 +106,6 @@ export function InputUtil() {
           position: 'relative',
         }}
       >
-        {showCtxRoleButton && (
-          <CtxRoleButton
-            value={role}
-            onChange={setRole}
-            inputRef={inputRef}
-            style={{
-              position: 'absolute',
-              bottom: '100%',
-              left: 0,
-              borderRadius: token.borderRadius,
-              backgroundColor: token.colorFillContent,
-            }}
-          />
-        )}
         <SkipExport>
           <div className={styleCss.roll_button}>
             <Button
@@ -165,28 +151,6 @@ export function InputUtil() {
             />
           </SkipExport>
         )}
-        <Drawer
-          placement={'left'}
-          closable={false}
-          width={Math.min(screenSize.width - 40, 400)}
-          key={'nav_drawer'}
-          styles={{ body: { padding: '1em 0' } }}
-          open={showNav}
-          onClose={() => {
-            setShowNav(false);
-          }}
-        >
-          <MemoBackgroundImage />
-          <div
-            style={{
-              position: 'relative',
-              height: '100%',
-              zIndex: 99,
-            }}
-          >
-            <MemoNavigation />
-          </div>
-        </Drawer>
         <Typography.Text
           style={{
             cursor: 'pointer',
@@ -268,7 +232,23 @@ export function InputUtil() {
         ></Button>
       </div>
     ),
-    [activityTopic, closeAll, onSubmit, onlyOne, role, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showCtxRoleButton, showNav, showTitle, token.borderRadius, token.colorFillContent, token.colorPrimary]
+    [
+      activityTopic,
+      closeAll,
+      onSubmit,
+      onlyOne,
+      role,
+      screenSize.width,
+      setCloasAll,
+      setOnlyOne,
+      setShowTitle,
+      showCtxRoleButton,
+      showNav,
+      showTitle,
+      token.borderRadius,
+      token.colorFillContent,
+      token.colorPrimary,
+    ]
   );
   const editorEle = useMemo(
     () => (
@@ -311,14 +291,51 @@ export function InputUtil() {
           <div className={styleCss.loading}></div>
         )}
       </div>
+      <Drawer
+        placement={'left'}
+        closable={false}
+        width={Math.min(screenSize.width - 40, 400)}
+        key={'nav_drawer'}
+        styles={{ body: { padding: '1em 0' } }}
+        open={showNav}
+        onClose={() => {
+          setShowNav(false);
+        }}
+      >
+        <MemoBackgroundImage />
+        <div
+          style={{
+            position: 'relative',
+            height: '100%',
+            zIndex: 99,
+          }}
+        >
+          <MemoNavigation />
+        </div>
+      </Drawer>
       <div
         style={{
           width: '100%',
           padding: '0px 10px 5px',
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
+          position: 'relative',
         }}
       >
+        {showCtxRoleButton && (
+          <CtxRoleButton
+            value={role}
+            onChange={setRole}
+            inputRef={inputRef}
+            style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: 0,
+              borderRadius: token.borderRadius,
+              backgroundColor: token.colorFillContent,
+            }}
+          />
+        )}
         {chat.config.toolBarToBottom ? (
           <>
             {editorEle}
@@ -330,7 +347,6 @@ export function InputUtil() {
             {editorEle}
           </>
         )}
-
         <Flex style={{ width: '100%', marginTop: 5 }}>
           <Hidden hidden={chat.config.buttomTool?.sendBtn != true}>
             {/* <Button
