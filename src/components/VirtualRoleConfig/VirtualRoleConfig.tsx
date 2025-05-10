@@ -101,8 +101,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                 'chub.jailbreak',
                 'chub.RequiresChinese',
                 'chub.ContentTone',
-              ].includes(v.extensionId) ||
-              v.extensionId.startsWith('chub.worldbooks')
+              ].includes(v.extensionId)
             ) {
               userVariableSetting[v.extensionId] = v;
             } else {

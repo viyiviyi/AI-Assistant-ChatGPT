@@ -752,10 +752,10 @@ export function readLorebook(jsonData: {
   return [
     {
       key: getUuid(),
-      extensionId: 'chub.worldbooks_' + jsonData.name,
+      extensionId: 'worldbooks_' + jsonData.name,
       checked: lorebooks.length > 0,
-      tags: ['Chub'],
-      title: '世界书 ' + jsonData.name,
+      tags: ['世界书'],
+      title: jsonData.name,
       dynamic: true,
       ctx: [
         {
