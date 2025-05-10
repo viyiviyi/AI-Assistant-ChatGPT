@@ -85,113 +85,116 @@ const MessageItem = ({
     [chat, reloadNav]
   );
   // 下方工具条
-  const utilsEle = (
-    <>
-      <Checkbox
-        disabled={!aiService?.customContext}
-        checked={msg.checked || false}
-        onChange={(e) => {
-          msg.checked = e.target.checked;
-          chat.pushMessage(msg).then((msg) => {
-            setMessage({ text: messageText.text });
-          });
-        }}
-      >
-        <Hidden hidden={renderType != 'document'}>
-          <span>
-            {'字数：'}
-            {msg.text.length}
-          </span>
+  const utilsEle = useMemo(
+    () => (
+      <>
+        <Checkbox
+          disabled={!aiService?.customContext}
+          checked={msg.checked || false}
+          onChange={(e) => {
+            msg.checked = e.target.checked;
+            chat.pushMessage(msg).then((msg) => {
+              setMessage({ text: messageText.text });
+            });
+          }}
+        >
+          <Hidden hidden={renderType != 'document'}>
+            <span>
+              {'字数：'}
+              {msg.text.length}
+            </span>
+          </Hidden>
+          <Hidden hidden={renderType == 'document'}>
+            <span>{new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}</span>
+          </Hidden>
+        </Checkbox>
+        <span
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            setEdit(false);
+          }}
+          style={{ flex: 1 }}
+        ></span>
+        <Hidden hidden={!edit}>
+          <SkipExport>
+            <SaveOutlined
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => saveMsg(msg, messageText.text, ctxRole)}
+              style={{ paddingLeft: 16 }}
+            />
+          </SkipExport>
         </Hidden>
-        <Hidden hidden={renderType == 'document'}>
-          <span>{new Date(msg.updateTime || msg.timestamp).toLocaleTimeString()}</span>
-        </Hidden>
-      </Checkbox>
-      <span
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => {
-          setEdit(false);
-        }}
-        style={{ flex: 1 }}
-      ></span>
-      <Hidden hidden={!edit}>
+        <span style={{ marginLeft: 16 }}></span>
         <SkipExport>
-          <SaveOutlined
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => saveMsg(msg, messageText.text, ctxRole)}
-            style={{ paddingLeft: 16 }}
-          />
+          <Hidden hidden={!!loadingMsgs[msg.id]}>
+            <EditOutlined
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                if (!edit) setMessage({ text: msg.text });
+                setEdit(!edit);
+              }}
+            />
+          </Hidden>
         </SkipExport>
-      </Hidden>
-      <span style={{ marginLeft: 16 }}></span>
-      <SkipExport>
-        <Hidden hidden={!!loadingMsgs[msg.id]}>
-          <EditOutlined
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (!edit) setMessage({ text: msg.text });
-              setEdit(!edit);
-            }}
-          />
-        </Hidden>
-      </SkipExport>
-      <span style={{ marginLeft: 16 }}></span>
-      <SkipExport>
-        {
-          <CopyOutlined
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (copy(msg.text.toString())) {
-                messageApi.success('已复制');
-              }
-            }}
-          />
-        }
-      </SkipExport>
-      <span style={{ marginLeft: 16 }}></span>
-      <SkipExport>
-        {
-          <RollbackOutlined
-            onMouseDown={(e) => e.preventDefault()}
-            style={{ cursor: 'pointer' }}
-            onClick={() => {
-              rBak(msg);
-            }}
-          />
-        }
-      </SkipExport>
-      <span style={{ marginLeft: '30px' }}></span>
-      {loadingMsgs[msg.id] ? (
+        <span style={{ marginLeft: 16 }}></span>
         <SkipExport>
-          <Popconfirm
-            placement="topRight"
-            overlayInnerStyle={{ whiteSpace: 'nowrap' }}
-            title={'确定停止？'}
-            onConfirm={() => {
-              if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
-              delete loadingMsgs[msg.id];
-              setMessage({ text: msg.text });
-            }}
-          >
-            <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
-          </Popconfirm>
+          {
+            <CopyOutlined
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                if (copy(msg.text.toString())) {
+                  messageApi.success('已复制');
+                }
+              }}
+            />
+          }
         </SkipExport>
-      ) : (
+        <span style={{ marginLeft: 16 }}></span>
         <SkipExport>
-          <Popconfirm
-            placement="topRight"
-            overlayInnerStyle={{ whiteSpace: 'nowrap' }}
-            okType="danger"
-            title="确定删除此消息？"
-            onConfirm={() => {
-              onDel(msg);
-            }}
-          >
-            <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
-          </Popconfirm>
+          {
+            <RollbackOutlined
+              onMouseDown={(e) => e.preventDefault()}
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                rBak(msg);
+              }}
+            />
+          }
         </SkipExport>
-      )}
-    </>
+        <span style={{ marginLeft: '30px' }}></span>
+        {loadingMsgs[msg.id] ? (
+          <SkipExport>
+            <Popconfirm
+              placement="topRight"
+              overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+              title={'确定停止？'}
+              onConfirm={() => {
+                if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
+                delete loadingMsgs[msg.id];
+                setMessage({ text: msg.text });
+              }}
+            >
+              <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
+            </Popconfirm>
+          </SkipExport>
+        ) : (
+          <SkipExport>
+            <Popconfirm
+              placement="topRight"
+              overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+              okType="danger"
+              title="确定删除此消息？"
+              onConfirm={() => {
+                onDel(msg);
+              }}
+            >
+              <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
+            </Popconfirm>
+          </SkipExport>
+        )}
+      </>
+    ),
+    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText.text, msg, onDel, rBak, renderType, saveMsg]
   );
 
   // 下方悬浮按钮

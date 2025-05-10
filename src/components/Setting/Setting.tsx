@@ -67,6 +67,7 @@ export const Setting = ({
     config_limit_pre_height: boolean;
     config_auto_wrap_code: boolean;
     config_buttom_tool_send: boolean;
+    config_tool_to_bottom: boolean;
     setting_user_server_url: string;
     slack_claude_id: string;
     group_name: string;
@@ -103,6 +104,7 @@ export const Setting = ({
       config_use_virtual_role_img: chatMgt?.config.useVirtualRoleImgToBack || false,
       config_auto_wrap_code: chatMgt?.config.autoWrapCode,
       config_buttom_tool_send: chatMgt?.config.buttomTool?.sendBtn,
+      config_tool_to_bottom:chatMgt?.config.toolBarToBottom,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
       chat_connectors: aiServices.current?.getCurrentConnectors?.call(aiServices.current?.getCurrentConnectors).map((v) => v.id),
@@ -180,6 +182,7 @@ export const Setting = ({
     chatMgt.config.useVirtualRoleImgToBack = values.config_use_virtual_role_img;
     chatMgt.config.autoWrapCode = values.config_auto_wrap_code;
     chatMgt.config.buttomTool = { sendBtn: values.config_buttom_tool_send };
+    chatMgt.config.toolBarToBottom = values.config_tool_to_bottom;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -543,7 +546,10 @@ export const Setting = ({
                           ]}
                         />
                       </Form.Item>
-                      <Form.Item style={{ flex: '1' }} name="config_buttom_tool_send" valuePropName="checked" label="下方发送按钮">
+                      {/* <Form.Item style={{ flex: '1' }} name="config_buttom_tool_send" valuePropName="checked" label="下方发送按钮">
+                        <Switch />
+                      </Form.Item> */}
+                      <Form.Item style={{ flex: '1' }} name="config_tool_to_bottom" valuePropName="checked" label="发送按钮下移">
                         <Switch />
                       </Form.Item>
                     </div>

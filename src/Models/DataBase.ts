@@ -48,6 +48,7 @@ export interface GroupConfig {
   useVirtualRoleImgToBack?: boolean;
   autoWrapCode?: boolean;
   buttomTool?: { sendBtn: boolean };
+  toolBarToBottom?: boolean;
 }
 
 // 聊天消息表

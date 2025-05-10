@@ -307,7 +307,7 @@ export function jsonToSetting(jsonData: {
       extensionId: 'chub.worldOther',
       checked: lorebooks.length > 0,
       tags: ['Chub'],
-      title: '世界设定集',
+      title: '内置世界书',
       dynamic: true,
       ctx: [
         {

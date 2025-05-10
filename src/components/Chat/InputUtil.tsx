@@ -13,7 +13,7 @@ import {
   VerticalAlignTopOutlined
 } from '@ant-design/icons';
 import { Button, Drawer, Flex, theme, Typography } from 'antd';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MemoBackgroundImage } from '../common/BackgroundImage';
 import { Hidden } from '../common/Hidden';
 import { SkipExport } from '../common/SkipExport';
@@ -93,6 +93,212 @@ export function InputUtil() {
     },
     [chat, inputText, role, reloadNav, setActivityTopic, pushMessage]
   );
+  const toolEle = useMemo(
+    () => (
+      <div
+        style={{
+          flexWrap: 'nowrap',
+          width: '100%',
+          justifyContent: 'flex-end',
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: chat.config.toolBarToBottom ? 0 : 3,
+          marginTop: chat.config.toolBarToBottom ? 3 : 0,
+          position: 'relative',
+        }}
+      >
+        {showCtxRoleButton && (
+          <CtxRoleButton
+            value={role}
+            onChange={setRole}
+            inputRef={inputRef}
+            style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: 0,
+              borderRadius: token.borderRadius,
+              backgroundColor: token.colorFillContent,
+            }}
+          />
+        )}
+        <SkipExport>
+          <div className={styleCss.roll_button}>
+            <Button
+              shape={'circle'}
+              size="large"
+              className={styleCss.roll_button_item}
+              icon={<VerticalAlignTopOutlined />}
+              onClick={() => {
+                activityScroll({ top: true });
+                if (!activityTopic) return;
+                if (onlyOne) {
+                  scrollToTop();
+                } else scrollToTop(activityTopic.id);
+              }}
+            />
+            <span style={{ marginTop: 10 }}></span>
+            <Button
+              shape={'circle'}
+              size="large"
+              className={styleCss.roll_button_item}
+              icon={<VerticalAlignBottomOutlined />}
+              onClick={() => {
+                activityScroll({ botton: true });
+                if (!activityTopic) return;
+                if (onlyOne) {
+                  scrollToBotton();
+                }
+                scrollToBotton(activityTopic.id);
+              }}
+            />
+            <SkipExport>
+              <CaretLeftOutlined style={{ position: 'absolute', right: '0', top: '37px' }} />
+            </SkipExport>
+          </div>
+        </SkipExport>
+        {screenSize.width < 1200 && (
+          <SkipExport>
+            <AlignLeftOutlined
+              style={{ padding: '8px 12px 8px 0' }}
+              onClick={(e) => {
+                setShowNav(true);
+              }}
+            />
+          </SkipExport>
+        )}
+        <Drawer
+          placement={'left'}
+          closable={false}
+          width={Math.min(screenSize.width - 40, 400)}
+          key={'nav_drawer'}
+          styles={{ body: { padding: '1em 0' } }}
+          open={showNav}
+          onClose={() => {
+            setShowNav(false);
+          }}
+        >
+          <MemoBackgroundImage />
+          <div
+            style={{
+              position: 'relative',
+              height: '100%',
+              zIndex: 99,
+            }}
+          >
+            <MemoNavigation />
+          </div>
+        </Drawer>
+        <Typography.Text
+          style={{
+            cursor: 'pointer',
+            color: onlyOne ? token.colorPrimary : undefined,
+            flex: 1,
+            width: 0,
+          }}
+          ellipsis={true}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            if (onlyOne) {
+              setShowNav(true);
+            } else {
+              setOnlyOne(true);
+            }
+          }}
+        >
+          {activityTopic?.name}
+        </Typography.Text>
+        <span style={{ flex: 1 }}></span>
+        {/* <Button
+            shape="round"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {}}
+          >
+            <SkipExport>
+              <PlusOutlined />
+            </SkipExport>
+          </Button> */}
+        <span style={{ marginLeft: 10 }}></span>
+        <Button
+          shape="round"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={(e) => {
+            if (showTitle && onlyOne) {
+              setShowTitle(false);
+            } else if (onlyOne) {
+              setOnlyOne(false);
+              setCloasAll(true);
+            } else if (closeAll) {
+              setCloasAll(false);
+            } else {
+              setOnlyOne(true);
+              setShowTitle(true);
+            }
+          }}
+        >
+          <SkipExport>
+            <VerticalAlignMiddleOutlined />
+          </SkipExport>
+        </Button>
+        <span style={{ marginLeft: 10 }}></span>
+        <Button
+          shape="circle"
+          size="large"
+          onMouseDown={(e) => e.preventDefault()}
+          icon={
+            <SkipExport>
+              <CommentOutlined />
+            </SkipExport>
+          }
+          onClick={() => {
+            onSubmit(true);
+          }}
+        ></Button>
+        <span style={{ marginLeft: 10 }}></span>
+        <Button
+          shape="circle"
+          size="large"
+          onMouseDown={(e) => e.preventDefault()}
+          icon={
+            <SkipExport>
+              <MessageOutlined />
+            </SkipExport>
+          }
+          onClick={() => {
+            onSubmit(false);
+          }}
+        ></Button>
+      </div>
+    ),
+    []
+  );
+  const editorEle = useMemo(
+    () => (
+      <div style={{ width: '100%', paddingTop: chat.config.toolBarToBottom ? 3 : 0 }}>
+        <TextEditor
+          placeholder="Ctrl + S 发送    Ctrl + Enter 创建话题"
+          autoSize={{ maxRows: 10 }}
+          ref={inputRef}
+          onFocus={(e) =>
+            e.target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'end',
+            })
+          }
+          onChange={(e) => {
+            if (e.target.value) {
+              setShowCtxRoleButton(true);
+            } else {
+              setShowCtxRoleButton(false);
+            }
+          }}
+          input={inputText}
+          autoFocus={false}
+          onKeyUp={(e) => (e.key === 's' && e.altKey && onSubmit(false)) || (e.key === 'Enter' && e.ctrlKey && onSubmit(true))}
+        />
+      </div>
+    ),
+    [inputText, onSubmit]
+  );
   return (
     <>
       <div className={styleCss.loading}>
@@ -114,201 +320,18 @@ export function InputUtil() {
           backgroundColor: token.colorFillContent,
         }}
       >
-        <div
-          style={{
-            flexWrap: 'nowrap',
-            width: '100%',
-            justifyContent: 'flex-end',
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '3px',
-            position: 'relative',
-          }}
-        >
-          {showCtxRoleButton && (
-            <CtxRoleButton
-              value={role}
-              onChange={setRole}
-              inputRef={inputRef}
-              style={{
-                position: 'absolute',
-                bottom: '100%',
-                left: 0,
-                borderRadius: token.borderRadius,
-                backgroundColor: token.colorFillContent,
-              }}
-            />
-          )}
-          <SkipExport>
-            <div className={styleCss.roll_button}>
-              <Button
-                shape={'circle'}
-                size="large"
-                className={styleCss.roll_button_item}
-                icon={<VerticalAlignTopOutlined />}
-                onClick={() => {
-                  activityScroll({ top: true });
-                  if (!activityTopic) return;
-                  if (onlyOne) {
-                    scrollToTop();
-                  } else scrollToTop(activityTopic.id);
-                }}
-              />
-              <span style={{ marginTop: 10 }}></span>
-              <Button
-                shape={'circle'}
-                size="large"
-                className={styleCss.roll_button_item}
-                icon={<VerticalAlignBottomOutlined />}
-                onClick={() => {
-                  activityScroll({ botton: true });
-                  if (!activityTopic) return;
-                  if (onlyOne) {
-                    scrollToBotton();
-                  }
-                  scrollToBotton(activityTopic.id);
-                }}
-              />
-              <SkipExport>
-                <CaretLeftOutlined style={{ position: 'absolute', right: '0', top: '37px' }} />
-              </SkipExport>
-            </div>
-          </SkipExport>
-          {screenSize.width < 1200 && (
-            <SkipExport>
-              <AlignLeftOutlined
-                style={{ padding: '8px 12px 8px 0' }}
-                onClick={(e) => {
-                  setShowNav(true);
-                }}
-              />
-            </SkipExport>
-          )}
-          <Drawer
-            placement={'left'}
-            closable={false}
-            width={Math.min(screenSize.width - 40, 400)}
-            key={'nav_drawer'}
-            styles={{ body: { padding: '1em 0' } }}
-            open={showNav}
-            onClose={() => {
-              setShowNav(false);
-            }}
-          >
-            <MemoBackgroundImage />
-            <div
-              style={{
-                position: 'relative',
-                height: '100%',
-                zIndex: 99,
-              }}
-            >
-              <MemoNavigation />
-            </div>
-          </Drawer>
-          <Typography.Text
-            style={{
-              cursor: 'pointer',
-              color: onlyOne ? token.colorPrimary : undefined,
-              flex: 1,
-              width: 0,
-            }}
-            ellipsis={true}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (onlyOne) {
-                setShowNav(true);
-              } else {
-                setOnlyOne(true);
-              }
-            }}
-          >
-            {activityTopic?.name}
-          </Typography.Text>
-          <span style={{ flex: 1 }}></span>
-          {/* <Button
-            shape="round"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {}}
-          >
-            <SkipExport>
-              <PlusOutlined />
-            </SkipExport>
-          </Button> */}
-          <span style={{ marginLeft: 10 }}></span>
-          <Button
-            shape="round"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={(e) => {
-              if (showTitle && onlyOne) {
-                setShowTitle(false);
-              } else if (onlyOne) {
-                setOnlyOne(false);
-                setCloasAll(true);
-              } else if (closeAll) {
-                setCloasAll(false);
-              } else {
-                setOnlyOne(true);
-                setShowTitle(true);
-              }
-            }}
-          >
-            <SkipExport>
-              <VerticalAlignMiddleOutlined />
-            </SkipExport>
-          </Button>
-          <span style={{ marginLeft: 10 }}></span>
-          <Button
-            shape="circle"
-            size="large"
-            onMouseDown={(e) => e.preventDefault()}
-            icon={
-              <SkipExport>
-                <CommentOutlined />
-              </SkipExport>
-            }
-            onClick={() => {
-              onSubmit(true);
-            }}
-          ></Button>
-          <span style={{ marginLeft: 10 }}></span>
-          <Button
-            shape="circle"
-            size="large"
-            onMouseDown={(e) => e.preventDefault()}
-            icon={
-              <SkipExport>
-                <MessageOutlined />
-              </SkipExport>
-            }
-            onClick={() => {
-              onSubmit(false);
-            }}
-          ></Button>
-        </div>
-        <div style={{ width: '100%' }}>
-          <TextEditor
-            placeholder="Ctrl + S 发送    Ctrl + Enter 创建话题"
-            autoSize={{ maxRows: 10 }}
-            ref={inputRef}
-            onFocus={(e) =>
-              e.target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'end',
-              })
-            }
-            onChange={(e) => {
-              if (e.target.value) {
-                setShowCtxRoleButton(true);
-              } else {
-                setShowCtxRoleButton(false);
-              }
-            }}
-            input={inputText}
-            autoFocus={false}
-            onKeyUp={(e) => (e.key === 's' && e.altKey && onSubmit(false)) || (e.key === 'Enter' && e.ctrlKey && onSubmit(true))}
-          />
-        </div>
+        {chat.config.toolBarToBottom ? (
+          <>
+            {editorEle}
+            {toolEle}
+          </>
+        ) : (
+          <>
+            {toolEle}
+            {editorEle}
+          </>
+        )}
+
         <Flex style={{ width: '100%', marginTop: 5 }}>
           <Hidden hidden={chat.config.buttomTool?.sendBtn != true}>
             <Button
