@@ -31,7 +31,7 @@ export class APICenter implements IAiService {
     return !/\/v\d/.test(url);
   };
   models = async () => {
-    if (this.modelCache.length) return this.modelCache;
+    if (this.modelCache.length) return this.modelCache.sort();
     var token = getToken(this.serverType);
     if (!token.current) {
       nextToken(token);
@@ -49,7 +49,7 @@ export class APICenter implements IAiService {
         (res.data || []).forEach((m) => {
           if (!this.modelCache.includes(m.id)) this.modelCache.push(m.id);
         });
-        return this.modelCache;
+        return this.modelCache.sort();
       });
   };
   async sendMessage({
@@ -103,6 +103,9 @@ export class APICenter implements IAiService {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
       'Content-Type': 'application/json',
     };
+    if (this.baseUrl.includes('https://openrouter.ai/')) {
+      Object.assign(headers, { 'HTTP-Referer': 'https://eaias.com', 'X-Title': 'eaias.com' });
+    }
     const data = {
       model: this.severConfig.model || config.model,
       messages: context,

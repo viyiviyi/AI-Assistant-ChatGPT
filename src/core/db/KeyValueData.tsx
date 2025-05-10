@@ -68,16 +68,17 @@ export class KeyValueData {
     this._UIConfig = { ...this._UIConfig, ...val };
     this.provider.setItem(this.dataKeyPrefix + 'UIConfig', save ? JSON.stringify(this._UIConfig) : '{}');
   }
+  private _defaultAiServerList = `["DeepSeek|https://api.deepseek.com","Kimi|https://proxy.eaias.com/https://api.moonshot.cn","阿里云百炼模型|https://dashscope.aliyuncs.com/compatible-mode/v1","X.AI|https://proxy.eaias.com/https://api.x.ai/v1","Gemini|https://proxy.eaias.com/https://generativelanguage.googleapis.com/v1beta/openai","OpenRouter|https://proxy.eaias.com/https://openrouter.ai/api/v1"]`;
   private _aiServerList: string[] = [];
   getaiServerList(): string[] {
     if (this._aiServerList.length) return this._aiServerList;
-    let r =
-      this.provider.getItem(this.dataKeyPrefix + 'AiServerList') ||
-      '["DeepSeek|https://api.deepseek.com","Kimi|https://proxy.eaias.com/https://api.moonshot.cn","阿里云百炼模型|https://dashscope.aliyuncs.com/compatible-mode/v1","X.AI|https://proxy.eaias.com/https://api.x.ai/v1","Gemini|https://proxy.eaias.com/https://generativelanguage.googleapis.com/v1beta/openai"]';
+    let r = this.provider.getItem(this.dataKeyPrefix + 'AiServerList') || this._defaultAiServerList;
     this._aiServerList = JSON.parse(r);
+    if (this._aiServerList.length == 0) this._aiServerList = JSON.parse(this._defaultAiServerList);
     return this._aiServerList;
   }
   setaiServerList(val: string[], save: boolean = true) {
+    if (JSON.stringify(val) == this._defaultAiServerList) return;
     this._aiServerList = val;
     this.provider.setItem(this.dataKeyPrefix + 'AiServerList', save ? JSON.stringify(val) : '');
   }
