@@ -50,14 +50,14 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
   const loadChubBook = useCallback((bookSettings: VirtualRoleSetting[]) => {
     setVirtualRole_settings((settings) => {
       bookSettings.forEach((v) => {
-        var f = settings.find((f) => f.extensionId == v.extensionId);
-        if (f) {
-          Object.assign(f, v);
+        let worldOtherIdx = settings.findIndex((f) => f.extensionId == 'chub.worldOther');
+        let thisBookIdx = settings.findIndex((f) => v.extensionId && f.extensionId == v.extensionId);
+        if (thisBookIdx != -1) {
+          settings[thisBookIdx] = { ...v, edit: false };
+        } else if (worldOtherIdx != -1) {
+          settings.splice(worldOtherIdx, 0, { ...v, edit: false });
         } else {
-          settings.unshift({
-            ...v,
-            edit: false,
-          });
+          settings.unshift({ ...v, edit: false });
         }
       });
       return [...settings];
