@@ -102,8 +102,7 @@ export function InputUtil() {
           justifyContent: 'flex-end',
           display: 'flex',
           alignItems: 'center',
-          marginBottom: chat.config.toolBarToBottom ? 0 : 3,
-          marginTop: chat.config.toolBarToBottom ? 3 : 0,
+          paddingTop: 3,
           position: 'relative',
         }}
       >
@@ -269,11 +268,11 @@ export function InputUtil() {
         ></Button>
       </div>
     ),
-    []
+    [activityTopic, closeAll, onSubmit, onlyOne, role, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showCtxRoleButton, showNav, showTitle, token.borderRadius, token.colorFillContent, token.colorPrimary]
   );
   const editorEle = useMemo(
     () => (
-      <div style={{ width: '100%', paddingTop: chat.config.toolBarToBottom ? 3 : 0 }}>
+      <div style={{ width: '100%', paddingTop: 3 }}>
         <TextEditor
           placeholder="Ctrl + S 发送    Ctrl + Enter 创建话题"
           autoSize={{ maxRows: 10 }}
@@ -315,7 +314,7 @@ export function InputUtil() {
       <div
         style={{
           width: '100%',
-          padding: '0px 10px 10px',
+          padding: '0px 10px 5px',
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
         }}
@@ -334,7 +333,7 @@ export function InputUtil() {
 
         <Flex style={{ width: '100%', marginTop: 5 }}>
           <Hidden hidden={chat.config.buttomTool?.sendBtn != true}>
-            <Button
+            {/* <Button
               onMouseDown={(e) => e.preventDefault()}
               icon={
                 <SkipExport>
@@ -346,7 +345,7 @@ export function InputUtil() {
               }}
             >
               发送
-            </Button>
+            </Button> */}
           </Hidden>
         </Flex>
       </div>
