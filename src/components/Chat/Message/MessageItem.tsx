@@ -194,7 +194,7 @@ const MessageItem = ({
         )}
       </>
     ),
-    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText.text, msg, onDel, rBak, renderType, saveMsg]
+    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText, msg, onDel, rBak, renderType, saveMsg]
   );
 
   // 下方悬浮按钮
