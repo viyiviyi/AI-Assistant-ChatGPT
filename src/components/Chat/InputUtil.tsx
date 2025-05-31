@@ -232,23 +232,7 @@ export function InputUtil() {
         ></Button>
       </div>
     ),
-    [
-      activityTopic,
-      closeAll,
-      onSubmit,
-      onlyOne,
-      role,
-      screenSize.width,
-      setCloasAll,
-      setOnlyOne,
-      setShowTitle,
-      showCtxRoleButton,
-      showNav,
-      showTitle,
-      token.borderRadius,
-      token.colorFillContent,
-      token.colorPrimary,
-    ]
+    [activityTopic, closeAll, onSubmit, onlyOne, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showTitle, token.colorPrimary]
   );
   const editorEle = useMemo(
     () => (

@@ -436,7 +436,7 @@ export function EditVirtualRoleSetting({
       open={visible}
       onOk={() => {
         setCtx((ctx) => {
-          ctx.forEach((v) => (v.content = v.content?.trim()));
+          ctx.forEach((v) => (v.content = v.content?.replace(/^[\n\s\r\t]+/g, '')));
           let next_ctx = ctx.filter((f) => f.content);
           onSave({
             ...item,

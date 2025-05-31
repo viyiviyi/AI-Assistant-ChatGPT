@@ -58,7 +58,7 @@ export class CohereAi implements IAiService {
             }
           ];
         }) => {
-          CohereAi.modelCache = (res.models || []).map((m) => m.name);
+          CohereAi.modelCache = (res.models || []).map((m) => m.name).sort();;
           return CohereAi.modelCache;
         }
       )

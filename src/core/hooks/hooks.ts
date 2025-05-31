@@ -128,10 +128,12 @@ export function useSendMessage(chat: ChatManagement) {
       result = onReaderFirst(chat.getChat(), topic.messages[idx], result);
       if (
         topic.messages
-          .slice(Math.max(0, chat.gptConfig.msgCount == 0 ? 0 : idx - chat.gptConfig.msgCount), idx + 1)
+          .slice(Math.max(0, chat.gptConfig.msgCount == 0 ? 0 : idx - chat.gptConfig.msgCount) + 1, idx + 1)
           .findIndex((f) => loadingMessages[f.id]) != -1
-      )
+      ) {
+        console.log(idx);
         return message.info('上下文中存在未完成的消息');
+      }
       // 因为回调函数引用了chat，而编辑配置时会创建新的chat，导致旧的chat不能被回收，导致内存溢出
       let currentChat: { current: ChatManagement | undefined } = {
         current: chat,
