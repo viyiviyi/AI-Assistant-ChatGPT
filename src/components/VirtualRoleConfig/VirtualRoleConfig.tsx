@@ -164,7 +164,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
     if (!chatMgt) return;
     chatMgt.virtualRole.name = values.virtualRole_name;
     chatMgt.virtualRole.bio = values.virtualRole_bio;
-    (currentSettings.current || virtualRole_settings).forEach((v) => v.ctx.forEach((c) => (c.content = c.content?.replace(/^[\n\s\r\t]+/g, ''))));
+    (currentSettings.current || virtualRole_settings).forEach((v) => v.ctx.forEach((c) => (c.content = c.content)));
     chatMgt.virtualRole.settings = (currentSettings.current || virtualRole_settings)
       .filter((f) => f && (f.ctx.filter((_f) => _f.content).length || f.title))
       .map((v) => ({ ...v, edit: undefined }));
