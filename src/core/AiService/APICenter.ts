@@ -30,6 +30,23 @@ export class APICenter implements IAiService {
   needV1Str = (url: string) => {
     return !/\/v\d/.test(url);
   };
+  qwen3Models = [
+    'qwen3-235b-a22b',
+    'qwen3-30b-a3b',
+    'qwen3-32b',
+    'qwen3-14b',
+    'qwen3-8b',
+    'qwen3-4b',
+    'qwen3-1.7b',
+    'qwen3-0.6b',
+    'qwen-plus-latest',
+    'qwen-turbo-2025-04-28',
+    'qwen-plus-2025-04-28',
+    'qwen-turbo-latest',
+    'qwq-plus',
+    'qwq-plus-2025-03-05',
+    'qwq-plus-latest',
+  ];
   models = async () => {
     if (this.modelCache.length) return this.modelCache.sort();
     var token = getToken(this.serverType);
@@ -49,6 +66,13 @@ export class APICenter implements IAiService {
         (res.data || []).forEach((m) => {
           if (!this.modelCache.includes(m.id)) this.modelCache.push(m.id);
         });
+        if (this.baseUrl.includes('https://dashscope.aliyuncs.com/compatible-mode')) {
+          this.qwen3Models.forEach((v) => {
+            if (!this.modelCache.includes(v)) {
+              this.modelCache.push(v);
+            }
+          });
+        }
         return this.modelCache.sort();
       });
   };
