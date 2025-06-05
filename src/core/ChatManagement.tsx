@@ -250,14 +250,22 @@ export class ChatManagement {
       name?: string;
     }>;
   } {
-    return ChatManagement.getAskContext(this.virtualRole, topic, index, this.gptConfig.msgCount, this.config.enableVirtualRole);
+    return ChatManagement.getAskContext(
+      this.virtualRole,
+      topic,
+      index,
+      this.gptConfig.msgCount,
+      this.config.enableVirtualRole,
+      this.gptConfig.msgCountMin ?? 0
+    );
   }
   static getAskContext(
     virtualRole: VirtualRole,
     topic: TopicMessage,
     index: number = -1,
     historyLength: number,
-    enableVirtualRole: boolean
+    enableVirtualRole: boolean,
+    msgCountMin: number
   ): {
     allCtx: Array<{
       role: CtxRole;
@@ -366,6 +374,7 @@ export class ChatManagement {
       );
       messages = [...autoCtxBefore, ...messages, ...autoCtxAfter];
     }
+    if (messages.length < msgCountMin) historyLength = 0;
     // 按照消息上下文限制截断消息
     let ctxCount = topic.overrideSettings?.msgCount === undefined ? historyLength : topic.overrideSettings?.msgCount;
     if (ctxCount > 0 && messages.length > ctxCount) {

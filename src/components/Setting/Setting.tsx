@@ -49,6 +49,7 @@ export const Setting = ({
   const [form] = Form.useForm<{
     setting_apitoken: string;
     GptConfig_msgCount: number;
+    GptConfig_msgCountMin: number;
     GptConfig_role: CtxRole;
     GptConfig_max_tokens: number;
     GptConfig_top_p: number;
@@ -83,6 +84,7 @@ export const Setting = ({
     return {
       setting_apitoken: KeyValueData.instance().getApiKey(),
       GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
+      GptConfig_msgCountMin: chatMgt?.gptConfig.msgCountMin,
       GptConfig_role: chatMgt?.gptConfig.role,
       GptConfig_max_tokens: chatMgt?.gptConfig.max_tokens,
       GptConfig_top_p: chatMgt?.gptConfig.top_p,
@@ -104,7 +106,7 @@ export const Setting = ({
       config_use_virtual_role_img: chatMgt?.config.useVirtualRoleImgToBack || false,
       config_auto_wrap_code: chatMgt?.config.autoWrapCode,
       config_buttom_tool_send: chatMgt?.config.buttomTool?.sendBtn,
-      config_tool_to_bottom:chatMgt?.config.toolBarToBottom,
+      config_tool_to_bottom: chatMgt?.config.toolBarToBottom,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
       chat_connectors: aiServices.current?.getCurrentConnectors?.call(aiServices.current?.getCurrentConnectors).map((v) => v.id),
@@ -158,6 +160,7 @@ export const Setting = ({
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;
     chatMgt.gptConfig.role = values.GptConfig_role;
     chatMgt.gptConfig.msgCount = values.GptConfig_msgCount;
+    chatMgt.gptConfig.msgCountMin = values.GptConfig_msgCountMin;
     chatMgt.gptConfig.temperature = values.GptConfig_temperature;
     chatMgt.gptConfig.top_p = values.GptConfig_top_p;
     chatMgt.gptConfig.presence_penalty = values.GptConfig_presence_penalty;
@@ -506,13 +509,24 @@ export const Setting = ({
                 ...panlProp,
                 children: (
                   <div>
-                    <Form.Item
-                      name="GptConfig_msgCount"
-                      label="上下文数量"
-                      extra="表示最近的几条消息会被当成上下文发送给AI，模拟聊天时建议10以上，当做辅助工具时建议1  "
-                    >
-                      <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
-                    </Form.Item>
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item
+                        style={{ flex: '1' }}
+                        name="GptConfig_msgCount"
+                        label="上下文数量"
+                        extra="大于该值之前的不会作为上下文发送，0表示不限制。"
+                      >
+                        <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
+                      </Form.Item>
+                      <Form.Item
+                        style={{ flex: '1' }}
+                        name="GptConfig_msgCountMin"
+                        label="最小上下文数量"
+                        extra="上下文数量低于该值时不限制上下文数量。"
+                      >
+                        <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
+                      </Form.Item>
+                    </div>
                     <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
                       <Form.Item style={{ flex: '1' }} name="config_page_size" label="单页显示条数">
                         <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
