@@ -275,7 +275,13 @@ export function MessageList({
         </div>
       </Hidden>
       <span style={{ opacity: 0.5, position: 'absolute', bottom: 0, left: 10 }}>
-        {Math.min(topic.messages.length, topic.overrideSettings?.msgCount || chat.gptConfig.msgCount)}/{topic.messages.length}
+        {Math.min(
+          topic.messages.length,
+          topic.messages.length >= (chat.gptConfig.msgCountMin || 0)
+            ? topic.overrideSettings?.msgCount || chat.gptConfig.msgCount
+            : chat.gptConfig.msgCountMin || 0
+        )}
+        /{topic.messages.length}
       </span>
       {drawPopupProps.text && (
         <FloatButton.Group style={{ right: 10, bottom: 120 }}>

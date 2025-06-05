@@ -74,6 +74,10 @@ export class APICenter implements IAiService {
           });
         }
         return this.modelCache.sort();
+      })
+      .catch((e) => {
+        if (this.modelCache.length) return this.modelCache.sort();
+        return [];
       });
   };
   async sendMessage({
