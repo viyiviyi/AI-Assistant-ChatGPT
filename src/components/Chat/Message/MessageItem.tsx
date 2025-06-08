@@ -13,9 +13,12 @@ import {
   ForwardOutlined,
   MessageOutlined,
   PauseOutlined,
+  PieChartOutlined,
   PlusOutlined,
   RollbackOutlined,
-  SaveOutlined
+  SaveOutlined,
+  VerticalAlignBottomOutlined,
+  VerticalAlignTopOutlined
 } from '@ant-design/icons';
 import { Avatar, Button, Checkbox, Divider, Flex, message, Popconfirm, Segmented, theme, Tooltip, Typography } from 'antd';
 import copy from 'copy-to-clipboard';
@@ -240,6 +243,18 @@ const MessageItem = ({
             )}
           </Flex>
         </Divider>
+        <span style={{ position: 'absolute', right: 30, top: -2, opacity: 0.5 }}>
+          {msg.usage ? (
+            <>
+              <VerticalAlignTopOutlined />
+              {msg.usage.prompt_tokens} <VerticalAlignBottomOutlined />
+              {msg.usage.completion_tokens} <PieChartOutlined />
+              {msg.usage.prompt_cache_hit_tokens + '/' + msg.usage.prompt_cache_miss_tokens}
+            </>
+          ) : (
+            <></>
+          )}
+        </span>
       </div>
     );
   }, [aiService?.customContext, msg.skipCtx, onCopy, onPush, onSned, style]);

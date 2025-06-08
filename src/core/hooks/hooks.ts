@@ -186,6 +186,7 @@ export function useSendMessage(chat: ChatManagement) {
             hasChange = !result.text.endsWith(content) || !result.reasoning_content?.endsWith(res.reasoning_content ?? '');
             result.text = content;
             result.reasoning_content = res.reasoning_content || '';
+            result.usage = res.usage || result.usage;
           } else if (res.stop) {
             res.stop();
           }

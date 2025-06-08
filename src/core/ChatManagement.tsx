@@ -1,6 +1,7 @@
 import { IndexedDB } from '@/core/db/IndexDb';
 import { Extensions } from '@/extensions/Extensions';
 import { NameMacrosPrompt } from '@/middleware/scripts/NameMacrosPrompt.middleware';
+import { CtxItem } from '@/Models/CtxItem';
 import { CtxRole } from '@/Models/CtxRole';
 import { GptConfig, Group, GroupConfig, Message, Topic, User, VirtualRole } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
@@ -229,26 +230,10 @@ export class ChatManagement {
     topic: TopicMessage,
     index: number = -1
   ): {
-    allCtx: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
-    historyBefore: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
-    history: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
-    historyAfter: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
+    allCtx: Array<CtxItem>;
+    historyBefore: Array<CtxItem>;
+    history: Array<CtxItem>;
+    historyAfter: Array<CtxItem>;
   } {
     return ChatManagement.getAskContext(
       this.virtualRole,
@@ -267,47 +252,19 @@ export class ChatManagement {
     enableVirtualRole: boolean,
     msgCountMin: number
   ): {
-    allCtx: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
-    historyBefore: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
-    history: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
-    historyAfter: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }>;
+    allCtx: Array<CtxItem>;
+    historyBefore: Array<CtxItem>;
+    history: Array<CtxItem>;
+    historyAfter: Array<CtxItem>;
   } {
     let messages: Message[] = [];
     // 获取全部消息
     messages = [...topic.messages];
     if (index > -1) messages = messages.slice(0, index);
     else messages = [];
-    let history: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }> = [];
-    let historyBefore: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }> = [];
-    let historyAfter: Array<{
-      role: CtxRole;
-      content: string;
-      name?: string;
-    }> = [];
+    let history: Array<CtxItem> = [];
+    let historyBefore: Array<CtxItem> = [];
+    let historyAfter: Array<CtxItem> = [];
     if (topic.overrideSettings?.useConfig === undefined ? enableVirtualRole : topic.overrideSettings?.useConfig) {
       // 在设定内的动态上下文
       let autoCtxBefore: Message[] = [];

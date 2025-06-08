@@ -79,6 +79,14 @@ export interface Message {
   skipCtx?: boolean;
   imageIds?: string[];
   imagesAlts?: { [key: string]: string };
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+    prompt_tokens_details: { cached_tokens: number };
+    prompt_cache_hit_tokens: number;
+    prompt_cache_miss_tokens: number;
+  };
 }
 
 export interface Topic {

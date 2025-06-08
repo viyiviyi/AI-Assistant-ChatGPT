@@ -93,6 +93,14 @@ export class APICenter implements IAiService {
       reasoning_content?: string;
       end: boolean;
       stop?: (() => void) | undefined;
+      usage?: {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+        prompt_tokens_details: { cached_tokens: number };
+        prompt_cache_hit_tokens: number;
+        prompt_cache_miss_tokens: number;
+      };
     }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
@@ -123,7 +131,21 @@ export class APICenter implements IAiService {
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
-    onMessage: (msg: { error: boolean; text: string; reasoning_content: string; end: boolean; stop?: () => void }) => Promise<void>
+    onMessage: (msg: {
+      error: boolean;
+      text: string;
+      reasoning_content: string;
+      end: boolean;
+      stop?: () => void;
+      usage?: {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+        prompt_tokens_details: { cached_tokens: number };
+        prompt_cache_hit_tokens: number;
+        prompt_cache_miss_tokens: number;
+      };
+    }) => Promise<void>
   ) {
     let full_response = '';
     let reasoning_content = '';
@@ -238,6 +260,7 @@ export class APICenter implements IAiService {
                 text: full_response,
                 reasoning_content,
                 stop: stop,
+                usage: data.usage,
               });
             } catch (error) {
               console.error(error);

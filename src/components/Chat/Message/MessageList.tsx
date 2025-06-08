@@ -57,7 +57,7 @@ export function MessageList({
   /**
    * 更新字数统计 最小更新间隔： 两秒
    */
-  const resetCharCount = useCallback(() => {
+  const resetCharCount = useMemo(() => {
     return createThrottleAndDebounce(() => {
       let charCount = 0;
       topic.messages.forEach((m, idx) => {
@@ -153,6 +153,8 @@ export function MessageList({
       });
     }, 50);
     topicRender[topic.id] = (messageId?: string | number, reloadStatus: boolean = false) => {
+      console.log(messageId)
+      resetCharCount();
       if (typeof messageId == 'number') {
         pageConf.pageNumber = Math.min(Math.ceil((messageId + 1 || 1) / pageConf.pageSize), pageConf.totalPages);
         reload(pageConf);
