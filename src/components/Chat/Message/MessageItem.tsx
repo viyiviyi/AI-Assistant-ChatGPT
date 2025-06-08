@@ -243,12 +243,21 @@ const MessageItem = ({
             )}
           </Flex>
         </Divider>
-        <span style={{ position: 'absolute', right: 30, top: -2, opacity: 0.5 }}>
+        <span style={{ position: 'absolute', left: 30, top: -2, opacity: 0.5 }}>
           {msg.usage ? (
             <>
               <VerticalAlignTopOutlined />
               {msg.usage.prompt_tokens} <VerticalAlignBottomOutlined />
-              {msg.usage.completion_tokens} <PieChartOutlined />
+              {msg.usage.completion_tokens}
+            </>
+          ) : (
+            <></>
+          )}
+        </span>
+        <span style={{ position: 'absolute', right: 30, top: -2, opacity: 0.5 }}>
+          {msg.usage ? (
+            <>
+              <PieChartOutlined />
               {msg.usage.prompt_cache_hit_tokens + '/' + msg.usage.prompt_cache_miss_tokens}
             </>
           ) : (
