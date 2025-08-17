@@ -49,6 +49,8 @@ export interface GroupConfig {
   autoWrapCode?: boolean;
   buttomTool?: { sendBtn: boolean };
   toolBarToBottom?: boolean;
+  voiceOpen?: boolean;
+  voiceName?: string;
 }
 
 // 聊天消息表

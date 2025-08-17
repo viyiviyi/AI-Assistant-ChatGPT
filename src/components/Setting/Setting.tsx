@@ -3,6 +3,7 @@ import { BgImageStore } from '@/core/BgImageStore';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { KeyValueData } from '@/core/db/KeyValueData';
 import { useScreenSize } from '@/core/hooks/hooks';
+import { useSpeechSynthesis } from '@/core/hooks/tts';
 import { getToken, saveToken } from '@/core/tokens';
 import { downloadJson } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
@@ -43,6 +44,7 @@ export const Setting = ({
   const [background, setBackground] = useState<string>();
   const [userAiServer, setUserAiServer] = useState<string[]>([]);
   const { token } = theme.useToken();
+  const speechSynthesis = useSpeechSynthesis();
   useEffect(() => {
     setUserAiServer(KeyValueData.instance().getaiServerList());
   }, []);
@@ -76,6 +78,8 @@ export const Setting = ({
     setting_slack_proxy_url: string;
     setting_api_transfer_url: string;
     slack_user_token: string;
+    config_voice_name: string;
+    config_voice_open: boolean;
     config_disable_renderType: string;
     config_use_virtual_role_img: boolean;
   }>();
@@ -107,6 +111,8 @@ export const Setting = ({
       config_auto_wrap_code: chatMgt?.config.autoWrapCode,
       config_buttom_tool_send: chatMgt?.config.buttomTool?.sendBtn,
       config_tool_to_bottom: chatMgt?.config.toolBarToBottom,
+      config_voice_name: chatMgt?.config.voiceName,
+      config_voice_open: chatMgt?.config.voiceOpen,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
       chat_connectors: aiServices.current?.getCurrentConnectors?.call(aiServices.current?.getCurrentConnectors).map((v) => v.id),
@@ -186,6 +192,8 @@ export const Setting = ({
     chatMgt.config.autoWrapCode = values.config_auto_wrap_code;
     chatMgt.config.buttomTool = { sendBtn: values.config_buttom_tool_send };
     chatMgt.config.toolBarToBottom = values.config_tool_to_bottom;
+    chatMgt.config.voiceName = values.config_voice_name;
+    chatMgt.config.voiceOpen = values.config_voice_open;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -492,6 +500,19 @@ export const Setting = ({
           ) : (
             <></>
           )}
+          <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+            <Form.Item style={{ flex: '1' }} label="TTS" name={'config_voice_name'}>
+              <Select
+                allowClear
+                options={(speechSynthesis?.getVoices() || [])
+                  .filter((f) => f.lang == 'zh-CN')
+                  .map((v) => ({ value: v.name, label: v.name + ' ' + v.lang + ' ' + (v.localService ? '本地' : '') }))}
+              />
+            </Form.Item>
+            <Form.Item name="config_voice_open" valuePropName="checked" label=" ">
+              <Switch />
+            </Form.Item>
+          </div>
           <Collapse
             // ghost
             bordered={false}

@@ -33,7 +33,6 @@ export function MessageList({
   chat: ChatManagement;
   firstMsgIdxRef: React.MutableRefObject<number | undefined>;
 }) {
-  console.log('MessageList');
   const { reloadNav, forceRender, setActivityTopic } = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
@@ -153,7 +152,6 @@ export function MessageList({
       });
     }, 50);
     topicRender[topic.id] = (messageId?: string | number, reloadStatus: boolean = false) => {
-      console.log(messageId)
       resetCharCount();
       if (typeof messageId == 'number') {
         pageConf.pageNumber = Math.min(Math.ceil((messageId + 1 || 1) / pageConf.pageSize), pageConf.totalPages);

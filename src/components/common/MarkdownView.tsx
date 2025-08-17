@@ -27,10 +27,13 @@ import React, {
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax';
 import rehypeReact from 'rehype-react';
+import { visit } from 'unist-util-visit';
 // import rehypeStringify from "rehype-stringify";
 // import remarkFrontmatter from "remark-frontmatter";
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
+import { useSpeak } from '@/core/hooks/tts';
 import { onRender } from '@/middleware/execMiddleware';
+import rehypeFormat from 'rehype-format';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkParse from 'remark-parse';
@@ -39,6 +42,9 @@ import { unified } from 'unified';
 import markdownStyle from '../../styles/markdown.module.css';
 import { SkipExport } from './SkipExport';
 import { ZoomImage } from './zoom-image';
+
+let speak = (text: string, stop = false) => {};
+
 function toTxt(node: React.ReactNode): string {
   let str = '';
   if (Array.isArray(node)) {
@@ -50,6 +56,30 @@ function toTxt(node: React.ReactNode): string {
   }
   return str;
 }
+function preserveNewlines() {
+  return (tree: any) => {
+    visit(tree, 'text', (node) => {
+      node.value = node.value.replace(/\n/g, '\u200B\n');
+      // Using zero-width space to force line breaks preservation
+    });
+  };
+}
+function parseCode(node: React.ReactNode): React.ReactNode {
+  if (Array.isArray(node)) {
+    return (node as Array<React.ReactNode>).map(parseCode);
+  } else if (typeof node == 'object' && 'props' in (node as any)) {
+    if (Array.isArray((node as any)['props'].children)) {
+      var _children = parseCode((node as any)['props'].children);
+      ((node as any)['props'].children as Array<React.ReactNode>).splice(0, (node as any)['props'].children.length, _children);
+    }
+    return node;
+  } else if (typeof node == 'string') {
+    // if (node.includes('\n') && !node.trim()) return <br />;
+    // console.log(node)
+    return node?.replace(/\n\s+/g, (s) => '\n' + ' '.repeat(s.length - 2));
+  } else return node;
+}
+
 let a = 1;
 function pauseMes(mes: React.ReactNode): React.ReactNode {
   let reg = /「[\s\S]*?」|".+?"|\u201C.+?\u201D/gm;
@@ -115,8 +145,7 @@ let processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
   .use(remarkMath)
-  .use(remarkRehype)
-  // .use(rehypeFormat, { indent: 4 })
+  .use(remarkRehype, {})
   .use(rehypeHighlight, {
     ignoreMissing: true,
     plainText: ['txt', 'text'],
@@ -137,7 +166,8 @@ let processor = unified()
     },
   })
   .use(rehypeMathjax)
-  // .use(remarkFrontmatter, ["yaml", "toml"])
+  .use(rehypeFormat, { indent: 2 })
+  // .use(remarkFrontmatter, ['yaml', 'toml'])
   .use(rehypeReact, {
     createElement,
     Fragment,
@@ -146,10 +176,9 @@ let processor = unified()
         return <Typography.Link {...(props as any)} rel="noopener noreferrer" target={'_blank'}></Typography.Link>;
       },
       code: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
+        let r = React.createRef<HTMLDivElement>();
         const { className, children } = props;
-        const _children = Array.isArray(children)
-          ? children.map((v) => (typeof v == 'string' ? v.replace(/\n\s+/g, (s) => '\n' + ' '.repeat(s.length - 2)) : v))
-          : children;
+        const _children = parseCode(children);
         let times = 0;
         let timer = setTimeout(() => {}, 0);
         return (
@@ -175,15 +204,18 @@ let processor = unified()
           >
             <SkipExport>
               <CopyOutlined
-                onClick={() => {
-                  if (copy(toTxt(children))) {
+                onClick={(e) => {
+                  // if (copy(toTxt(children))) {
+                  //   message.success('已复制');
+                  // }
+                  if (r.current && copy(r.current?.innerText || '')) {
                     message.success('已复制');
                   }
                 }}
                 className="code-copy"
               />
             </SkipExport>
-            {_children}
+            <div ref={r}>{_children}</div>
           </code>
         );
       },
@@ -196,6 +228,11 @@ let processor = unified()
           <p
             {...{ ...(props as any), children: undefined }}
             onClick={(e) => {
+              if ('className' in e.target) {
+                if (e.target.className == 'q') {
+                  speak((e.target as any).innerText, true);
+                }
+              }
               times++;
               if (times > 2) {
                 let selection = window.getSelection();
@@ -283,6 +320,7 @@ const _MarkdownView = ({
   lastBlockLines?: number;
 }) => {
   const { chatMgt } = useContext(ChatContext);
+  speak = useSpeak();
   const firstBlock = useMemo(() => {
     if (lastBlockLines) {
       let lines = markdown.split('\n');
@@ -363,10 +401,15 @@ const renderPipes: Array<(input: string, chatMgt: ChatManagement) => string> = [
     return input.replace(/\n\s+```/g, '\n```');
   },
   (input, chatMgt: ChatManagement) => {
-    return input.replace(/\n\s\s+([a-zA-Z#/*{}()])/g, (substring: string, ...args: any[]) => {
-      return '\n' + '\u00A0'.repeat(substring.length - 1) + args[0];
+    return input.replace(/[\n\s\t\r]+\n/g, (substring: string, ...args: any[]) => {
+      return '\n';
     });
   },
+  // (input, chatMgt: ChatManagement) => {
+  //   return input.replace(/\n\s\s+([a-zA-Z#/*{}()])/g, (substring: string, ...args: any[]) => {
+  //     return '\n' + '\u00A0'.repeat(substring.length - 1) + args[0];
+  //   });
+  // },
 ];
 
 function pipe(input: string, chatMgt: ChatManagement): string {

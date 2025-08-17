@@ -43,7 +43,9 @@
     transform: translate(0px);
   }
 }
-
+.speak_button {
+  display: none;
+}
 .nav_item:hover {
   position: relative;
   top: -1px;
@@ -51,6 +53,9 @@
 }
 .message_box {
   position: relative;
+}
+.message_box:hover .speak_button {
+  display: inline;
 }
 .message_box .message_extend_but {
   display: none;
@@ -74,7 +79,7 @@
   opacity: 0.3;
 }
 .message_box_hiddel_tool .top_label::before {
-  content: "";
+  content: '';
   border-width: 8px;
   width: 0;
   height: 0;
@@ -97,7 +102,7 @@
   border-color: #33bcb7;
 }
 .message_box_hiddel_tool .top_label::before {
-  content: "";
+  content: '';
   border-width: 8px;
   width: 0;
   height: 0;
@@ -120,7 +125,7 @@
   opacity: 0.5;
   padding-right: 10px;
 }
-.roll_button  button.roll_button_item {
+.roll_button button.roll_button_item {
   display: none;
 }
 .roll_button:hover button.roll_button_item {

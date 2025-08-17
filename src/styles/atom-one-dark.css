@@ -6,6 +6,7 @@ pre > code.hljs {
   display: block;
   padding: 1em 2em 1em 0.5em;
   margin: 0;
+  white-space: inherit;
 }
 pre > code:focus-visible {
   outline: none;
@@ -29,8 +30,9 @@ code,
   padding: 0.2em 0.5em;
   margin: 0 0.2em;
   background: #282c34aa;
-  font-family: revert-layer;
+  /* font-family: revert-layer; */
   border-radius: 4px;
+  tab-size: 4;
 }
 pre > code:hover > .code-copy {
   display: block;

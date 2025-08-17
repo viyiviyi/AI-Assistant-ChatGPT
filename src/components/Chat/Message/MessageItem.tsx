@@ -2,6 +2,7 @@ import { TextEditor } from '@/components/common/TextEditor';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { ChatContext } from '@/core/ChatManagement';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
+import { useSpeak } from '@/core/hooks/tts';
 import { createThrottleAndDebounce } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { Message } from '@/Models/DataBase';
@@ -17,6 +18,7 @@ import {
   PlusOutlined,
   RollbackOutlined,
   SaveOutlined,
+  SoundTwoTone,
   VerticalAlignBottomOutlined,
   VerticalAlignTopOutlined
 } from '@ant-design/icons';
@@ -63,6 +65,7 @@ const MessageItem = ({
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
+  const speak = useSpeak();
   const [renderType, setRenderType] = useState(
     topic?.overrideSettings?.renderType === undefined ? chat.config.renderType : topic.overrideSettings.renderType
   );
@@ -175,6 +178,7 @@ const MessageItem = ({
                 if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                 delete loadingMsgs[msg.id];
                 setMessage({ text: msg.text });
+                speak('', true);
               }}
             >
               <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
@@ -189,6 +193,7 @@ const MessageItem = ({
               title="确定删除此消息？"
               onConfirm={() => {
                 onDel(msg);
+                speak('', true);
               }}
             >
               <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
@@ -197,7 +202,7 @@ const MessageItem = ({
         )}
       </>
     ),
-    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText, msg, onDel, rBak, renderType, saveMsg]
+    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText, msg, onDel, rBak, renderType, saveMsg, speak]
   );
 
   // 下方悬浮按钮
@@ -266,7 +271,7 @@ const MessageItem = ({
         </span>
       </div>
     );
-  }, [aiService?.customContext, msg.skipCtx, onCopy, onPush, onSned, style]);
+  }, [aiService?.customContext, msg.skipCtx, msg.usage, onCopy, onPush, onSned, style]);
 
   // 编辑时上方工具条
   const EditUtil = useMemo(
@@ -332,6 +337,7 @@ const MessageItem = ({
               // 最新的内容里面有换行符
               successText = msg.text.slice(0, successLines.length + enterIdx + 1);
               runText = runText.substring(enterIdx + 1);
+              speak(successText.substring(successLines.length).replace(/\*/g, ''), successLines.length == 0);
             }
             setRunLines(runText);
             if (successText != successLines) {
@@ -343,6 +349,7 @@ const MessageItem = ({
           }
         } else {
           if (!reloadStatus) setMessage({ text: msg.text });
+          speak(msg.text.substring(successLines.length).replace(/\*/g, ''));
           setSuccessLines(msg.text);
           setRunLines('');
         }
@@ -624,6 +631,18 @@ const MessageItem = ({
             }}
           >
             <span>{msg.ctxRole == 'assistant' ? chat.virtualRole.name : chat.user?.name}</span>
+            <Hidden hidden={!!loadingMsgs[msg.id] || !chat.config.voiceOpen || msg.ctxRole != 'assistant'}>
+              <span style={{ marginLeft: '10px' }}></span>
+              <span className={styleCss.speak_button}>
+                <SkipExport>
+                  <SoundTwoTone
+                    onClick={() => {
+                      speak(msg.text, true);
+                    }}
+                  />
+                </SkipExport>
+              </span>
+            </Hidden>
             <span style={{ marginLeft: '30px' }}></span>
             <Hidden hidden={loadingMsgs[msg.id] == undefined}>
               <SkipExport>
