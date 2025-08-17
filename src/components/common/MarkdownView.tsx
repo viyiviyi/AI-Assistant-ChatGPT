@@ -229,14 +229,13 @@ let processor = unified()
           <p
             {...{ ...(props as any), children: undefined }}
             onClick={(e) => {
-              if (times == 1 && 'className' in e.target) {
-                if (e.target.className == 'q') {
-                  speakTimer = setTimeout(() => {
-                    speak((e.target as any).innerText, true);
-                  }, 400);
-                }
+              if (times == 1 && 'className' in e.target && e.target.className == 'q') {
+                speakTimer = setTimeout(() => {
+                  speak((e.target as any).innerText, true);
+                }, 400);
+              } else {
+                clearTimeout(speakTimer);
               }
-              clearTimeout(speakTimer);
               times++;
               if (times > 2) {
                 let selection = window.getSelection();
