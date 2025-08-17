@@ -224,15 +224,19 @@ let processor = unified()
         let _children = pauseMes(children);
         let times = 0;
         let timer = setTimeout(() => {}, 0);
+        let speakTimer = setTimeout(() => {}, 0);
         return (
           <p
             {...{ ...(props as any), children: undefined }}
             onClick={(e) => {
-              if ('className' in e.target) {
+              if (times == 1 && 'className' in e.target) {
                 if (e.target.className == 'q') {
-                  speak((e.target as any).innerText, true);
+                  speakTimer = setTimeout(() => {
+                    speak((e.target as any).innerText, true);
+                  }, 400);
                 }
               }
+              clearTimeout(speakTimer);
               times++;
               if (times > 2) {
                 let selection = window.getSelection();
@@ -244,6 +248,7 @@ let processor = unified()
                 times = 0;
                 return;
               }
+
               clearTimeout(timer);
               timer = setTimeout(() => {
                 times = 0;

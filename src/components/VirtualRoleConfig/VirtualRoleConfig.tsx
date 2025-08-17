@@ -351,7 +351,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                         label: (
                           <a
                             onClick={() => {
-                              if (copy(JSON.stringify(chatMgt?.virtualRole))) {
+                              if (copy(Buffer.from(JSON.stringify(chatMgt?.virtualRole)).toString('base64'))) {
                                 messageApi.success('已复制');
                               }
                             }}
@@ -368,6 +368,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                               navigator?.clipboard.readText().then((text) => {
                                 try {
                                   if (!text) return;
+                                  text = Buffer.from(text, 'base64').toString();
                                   let res: VirtualRole = JSON.parse(text);
                                   if (typeof res == 'string') res = JSON.parse(res);
                                   if (!res.name) return messageApi.error('数据不正确');
@@ -559,7 +560,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                         label: (
                           <a
                             onClick={() => {
-                              downloadJson(JSON.stringify(chatMgt?.virtualRole), chatMgt?.group.name + 'setting_eaias.com.json');
+                              downloadJson(JSON.stringify(chatMgt?.virtualRole), chatMgt?.group.name + 'setting_eaias.com');
                             }}
                           >
                             {'导出设定到json文件'}

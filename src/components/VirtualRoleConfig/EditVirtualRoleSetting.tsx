@@ -231,11 +231,13 @@ export function EditVirtualRoleSetting({
               onClick={() => {
                 if (
                   copy(
-                    JSON.stringify(
-                      Object.assign({}, item, {
-                        extensionId: undefined,
-                      })
-                    )
+                    Buffer.from(
+                      JSON.stringify(
+                        Object.assign({}, item, {
+                          extensionId: undefined,
+                        })
+                      )
+                    ).toString('base64')
                   )
                 ) {
                   messageApi.success('已复制');
@@ -252,6 +254,7 @@ export function EditVirtualRoleSetting({
                     navigator?.clipboard.readText().then((text) => {
                       try {
                         if (!text) return;
+                        text = Buffer.from(text,'base64').toString()
                         let res: VirtualRoleSetting = JSON.parse(text);
                         if (typeof res == 'string') res = JSON.parse(res);
                         if (!res || !res.ctx) return;
