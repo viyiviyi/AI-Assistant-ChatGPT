@@ -176,7 +176,7 @@ let processor = unified()
         return <Typography.Link {...(props as any)} rel="noopener noreferrer" target={'_blank'}></Typography.Link>;
       },
       code: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
-        let r = React.createRef<HTMLDivElement>();
+        let r = React.createRef<HTMLSpanElement>();
         const { className, children } = props;
         const _children = parseCode(children);
         let times = 0;
@@ -215,7 +215,7 @@ let processor = unified()
                 className="code-copy"
               />
             </SkipExport>
-            <div ref={r}>{_children}</div>
+            <span ref={r}>{_children}</span>
           </code>
         );
       },
