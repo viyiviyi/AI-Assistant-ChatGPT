@@ -727,37 +727,41 @@ export const Setting = ({
                 ...panlProp,
                 children: (
                   <div>
-                    <Form.Item name="config_voice_open" valuePropName="checked" label="是否启用">
-                      <Switch />
-                      <span style={{ marginLeft: 30 }}></span>
-                      <Button.Group>
-                        <Button
-                          onClick={() => {
-                            if (copy(Buffer.from(JSON.stringify(ttsVoc)).toString('base64'))) {
-                              messageApi.success('已复制');
-                            }
-                          }}
-                        >
-                          {'复制'}
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            try {
-                              navigator?.clipboard.readText().then((text) => {
-                                if (!text) return;
-                                text = Buffer.from(text, 'base64').toString();
-                                let res: typeof ttsVoc = JSON.parse(text);
-                                if (typeof res == 'string') res = JSON.parse(res);
-                                setTtsVoc(res);
-                              });
-                            } catch (error) {
-                              messageApi.warning('读取剪切板失败');
-                            }
-                          }}
-                        >
-                          {'粘贴'}
-                        </Button>
-                      </Button.Group>
+                    <Form.Item label="是否启用">
+                      <Flex>
+                        <Form.Item name="config_voice_open" valuePropName="checked">
+                          <Switch />
+                        </Form.Item>
+                        <span style={{ marginLeft: 30 }}></span>
+                        <Button.Group>
+                          <Button
+                            onClick={() => {
+                              if (copy(Buffer.from(JSON.stringify(ttsVoc)).toString('base64'))) {
+                                messageApi.success('已复制');
+                              }
+                            }}
+                          >
+                            {'复制'}
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              try {
+                                navigator?.clipboard.readText().then((text) => {
+                                  if (!text) return;
+                                  text = Buffer.from(text, 'base64').toString();
+                                  let res: typeof ttsVoc = JSON.parse(text);
+                                  if (typeof res == 'string') res = JSON.parse(res);
+                                  setTtsVoc(res);
+                                });
+                              } catch (error) {
+                                messageApi.warning('读取剪切板失败');
+                              }
+                            }}
+                          >
+                            {'粘贴'}
+                          </Button>
+                        </Button.Group>
+                      </Flex>
                     </Form.Item>
                     <Form.Item style={{ flex: '1' }} label="系统TTS发言人" name={'config_voice_name'}>
                       <Select
