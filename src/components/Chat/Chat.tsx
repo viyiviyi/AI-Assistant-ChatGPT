@@ -2,11 +2,12 @@ import { ChatMessage } from '@/components/Chat/Message/ChatMessage';
 import { ChatContext } from '@/core/ChatManagement';
 import { KeyValueData } from '@/core/db/KeyValueData';
 import { useScreenSize } from '@/core/hooks/hooks';
+import { TTSService } from '@/core/tts/TTSService';
 import { activityScroll } from '@/core/utils/utils';
 import { Message } from '@/Models/DataBase';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { App, Button, Layout, message, Modal, theme } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { MemoChatHeader } from '../ChatHeader';
 import { Hidden } from '../common/Hidden';
 import { MarkdownView } from '../common/MarkdownView';
@@ -27,6 +28,7 @@ export const MessageContext = React.createContext({
   setCloseAll: (b: boolean) => {},
   setCite: (msg: Message) => {},
   setShowTitle: (show: boolean) => {},
+  ttsService: new TTSService(),
 });
 
 export const Chat = () => {
@@ -41,6 +43,7 @@ export const Chat = () => {
   const [showConfigs, setShowConfigs] = useState(false);
   const [showNav, setShowNav] = useState(true);
   const [showNotice, setShowNotice] = useState(false);
+  const ttsService = useMemo(() => new TTSService(), []);
   useEffect(() => {
     if (!window) return;
     if (location.origin.includes('22733.site')) {
@@ -83,6 +86,7 @@ export const Chat = () => {
         setCite,
         showTitle,
         setShowTitle,
+        ttsService,
       }}
     >
       {contextHolder}

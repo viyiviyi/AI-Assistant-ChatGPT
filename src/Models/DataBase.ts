@@ -51,6 +51,7 @@ export interface GroupConfig {
   toolBarToBottom?: boolean;
   voiceOpen?: boolean;
   voiceName?: string;
+  voiceConfigs?: { reg: string; regOut?: string; default: boolean; url: string; method?: string; header?: Record<string, string> }[];
 }
 
 // 聊天消息表

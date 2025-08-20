@@ -7,8 +7,27 @@ import { useSpeechSynthesis } from '@/core/hooks/tts';
 import { getToken, saveToken } from '@/core/tokens';
 import { downloadJson } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
+import { GroupConfig } from '@/Models/DataBase';
 import { CaretRightOutlined, DownloadOutlined, GithubOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Collapse, Flex, Form, Input, InputNumber, Modal, Radio, Segmented, Select, Switch, theme, Upload } from 'antd';
+import {
+  Button,
+  Checkbox,
+  Collapse,
+  Divider,
+  Flex,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Radio,
+  Segmented,
+  Select,
+  Switch,
+  theme,
+  Upload
+} from 'antd';
+import copy from 'copy-to-clipboard';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { downloadTopic } from '../Chat/Message/ChatMessage';
@@ -43,8 +62,10 @@ export const Setting = ({
   const [group_background, setGroup_background] = useState(chatMgt?.group.background);
   const [background, setBackground] = useState<string>();
   const [userAiServer, setUserAiServer] = useState<string[]>([]);
+  const [ttsVoc, setTtsVoc] = useState<GroupConfig['voiceConfigs']>([]);
   const { token } = theme.useToken();
   const speechSynthesis = useSpeechSynthesis();
+  const [messageApi] = message.useMessage();
   useEffect(() => {
     setUserAiServer(KeyValueData.instance().getaiServerList());
   }, []);
@@ -135,6 +156,11 @@ export const Setting = ({
     };
   }, [chatMgt]);
   useEffect(() => {
+    let vocs = chatMgt?.config.voiceConfigs?.map((v) => ({ ...v })) || [{ reg: '', url: '', default: false }];
+    if (vocs.length == 0) vocs = [{ reg: '', url: '', default: false }];
+    setTtsVoc(vocs);
+  }, [chatMgt]);
+  useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
     const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[chatMgt.config.botType];
     aiServices.current?.models().then((res) => {
@@ -194,6 +220,7 @@ export const Setting = ({
     chatMgt.config.toolBarToBottom = values.config_tool_to_bottom;
     chatMgt.config.voiceName = values.config_voice_name;
     chatMgt.config.voiceOpen = values.config_voice_open;
+    chatMgt.config.voiceConfigs = ttsVoc?.filter((f) => !!f.url);
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -500,19 +527,6 @@ export const Setting = ({
           ) : (
             <></>
           )}
-          <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
-            <Form.Item style={{ flex: '1' }} label="TTS" name={'config_voice_name'}>
-              <Select
-                allowClear
-                options={(speechSynthesis?.getVoices() || [])
-                  .filter((f) => f.lang == 'zh-CN')
-                  .map((v) => ({ value: v.name, label: v.name + ' ' + v.lang + ' ' + (v.localService ? '本地' : '') }))}
-              />
-            </Form.Item>
-            <Form.Item name="config_voice_open" valuePropName="checked" label=" ">
-              <Switch />
-            </Form.Item>
-          </div>
           <Collapse
             // ghost
             bordered={false}
@@ -704,6 +718,116 @@ export const Setting = ({
                           </Form.Item>
                         );
                       })}
+                  </div>
+                ),
+              },
+              {
+                key: 'tts_config',
+                label: 'TTS配置',
+                ...panlProp,
+                children: (
+                  <div>
+                    <Form.Item name="config_voice_open" valuePropName="checked" label="是否启用">
+                      <Switch />
+                      <span style={{ marginLeft: 30 }}></span>
+                      <Button.Group>
+                        <Button
+                          onClick={() => {
+                            if (copy(Buffer.from(JSON.stringify(ttsVoc)).toString('base64'))) {
+                              messageApi.success('已复制');
+                            }
+                          }}
+                        >
+                          {'复制'}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            try {
+                              navigator?.clipboard.readText().then((text) => {
+                                if (!text) return;
+                                text = Buffer.from(text, 'base64').toString();
+                                let res: typeof ttsVoc = JSON.parse(text);
+                                if (typeof res == 'string') res = JSON.parse(res);
+                                setTtsVoc(res);
+                              });
+                            } catch (error) {
+                              messageApi.warning('读取剪切板失败');
+                            }
+                          }}
+                        >
+                          {'粘贴'}
+                        </Button>
+                      </Button.Group>
+                    </Form.Item>
+                    <Form.Item style={{ flex: '1' }} label="系统TTS发言人" name={'config_voice_name'}>
+                      <Select
+                        allowClear
+                        options={(speechSynthesis?.getVoices() || [])
+                          .filter((f) => f.lang == 'zh-CN')
+                          .map((v) => ({ value: v.name, label: v.name + ' ' + v.lang + ' ' + (v.localService ? '本地' : '') }))}
+                      />
+                    </Form.Item>
+                    <Form.Item label={'TTS服务地址，默认请求第一个地址，优先使用网络TTS服务'}>
+                      {ttsVoc!.map((s, i) => {
+                        return (
+                          <div key={i}>
+                            {i > 0 ? <Divider orientation={'left'}>第{i + 1}组</Divider> : <></>}
+                            <Form.Item label={'正则，如果有值则仅匹配时调用此服务'}>
+                              <Input
+                                autoComplete="off"
+                                type="text"
+                                value={s.reg}
+                                onChange={(v) => {
+                                  s.reg = v.target.value;
+                                  setTtsVoc((v) => [...v!]);
+                                }}
+                              />
+                            </Form.Item>
+                            <Form.Item label={'正则替换，当需要修改匹配的内容时使用'}>
+                              <Input
+                                autoComplete="off"
+                                type="text"
+                                value={s.regOut}
+                                onChange={(v) => {
+                                  s.regOut = v.target.value;
+                                  setTtsVoc((v) => [...v!]);
+                                }}
+                              />
+                            </Form.Item>
+                            <Form.Item label={'请求地址，文本占位符：{{text}}'}>
+                              <Input
+                                autoComplete="off"
+                                type="text"
+                                value={s.url}
+                                onChange={(v) => {
+                                  s.url = v.target.value;
+                                  setTtsVoc((v) => [...v!]);
+                                }}
+                              />
+                            </Form.Item>
+                          </div>
+                        );
+                      })}
+                      <Form.Item extra="当存在多个token时，每次请求后都会切换到下一个token">
+                        <Button
+                          type="dashed"
+                          onClick={() => {
+                            setTtsVoc((v) => {
+                              v?.push({ reg: '', url: '', default: false });
+                              return [...(v || [{ reg: '', url: '', default: false }])];
+                            });
+                          }}
+                          block
+                          icon={
+                            <SkipExport>
+                              <PlusOutlined />
+                            </SkipExport>
+                          }
+                        >
+                          增加 token
+                        </Button>
+                      </Form.Item>
+                    </Form.Item>
                   </div>
                 ),
               },

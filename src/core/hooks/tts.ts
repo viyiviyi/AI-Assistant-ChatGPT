@@ -1,3 +1,4 @@
+import { MessageContext } from '@/components/Chat/Chat';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ChatContext } from '../ChatManagement';
 
@@ -16,9 +17,64 @@ export function useSpeechSynthesis() {
 export function useSpeak() {
   const synth = useSpeechSynthesis();
   const { chatMgt } = useContext(ChatContext);
+  const { ttsService } = useContext(MessageContext);
   const [task, steTask] = useState<string[]>([]);
+  const httpTtsServer = useCallback(
+    (text: string, stop = false) => {
+      if (!chatMgt.config.voiceConfigs || chatMgt.config.voiceConfigs.length == 0) return;
+      let defaultVoc = chatMgt.config.voiceConfigs.find((f) => f.default);
+      if (!defaultVoc) defaultVoc = chatMgt.config.voiceConfigs[0];
+      if (stop) ttsService.clearQueue();
+      function f(startIdx = 0) {
+        let len = text.length - startIdx;
+        const txt = text.substring(startIdx);
+        let voc: typeof defaultVoc = undefined;
+        let speakTxt = '';
+        // 匹配tts
+        for (let j = 0; j < chatMgt.config.voiceConfigs!.length; j++) {
+          const v = chatMgt.config.voiceConfigs![j];
+          if (v.reg) {
+            let r = v.reg;
+            if (!r.startsWith('^')) r = '^' + r; // 让正则只能从前往后匹配
+            if (new RegExp(r).test(txt)) {
+              const out = txt.replace(new RegExp(r), (sub: string, ...vals) => {
+                len = sub.length;
+                if (v.regOut) {
+                  speakTxt = v.regOut.replace(/\$\{?(\d+)\}?/g, (a, i) => {
+                    let idx = Number(i) - 1;
+                    if (vals.length - 2 >= idx) return vals[idx];
+                    return '';
+                  });
+                } else {
+                  speakTxt = sub;
+                }
+                return sub;
+              });
+              voc = v;
+              break;
+            }
+          }
+        }
+        if (voc) {
+          ttsService.speak(speakTxt, false, voc.url, voc.method, voc.header);
+        } else {
+          // 正则不能从最前匹配到时，找到能匹配到的最前一个，将这之前的都用默认tts
+          let nextIdx = Math.min(...chatMgt.config.voiceConfigs!.map((v) => txt.match(new RegExp(v.reg))?.index || txt.length));
+          ttsService.speak(txt.substring(0, nextIdx), false, defaultVoc!.url, defaultVoc!.method, defaultVoc!.header);
+          len = nextIdx;
+        }
+        if (startIdx + len < text.length) f(startIdx + len);
+      }
+      f(0);
+    },
+    [chatMgt, ttsService]
+  );
   const speak = useCallback(
     (text: string, stop = false) => {
+      if (!chatMgt?.config?.voiceOpen) return;
+      if (chatMgt.config.voiceConfigs?.length) {
+        return httpTtsServer(text, stop);
+      }
       if (!synth) return;
       if (synth.speaking) {
         if (stop) {
@@ -62,7 +118,7 @@ export function useSpeak() {
       }
       return synth;
     },
-    [chatMgt?.config?.voiceName, synth, task]
+    [chatMgt, httpTtsServer, synth, task]
   );
   return speak;
 }
