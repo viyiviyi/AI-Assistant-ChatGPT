@@ -109,6 +109,7 @@ export const ChatHeader = () => {
       ></Modal>
       <Modal
         open={settingIsShow}
+        maskClosable={screenSize.width <= 500}
         onCancel={() => {
           setSettingShow(false);
         }}

@@ -31,6 +31,7 @@ import copy from 'copy-to-clipboard';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { downloadTopic } from '../Chat/Message/ChatMessage';
+import { DragList } from '../common/DragList';
 import ImageUpload from '../common/ImageUpload';
 import { ModalCallback } from '../common/Modal';
 import { SkipExport } from '../common/SkipExport';
@@ -65,7 +66,7 @@ export const Setting = ({
   const [ttsVoc, setTtsVoc] = useState<GroupConfig['voiceConfigs']>([]);
   const { token } = theme.useToken();
   const speechSynthesis = useSpeechSynthesis();
-  const [messageApi] = message.useMessage();
+  const [messageApi, messageContextHolder] = message.useMessage();
   useEffect(() => {
     setUserAiServer(KeyValueData.instance().getaiServerList());
   }, []);
@@ -772,7 +773,68 @@ export const Setting = ({
                       />
                     </Form.Item>
                     <Form.Item label={'TTS服务地址，默认请求第一个地址，优先使用网络TTS服务'}>
-                      {ttsVoc!.map((s, i) => {
+                      <DragList
+                        data={(ttsVoc || []).map((v, i) => Object.assign(v, { key: i + '' }))}
+                        onChange={(data) => {
+                          setTtsVoc(data);
+                        }}
+                        style={{
+                          borderRadius: 8,
+                          border: '1px solid ' + token.colorBorder,
+                          padding: 5,
+                          marginBottom: 8,
+                        }}
+                        itemDom={(s, i) => {
+                          return (
+                            <div key={i} style={{ flex: 1 }}>
+                              <Divider orientation={'left'}>
+                                <Checkbox
+                                  checked={!s.disabled}
+                                  onChange={(e) => {
+                                    s.disabled = !e.target.checked;
+                                    setTtsVoc((v) => [...v!]);
+                                  }}
+                                ></Checkbox>
+                                <span style={{ marginLeft: 30 }}></span>第{i + 1}组{' '}
+                              </Divider>
+                              <Form.Item label={'正则，如果有值则仅匹配时调用此服务'}>
+                                <Input
+                                  autoComplete="off"
+                                  type="text"
+                                  value={s.reg}
+                                  onChange={(v) => {
+                                    s.reg = v.target.value;
+                                    setTtsVoc((v) => [...v!]);
+                                  }}
+                                />
+                              </Form.Item>
+                              <Form.Item label={'正则替换，当需要修改匹配的内容时使用'}>
+                                <Input
+                                  autoComplete="off"
+                                  type="text"
+                                  value={s.regOut}
+                                  onChange={(v) => {
+                                    s.regOut = v.target.value;
+                                    setTtsVoc((v) => [...v!]);
+                                  }}
+                                />
+                              </Form.Item>
+                              <Form.Item label={'请求地址，文本占位符：{{text}}'}>
+                                <Input
+                                  autoComplete="off"
+                                  type="text"
+                                  value={s.url}
+                                  onChange={(v) => {
+                                    s.url = v.target.value;
+                                    setTtsVoc((v) => [...v!]);
+                                  }}
+                                />
+                              </Form.Item>
+                            </div>
+                          );
+                        }}
+                      ></DragList>
+                      {/* {ttsVoc!.map((s, i) => {
                         return (
                           <div key={i}>
                             {i > 0 ? <Divider orientation={'left'}>第{i + 1}组</Divider> : <></>}
@@ -811,8 +873,8 @@ export const Setting = ({
                             </Form.Item>
                           </div>
                         );
-                      })}
-                      <Form.Item extra="当存在多个token时，每次请求后都会切换到下一个token">
+                      })} */}
+                      <Form.Item>
                         <Button
                           type="dashed"
                           onClick={() => {
@@ -828,7 +890,7 @@ export const Setting = ({
                             </SkipExport>
                           }
                         >
-                          增加 token
+                          增加 TTS服务
                         </Button>
                       </Form.Item>
                     </Form.Item>
@@ -1000,6 +1062,7 @@ export const Setting = ({
             ]}
           ></Collapse>
         </div>
+        {messageContextHolder}
         {contextHolder}
       </Form>
     </>

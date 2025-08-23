@@ -21,9 +21,15 @@ export function useSpeak() {
   const [task, steTask] = useState<string[]>([]);
   const httpTtsServer = useCallback(
     (text: string, stop = false) => {
-      if (!chatMgt.config.voiceConfigs || chatMgt.config.voiceConfigs.length == 0) return;
-      let defaultVoc = chatMgt.config.voiceConfigs.find((f) => f.default);
-      if (!defaultVoc) defaultVoc = chatMgt.config.voiceConfigs[0];
+      if (
+        !chatMgt.config.voiceConfigs ||
+        chatMgt.config.voiceConfigs.length == 0 ||
+        chatMgt.config.voiceConfigs.filter((f) => !f.disabled).length == 0
+      )
+        return;
+      const voices = chatMgt.config.voiceConfigs.filter((f) => !f.disabled);
+      let defaultVoc = voices.find((f) => f.default);
+      if (!defaultVoc) defaultVoc = voices[0];
       if (stop) ttsService.clearQueue();
       function f(startIdx = 0) {
         let len = text.length - startIdx;
@@ -31,8 +37,8 @@ export function useSpeak() {
         let voc: typeof defaultVoc = undefined;
         let speakTxt = '';
         // 匹配tts
-        for (let j = 0; j < chatMgt.config.voiceConfigs!.length; j++) {
-          const v = chatMgt.config.voiceConfigs![j];
+        for (let j = 0; j < voices!.length; j++) {
+          const v = voices[j];
           if (v.reg) {
             let r = v.reg;
             if (!r.startsWith('^')) r = '^' + r; // 让正则只能从前往后匹配
@@ -59,7 +65,7 @@ export function useSpeak() {
           ttsService.speak(speakTxt, false, voc.url, voc.method, voc.header);
         } else {
           // 正则不能从最前匹配到时，找到能匹配到的最前一个，将这之前的都用默认tts
-          let nextIdx = Math.min(...chatMgt.config.voiceConfigs!.map((v) => txt.match(new RegExp(v.reg))?.index || txt.length));
+          let nextIdx = Math.min(...voices.map((v) => txt.match(new RegExp(v.reg))?.index || txt.length));
           ttsService.speak(txt.substring(0, nextIdx), false, defaultVoc!.url, defaultVoc!.method, defaultVoc!.header);
           len = nextIdx;
         }
@@ -72,7 +78,7 @@ export function useSpeak() {
   const speak = useCallback(
     (text: string, stop = false) => {
       if (!chatMgt?.config?.voiceOpen) return;
-      if (chatMgt.config.voiceConfigs?.length) {
+      if (chatMgt.config.voiceConfigs?.length && chatMgt.config.voiceConfigs.filter((f) => !f.disabled).length) {
         return httpTtsServer(text, stop);
       }
       if (!synth) return;
