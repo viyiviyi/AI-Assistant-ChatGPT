@@ -402,12 +402,10 @@ const renderPipes: Array<(input: string, chatMgt: ChatManagement) => string> = [
     return onRender(chatMgt as any, input);
   },
   (input, chatMgt: ChatManagement) => {
-    return input.replace(/\n\s+```/g, '\n```');
+    return input.replace(/\n +```/g, '\n```');
   },
   (input, chatMgt: ChatManagement) => {
-    return input.replace(/[\n\s\t\r]+\n/g, (substring: string, ...args: any[]) => {
-      return '\n';
-    });
+    return input.replace(/[ \t\r]+\n/g, '\n');
   },
   // (input, chatMgt: ChatManagement) => {
   //   return input.replace(/\n\s\s+([a-zA-Z#/*{}()])/g, (substring: string, ...args: any[]) => {
