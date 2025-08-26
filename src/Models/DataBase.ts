@@ -60,6 +60,7 @@ export interface GroupConfig {
     header?: Record<string, string>;
     disabled?: boolean;
   }[];
+  modelArgs?: { enable: boolean; modelName: string; serverUrl: string; value: string }[];
 }
 
 // 聊天消息表

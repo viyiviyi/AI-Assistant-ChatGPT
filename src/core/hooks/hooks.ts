@@ -237,6 +237,7 @@ export function useSendMessage(chat: ChatManagement) {
               : currentChat.current!.gptConfig.model[currentChat.current!.config.botType],
           user: 'user',
           messages: [],
+          modelArgs: currentChat.current!.config.modelArgs,
         },
       });
     },

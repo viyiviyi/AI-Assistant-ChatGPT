@@ -1,7 +1,7 @@
 import { aiServiceType } from '@/core/AiService/ServiceProvider';
 import { CtxRole } from '@/Models/CtxRole';
 import { ChatCompletionRequestMessage, CreateChatCompletionRequest } from 'openai';
-import { Message } from '../../Models/DataBase';
+import { GroupConfig, Message } from '../../Models/DataBase';
 import { ServiceTokens } from './ServiceProvider';
 export interface IAiService {
   baseUrl: string;
@@ -63,6 +63,7 @@ type chatGPTConfig = {
   user?: CtxRole;
   n?: number;
   temperature?: number;
+  modelArgs?: GroupConfig['modelArgs'];
 } & CreateChatCompletionRequest;
 
 type slackConfig = {

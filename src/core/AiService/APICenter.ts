@@ -167,6 +167,18 @@ export class APICenter implements IAiService {
       frequency_penalty: config.frequency_penalty || undefined,
       presence_penalty: config.presence_penalty || undefined,
     };
+    if (config.modelArgs?.length) {
+      config.modelArgs
+        .filter((f) => f.enable && f.serverUrl == this.baseUrl)
+        .forEach(({ value: argStr }) => {
+          if (argStr) {
+            try {
+              const args = JSON.parse(argStr);
+              Object.assign(data, args);
+            } catch (error) {}
+          }
+        });
+    }
     const controller = new AbortController();
     try {
       let response = await fetch(`${this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : '')}/chat/completions`, {

@@ -5,7 +5,7 @@ import { KeyValueData } from '@/core/db/KeyValueData';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { useSpeechSynthesis } from '@/core/hooks/tts';
 import { getToken, saveToken } from '@/core/tokens';
-import { downloadJson } from '@/core/utils/utils';
+import { downloadJson, isJson } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { GroupConfig } from '@/Models/DataBase';
 import { CaretRightOutlined, DownloadOutlined, GithubOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
@@ -64,6 +64,7 @@ export const Setting = ({
   const [background, setBackground] = useState<string>();
   const [userAiServer, setUserAiServer] = useState<string[]>([]);
   const [ttsVoc, setTtsVoc] = useState<GroupConfig['voiceConfigs']>([]);
+  const [modelArgs, setModelArgs] = useState<GroupConfig['modelArgs']>([]);
   const { token } = theme.useToken();
   const speechSynthesis = useSpeechSynthesis();
   const [messageApi, messageContextHolder] = message.useMessage();
@@ -160,6 +161,7 @@ export const Setting = ({
     let vocs = chatMgt?.config.voiceConfigs?.map((v) => ({ ...v })) || [{ reg: '', url: '', default: false }];
     if (vocs.length == 0) vocs = [{ reg: '', url: '', default: false }];
     setTtsVoc(vocs);
+    setModelArgs(chatMgt?.config.modelArgs?.map((v) => ({ ...v })));
   }, [chatMgt]);
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
@@ -222,6 +224,7 @@ export const Setting = ({
     chatMgt.config.voiceName = values.config_voice_name;
     chatMgt.config.voiceOpen = values.config_voice_open;
     chatMgt.config.voiceConfigs = ttsVoc?.filter((f) => !!f.url);
+    chatMgt.config.modelArgs = modelArgs?.filter((f) => f.serverUrl && f.value && isJson(f.value));
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -834,46 +837,6 @@ export const Setting = ({
                           );
                         }}
                       ></DragList>
-                      {/* {ttsVoc!.map((s, i) => {
-                        return (
-                          <div key={i}>
-                            {i > 0 ? <Divider orientation={'left'}>第{i + 1}组</Divider> : <></>}
-                            <Form.Item label={'正则，如果有值则仅匹配时调用此服务'}>
-                              <Input
-                                autoComplete="off"
-                                type="text"
-                                value={s.reg}
-                                onChange={(v) => {
-                                  s.reg = v.target.value;
-                                  setTtsVoc((v) => [...v!]);
-                                }}
-                              />
-                            </Form.Item>
-                            <Form.Item label={'正则替换，当需要修改匹配的内容时使用'}>
-                              <Input
-                                autoComplete="off"
-                                type="text"
-                                value={s.regOut}
-                                onChange={(v) => {
-                                  s.regOut = v.target.value;
-                                  setTtsVoc((v) => [...v!]);
-                                }}
-                              />
-                            </Form.Item>
-                            <Form.Item label={'请求地址，文本占位符：{{text}}'}>
-                              <Input
-                                autoComplete="off"
-                                type="text"
-                                value={s.url}
-                                onChange={(v) => {
-                                  s.url = v.target.value;
-                                  setTtsVoc((v) => [...v!]);
-                                }}
-                              />
-                            </Form.Item>
-                          </div>
-                        );
-                      })} */}
                       <Form.Item>
                         <Button
                           type="dashed"
@@ -933,7 +896,56 @@ export const Setting = ({
                 ...panlProp,
                 children: (
                   <div style={{ overflow: 'auto' }}>
-                    {userAiServer.map((val, index) => {
+                    <DragList
+                      data={userAiServer.map((a, i) => {
+                        return {
+                          name: a.split('|')[0],
+                          url: a.split('|')[1],
+                          key: a.split('|')[1] + i + '',
+                        };
+                      })}
+                      onChange={(d) => setUserAiServer(d.map((v) => v.name + '|' + v.url))}
+                      style={{
+                        borderRadius: 8,
+                        border: '1px solid ' + token.colorBorder,
+                        padding: 5,
+                        marginBottom: 8,
+                      }}
+                      itemDom={(val, index) => {
+                        let { name, url } = val;
+                        return (
+                          <div key={index} style={{ flex: 1 }}>
+                            <Form.Item label={index + 1 + ' 名称'}>
+                              <Input
+                                type="text"
+                                value={name}
+                                onChange={(e) => {
+                                  setUserAiServer((v) => {
+                                    v[index] = e.target.value.trim() + '|' + url.trim();
+                                    return [...v];
+                                  });
+                                }}
+                                autoComplete="off"
+                              />
+                            </Form.Item>
+                            <Form.Item label={index + 1 + ' 接口地址'}>
+                              <Input
+                                type="text"
+                                value={url}
+                                onChange={(e) => {
+                                  setUserAiServer((v) => {
+                                    v[index] = name.trim() + '|' + e.target.value.trim();
+                                    return [...v];
+                                  });
+                                }}
+                                autoComplete="off"
+                              />
+                            </Form.Item>
+                          </div>
+                        );
+                      }}
+                    />
+                    {/* {userAiServer.map((val, index) => {
                       let [name, url] = val.split('|');
                       return (
                         <div key={index}>
@@ -965,7 +977,7 @@ export const Setting = ({
                           </Form.Item>
                         </div>
                       );
-                    })}
+                    })} */}
                     <Form.Item extra="仅支持兼容ChatGPT类型的API服务，如果地址需要跨域，可以尝试在地址前加 https://proxy.eaias.com/">
                       <Button
                         type="dashed"
@@ -981,6 +993,116 @@ export const Setting = ({
                       >
                         增加
                       </Button>
+                    </Form.Item>
+                  </div>
+                ),
+              },
+              {
+                key: 'model_args_config',
+                label: '自定义参数',
+                ...panlProp,
+                children: (
+                  <div>
+                    <Form.Item>
+                      <Flex>
+                        <Button.Group>
+                          <Button
+                            onClick={() => {
+                              if (copy(Buffer.from(JSON.stringify(modelArgs)).toString('base64'))) {
+                                messageApi.success('已复制');
+                              }
+                            }}
+                          >
+                            {'复制'}
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              try {
+                                navigator?.clipboard.readText().then((text) => {
+                                  if (!text) return;
+                                  text = Buffer.from(text, 'base64').toString();
+                                  let res: typeof modelArgs = JSON.parse(text);
+                                  if (typeof res == 'string') res = JSON.parse(res);
+                                  setModelArgs(res);
+                                });
+                              } catch (error) {
+                                messageApi.warning('读取剪切板失败');
+                              }
+                            }}
+                          >
+                            {'粘贴'}
+                          </Button>
+                        </Button.Group>
+                      </Flex>
+                    </Form.Item>
+                    <Form.Item label={'自定义调用参数'}>
+                      {modelArgs?.map((s, i) => {
+                        return (
+                          <div key={i} style={{ flex: 1 }}>
+                            <Divider orientation={'left'}>
+                              <Checkbox
+                                checked={s.enable}
+                                onChange={(e) => {
+                                  s.enable = e.target.checked;
+                                  setModelArgs((v) => [...v!]);
+                                }}
+                              ></Checkbox>
+                              <span style={{ marginLeft: 30 }}></span>第{i + 1}组{' '}
+                            </Divider>
+                            <Form.Item label={'生效的AI服务'}>
+                              <Select
+                                style={{ width: '100%' }}
+                                value={s.serverUrl}
+                                onChange={(value, o) => {
+                                  s.serverUrl = value;
+                                  setModelArgs((v) => [...v!]);
+                                }}
+                              >
+                                {userAiServer
+                                  .filter((f) => f && f != '|')
+                                  .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true }))
+                                  .map((v) => (
+                                    <Select.Option key={'ai_type' + v.key} value={v.key}>
+                                      {v.name}
+                                    </Select.Option>
+                                  ))}
+                              </Select>
+                            </Form.Item>
+                            <Form.Item
+                              label={'参数，需要是json格式'}
+                              validateStatus={s.value ? (isJson(s.value) ? 'success' : 'error') : 'success'}
+                              help="需要是json格式"
+                            >
+                              <Input.TextArea
+                                autoComplete="off"
+                                value={s.value}
+                                onChange={(v) => {
+                                  s.value = v.target.value;
+                                  setModelArgs((v) => [...v!]);
+                                }}
+                              />
+                            </Form.Item>
+                          </div>
+                        );
+                      })}
+                      <Form.Item>
+                        <Button
+                          type="dashed"
+                          onClick={() => {
+                            setModelArgs((v) => {
+                              return [...(v || []), { enable: true, modelName: '', serverUrl: '', value: '{}' }];
+                            });
+                          }}
+                          block
+                          icon={
+                            <SkipExport>
+                              <PlusOutlined />
+                            </SkipExport>
+                          }
+                        >
+                          增加参数
+                        </Button>
+                      </Form.Item>
                     </Form.Item>
                   </div>
                 ),

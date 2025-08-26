@@ -50,7 +50,14 @@ export function pagesUtil<T>(
     pageIndex: pageNumber,
   };
 }
-
+export function isJson(a: string) {
+  try {
+    JSON.parse(a);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 export function downloadJson(jsonData: string, filename: string) {
   const blob = new Blob([jsonData], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
