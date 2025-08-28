@@ -9,7 +9,8 @@ import { TopicMessage } from '@/Models/Topic';
 import { DeleteOutlined, DownloadOutlined, InfoCircleOutlined, PlusOutlined, RotateRightOutlined, SwapOutlined } from '@ant-design/icons';
 import { Flex, Image as AntdImage, message, Space } from 'antd';
 import copy from 'copy-to-clipboard';
-import { useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
 export const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) => {
   const [currentIdx, setCurrentIdx] = useState<number | undefined>(undefined);
@@ -18,18 +19,51 @@ export const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) =>
   const [popup, setPopup] = useState(false);
   const [info, setInfo] = useState<StableDiffusionProcessingTxt2Img>({});
   const [messageApi, contextHolder] = message.useMessage();
+  const router = useRouter();
   useEffect(() => {
     setImageIds([...(msg.imageIds || [])]);
   }, [msg.imageIds]);
+  const handleBackButton = useMemo(() => {
+    return (ev: PopStateEvent | string) => {
+      setPopup((p) => {
+        if (p) {
+          return false;
+        }
+        setCurrentIdx(undefined);
+        return p;
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('popstate', handleBackButton);
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [handleBackButton]);
   return (
     <Flex gap={5} wrap={'wrap'}>
       {contextHolder}
-      <TempDraePopup open={popup} info={info} msg={msg} topic={topic} onClose={() => setPopup(false)} />
+      <TempDraePopup
+        open={popup}
+        info={info}
+        msg={msg}
+        topic={topic}
+        onClose={() => {
+          router.back();
+        }}
+      />
       <AntdImage.PreviewGroup
         preview={{
           visible: !popup && currentIdx !== undefined,
           current: currentIdx,
           onVisibleChange(value, prevValue, current) {
+            if (!prevValue && value) {
+              router.push(location.href.split('#')[0] + '#image');
+            } else if (!value && prevValue) {
+              router.back();
+              return;
+            }
             setCurrentIdx(value ? current : undefined);
           },
           onChange(current) {
@@ -48,6 +82,7 @@ export const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) =>
                     let json = info ? JSON.parse(info) : {};
                     let param = StableDiffusionProcessingTxt2ImgFromJSONTyped(json, false);
                     setInfo(param);
+                    router.push(location.href.split('#')[0] + '#imageAdd');
                     setPopup(true);
                   }}
                 />
