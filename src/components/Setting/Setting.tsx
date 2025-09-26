@@ -257,6 +257,56 @@ export const Setting = ({
     style: { padding: '0 8px' },
   };
   cbs.current.okCallback = onSave;
+  const AiServerItem = ({
+    item,
+    index,
+  }: {
+    item: {
+      name: string;
+      url: string;
+      key: string;
+    };
+    index: number;
+  }) => {
+    const [url, setUrl] = useState(item.url);
+    const [name, setName] = useState(item.name);
+    return (
+      <div key={index} style={{ flex: 1 }}>
+        <Form.Item label={index + 1 + ' 名称'}>
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
+            onBlur={() => {
+              setUserAiServer((v) => {
+                v[index] = name.trim() + '|' + url;
+                return v;
+              });
+            }}
+            autoComplete="off"
+          />
+        </Form.Item>
+        <Form.Item label={index + 1 + ' 接口地址'}>
+          <Input
+            type="text"
+            value={url}
+            onChange={(e) => {
+              setUrl(e.target.value);
+            }}
+            onBlur={() => {
+              setUserAiServer((v) => {
+                v[index] = name.trim() + '|' + url;
+                return v;
+              });
+            }}
+            autoComplete="off"
+          />
+        </Form.Item>
+      </div>
+    );
+  };
   return (
     <>
       <Form
@@ -912,37 +962,7 @@ export const Setting = ({
                         marginBottom: 8,
                       }}
                       itemDom={(val, index) => {
-                        let { name, url } = val;
-                        return (
-                          <div key={index} style={{ flex: 1 }}>
-                            <Form.Item label={index + 1 + ' 名称'}>
-                              <Input
-                                type="text"
-                                value={name}
-                                onChange={(e) => {
-                                  setUserAiServer((v) => {
-                                    v[index] = e.target.value.trim() + '|' + url.trim();
-                                    return [...v];
-                                  });
-                                }}
-                                autoComplete="off"
-                              />
-                            </Form.Item>
-                            <Form.Item label={index + 1 + ' 接口地址'}>
-                              <Input
-                                type="text"
-                                value={url}
-                                onChange={(e) => {
-                                  setUserAiServer((v) => {
-                                    v[index] = name.trim() + '|' + e.target.value.trim();
-                                    return [...v];
-                                  });
-                                }}
-                                autoComplete="off"
-                              />
-                            </Form.Item>
-                          </div>
-                        );
+                        return <AiServerItem item={val} index={index} />;
                       }}
                     />
                     {/* {userAiServer.map((val, index) => {
