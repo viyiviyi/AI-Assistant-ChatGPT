@@ -1,6 +1,4 @@
-import { CopyOutlined } from '@ant-design/icons';
 import { MenuProps, message, Modal, Typography } from 'antd';
-import copy from 'copy-to-clipboard';
 import bash from 'highlight.js/lib/languages/bash';
 import dart from 'highlight.js/lib/languages/dart';
 import dockerfile from 'highlight.js/lib/languages/dockerfile';
@@ -33,6 +31,8 @@ import { visit } from 'unist-util-visit';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { useSpeak } from '@/core/hooks/tts';
 import { onRender } from '@/middleware/execMiddleware';
+import { CopyOutlined } from '@ant-design/icons';
+import copy from 'copy-to-clipboard';
 import rehypeFormat from 'rehype-format';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -175,14 +175,12 @@ let processor = unified()
       a: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>) => {
         return <Typography.Link {...(props as any)} rel="noopener noreferrer" target={'_blank'}></Typography.Link>;
       },
-      code: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
-        let r = React.createRef<HTMLSpanElement>();
+      pre: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { className, children } = props;
-        const _children = parseCode(children);
         let times = 0;
         let timer = setTimeout(() => {}, 0);
         return (
-          <code
+          <pre
             className={className}
             onClick={(e) => {
               times++;
@@ -202,21 +200,18 @@ let processor = unified()
               }, 400);
             }}
           >
+            {children}
             <SkipExport>
               <CopyOutlined
                 onClick={(e) => {
-                  // if (copy(toTxt(children))) {
-                  //   message.success('已复制');
-                  // }
-                  if (r.current && copy(r.current?.innerText || '')) {
+                  if (copy(toTxt(children))) {
                     message.success('已复制');
                   }
                 }}
                 className="code-copy"
               />
             </SkipExport>
-            <span ref={r}>{_children}</span>
-          </code>
+          </pre>
         );
       },
       p: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {

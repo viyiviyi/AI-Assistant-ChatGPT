@@ -16,13 +16,6 @@ pre > code:focus-visible {
   max-height: 50dvh;
   overflow-y: auto;
 }
-.code-copy {
-  display: none;
-  position: absolute;
-  top: 0.3em;
-  right: 0.2em;
-  font-size: 1.4em;
-}
 code,
 .hljs {
   overflow-x: auto;
@@ -34,7 +27,14 @@ code,
   border-radius: 4px;
   tab-size: 4;
 }
-pre > code:hover > .code-copy {
+.code-copy {
+  display: none;
+  position: absolute;
+  top: 0.3em;
+  right: 0.2em;
+  font-size: 1.4em;
+}
+pre:hover > code + .code-copy {
   display: block;
 }
 .hljs-comment {
