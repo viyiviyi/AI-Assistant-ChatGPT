@@ -32,7 +32,7 @@ export const MessageContext = React.createContext({
 });
 
 export const Chat = () => {
-  const { forceRender } = useContext(ChatContext);
+  const { forceRender, chatMgt } = useContext(ChatContext);
   const { token } = theme.useToken();
   const [cite, setCite] = useState<Message>();
   const [_, contextHolder] = message.useMessage();
@@ -133,8 +133,9 @@ export const Chat = () => {
                   overflow: 'auto',
                   lineHeight: 1,
                   borderRadius: token.borderRadius,
-                  backgroundColor: token.colorFillContent,
+                  backgroundColor: chatMgt.config.hiddenMask ? '#0000' : token.colorFillContent,
                   marginRight: screenSize.width >= 1200 ? 'clamp(5px,100vw - 1200px,50px)' : 0,
+                  border: chatMgt.config.hiddenMask ? '1px solid #ccc5' : undefined,
                 }}
               >
                 <MemoNavigation></MemoNavigation>
@@ -161,7 +162,9 @@ export const Chat = () => {
               <Content
                 style={{
                   borderRadius: token.borderRadius,
-                  backgroundColor: token.colorFillContent,
+                  backgroundColor: chatMgt.config.hiddenMask ? '#0000' : token.colorFillContent,
+                  border: chatMgt.config.hiddenMask ? '1px solid #ccc5' : undefined,
+                  marginLeft: chatMgt.config.hiddenMask ? -1 : 0,
                   // width: "auto",
                   display: 'flex',
                   position: 'relative',

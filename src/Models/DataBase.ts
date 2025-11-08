@@ -61,6 +61,7 @@ export interface GroupConfig {
     disabled?: boolean;
   }[];
   modelArgs?: { enable: boolean; modelName: string; serverUrl: string; value: string }[];
+  hiddenMask?: boolean;
 }
 
 // 聊天消息表

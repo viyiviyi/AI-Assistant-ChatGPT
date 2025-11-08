@@ -94,6 +94,7 @@ export const Setting = ({
     config_auto_wrap_code: boolean;
     config_buttom_tool_send: boolean;
     config_tool_to_bottom: boolean;
+    config_hiddenMask: boolean;
     setting_user_server_url: string;
     slack_claude_id: string;
     group_name: string;
@@ -136,6 +137,7 @@ export const Setting = ({
       config_tool_to_bottom: chatMgt?.config.toolBarToBottom,
       config_voice_name: chatMgt?.config.voiceName,
       config_voice_open: chatMgt?.config.voiceOpen,
+      config_hiddenMask: chatMgt?.config.hiddenMask,
       slack_claude_id: KeyValueData.instance().getSlackClaudeId()?.trim(),
       slack_user_token: KeyValueData.instance().getSlackUserToken()?.trim(),
       chat_connectors: aiServices.current?.getCurrentConnectors?.call(aiServices.current?.getCurrentConnectors).map((v) => v.id),
@@ -225,6 +227,7 @@ export const Setting = ({
     chatMgt.config.voiceOpen = values.config_voice_open;
     chatMgt.config.voiceConfigs = ttsVoc?.filter((f) => !!f.url);
     chatMgt.config.modelArgs = modelArgs?.filter((f) => f.serverUrl && f.value && isJson(f.value));
+    chatMgt.config.hiddenMask = values.config_hiddenMask;
     chatMgt.saveConfig();
 
     chatMgt.group.name = values.group_name;
@@ -655,6 +658,15 @@ export const Setting = ({
                       <Form.Item style={{ flex: '1' }} name="config_tool_to_bottom" valuePropName="checked" label="发送按钮下移">
                         <Switch />
                       </Form.Item>
+                    </div>
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_hiddenMask" valuePropName="checked" label="隐藏半透明蒙层">
+                        <Switch />
+                      </Form.Item>
+                      <span style={{ flex: 1 }}></span>
+                      {/* <Form.Item style={{ flex: '1' }} name="config_use_virtual_role_img" valuePropName="checked" label="角色卡设为背景">
+                        <Switch />
+                      </Form.Item> */}
                     </div>
                   </div>
                 ),
