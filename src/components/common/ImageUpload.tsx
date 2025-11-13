@@ -56,9 +56,10 @@ const ImageUpload = ({
   return (
     <div style={style}>
       <Upload
-        accept=".png,.jpg,.gif"
+        accept=".cccc"
         {...{
           beforeUpload(file, FileList) {
+            if (!/\.(bmp|jpg|png|tif|gif|pcx|tga|exif|fpx|svg|psd|cdr|pcd|dxf|ufo|eps|ai|raw|WMF|webp|avif|apng)$/.test(file.name.toLocaleLowerCase())) return;
             setImage(file);
             setShowModal(true);
             return false;
