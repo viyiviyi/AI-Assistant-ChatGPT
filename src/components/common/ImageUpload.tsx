@@ -56,10 +56,15 @@ const ImageUpload = ({
   return (
     <div style={style}>
       <Upload
-        accept=".cccc"
+        accept={screenSize.width > 768 ? 'image/*' : '.cccc'}
         {...{
           beforeUpload(file, FileList) {
-            if (!/\.(bmp|jpg|png|tif|gif|pcx|tga|exif|fpx|svg|psd|cdr|pcd|dxf|ufo|eps|ai|raw|WMF|webp|avif|apng)$/.test(file.name.toLocaleLowerCase())) return;
+            if (
+              !/\.(bmp|jpg|png|tif|gif|pcx|tga|exif|fpx|svg|psd|cdr|pcd|dxf|ufo|eps|ai|raw|WMF|webp|avif|apng)$/.test(
+                file.name.toLocaleLowerCase()
+              )
+            )
+              return;
             setImage(file);
             setShowModal(true);
             return false;
