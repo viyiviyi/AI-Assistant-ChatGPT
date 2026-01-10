@@ -333,7 +333,8 @@ export function InputUtil() {
         )}
         <Flex style={{ width: '100%', marginTop: 5 }}>
           <Hidden hidden={chat.config.buttomTool?.sendBtn != true}>
-            {/* <Button
+            <Button
+              style={{ flex: 1 }}
               onMouseDown={(e) => e.preventDefault()}
               icon={
                 <SkipExport>
@@ -345,7 +346,7 @@ export function InputUtil() {
               }}
             >
               发送
-            </Button> */}
+            </Button>
           </Hidden>
         </Flex>
       </div>

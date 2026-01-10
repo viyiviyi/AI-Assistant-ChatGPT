@@ -644,6 +644,20 @@ export const Setting = ({
                       </Form.Item>
                     </div>
                     <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_tool_to_bottom" valuePropName="checked" label="发送按钮下移">
+                        <Switch />
+                      </Form.Item>
+                      <Form.Item style={{ flex: '1' }} name="config_hiddenMask" valuePropName="checked" label="隐藏半透明蒙层">
+                        <Switch />
+                      </Form.Item>
+                    </div>
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_buttom_tool_send" valuePropName="checked" label="下方发送按钮">
+                        <Switch />
+                      </Form.Item>
+                      {/* <span style={{ flex: 1 }}></span> */}
+                    </div>
+                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
                       <Form.Item style={{ flex: '1' }} name="config_disable_renderType" label="渲染方式">
                         <Segmented
                           options={[
@@ -652,21 +666,7 @@ export const Setting = ({
                           ]}
                         />
                       </Form.Item>
-                      {/* <Form.Item style={{ flex: '1' }} name="config_buttom_tool_send" valuePropName="checked" label="下方发送按钮">
-                        <Switch />
-                      </Form.Item> */}
-                      <Form.Item style={{ flex: '1' }} name="config_tool_to_bottom" valuePropName="checked" label="发送按钮下移">
-                        <Switch />
-                      </Form.Item>
-                    </div>
-                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
-                      <Form.Item style={{ flex: '1' }} name="config_hiddenMask" valuePropName="checked" label="隐藏半透明蒙层">
-                        <Switch />
-                      </Form.Item>
                       <span style={{ flex: 1 }}></span>
-                      {/* <Form.Item style={{ flex: '1' }} name="config_use_virtual_role_img" valuePropName="checked" label="角色卡设为背景">
-                        <Switch />
-                      </Form.Item> */}
                     </div>
                   </div>
                 ),
