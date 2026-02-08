@@ -87,7 +87,7 @@ export class ChatGPT implements IAiService {
   }: {
     msg: Message;
     context: ChatCompletionRequestMessage[];
-    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
+    onMessage: (msg: { error: boolean; text: string | string[]; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     var token = getToken(this.serverType);
@@ -155,7 +155,7 @@ export class ChatGPT implements IAiService {
   async generateChatStream(
     context: ChatCompletionRequestMessage[],
     config: InputConfig,
-    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: () => void }) => Promise<void>
+    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: () => void }) => Promise<void>,
   ) {
     let full_response = '';
     const headers = {

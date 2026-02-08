@@ -205,15 +205,24 @@ export class ChatManagement {
     topic.titleTree = [];
     for (let idx = 0; idx < l; idx++) {
       const v = topic.messages[idx];
-      if (!/^#{1,5}\s/.test(v.text)) continue;
-      let m = v.text.match(/^#+/);
+      if (!/^#{1,5}\s/.test(ChatManagement.getMsgContent(v))) continue;
+      let m = ChatManagement.getMsgContent(v).match(/^#+/);
       topic.titleTree.push({
         lv: m![0].length as 1 | 2 | 3 | 4 | 5,
-        title: v.text.substring(0, 50).replace(/^#+/, '').trim(),
+        title: ChatManagement.getMsgContent(v).substring(0, 50).replace(/^#+/, '').trim(),
         msgId: v.id,
         index: idx,
       });
     }
+  }
+  static getMsgContent(msg: Message): string {
+    if (typeof msg.text == 'string') return msg.text;
+    else return msg.text[msg.useTextIdx || 0] || msg.text[0];
+  }
+  static getMsgReasoningContent(msg: Message): string {
+    if (typeof msg.reasoning_content == 'string') return msg.reasoning_content;
+    else if (msg.reasoning_content) return msg.reasoning_content[msg.useTextIdx || 0] || msg.reasoning_content[0];
+    return '';
   }
 
   static async toFirst(group: Group): Promise<void> {
@@ -228,7 +237,7 @@ export class ChatManagement {
   }
   getAskContext(
     topic: TopicMessage,
-    index: number = -1
+    index: number = -1,
   ): {
     allCtx: Array<CtxItem>;
     historyBefore: Array<CtxItem>;
@@ -241,7 +250,7 @@ export class ChatManagement {
       index,
       this.gptConfig.msgCount,
       this.config.enableVirtualRole,
-      this.gptConfig.msgCountMin ?? 0
+      this.gptConfig.msgCountMin ?? 0,
     );
   }
   static getAskContext(
@@ -250,7 +259,7 @@ export class ChatManagement {
     index: number = -1,
     historyLength: number,
     enableVirtualRole: boolean,
-    msgCountMin: number
+    msgCountMin: number,
   ): {
     allCtx: Array<CtxItem>;
     historyBefore: Array<CtxItem>;
@@ -272,7 +281,7 @@ export class ChatManagement {
       autoCtxBefore.push(
         ...ChatManagement.parseSetting(
           virtualRole.settings.filter((v) => !v.postposition && v.autoCtx),
-          topic.overrideVirtualRole
+          topic.overrideVirtualRole,
         ).map((v) => {
           return {
             id: '',
@@ -282,12 +291,12 @@ export class ChatManagement {
             text: v.content,
             timestamp: 0,
           };
-        })
+        }),
       );
       autoCtxBefore.push(
         ...ChatManagement.parseSetting(
           topic.virtualRole?.filter((v) => !v.postposition && v.autoCtx),
-          undefined
+          undefined,
         ).map((v) => {
           return {
             id: '',
@@ -297,12 +306,12 @@ export class ChatManagement {
             text: v.content,
             timestamp: 0,
           };
-        })
+        }),
       );
       autoCtxAfter.push(
         ...ChatManagement.parseSetting(
           topic.virtualRole?.filter((v) => v.postposition && v.autoCtx),
-          undefined
+          undefined,
         ).map((v) => {
           return {
             id: '',
@@ -312,12 +321,12 @@ export class ChatManagement {
             text: v.content,
             timestamp: 0,
           };
-        })
+        }),
       );
       autoCtxAfter.push(
         ...ChatManagement.parseSetting(
           virtualRole.settings.filter((v) => v.postposition && v.autoCtx),
-          topic.overrideVirtualRole
+          topic.overrideVirtualRole,
         ).map((v) => {
           return {
             id: '',
@@ -327,7 +336,7 @@ export class ChatManagement {
             text: v.content,
             timestamp: 0,
           };
-        })
+        }),
       );
       messages = [...autoCtxBefore, ...messages, ...autoCtxAfter];
     }
@@ -345,7 +354,7 @@ export class ChatManagement {
       .map((v) => {
         return {
           role: v.ctxRole,
-          content: v.text,
+          content: ChatManagement.getMsgContent(v),
           name: this.getNameByRole(v.ctxRole, virtualRole),
         };
       });
@@ -365,7 +374,7 @@ export class ChatManagement {
         ...ChatManagement.parseSetting(
           virtualRole.settings.filter((v) => !v.postposition && !v.autoCtx),
           topic.overrideVirtualRole,
-          ctxContent
+          ctxContent,
         ).map((v) => {
           return {
             role: v.role,
@@ -377,7 +386,7 @@ export class ChatManagement {
         ...ChatManagement.parseSetting(
           topic.virtualRole?.filter((v) => !v.postposition && !v.autoCtx),
           undefined,
-          ctxContent
+          ctxContent,
         ).map((v) => {
           return {
             role: v.role,
@@ -390,7 +399,7 @@ export class ChatManagement {
         ...ChatManagement.parseSetting(
           topic.virtualRole?.filter((v) => v.postposition && !v.autoCtx),
           undefined,
-          ctxContent
+          ctxContent,
         ).map((v) => {
           return {
             role: v.role,
@@ -402,7 +411,7 @@ export class ChatManagement {
         ...ChatManagement.parseSetting(
           virtualRole.settings.filter((v) => v.postposition && !v.autoCtx),
           topic.overrideVirtualRole,
-          ctxContent
+          ctxContent,
         ).map((v) => {
           return {
             role: v.role,
@@ -451,7 +460,7 @@ export class ChatManagement {
   static parseSetting(
     inputSettings?: VirtualRoleSetting[],
     overrideCheck?: { key: string; ctx: { key: string }[] }[],
-    ctxTxt?: string
+    ctxTxt?: string,
   ): {
     role: CtxRole;
     content: string;
@@ -712,7 +721,8 @@ export class ChatManagement {
     return chat;
   }
   async pushMessage(message: Message, insertIndex: number = -1): Promise<Message> {
-    message.text = message.text.trim();
+    if (typeof message.text == 'string') message.text = message.text.trim();
+    else message.text = message.text.map((v) => v.trim());
     // 让纯xml内容显示正常
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (!topic) return message;
@@ -926,8 +936,8 @@ export class ChatManagement {
             messages: undefined,
             messageMap: undefined,
             titleTree: undefined,
-          })
-        )
+          }),
+        ),
       );
       v.messages.forEach((m) => {
         Object.assign(m, {

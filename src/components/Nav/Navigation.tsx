@@ -1,4 +1,4 @@
-import { ChatContext } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { activityScroll, scrollToBotton } from "@/core/utils/utils";
 import style from "@/styles/index.module.css";
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
@@ -96,7 +96,7 @@ const Navigation = () => {
                       }}
                     >
                       <Typography.Text ellipsis={true}>
-                        {m.text || origin}
+                        {ChatManagement.getMsgContent(m) || origin}
                       </Typography.Text>
                     </p>
                   ) : (

@@ -24,7 +24,7 @@ export class ChatGLM_GPT implements IAiService {
     context: ChatCompletionRequestMessage[];
     onMessage: (msg: {
       error: boolean;
-      text: string;
+      text: string | string[];
       end: boolean;
       stop?: (() => void) | undefined;
     }) => Promise<void>;

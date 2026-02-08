@@ -1,5 +1,6 @@
 import { aiServiceType } from '@/core/AiService/ServiceProvider';
 import { CtxRole } from './CtxRole';
+import { ExecutorConfig } from './Executor';
 import { VirtualRoleSetting } from './VirtualRoleSetting';
 
 // 用户表
@@ -23,6 +24,7 @@ export interface Group {
   background?: string;
   createTime?: number;
   updateTime?: number;
+  executorConfig?: ExecutorConfig;
 }
 
 // 分组表
@@ -71,8 +73,9 @@ export interface Message {
   groupId: string; // 分组ID
   topicId: string; // 话题ID
   ctxRole: CtxRole;
-  reasoning_content?: string;
-  text: string; // 消息内容
+  reasoning_content?: string | string[];
+  text: string | string[]; // 消息内容
+  useTextIdx?: number;
   createTime?: number;
   timestamp: number; // 时间戳
   updateTime?: number;

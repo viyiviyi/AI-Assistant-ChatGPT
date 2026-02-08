@@ -1,6 +1,6 @@
 import { TextEditor } from '@/components/common/TextEditor';
 import { useService } from '@/core/AiService/ServiceProvider';
-import { ChatContext } from '@/core/ChatManagement';
+import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { loadingMessages, useScreenSize } from '@/core/hooks/hooks';
 import { useSpeak } from '@/core/hooks/tts';
 import { createThrottleAndDebounce } from '@/core/utils/utils';
@@ -20,7 +20,7 @@ import {
   SaveOutlined,
   SoundTwoTone,
   VerticalAlignBottomOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from '@ant-design/icons';
 import { Avatar, Button, Checkbox, Divider, Flex, message, Popconfirm, Segmented, theme, Tooltip, Typography } from 'antd';
 import copy from 'copy-to-clipboard';
@@ -58,16 +58,16 @@ const MessageItem = ({
   const { aiService } = useService();
   const { token } = theme.useToken();
   const [edit, setEdit] = useState(false);
-  const [messageText, setMessage] = useState({ text: msg.text });
+  const [messageText, setMessage] = useState({ text: ChatManagement.getMsgContent(msg) });
   // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
-  const [successLines, setSuccessLines] = useState(msg.text);
+  const [successLines, setSuccessLines] = useState(ChatManagement.getMsgContent(msg));
   const [isPause, setIsPause] = useState(false);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
   const speak = useSpeak();
   const [renderType, setRenderType] = useState(
-    topic?.overrideSettings?.renderType === undefined ? chat.config.renderType : topic.overrideSettings.renderType
+    topic?.overrideSettings?.renderType === undefined ? chat.config.renderType : topic.overrideSettings.renderType,
   );
   useEffect(() => {
     setRenderType(topic?.overrideSettings?.renderType === undefined ? chat.config.renderType : topic.overrideSettings.renderType);
@@ -75,8 +75,9 @@ const MessageItem = ({
 
   const saveMsg = useCallback(
     async (msg: Message, messageText: string, ctxRole: CtxRole) => {
-      const isReloadNav = /^#{1,5}\s/.test(msg.text) || /^#{1,5}\s/.test(messageText);
-      msg.text = messageText;
+      const isReloadNav = /^#{1,5}\s/.test(ChatManagement.getMsgContent(msg)) || /^#{1,5}\s/.test(messageText);
+      if (typeof msg.text == 'string') msg.text = [msg.text];
+      msg.text[msg.useTextIdx || 0] = messageText;
       msg.ctxRole = ctxRole;
       return await chat.pushMessage(msg).then((res) => {
         if (isReloadNav) {
@@ -84,11 +85,11 @@ const MessageItem = ({
           if (topic) reloadNav(topic);
         }
         setEdit(false);
-        setMessage({ text: res.text });
-        setSuccessLines(msg.text);
+        setMessage({ text: ChatManagement.getMsgContent(msg) });
+        setSuccessLines(ChatManagement.getMsgContent(msg));
       });
     },
-    [chat, reloadNav]
+    [chat, reloadNav],
   );
   // 下方工具条
   const utilsEle = useMemo(
@@ -107,7 +108,7 @@ const MessageItem = ({
           <Hidden hidden={renderType != 'document'}>
             <span>
               {'字数：'}
-              {msg.text.length}
+              {ChatManagement.getMsgContent(msg).length}
             </span>
           </Hidden>
           <Hidden hidden={renderType == 'document'}>
@@ -136,7 +137,7 @@ const MessageItem = ({
             <EditOutlined
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
-                if (!edit) setMessage({ text: msg.text });
+                if (!edit) setMessage({ text: ChatManagement.getMsgContent(msg) });
                 setEdit(!edit);
               }}
             />
@@ -148,7 +149,7 @@ const MessageItem = ({
             <CopyOutlined
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
-                if (copy(msg.text.toString())) {
+                if (copy(ChatManagement.getMsgContent(msg).toString())) {
                   messageApi.success('已复制');
                 }
               }}
@@ -177,7 +178,7 @@ const MessageItem = ({
               onConfirm={() => {
                 if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                 delete loadingMsgs[msg.id];
-                setMessage({ text: msg.text });
+                setMessage({ text: ChatManagement.getMsgContent(msg) });
                 speak('', true);
               }}
             >
@@ -202,7 +203,7 @@ const MessageItem = ({
         )}
       </>
     ),
-    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText, msg, onDel, rBak, renderType, saveMsg, speak]
+    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText, msg, onDel, rBak, renderType, saveMsg, speak],
   );
 
   // 下方悬浮按钮
@@ -319,23 +320,23 @@ const MessageItem = ({
         </Button.Group>
       </div>
     ),
-    [ctxRole, messageText, msg, onSned, saveMsg]
+    [ctxRole, messageText, msg, onSned, saveMsg],
   );
 
   // 正在输出的文本内容
   const RuningText = () => {
-    const [runLines, setRunLines] = useState(msg.text.slice(successLines.length));
+    const [runLines, setRunLines] = useState(ChatManagement.getMsgContent(msg).slice(successLines.length));
     useEffect(() => {
       renderMessage[msg.id] = createThrottleAndDebounce((reloadStatus = false) => {
         // 如果正在运行，则分成两部分显示
         if (loadingMessages[msg.id]) {
           if (!isPause) {
-            let runText = msg.text.slice(successLines.length);
+            let runText = ChatManagement.getMsgContent(msg).slice(successLines.length);
             let enterIdx = (runText.match(/\n/g) || []).length > 2 ? runText.lastIndexOf('\n') : -1;
             let successText = successLines;
             if (enterIdx >= 0) {
               // 最新的内容里面有换行符
-              successText = msg.text.slice(0, successLines.length + enterIdx + 1);
+              successText = ChatManagement.getMsgContent(msg).slice(0, successLines.length + enterIdx + 1);
               runText = runText.substring(enterIdx + 1);
               speak(successText.substring(successLines.length).replace(/\*/g, ''), successLines.length == 0);
             }
@@ -345,16 +346,16 @@ const MessageItem = ({
             }
           }
           if (msg.reasoning_content) {
-            setMessage({ text: msg.text });
+            setMessage({ text: ChatManagement.getMsgContent(msg) });
           }
         } else {
-          if (!reloadStatus) setMessage({ text: msg.text });
-          speak(msg.text.substring(successLines.length).replace(/\*/g, ''));
-          setSuccessLines(msg.text);
+          if (!reloadStatus) setMessage({ text: ChatManagement.getMsgContent(msg) });
+          speak(ChatManagement.getMsgContent(msg).substring(successLines.length).replace(/\*/g, ''));
+          setSuccessLines(ChatManagement.getMsgContent(msg));
           setRunLines('');
         }
         if (reloadStatus) {
-          setMessage({ text: msg.text });
+          setMessage({ text: ChatManagement.getMsgContent(msg) });
         }
       }, 40);
       return () => {
@@ -411,8 +412,8 @@ const MessageItem = ({
                 }
               }}
               onFocus={(e) => {
-                e.target.selectionStart = msg.text.length;
-                e.target.selectionEnd = msg.text.length;
+                e.target.selectionStart = ChatManagement.getMsgContent(msg).length;
+                e.target.selectionEnd = ChatManagement.getMsgContent(msg).length;
               }}
               autoFocus={true}
             />
@@ -422,7 +423,7 @@ const MessageItem = ({
             <MarkdownView
               markdown={chat.config.disableStrikethrough ? successLines.replaceAll('~', '～') : successLines}
               doubleClick={() => {
-                setMessage({ text: msg.text });
+                setMessage({ text: ChatManagement.getMsgContent(msg) });
                 setEdit(true);
               }}
               // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
@@ -474,7 +475,7 @@ const MessageItem = ({
                       onConfirm={() => {
                         if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                         delete loadingMsgs[msg.id];
-                        setMessage({ text: msg.text });
+                        setMessage({ text: ChatManagement.getMsgContent(msg) });
                       }}
                     >
                       <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
@@ -637,7 +638,7 @@ const MessageItem = ({
                 <SkipExport>
                   <SoundTwoTone
                     onClick={() => {
-                      speak(msg.text, true);
+                      speak(ChatManagement.getMsgContent(msg), true);
                     }}
                   />
                 </SkipExport>
@@ -653,7 +654,7 @@ const MessageItem = ({
                   onConfirm={() => {
                     if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                     delete loadingMsgs[msg.id];
-                    setMessage({ text: msg.text });
+                    setMessage({ text: ChatManagement.getMsgContent(msg) });
                   }}
                 >
                   <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>

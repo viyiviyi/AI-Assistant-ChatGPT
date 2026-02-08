@@ -370,13 +370,13 @@ export function downloadTopic(
     let virtualRole = chat.virtualRole;
     if (v.ctxRole === 'system' && role.system) {
       if (useRole) str += '系统：\n';
-      str += v.text.replace(/^#+\s*\n/, '') + '\n\n';
+      str += ChatManagement.getMsgContent(v).replace(/^#+\s*\n/, '') + '\n\n';
     } else if (v.ctxRole === 'assistant' && role.assistant) {
       if (useRole) str += virtualRole.name + ':\n';
-      str += v.text.replace(/^#+\s*\n/, '') + '\n\n';
+      str += ChatManagement.getMsgContent(v).replace(/^#+\s*\n/, '') + '\n\n';
     } else if (v.ctxRole === 'user' && role.system) {
       if (useRole) str += chat.user.name + ':\n';
-      str += v.text.replace(/^#+\s*\n/, '') + '\n\n';
+      str += ChatManagement.getMsgContent(v).replace(/^#+\s*\n/, '') + '\n\n';
     }
   });
   downloadText(str, topic.name + '.md');

@@ -105,7 +105,7 @@ export class CohereAi implements IAiService {
     context: ChatCompletionRequestMessage[];
     onMessage: (msg: {
       error: boolean;
-      text: string;
+      text: string | string[];
       end: boolean;
       searchQueries?: string[];
       searchResults?: {

@@ -60,7 +60,7 @@ export function MessageList({
     return createThrottleAndDebounce(() => {
       let charCount = 0;
       topic.messages.forEach((m, idx) => {
-        charCount += m.text.length;
+        charCount +=  ChatManagement.getMsgContent(m).length;
       });
       let ctxCountChar = 0;
       chat.getAskContext(topic, topic.messages.length).allCtx.forEach((v) => {
@@ -121,7 +121,7 @@ export function MessageList({
    */
   const rBak = useCallback(
     (v: Message) => {
-      setInput((m) => (m ? m + '\n' : m) + (!m ? (v.ctxRole == 'system' ? '/::' : v.ctxRole == 'assistant' ? '/' : '') : '') + v.text);
+      setInput((m) => (m ? m + '\n' : m) + (!m ? (v.ctxRole == 'system' ? '/::' : v.ctxRole == 'assistant' ? '/' : '') : '') + ChatManagement.getMsgContent(v));
       inputRef.current?.focus();
     },
     [inputRef, setInput]

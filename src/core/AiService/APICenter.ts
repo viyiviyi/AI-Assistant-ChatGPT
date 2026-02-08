@@ -10,11 +10,13 @@ export class APICenter implements IAiService {
   client: OpenAIApi;
   baseUrl: string;
   tokens: ServiceTokens;
-  constructor(baseUrl: string, tokens: ServiceTokens, config?: GptConfig) {
+  tools?: any[]; // 关键：传入可调用函数
+  constructor(baseUrl: string, tokens: ServiceTokens, config?: GptConfig, tools?: any[]) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
     this.client = new OpenAIApi();
     this.severConfig = config?.aiServerConfig || { model: '' };
+    this.tools = tools;
   }
   severConfig: { model: string } = { model: '' };
   setConfig?: ((config: any) => void) | undefined = (config: any) => {
@@ -89,8 +91,8 @@ export class APICenter implements IAiService {
     context: ChatCompletionRequestMessage[];
     onMessage: (msg: {
       error: boolean;
-      text: string;
-      reasoning_content?: string;
+      text: string | string[];
+      reasoning_content?: string | string[];
       end: boolean;
       stop?: (() => void) | undefined;
       usage?: {
@@ -109,20 +111,20 @@ export class APICenter implements IAiService {
       return await onMessage({
         error: true,
         end: true,
-        text: '请勿发送空内容。',
+        text: ['请勿发送空内容。'],
       });
     }
     if (!token.current) {
       return await onMessage({
         error: true,
         end: true,
-        text: '请填写API key后继续使用。',
+        text: ['请填写API key后继续使用。'],
       });
     }
     await onMessage({
       end: false,
       error: false,
-      text: '',
+      text: [''],
     });
     this.tokens.openai!.apiKey = token.current;
     nextToken(token);
@@ -133,8 +135,8 @@ export class APICenter implements IAiService {
     config: InputConfig,
     onMessage: (msg: {
       error: boolean;
-      text: string;
-      reasoning_content: string;
+      text: string[];
+      reasoning_content: string[];
       end: boolean;
       stop?: () => void;
       usage?: {
@@ -145,10 +147,10 @@ export class APICenter implements IAiService {
         prompt_cache_hit_tokens: number;
         prompt_cache_miss_tokens: number;
       };
-    }) => Promise<void>
+    }) => Promise<void>,
   ) {
-    let full_response = '';
-    let reasoning_content = '';
+    let full_response: string[] = [];
+    let reasoning_content: string[] = [];
     const headers = {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
       'Content-Type': 'application/json',
@@ -166,6 +168,8 @@ export class APICenter implements IAiService {
       n: config.n,
       frequency_penalty: config.frequency_penalty || undefined,
       presence_penalty: config.presence_penalty || undefined,
+      tools: this.tools && this.tools.length ? this.tools : undefined,
+      tool_choice: this.tools && this.tools.length ? 'auto' : undefined,
     };
     if (config.modelArgs?.length) {
       config.modelArgs
@@ -196,16 +200,17 @@ export class APICenter implements IAiService {
         await onMessage({
           error: true,
           end: true,
-          text:
+          text: [
             '\n\n 请求发生错误。\n\n' +
-            'token: ... ' +
-            headers.Authorization.slice(Math.max(-headers.Authorization.length, -10)) +
-            '\n\n' +
-            response.status +
-            ' ' +
-            response.statusText +
-            '\n\n' +
-            (await response.text()),
+              'token: ... ' +
+              headers.Authorization.slice(Math.max(-headers.Authorization.length, -10)) +
+              '\n\n' +
+              response.status +
+              ' ' +
+              response.statusText +
+              '\n\n' +
+              (await response.text()),
+          ],
           reasoning_content,
         });
         return;
@@ -250,21 +255,24 @@ export class APICenter implements IAiService {
               } catch (error) {
                 continue;
               }
-              const choices = data.choices;
-              if (!choices) {
+              const choices: any[] = data.choices;
+              if (!choices || choices.length == 0) {
                 continue;
               }
-              const delta = choices[0]?.delta;
-              if (!delta) {
-                continue;
-              }
-              if ('content' in delta && delta.content && delta.content != 'null') {
-                const content = delta.content;
-                full_response += content;
-              }
-              if ('reasoning_content' in delta && delta.reasoning_content && delta.reasoning_content != 'null') {
-                const content = delta.reasoning_content;
-                reasoning_content += content;
+              for (let i = 0; i < choices.length; i++) {
+                const choice = choices[i];
+                const delta = choice.delta;
+                if (!delta) {
+                  continue;
+                }
+                if ('content' in delta && delta.content && delta.content != 'null') {
+                  const content = delta.content;
+                  full_response[i] = (full_response[i] || '') + content;
+                }
+                if ('reasoning_content' in delta && delta.reasoning_content && delta.reasoning_content != 'null') {
+                  const content = delta.reasoning_content;
+                  reasoning_content[i] = (reasoning_content[i] || '') + content;
+                }
               }
               await onMessage({
                 error: false,
@@ -288,14 +296,14 @@ export class APICenter implements IAiService {
         onMessage({
           error: true,
           end: true,
-          text: full_response + '\n\n 请求已终止。',
+          text: full_response.map((v) => v + '\n\n 请求已终止。'),
           reasoning_content,
         });
       } else {
         onMessage({
           error: true,
           end: true,
-          text: full_response + '\n\n 请求发生错误。\n\n' + error,
+          text: full_response.map((v) => v + '\n\n 请求发生错误。\n\n' + error),
           reasoning_content,
         });
       }

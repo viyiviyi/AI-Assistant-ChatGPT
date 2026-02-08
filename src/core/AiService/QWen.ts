@@ -26,7 +26,7 @@ export class QWen implements IAiService {
     context: ChatCompletionRequestMessage[];
     onMessage: (msg: {
       error: boolean;
-      text: string;
+      text: string | string[];
       end: boolean;
       stop?: (() => void) | undefined;
     }) => Promise<void>;

@@ -1,4 +1,5 @@
 import { MarkdownView } from '@/components/common/MarkdownView';
+import { ChatManagement } from '@/core/ChatManagement';
 import { Message } from '@/Models/DataBase';
 import { Button, Flex, theme } from 'antd';
 import copy from 'copy-to-clipboard';
@@ -27,7 +28,7 @@ export const ReasoningContent = ({ msg }: { msg: Message }) => {
         >
           <Flex style={{ marginBottom: 6 }} gap={16}>
             <a style={{ fontWeight: 400, fontSize: '1.3em', color: token.colorTextLabel }}>
-              {msg.text ? <>已</> : <></>}深度思考{msg.text ? <></> : <span>中......</span>}
+              {msg.text.length ? <>已</> : <></>}深度思考{msg.text.length ? <></> : <span>中......</span>}
             </a>
             <span style={{ flex: 1 }}></span>
             <Button
@@ -45,7 +46,7 @@ export const ReasoningContent = ({ msg }: { msg: Message }) => {
               size="small"
               style={{ padding: 0, marginLeft: 4 }}
               onClick={() => {
-                copy(msg.reasoning_content || '');
+                copy(ChatManagement.getMsgReasoningContent(msg) || '');
               }}
             >
               复制
@@ -53,7 +54,7 @@ export const ReasoningContent = ({ msg }: { msg: Message }) => {
           </Flex>
           {expanded && (
             <MarkdownView
-              markdown={msg.reasoning_content}
+              markdown={ChatManagement.getMsgReasoningContent(msg)}
               // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
             />
           )}

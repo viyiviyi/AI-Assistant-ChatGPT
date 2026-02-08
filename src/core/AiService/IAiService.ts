@@ -23,8 +23,8 @@ export interface IAiService {
     context: Array<ChatCompletionRequestMessage>;
     onMessage: (msg: {
       error: boolean;
-      text: string;
-      reasoning_content?: string;
+      text: string|string[];
+      reasoning_content?: string[];
       end: boolean;
       cloud_topic_id?: string;
       cloud_send_id?: string;

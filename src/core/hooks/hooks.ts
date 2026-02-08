@@ -4,6 +4,7 @@ import { onReader, onReaderAfter, onReaderFirst, onSendBefore } from '@/middlewa
 import { CtxRole } from '@/Models/CtxRole';
 import { Message } from '@/Models/DataBase';
 import { App } from 'antd';
+import { ChatCompletionRequestMessage } from 'openai';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { TopicMessage } from '../../Models/Topic';
 import { aiServices } from '../AiService/ServiceProvider';
@@ -87,7 +88,7 @@ export function useReloadIndex(chat: ChatManagement) {
       chat.pushMessage(topic.messages[idx + 1]);
       reloadIndex(topic, idx + 1);
     },
-    [chat]
+    [chat],
   );
   return {
     reloadIndex,
@@ -121,7 +122,7 @@ export function useSendMessage(chat: ChatManagement) {
         id: getUuid(),
         groupId: chat.group.id,
         ctxRole: 'assistant',
-        text: '',
+        text: [],
         timestamp: time,
         topicId: topic.id,
       };
@@ -171,19 +172,19 @@ export function useSendMessage(chat: ChatManagement) {
         }
       }, 100);
       let { allCtx: ctx, history } = currentChat.current!.getAskContext(topic, idx + 1);
-      ctx = onSendBefore(chat.getChat(), { allCtx: ctx, history }) as {
-        role: CtxRole;
-        content: string;
-        name: string;
-      }[];
+      const context = onSendBefore(chat.getChat(), { allCtx: ctx, history }) as ChatCompletionRequestMessage[];
       await aiService.sendMessage({
         msg: topic.messages[idx],
-        context: ctx,
+        context: context,
         async onMessage(res) {
+          if (typeof res.text == 'string') res.text = [res.text];
           let hasChange = false;
           if (currentChat.current) {
-            const content = onReader(currentChat.current.getChat(), res.text || '');
-            hasChange = !result.text.endsWith(content) || !result.reasoning_content?.endsWith(res.reasoning_content ?? '');
+            const content = res.text.map((v) => onReader(currentChat.current!.getChat(), v || ''));
+            hasChange =
+              content.filter((f, i) => !result.text[i].endsWith(f)).length > 0 ||
+              !res.reasoning_content ||
+              res.reasoning_content.filter((f, i) => !result.reasoning_content || !result.reasoning_content[i].endsWith(f)).length > 0;
             result.text = content;
             result.reasoning_content = res.reasoning_content || '';
             result.usage = res.usage || result.usage;
@@ -241,7 +242,7 @@ export function useSendMessage(chat: ChatManagement) {
         },
       });
     },
-    [chat, loadingMsgs, message, reloadIndex]
+    [chat, loadingMsgs, message, reloadIndex],
   );
   return { sendMessage };
 }
@@ -295,7 +296,7 @@ export function usePushMessage(chat: ChatManagement) {
       await sendMessage(idx, topic);
       pushCallback(msg);
     },
-    [chat, reloadIndex, sendMessage, getHistory]
+    [chat, reloadIndex, sendMessage, getHistory],
   );
   return { pushMessage };
 }
@@ -344,7 +345,7 @@ export function useGetHistory(chat: ChatManagement) {
         reloadTopic(topic.id);
       }
     },
-    [chat]
+    [chat],
   );
   return { getHistory };
 }

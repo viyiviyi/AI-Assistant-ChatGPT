@@ -1,4 +1,4 @@
-import { ChatContext } from "@/core/ChatManagement";
+import { ChatContext, ChatManagement } from "@/core/ChatManagement";
 import { activityScroll, scrollToBotton } from "@/core/utils/utils";
 import { TitleTree, TopicMessage } from "@/Models/Topic";
 import style from "@/styles/index.module.css";
@@ -26,15 +26,15 @@ const SearchWrap = () => {
       }
       let ms: TitleTree[] = [];
       t.messages.forEach((m, idx) => {
-        let m_s_idx = m.text.indexOf(fileText);
+        let m_s_idx = ChatManagement.getMsgContent(m).indexOf(fileText);
         if (m_s_idx != -1) {
           ms.push({
             lv: 1,
             msgId: m.id,
             index: idx,
-            title: m.text.substring(
+            title:  ChatManagement.getMsgContent(m).substring(
               Math.max(0, m_s_idx - 10),
-              Math.min(m.text.length, m_s_idx + 50)
+              Math.min(ChatManagement.getMsgContent(m).length, m_s_idx + 50)
             ),
           });
         }

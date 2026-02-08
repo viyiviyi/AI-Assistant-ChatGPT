@@ -129,6 +129,23 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
       claude_id: chat.config.cloudChannelId || '',
     },
   };
+  let tools: any[] = [
+    {
+      type: 'function',
+      function: {
+        name: 'get_weather',
+        description: '根据城市名查询实时天气，仅当用户问天气时调用',
+        parameters: {
+          type: 'object',
+          properties: {
+            city: { type: 'string', description: '城市名称，如北京、上海' },
+            is_today: { type: 'boolean', description: '是否查询今日天气，默认True' },
+          },
+          required: ['city'],
+        },
+      },
+    },
+  ];
   let baseUrl: BaseUrlScheam = env == 'prod' ? ProxyBaseUrl : DevBaseUrl;
   switch (botType) {
     case 'Slack':
@@ -138,7 +155,7 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
         openai: { apiKey: '123' },
       });
     case 'ChatGPT':
-      return new APICenter(chat.config.baseUrl || baseUrl.chatGPT, tokens);
+      return new APICenter(chat.config.baseUrl || baseUrl.chatGPT, tokens, chat.gptConfig, tools);
     case 'Kamiya':
       return new Kamiya(baseUrl.Kamiya, tokens);
     case 'ChatGLM':

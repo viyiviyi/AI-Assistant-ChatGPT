@@ -1,8 +1,9 @@
-import { Message } from "@/Models/DataBase";
-import axios from "axios";
-import { ChatCompletionRequestMessage } from "openai";
-import { IAiService, InputConfig } from "./IAiService";
-import { aiServiceType, ServiceTokens } from "./ServiceProvider";
+import { Message } from '@/Models/DataBase';
+import axios from 'axios';
+import { ChatCompletionRequestMessage } from 'openai';
+import { ChatManagement } from '../ChatManagement';
+import { IAiService, InputConfig } from './IAiService';
+import { aiServiceType, ServiceTokens } from './ServiceProvider';
 
 interface ChatRequest {
   prompt: string;
@@ -23,7 +24,7 @@ export class ChatGLM_API implements IAiService {
   history = undefined;
   baseUrl: string;
   tokens: ServiceTokens;
-  serverType: aiServiceType = "Oauther";
+  serverType: aiServiceType = 'Oauther';
   constructor(baseUrl: string, tokens: ServiceTokens) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
@@ -40,26 +41,21 @@ export class ChatGLM_API implements IAiService {
   }: {
     msg: Message;
     context: ChatCompletionRequestMessage[];
-    onMessage: (msg: {
-      error: boolean;
-      text: string;
-      end: boolean;
-      stop?: (() => void) | undefined;
-    }) => Promise<void>;
+    onMessage: (msg: { error: boolean; text: string | string[]; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     if (context.length == 0) {
-      return onMessage({ error: true, end: true, text: "请勿发送空内容。" });
+      return onMessage({ error: true, end: true, text: '请勿发送空内容。' });
     }
     if (!this.baseUrl) {
       return onMessage({
         error: true,
         end: true,
-        text: "请使用ChatGLM官方项目 [https://github.com/THUDM/ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B) 部署后把部署的地址填入 设置 > 网络配置 > 自定义服务地址",
+        text: '请使用ChatGLM官方项目 [https://github.com/THUDM/ChatGLM2-6B](https://github.com/THUDM/ChatGLM2-6B) 部署后把部署的地址填入 设置 > 网络配置 > 自定义服务地址',
       });
     }
     await this.chat(this.baseUrl, {
-      prompt: msg.text,
+      prompt: ChatManagement.getMsgContent(msg),
       history: this.convert_to_history(context),
       max_length: (config.max_tokens || 2048) * 10,
       top_p: config.top_p,
@@ -72,31 +68,31 @@ export class ChatGLM_API implements IAiService {
         return onMessage({
           error: true,
           end: true,
-          text: "出错了\n" + err,
+          text: '出错了\n' + err,
         });
       });
   }
   convert_to_history(data: ChatCompletionRequestMessage[]): [string, string][] {
     const messages: [string, string][] = [];
-    let user = "";
-    let assistant = "";
+    let user = '';
+    let assistant = '';
     for (const item of data) {
-      if (item.role === "user" || item.role === "system") {
-        user = item.content||'';
-      } else if (item.role === "assistant") {
-        assistant = item.content||'';
+      if (item.role === 'user' || item.role === 'system') {
+        user = item.content || '';
+      } else if (item.role === 'assistant') {
+        assistant = item.content || '';
       }
       if (assistant) {
         messages.push([user, assistant]);
-        user = "";
-        assistant = "";
+        user = '';
+        assistant = '';
       }
     }
     return messages;
   }
   async chat(baseUrl: string, request: ChatRequest): Promise<ChatResponse> {
     const { prompt, history, max_length, top_p, temperature } = request;
-    const url = "/";
+    const url = '/';
     const json_post = JSON.stringify({
       prompt,
       history,
