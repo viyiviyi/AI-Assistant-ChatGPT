@@ -1,1 +1,1 @@
-export type CtxRole = "assistant" | "system" | "user" | "function";
+export type CtxRole = 'assistant' | 'system' | 'user' | 'tool';

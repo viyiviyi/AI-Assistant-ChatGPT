@@ -13,6 +13,7 @@ import { CohereAi } from './cohere.ai';
 import { IAiService } from './IAiService';
 import { QWen } from './QWen';
 import { SlackClaude } from './SlackClaude';
+import { executorService } from '../executor/ExecutorService';
 export interface ServiceTokens {
   openai?: { apiKey: string };
   slack?: {
@@ -129,23 +130,17 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
       claude_id: chat.config.cloudChannelId || '',
     },
   };
-  let tools: any[] = [
-    {
-      type: 'function',
-      function: {
-        name: 'get_weather',
-        description: '根据城市名查询实时天气，仅当用户问天气时调用',
-        parameters: {
-          type: 'object',
-          properties: {
-            city: { type: 'string', description: '城市名称，如北京、上海' },
-            is_today: { type: 'boolean', description: '是否查询今日天气，默认True' },
-          },
-          required: ['city'],
-        },
-      },
-    },
-  ];
+  let tools: any[] = [];
+  if (chat.config.executorConfig && chat.config.executorConfig.selectedExecutorId && chat.config.executorConfig.enable) {
+    executorService.getExecutorById(chat.config.executorConfig.selectedExecutorId).then((executor) => {
+      if (executor != null) {
+        tools.length = 0;
+        executor.tools.forEach((tool) => {
+          if (chat.config.executorConfig?.selectedTools.includes(tool.function.name)) tools.push(tool);
+        });
+      }
+    });
+  }
   let baseUrl: BaseUrlScheam = env == 'prod' ? ProxyBaseUrl : DevBaseUrl;
   switch (botType) {
     case 'Slack':
@@ -167,11 +162,11 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
     case 'CohereAi':
       return new CohereAi(chat.config.userServerUrl || baseUrl.cohereAi, tokens, chat.gptConfig);
     case 'APICenter':
-      return new APICenter(KeyValueData.instance().getApiTransferUrl() || '', tokens);
+      return new APICenter(KeyValueData.instance().getApiTransferUrl() || '', tokens, chat.gptConfig, tools);
     case 'None':
       return undefined;
     default:
-      const s = new APICenter(botType, tokens, chat.gptConfig);
+      const s = new APICenter(botType, tokens, chat.gptConfig, tools);
       s.serverType = botType;
       return s;
   }

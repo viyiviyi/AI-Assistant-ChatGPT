@@ -1,7 +1,8 @@
 import { getToken, nextToken } from '@/core/tokens';
+import { CtxItem } from '@/Models/CtxItem';
 import { GptConfig, Message } from '@/Models/DataBase';
 import axios from 'axios';
-import { ChatCompletionRequestMessage, ListModelsResponse, OpenAIApi } from 'openai';
+import { ListModelsResponse, OpenAIApi } from 'openai';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
 export class APICenter implements IAiService {
@@ -10,7 +11,7 @@ export class APICenter implements IAiService {
   client: OpenAIApi;
   baseUrl: string;
   tokens: ServiceTokens;
-  tools?: any[]; // 关键：传入可调用函数
+  tools?: any[]; 
   constructor(baseUrl: string, tokens: ServiceTokens, config?: GptConfig, tools?: any[]) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
@@ -88,11 +89,12 @@ export class APICenter implements IAiService {
     config,
   }: {
     msg: Message;
-    context: ChatCompletionRequestMessage[];
+    context: CtxItem[];
     onMessage: (msg: {
       error: boolean;
       text: string | string[];
       reasoning_content?: string | string[];
+      tool_calls?: any[];
       end: boolean;
       stop?: (() => void) | undefined;
       usage?: {
@@ -131,12 +133,13 @@ export class APICenter implements IAiService {
     await this.generateChatStream(context, config, onMessage);
   }
   async generateChatStream(
-    context: ChatCompletionRequestMessage[],
+    context: CtxItem[],
     config: InputConfig,
     onMessage: (msg: {
       error: boolean;
       text: string[];
       reasoning_content: string[];
+      tool_calls?: any[];
       end: boolean;
       stop?: () => void;
       usage?: {
@@ -151,6 +154,7 @@ export class APICenter implements IAiService {
   ) {
     let full_response: string[] = [];
     let reasoning_content: string[] = [];
+    let tool_calls: any[] = [];
     const headers = {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
       'Content-Type': 'application/json',
@@ -171,6 +175,7 @@ export class APICenter implements IAiService {
       tools: this.tools && this.tools.length ? this.tools : undefined,
       tool_choice: this.tools && this.tools.length ? 'auto' : undefined,
     };
+    console.log(data);
     if (config.modelArgs?.length) {
       config.modelArgs
         .filter((f) => f.enable && f.serverUrl == this.baseUrl)
@@ -230,6 +235,7 @@ export class APICenter implements IAiService {
               end: true,
               text: full_response,
               reasoning_content,
+              tool_calls,
             });
             break;
           }
@@ -240,12 +246,13 @@ export class APICenter implements IAiService {
               continue;
             }
             if (line.trim() === 'data: [DONE]') {
-              await onMessage({
-                error: false,
-                end: true,
-                text: full_response,
-                reasoning_content,
-              });
+              // await onMessage({
+              //   error: false,
+              //   end: true,
+              //   text: full_response,
+              //   reasoning_content,
+              //   tool_calls,
+              // });
               break;
             }
             try {
@@ -272,6 +279,20 @@ export class APICenter implements IAiService {
                 if ('reasoning_content' in delta && delta.reasoning_content && delta.reasoning_content != 'null') {
                   const content = delta.reasoning_content;
                   reasoning_content[i] = (reasoning_content[i] || '') + content;
+                }
+                if ('tool_calls' in delta && delta.tool_calls && delta.tool_calls != 'null') {
+                  const content = delta.tool_calls;
+                  if (tool_calls[i]) {
+                    if (Array.isArray(content)) {
+                      content.forEach((func, idx) => {
+                        if (tool_calls[i][idx]) {
+                          tool_calls[i][idx].function.arguments += content[idx].function.arguments;
+                        }
+                      });
+                    }
+                  } else {
+                    tool_calls[i] = content;
+                  }
                 }
               }
               await onMessage({

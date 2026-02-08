@@ -1,9 +1,9 @@
 import { InputConfig } from "@/core/AiService/IAiService";
 import { ChatContext } from "@/core/ChatManagement";
 import { Extensions } from "@/extensions/Extensions";
+import { CtxItem } from "@/Models/CtxItem";
 import { CtxRole } from "@/Models/CtxRole";
 import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage } from "openai";
 import { useContext } from "react";
 import { Interceptor } from "../models/Interceptor";
 export type InterceptorExecData = {
@@ -34,12 +34,12 @@ export async function useSendBeforeInterceptor() {
   function onSendBeforeInterceptor(
     input: {
       msg: Message;
-      context: Array<ChatCompletionRequestMessage>;
+      context: Array<CtxItem>;
       config: InputConfig;
     },
     next: (output: {
       msg: Message;
-      context: Array<ChatCompletionRequestMessage>;
+      context: Array<CtxItem>;
       config: InputConfig;
     }) => void
   ) {

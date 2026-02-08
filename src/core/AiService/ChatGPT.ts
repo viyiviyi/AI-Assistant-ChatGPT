@@ -1,6 +1,7 @@
 import { getToken, nextToken } from '@/core/tokens';
+import { CtxItem } from '@/Models/CtxItem';
 import { Message } from '@/Models/DataBase';
-import { ChatCompletionRequestMessage, OpenAIApi } from 'openai';
+import { OpenAIApi } from 'openai';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
 export class ChatGPT implements IAiService {
@@ -86,7 +87,7 @@ export class ChatGPT implements IAiService {
     config,
   }: {
     msg: Message;
-    context: ChatCompletionRequestMessage[];
+    context: CtxItem[];
     onMessage: (msg: { error: boolean; text: string | string[]; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
@@ -153,7 +154,7 @@ export class ChatGPT implements IAiService {
     }
   }
   async generateChatStream(
-    context: ChatCompletionRequestMessage[],
+    context: CtxItem[],
     config: InputConfig,
     onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: () => void }) => Promise<void>,
   ) {

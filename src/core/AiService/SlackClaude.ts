@@ -1,7 +1,7 @@
+import { CtxItem } from '@/Models/CtxItem';
 import { Message } from '@/Models/DataBase';
 import { WebAPICallResult } from '@slack/web-api';
 import axios, { AxiosInstance } from 'axios';
-import { ChatCompletionRequestMessage } from 'openai';
 import { ChatManagement } from '../ChatManagement';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
@@ -33,7 +33,7 @@ export class SlackClaude implements IAiService {
     config,
   }: {
     msg: Message;
-    context: ChatCompletionRequestMessage[];
+    context: CtxItem[];
     onMessage: (msg: {
       error: boolean;
       text: string | string[];

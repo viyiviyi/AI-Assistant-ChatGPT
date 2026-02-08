@@ -1,6 +1,6 @@
 import { aiServiceType } from '@/core/AiService/ServiceProvider';
 import { CtxRole } from './CtxRole';
-import { ExecutorConfig } from './Executor';
+import { ExecutorConfig, ToolCalls } from './Executor';
 import { VirtualRoleSetting } from './VirtualRoleSetting';
 
 // 用户表
@@ -24,7 +24,6 @@ export interface Group {
   background?: string;
   createTime?: number;
   updateTime?: number;
-  executorConfig?: ExecutorConfig;
 }
 
 // 分组表
@@ -64,6 +63,7 @@ export interface GroupConfig {
   }[];
   modelArgs?: { enable: boolean; modelName: string; serverUrl: string; value: string }[];
   hiddenMask?: boolean;
+  executorConfig?: ExecutorConfig;
 }
 
 // 聊天消息表
@@ -103,6 +103,8 @@ export interface Message {
     prompt_cache_hit_tokens: number;
     prompt_cache_miss_tokens: number;
   };
+  tool_calls?: ToolCalls[][];
+  tool_call_result?: { id: string; name: string; desc: string; content: string }[][];
 }
 
 export interface Topic {

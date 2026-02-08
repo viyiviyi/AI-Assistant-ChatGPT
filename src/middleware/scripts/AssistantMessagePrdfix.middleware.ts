@@ -1,31 +1,27 @@
-import { IChat } from "@/core/ChatManagement";
-import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { ChatCompletionRequestMessage } from "openai";
-import { IMiddleware } from "../IMiddleware";
-import { NameMacrosPrompt } from "./NameMacrosPrompt.middleware";
+import { IChat } from '@/core/ChatManagement';
+import { CtxItem } from '@/Models/CtxItem';
+import { VirtualRoleSetting } from '@/Models/VirtualRoleSetting';
+import { IMiddleware } from '../IMiddleware';
+import { NameMacrosPrompt } from './NameMacrosPrompt.middleware';
 
 export class AssistantMessagePrdfix implements IMiddleware {
-  readonly key = "middleware.AssistantMessagePrdfix";
-  readonly name: string = "助理消息前缀";
+  readonly key = 'middleware.AssistantMessagePrdfix';
+  readonly name: string = '助理消息前缀';
   readonly tags = [];
-  readonly description: string =
-    "助理名增加在AI的消息前面。";
+  readonly description: string = '助理名增加在AI的消息前面。';
   setting: VirtualRoleSetting[] | undefined;
-  prompt = "{{char}}：{{message}}";
+  prompt = '{{char}}：{{message}}';
   readonly onSendBefore = (
     chat: IChat,
     context: {
-      allCtx: Array<ChatCompletionRequestMessage>;
-      history: Array<ChatCompletionRequestMessage>;
-    }
-  ): ChatCompletionRequestMessage[] => {
-    let reg = new RegExp(`(^)(${chat.virtualRole.name})(:|：)\s*`, "g");
+      allCtx: Array<CtxItem>;
+      history: Array<CtxItem>;
+    },
+  ): CtxItem[] => {
+    let reg = new RegExp(`(^)(${chat.virtualRole.name})(:|：)\s*`, 'g');
     context.allCtx.forEach((v) => {
-      if (v.role == "assistant" && !reg.test(v.content || "")) {
-        v.content = NameMacrosPrompt.format(chat, this.prompt)?.replaceAll(
-          "{{message}}",
-          v.content || ""
-        );
+      if (v.role == 'assistant' && !reg.test(v.content || '')) {
+        v.content = NameMacrosPrompt.format(chat, this.prompt)?.replaceAll('{{message}}', v.content || '') || '';
       }
     });
     return context.allCtx;

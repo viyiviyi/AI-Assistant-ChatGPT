@@ -1,7 +1,7 @@
 import { getToken, nextToken } from "@/core/tokens";
+import { CtxItem } from "@/Models/CtxItem";
 import { GptConfig, Message } from "@/Models/DataBase";
 import axios from "axios";
-import { ChatCompletionRequestMessage } from "openai";
 import { CtxRole } from "./../../Models/CtxRole";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
@@ -102,7 +102,7 @@ export class CohereAi implements IAiService {
     config,
   }: {
     msg: Message;
-    context: ChatCompletionRequestMessage[];
+    context: CtxItem[];
     onMessage: (msg: {
       error: boolean;
       text: string | string[];
@@ -147,7 +147,7 @@ export class CohereAi implements IAiService {
     return "USER";
   }
   async generateChatStream(
-    context: ChatCompletionRequestMessage[],
+    context: CtxItem[],
     config: InputConfig,
     onMessage: (msg: {
       error: boolean;

@@ -29,6 +29,7 @@ import React, { CSSProperties, useCallback, useContext, useEffect, useMemo, useS
 import { Hidden } from '../../common/Hidden';
 import { MarkdownView } from '../../common/MarkdownView';
 import { SkipExport } from '../../common/SkipExport';
+import { FunctionCallInfo } from './FunctionCallInfo';
 import { Images } from './Images';
 import { ReasoningContent } from './ReasoningContent';
 
@@ -60,7 +61,7 @@ const MessageItem = ({
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState({ text: ChatManagement.getMsgContent(msg) });
   // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
-  const [successLines, setSuccessLines] = useState(ChatManagement.getMsgContent(msg));
+  const [successLines, setSuccessLines] = useState(ChatManagement.getMsgContent(msg) || 'loading...');
   const [isPause, setIsPause] = useState(false);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
@@ -85,12 +86,19 @@ const MessageItem = ({
           if (topic) reloadNav(topic);
         }
         setEdit(false);
-        setMessage({ text: ChatManagement.getMsgContent(msg) });
-        setSuccessLines(ChatManagement.getMsgContent(msg));
+        setMessage({ text: ChatManagement.getMsgContent(msg) || 'loading...' });
       });
     },
     [chat, reloadNav],
   );
+  useEffect(() => {
+    renderMessage[msg.id] = createThrottleAndDebounce((a) => {
+      setSuccessLines(ChatManagement.getMsgContent(msg) || 'loading...');
+    }, 40);
+    return () => {
+      delete renderMessage[msg.id];
+    };
+  }, [msg, renderMessage]);
   // 下方工具条
   const utilsEle = useMemo(
     () => (
@@ -323,78 +331,6 @@ const MessageItem = ({
     [ctxRole, messageText, msg, onSned, saveMsg],
   );
 
-  // 正在输出的文本内容
-  const RuningText = () => {
-    const [runLines, setRunLines] = useState(ChatManagement.getMsgContent(msg).slice(successLines.length));
-    useEffect(() => {
-      renderMessage[msg.id] = createThrottleAndDebounce((reloadStatus = false) => {
-        // 如果正在运行，则分成两部分显示
-        if (loadingMessages[msg.id]) {
-          if (!isPause) {
-            let runText = ChatManagement.getMsgContent(msg).slice(successLines.length);
-            let enterIdx = (runText.match(/\n/g) || []).length > 2 ? runText.lastIndexOf('\n') : -1;
-            let successText = successLines;
-            if (enterIdx >= 0) {
-              // 最新的内容里面有换行符
-              successText = ChatManagement.getMsgContent(msg).slice(0, successLines.length + enterIdx + 1);
-              runText = runText.substring(enterIdx + 1);
-              speak(successText.substring(successLines.length).replace(/\*/g, ''), successLines.length == 0);
-            }
-            setRunLines(runText);
-            if (successText != successLines) {
-              setSuccessLines(successText);
-            }
-          }
-          if (msg.reasoning_content) {
-            setMessage({ text: ChatManagement.getMsgContent(msg) });
-          }
-        } else {
-          if (!reloadStatus) setMessage({ text: ChatManagement.getMsgContent(msg) });
-          speak(ChatManagement.getMsgContent(msg).substring(successLines.length).replace(/\*/g, ''));
-          setSuccessLines(ChatManagement.getMsgContent(msg));
-          setRunLines('');
-        }
-        if (reloadStatus) {
-          setMessage({ text: ChatManagement.getMsgContent(msg) });
-        }
-      }, 40);
-      return () => {
-        delete renderMessage[msg.id];
-      };
-    }, []);
-    if (!loadingMessages[msg.id]) return <></>;
-    return (
-      <div
-        style={{
-          minHeight: '3.5em',
-          position: 'relative',
-          whiteSpace: 'pre-line',
-        }}
-      >
-        {runLines || 'loading...'}
-        <div
-          style={{
-            width: '100%',
-            textAlign: 'center',
-            fontSize: 24,
-            position: 'absolute',
-            bottom: 0,
-            opacity: 0.7,
-          }}
-          onClick={() => {
-            setIsPause((v) => !v);
-          }}
-        >
-          {isPause ? (
-            <ForwardOutlined style={{ color: token.colorPrimaryActive }} />
-          ) : (
-            <PauseOutlined style={{ color: token.colorPrimary }}></PauseOutlined>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   // 内容显示
   const Content = useMemo(() => {
     return (
@@ -432,7 +368,7 @@ const MessageItem = ({
         )}
       </div>
     );
-  }, [edit, EditUtil, renderType, messageText, chat, successLines, msg, saveMsg, ctxRole]);
+  }, [edit, EditUtil, renderType, messageText, chat.config.disableStrikethrough, successLines, saveMsg, msg, ctxRole]);
 
   if (renderType == 'document') {
     return (
@@ -542,7 +478,7 @@ const MessageItem = ({
                   </div>
                 </Tooltip>
                 {Content}
-                <RuningText></RuningText>
+                {/* <RuningText></RuningText> */}
                 <Images msg={msg} topic={topic} />
                 <div
                   style={{
@@ -576,7 +512,6 @@ const MessageItem = ({
       >
         {contextHolder}
         {Content}
-        <RuningText></RuningText>
         <Images msg={msg} topic={topic} />
         <div
           style={{
@@ -645,7 +580,7 @@ const MessageItem = ({
               </span>
             </Hidden>
             <span style={{ marginLeft: '30px' }}></span>
-            <Hidden hidden={loadingMsgs[msg.id] == undefined}>
+            <Hidden hidden={!loadingMsgs[msg.id]}>
               <SkipExport>
                 <Popconfirm
                   placement="topRight"
@@ -718,7 +653,7 @@ const MessageItem = ({
             className={chat.config.autoWrapCode ? 'auto-wrap' : undefined}
           >
             {Content}
-            <RuningText></RuningText>
+            {/* <RuningText></RuningText> */}
             <Images msg={msg} topic={topic} />
             <div
               style={{
@@ -731,6 +666,7 @@ const MessageItem = ({
               {utilsEle}
             </div>
           </div>
+          <FunctionCallInfo msg={msg} />
         </div>
       </div>
       <Hidden hidden={!!loadingMsgs[msg.id]}>{Extend}</Hidden>

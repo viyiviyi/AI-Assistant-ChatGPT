@@ -1,6 +1,6 @@
 import { IChat } from "@/core/ChatManagement";
+import { CtxItem } from "@/Models/CtxItem";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "./../IMiddleware";
 import { CreataMessageForUser } from "./CreataMessageForUser";
 export class ContinueLastMsg implements IMiddleware {
@@ -15,13 +15,13 @@ export class ContinueLastMsg implements IMiddleware {
   onSendBefore = (
     chat: IChat,
     context: {
-      allCtx: Array<ChatCompletionRequestMessage>;
-      history: Array<ChatCompletionRequestMessage>;
+      allCtx: Array<CtxItem>;
+      history: Array<CtxItem>;
     }
-  ): ChatCompletionRequestMessage[] | undefined => {
+  ): CtxItem[] | undefined => {
     if (chat.config.middleware?.includes(CreataMessageForUser.key))
       return context.allCtx;
-    let lastCtx: ChatCompletionRequestMessage | undefined = context.history
+    let lastCtx: CtxItem | undefined = context.history
       .length
       ? context.history.slice(-1)[0]
       : undefined;

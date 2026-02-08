@@ -4,10 +4,10 @@ import { onReader, onReaderAfter, onReaderFirst, onSendBefore } from '@/middlewa
 import { CtxRole } from '@/Models/CtxRole';
 import { Message } from '@/Models/DataBase';
 import { App } from 'antd';
-import { ChatCompletionRequestMessage } from 'openai';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { TopicMessage } from '../../Models/Topic';
 import { aiServices } from '../AiService/ServiceProvider';
+import { executorService } from '../executor/ExecutorService';
 import { createThrottleAndDebounce, getUuid, scrollToBotton } from '../utils/utils';
 
 const retrieved = { current: false };
@@ -82,9 +82,9 @@ export function useReloadIndex(chat: ChatManagement) {
   const reloadIndex = useCallback(
     (topic: TopicMessage, idx: number) => {
       if (idx + 1 >= topic.messages.length) return;
-      if (idx < 0) return;
+      if (idx < 0) idx = 0;
       if (topic.messages[idx].timestamp < topic.messages[idx + 1].timestamp) return;
-      topic.messages[idx + 1].timestamp = topic.messages[idx].timestamp + 0.001;
+      topic.messages[idx + 1].timestamp = topic.messages[idx].timestamp + 1;
       chat.pushMessage(topic.messages[idx + 1]);
       reloadIndex(topic, idx + 1);
     },
@@ -109,7 +109,7 @@ export function useSendMessage(chat: ChatManagement) {
      * @param topic 话题
      * @returns
      */
-    async (idx: number, topic: TopicMessage) => {
+    async (idx: number, topic: TopicMessage, skipCheckRuning = false) => {
       const aiService = aiServices.current;
       if (!aiService) return;
       if (idx >= topic.messages.length) {
@@ -117,7 +117,7 @@ export function useSendMessage(chat: ChatManagement) {
       }
       let time = Date.now();
       if (idx < 0 && topic.messages.length) time = topic.messages[0].timestamp - 1;
-      if (idx >= 0 && idx < topic.messages.length) time = topic.messages[idx].timestamp + 0.001;
+      if (idx >= 0 && idx < topic.messages.length) time = topic.messages[idx].timestamp + 1;
       let result: Message = {
         id: getUuid(),
         groupId: chat.group.id,
@@ -128,6 +128,7 @@ export function useSendMessage(chat: ChatManagement) {
       };
       result = onReaderFirst(chat.getChat(), topic.messages[idx], result);
       if (
+        !skipCheckRuning &&
         topic.messages
           .slice(Math.max(0, chat.gptConfig.msgCount == 0 ? 0 : idx - chat.gptConfig.msgCount) + 1, idx + 1)
           .findIndex((f) => loadingMessages[f.id]) != -1
@@ -145,7 +146,6 @@ export function useSendMessage(chat: ChatManagement) {
           delete loadingMsgs[result.id];
           delete loadingMessages[result.id];
           currentChat.current = undefined;
-          reloadIndex(topic, idx + 1);
         },
       };
       chat.pushMessage(result, idx + 1).then((r) => {
@@ -160,19 +160,19 @@ export function useSendMessage(chat: ChatManagement) {
           if (isEnd) {
             onReaderAfter(currentChat.current.getChat(), [result]).forEach((res, idx) => {
               currentChat.current &&
-                currentChat.current.pushMessage(res, idx + 1 + idx).then((r) => {
+                currentChat.current.pushMessage(res).then((r) => {
                   cb();
                 });
             });
           } else {
-            currentChat.current.pushMessage(result, idx + 1).then((r) => {
+            currentChat.current.pushMessage(result).then((r) => {
               cb();
             });
           }
         }
       }, 100);
       let { allCtx: ctx, history } = currentChat.current!.getAskContext(topic, idx + 1);
-      const context = onSendBefore(chat.getChat(), { allCtx: ctx, history }) as ChatCompletionRequestMessage[];
+      const context = onSendBefore(chat.getChat(), { allCtx: ctx, history });
       await aiService.sendMessage({
         msg: topic.messages[idx],
         context: context,
@@ -182,9 +182,9 @@ export function useSendMessage(chat: ChatManagement) {
           if (currentChat.current) {
             const content = res.text.map((v) => onReader(currentChat.current!.getChat(), v || ''));
             hasChange =
-              content.filter((f, i) => !result.text[i].endsWith(f)).length > 0 ||
+              content.filter((f, i) => !result.text[i]?.endsWith(f)).length > 0 ||
               !res.reasoning_content ||
-              res.reasoning_content.filter((f, i) => !result.reasoning_content || !result.reasoning_content[i].endsWith(f)).length > 0;
+              res.reasoning_content.filter((f, i) => !result.reasoning_content || !result.reasoning_content[i]?.endsWith(f)).length > 0;
             result.text = content;
             result.reasoning_content = res.reasoning_content || '';
             result.usage = res.usage || result.usage;
@@ -212,20 +212,53 @@ export function useSendMessage(chat: ChatManagement) {
               delete loadingMsgs[result.id];
               delete loadingMessages[result.id];
               currentChat.current = undefined;
-              reloadIndex(topic, idx);
+              save(true, () => {
+                reloadTopic(topic.id, result.id, true);
+              });
             },
           };
-          save(res.end, () => {
-            if (res.end) {
-              hasChange = true;
+          save(res.end || !loadingMsgs[result.id], () => {
+            if (res.end || !loadingMsgs[result.id]) {
               delete loadingMsgs[result.id];
               delete loadingMessages[result.id];
+              hasChange = true;
               currentChat.current = undefined;
-              reloadIndex(topic, idx);
             }
             if (hasChange) {
               reloadTopic(topic.id, result.id, res.end);
               scrollToBotton(currentPullMessage.id);
+            }
+            if (res.tool_calls && res.tool_calls.length && res.end) {
+              result.tool_calls = res.tool_calls;
+              result.tool_call_result = result.tool_calls.map((calls) =>
+                calls.map((v) => ({
+                  id: v.id,
+                  name: v.function.name,
+                  desc: aiService.tools?.find((f) => f.function?.name == v.function.name)?.description,
+                  content: '',
+                })),
+              );
+              res.tool_calls.forEach((call, callIdx) => {
+                if (call && Array.isArray(call)) {
+                  const execTask = call.map((v) => {
+                    return executorService.exec(v);
+                  });
+                  if ((result.useTextIdx || 0) == callIdx) {
+                    Promise.all(execTask).then((execResList) => {
+                      // 回传结果
+                      setTimeout(() => {
+                        sendMessage(idx + 1, topic, true);
+                      }, 100);
+                      execResList.forEach((r, i) => {
+                        result.tool_call_result![callIdx][i].content = r;
+                      });
+                      chat.pushMessage(result).then(() => {
+                        reloadTopic(topic.id, result.id, true);
+                      });
+                    });
+                  }
+                }
+              });
             }
           });
         },

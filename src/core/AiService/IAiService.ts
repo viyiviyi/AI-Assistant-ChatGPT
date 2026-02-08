@@ -1,6 +1,8 @@
 import { aiServiceType } from '@/core/AiService/ServiceProvider';
+import { CtxItem } from '@/Models/CtxItem';
 import { CtxRole } from '@/Models/CtxRole';
-import { ChatCompletionRequestMessage, CreateChatCompletionRequest } from 'openai';
+import { ToolCalls } from '@/Models/Executor';
+import { CreateChatCompletionRequest } from 'openai';
 import { GroupConfig, Message } from '../../Models/DataBase';
 import { ServiceTokens } from './ServiceProvider';
 export interface IAiService {
@@ -8,6 +10,7 @@ export interface IAiService {
   tokens: ServiceTokens;
   serverType: aiServiceType;
   severConfig: any;
+  tools?: any[];
   /**
    * 是否支持自定义上下文 如果不支持，表示上下文存在服务器
    */
@@ -20,11 +23,12 @@ export interface IAiService {
   getConnectors?: () => Promise<{ name: string; id: string }[]>;
   sendMessage(input: {
     msg: Message;
-    context: Array<ChatCompletionRequestMessage>;
+    context: Array<CtxItem>;
     onMessage: (msg: {
       error: boolean;
-      text: string|string[];
+      text: string | string[];
       reasoning_content?: string[];
+      tool_calls?: ToolCalls[][];
       end: boolean;
       cloud_topic_id?: string;
       cloud_send_id?: string;

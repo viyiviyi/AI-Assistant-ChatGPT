@@ -1,6 +1,6 @@
 import { nextToken } from "@/core/tokens";
+import { CtxItem } from "@/Models/CtxItem";
 import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage } from "openai";
 import { getToken } from "../tokens";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
@@ -23,7 +23,7 @@ export class QWen implements IAiService {
     config,
   }: {
     msg: Message;
-    context: ChatCompletionRequestMessage[];
+    context: CtxItem[];
     onMessage: (msg: {
       error: boolean;
       text: string | string[];
@@ -53,10 +53,10 @@ export class QWen implements IAiService {
     await this.generateChatStream(context, config, currentToken, onMessage);
   }
   context2history(
-    context: ChatCompletionRequestMessage[]
+    context: CtxItem[]
   ): Array<{ user: string; bot: string }> {
     let history: Array<{ user: string; bot: string }> = [];
-    let lastItem: ChatCompletionRequestMessage | undefined = undefined;
+    let lastItem: CtxItem | undefined = undefined;
     context.forEach((v) => {
       if (v.role == "assistant") {
         history.push({ bot: v.content || "", user: lastItem?.content || "" });
@@ -72,7 +72,7 @@ export class QWen implements IAiService {
     return history;
   }
   async generateChatStream(
-    context: ChatCompletionRequestMessage[],
+    context: CtxItem[],
     config: InputConfig,
     apiKey: string,
     onMessage: (msg: {

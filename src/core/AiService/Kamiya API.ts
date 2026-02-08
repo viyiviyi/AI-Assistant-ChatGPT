@@ -1,5 +1,5 @@
+import { CtxItem } from "@/Models/CtxItem";
 import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage } from "openai";
 import { getToken, nextToken } from "../tokens";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
@@ -40,7 +40,7 @@ export class Kamiya implements IAiService {
     config,
   }: {
     msg: Message;
-    context: ChatCompletionRequestMessage[];
+    context: CtxItem[];
     onMessage: (msg: {
       error: boolean;
       text: string | string[];
@@ -75,7 +75,7 @@ export class Kamiya implements IAiService {
   }
 
   async generateChatStream(
-    context: ChatCompletionRequestMessage[],
+    context: CtxItem[],
     config: InputConfig,
     onMessage: (msg: {
       error: boolean;

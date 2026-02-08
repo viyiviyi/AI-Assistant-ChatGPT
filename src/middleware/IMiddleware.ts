@@ -1,5 +1,5 @@
+import { CtxItem } from "@/Models/CtxItem";
 import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { ChatCompletionRequestMessage } from "openai";
 import { IChat } from "./../core/ChatManagement";
 import { Message } from "./../Models/DataBase";
 export interface IMiddleware {
@@ -12,10 +12,10 @@ export interface IMiddleware {
     | ((
         chat: IChat,
         context: {
-          allCtx: Array<ChatCompletionRequestMessage>;
-          history: Array<ChatCompletionRequestMessage>;
+          allCtx: Array<CtxItem>;
+          history: Array<CtxItem>;
         }
-      ) => undefined | Array<ChatCompletionRequestMessage>)
+      ) => undefined | Array<CtxItem>)
     | undefined;
 
   readonly onReaderFirst?:

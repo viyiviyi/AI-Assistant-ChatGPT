@@ -10,7 +10,7 @@ export const ReasoningContent = ({ msg }: { msg: Message }) => {
   const [expanded, setExpanded] = useState(false);
   return (
     <>
-      {msg.reasoning_content && (
+      {!!msg.reasoning_content?.length && (
         <div
           style={{
             flex: 1,

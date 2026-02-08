@@ -1,5 +1,5 @@
+import { CtxItem } from "@/Models/CtxItem";
 import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage } from "openai";
 import { IAiService, InputConfig } from "./IAiService";
 import { aiServiceType, ServiceTokens } from "./ServiceProvider";
 export class ChatGLM_GPT implements IAiService {
@@ -21,7 +21,7 @@ export class ChatGLM_GPT implements IAiService {
     config,
   }: {
     msg: Message;
-    context: ChatCompletionRequestMessage[];
+    context: CtxItem[];
     onMessage: (msg: {
       error: boolean;
       text: string | string[];
@@ -52,7 +52,7 @@ export class ChatGLM_GPT implements IAiService {
     await this.generateChatStream(context, config, onMessage);
   }
   async generateChatStream(
-    context: ChatCompletionRequestMessage[],
+    context: CtxItem[],
     config: InputConfig,
     onMessage: (msg: {
       error: boolean;

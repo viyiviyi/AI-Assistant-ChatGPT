@@ -12,6 +12,7 @@ import { SkipExport } from './common/SkipExport';
 import { MemoSearchWrap } from './Search/Search';
 import { Setting } from './Setting/Setting';
 import { VirtualRoleConfig } from './VirtualRoleConfig/VirtualRoleConfig';
+import { ExecutorManagerIcon } from './ExecutorManager/ExecutorManagerIcon';
 
 export const ChatHeader = () => {
   const { chatMgt: chat, activityTopic } = useContext(ChatContext);
@@ -79,6 +80,9 @@ export const ChatHeader = () => {
           <MemoSearchWrap />
         </div>
       </Drawer>
+      {/* <SkipExport>
+        <ExecutorManagerIcon />
+      </SkipExport> */}
       <SkipExport>
         <UserAddOutlined style={{ padding: '5px 10px' }} onClick={() => setRoleConfigShow(!roleConfigShow)} />
       </SkipExport>

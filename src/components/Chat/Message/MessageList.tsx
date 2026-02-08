@@ -60,7 +60,7 @@ export function MessageList({
     return createThrottleAndDebounce(() => {
       let charCount = 0;
       topic.messages.forEach((m, idx) => {
-        charCount +=  ChatManagement.getMsgContent(m).length;
+        charCount += ChatManagement.getMsgContent(m).length;
       });
       let ctxCountChar = 0;
       chat.getAskContext(topic, topic.messages.length).allCtx.forEach((v) => {
@@ -78,7 +78,7 @@ export function MessageList({
       pageConf.pageNumber,
       pageConf.pageSize,
       pageConf.repect,
-      pageConf.repectInEnd
+      pageConf.repectInEnd,
     );
     msgIdIdxMap.clear();
     topic.messages.forEach((m, idx) => {
@@ -121,10 +121,15 @@ export function MessageList({
    */
   const rBak = useCallback(
     (v: Message) => {
-      setInput((m) => (m ? m + '\n' : m) + (!m ? (v.ctxRole == 'system' ? '/::' : v.ctxRole == 'assistant' ? '/' : '') : '') + ChatManagement.getMsgContent(v));
+      setInput(
+        (m) =>
+          (m ? m + '\n' : m) +
+          (!m ? (v.ctxRole == 'system' ? '/::' : v.ctxRole == 'assistant' ? '/' : '') : '') +
+          ChatManagement.getMsgContent(v),
+      );
       inputRef.current?.focus();
     },
-    [inputRef, setInput]
+    [inputRef, setInput],
   );
   /**
    * 删除消息
@@ -139,7 +144,7 @@ export function MessageList({
         reloadNav(topic);
       });
     },
-    [chat, msgIdIdxMap, renderMessage, pageConf, reloadNav, topic]
+    [chat, msgIdIdxMap, renderMessage, pageConf, reloadNav, topic],
   );
   useEffect(() => {
     /**
@@ -151,6 +156,7 @@ export function MessageList({
         return c;
       });
     }, 50);
+    console.log('列表刷新');
     topicRender[topic.id] = (messageId?: string | number, reloadStatus: boolean = false) => {
       resetCharCount();
       if (typeof messageId == 'number') {
@@ -248,7 +254,7 @@ export function MessageList({
                   Promise.all(
                     topic.messages.slice(0, idx! + 1).map((m) => {
                       return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
-                    })
+                    }),
                   ).then(() => setActivityTopic(t));
                 });
               }}
@@ -279,7 +285,7 @@ export function MessageList({
           topic.messages.length,
           topic.messages.length >= (chat.gptConfig.msgCountMin || 0)
             ? topic.overrideSettings?.msgCount || chat.gptConfig.msgCount
-            : chat.gptConfig.msgCountMin || 0
+            : chat.gptConfig.msgCountMin || 0,
         )}
         /{topic.messages.length}
       </span>

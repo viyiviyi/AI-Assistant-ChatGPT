@@ -1,6 +1,6 @@
 import { IChat } from "@/core/ChatManagement";
+import { CtxItem } from "@/Models/CtxItem";
 import { Message } from "@/Models/DataBase";
-import { ChatCompletionRequestMessage } from "openai";
 import { IMiddleware } from "./IMiddleware";
 import { AssistantMessagePrdfix } from "./scripts/AssistantMessagePrdfix.middleware";
 import { ContinueLastMsg } from "./scripts/ContinueLastMsg";
@@ -33,10 +33,10 @@ const middlewareArr: Array<new () => IMiddleware> = [
 export function onSendBefore(
   chat: IChat,
   context: {
-    allCtx: Array<ChatCompletionRequestMessage>;
-    history: Array<ChatCompletionRequestMessage>;
+    allCtx: Array<CtxItem>;
+    history: Array<CtxItem>;
   }
-): Array<ChatCompletionRequestMessage> {
+): Array<CtxItem> {
   let m = middlewareList.filter((f) => chat.config.middleware?.includes(f.key));
   if (!m) return context.allCtx;
   let r = context;
