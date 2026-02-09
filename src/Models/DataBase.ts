@@ -104,7 +104,7 @@ export interface Message {
     prompt_cache_miss_tokens: number;
   };
   tool_calls?: ToolCalls[][];
-  tool_call_result?: { id: string; name: string; desc: string; content: string }[][];
+  tool_call_result?: { id: string; name: string; desc?: string; content: string }[][];
 }
 
 export interface Topic {

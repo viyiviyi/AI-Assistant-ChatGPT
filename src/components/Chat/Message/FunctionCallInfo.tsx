@@ -1,12 +1,15 @@
 import { MarkdownView } from '@/components/common/MarkdownView';
 import { Message } from '@/Models/DataBase';
+import { CodeOutlined } from '@ant-design/icons';
 import { Button, Flex, theme } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
   const { token } = theme.useToken();
   const [expanded, setExpanded] = useState(false);
-  const [functionResults] = useState(msg.tool_call_result && msg.tool_call_result[msg.useTextIdx || 0]);
+  const tool_calls = msg.tool_calls && msg.tool_calls[msg.useTextIdx || 0];
+  const functionResults = msg.tool_call_result && msg.tool_call_result[msg.useTextIdx || 0];
+
   if (!functionResults || functionResults.length == 0) return <></>;
   return (
     <div
@@ -16,9 +19,7 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
         flexDirection: 'column',
         boxSizing: 'border-box',
         boxShadow: token.boxShadowTertiary,
-        lineHeight: 1.4,
-        marginLeft: -10,
-        marginTop: -10,
+        marginBottom: 5,
       }}
     >
       {functionResults?.map((item) => {
@@ -26,15 +27,15 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
           <div
             key={msg.id + '_' + item.id}
             style={{
-              paddingLeft: 10,
-              paddingRight: 10,
+              padding: 5,
               marginTop: 5,
-              borderRadius: token.borderRadiusLG,
+              borderRadius: 5,
               border: '1px solid ' + token.colorFillAlter,
-              backgroundColor: token.colorInfoBg,
+              backgroundColor: '#282c34',
             }}
           >
             <Flex gap={16}>
+              <CodeOutlined />
               <a style={{ fontWeight: 400, fontSize: '1.3em', color: token.colorTextLabel }}>{item.desc || item.name}</a>
               <span style={{ flex: 1 }}></span>
               <Button
@@ -49,7 +50,12 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
                 {expanded ? '隐藏' : '查看'}
               </Button>
             </Flex>
-            {expanded && <MarkdownView markdown={'```\n' + item.content + '\n```'} />}
+            {expanded && (
+              <>
+                <MarkdownView markdown={'```\n请求:\n' + tool_calls?.find((f) => f.id == item.id)?.function.arguments + '\n```'} />
+                <MarkdownView markdown={'```\n响应:\n' + item.content + '\n```'} />
+              </>
+            )}
           </div>
         );
       })}

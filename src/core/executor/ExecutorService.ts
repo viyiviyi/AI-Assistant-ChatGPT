@@ -1,6 +1,9 @@
 import { Executor } from '@/Models/Executor';
 import { getDbInstance as getInstance } from '../db/IndexDbInstance';
 import { message } from 'antd';
+import { getUuid } from '../utils/utils';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { ChatContext } from '../ChatManagement';
 
 export type Tool = {
   type: 'function';
@@ -51,26 +54,21 @@ class ExecutorService {
   }
 
   // 添加执行器
-  async addExecutor(url: string, description: string): Promise<Executor> {
+  async addExecutor(executor: Executor): Promise<Executor> {
     try {
       // 验证URL格式
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      if (!executor.url.startsWith('http://') && !executor.url.startsWith('https://')) {
         throw new Error('无效的URL格式，必须以http://或https://开头');
       }
 
-      // 尝试从执行器获取tools列表
-      const tools = await this.fetchToolsFromExecutor(url);
-
       const now = Date.now();
-      const executor: Executor = {
-        id: `executor_${now}`,
-        url,
-        description,
-        tools,
+      Object.assign(executor, {
+        id: getUuid(),
+        tools: executor.tools || [],
         createdAt: now,
         updatedAt: now,
         enabled: true,
-      };
+      });
 
       await getInstance().insert<Executor>({
         tableName: 'Executor',
@@ -142,18 +140,38 @@ class ExecutorService {
     }
   }
 
-  // 从执行器获取tools列表
-  async fetchToolsFromExecutor(url: string): Promise<Tool[]> {
+  async fetchHealth(executor: Executor): Promise<boolean> {
     try {
-      // 尝试调用执行器的API获取tools列表
-      // 这里假设执行器提供了一个获取tools的端点
-      // 实际实现需要根据执行器的API设计进行调整
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+      const response = await fetch(`${executor.url}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // 从执行器获取tools列表
+  async fetchToolsFromExecutor(executor: Executor): Promise<Tool[]> {
+    try {
+      // 调用执行器的API获取tools列表
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
 
-      const response = await fetch(`${url}/tools`, {
+      const response = await fetch(`${executor.url}/tools`, {
         method: 'GET',
         headers: {
+          Authorization: 'Bearer ' + executor.key,
           'Content-Type': 'application/json',
         },
         signal: controller.signal,
@@ -166,7 +184,7 @@ class ExecutorService {
       }
 
       const data = await response.json();
-      return data.tools || [];
+      return data || [];
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
       // 如果获取失败，返回空数组
@@ -183,7 +201,7 @@ class ExecutorService {
         return null;
       }
 
-      const tools = await this.fetchToolsFromExecutor(executor.url);
+      const tools = await this.fetchToolsFromExecutor(executor);
       executor.tools = tools;
       executor.updatedAt = Date.now();
 
@@ -195,10 +213,62 @@ class ExecutorService {
       return null;
     }
   }
-  async exec(data: any): Promise<string> {
-    console.log(data);
-    return '892374293847562398746';
+
+  // 执行函数
+  async exec(executor: Executor, call_data: any): Promise<string> {
+    try {
+      // 调用执行器的API获取tools列表
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30 * 1000); // 30秒超时
+      const response = await fetch(`${executor.url}/execute`, {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + executor.key,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(call_data),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        return '调用出错';
+      }
+
+      const data = await response.json();
+      return JSON.stringify(data, null, 2) || '无返回内容';
+    } catch (error: any) {
+      console.error('Failed to fetch tools from executor:', error);
+      // 如果获取失败，返回空数组
+      return '调用出错 err:' + error['message'];
+    }
   }
 }
 
 export const executorService = new ExecutorService();
+
+export const useExecutor = () => {
+  const { chatMgt } = useContext(ChatContext);
+  const curtExecutor = useRef<Executor | null>();
+  useEffect(() => {
+    if (chatMgt.config.executorConfig?.selectedExecutorId)
+      executorService.getExecutorById(chatMgt.config.executorConfig?.selectedExecutorId).then((res) => {
+        curtExecutor.current = res;
+      });
+  }, [chatMgt.config.executorConfig?.selectedExecutorId]);
+  const execFunctionCall = useCallback(async (call_data: any) => {
+    if (curtExecutor.current) {
+      return await executorService.exec(curtExecutor.current, call_data);
+    } else {
+      return '执行器不存在';
+    }
+  }, []);
+  return {
+    curtExecutor,
+    setExecutor: (executor: Executor | undefined) => {
+      curtExecutor.current = executor;
+    },
+    execFunctionCall,
+  };
+};

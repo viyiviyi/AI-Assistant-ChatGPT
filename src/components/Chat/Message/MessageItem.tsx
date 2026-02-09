@@ -61,7 +61,7 @@ const MessageItem = ({
   const [edit, setEdit] = useState(false);
   const [messageText, setMessage] = useState({ text: ChatManagement.getMsgContent(msg) });
   // const inputRef = useMemo(()=>createRef<TextAreaRef>(),[]);
-  const [successLines, setSuccessLines] = useState(ChatManagement.getMsgContent(msg) || 'loading...');
+  const [successLines, setSuccessLines] = useState(ChatManagement.getMsgContent(msg));
   const [isPause, setIsPause] = useState(false);
   const [ctxRole, setCtxRole] = useState(msg.ctxRole);
   const screenSize = useScreenSize();
@@ -86,14 +86,14 @@ const MessageItem = ({
           if (topic) reloadNav(topic);
         }
         setEdit(false);
-        setMessage({ text: ChatManagement.getMsgContent(msg) || 'loading...' });
+        setMessage({ text: ChatManagement.getMsgContent(msg) });
       });
     },
     [chat, reloadNav],
   );
   useEffect(() => {
     renderMessage[msg.id] = createThrottleAndDebounce((a) => {
-      setSuccessLines(ChatManagement.getMsgContent(msg) || 'loading...');
+      setSuccessLines(ChatManagement.getMsgContent(msg));
     }, 40);
     return () => {
       delete renderMessage[msg.id];
@@ -333,6 +333,8 @@ const MessageItem = ({
 
   // 内容显示
   const Content = useMemo(() => {
+    if (loadingMessages[msg.id] && !successLines) return <div>loading...</div>;
+    if (!loadingMessages[msg.id] && !successLines && msg.tool_calls) return <></>;
     return (
       <div>
         {edit ? (
@@ -655,6 +657,8 @@ const MessageItem = ({
             {Content}
             {/* <RuningText></RuningText> */}
             <Images msg={msg} topic={topic} />
+
+            <FunctionCallInfo msg={msg} />
             <div
               style={{
                 display: 'flex',
@@ -666,7 +670,6 @@ const MessageItem = ({
               {utilsEle}
             </div>
           </div>
-          <FunctionCallInfo msg={msg} />
         </div>
       </div>
       <Hidden hidden={!!loadingMsgs[msg.id]}>{Extend}</Hidden>

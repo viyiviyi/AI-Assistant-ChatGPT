@@ -7,7 +7,7 @@ import { App } from 'antd';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { TopicMessage } from '../../Models/Topic';
 import { aiServices } from '../AiService/ServiceProvider';
-import { executorService } from '../executor/ExecutorService';
+import { executorService, useExecutor } from '../executor/ExecutorService';
 import { createThrottleAndDebounce, getUuid, scrollToBotton } from '../utils/utils';
 
 const retrieved = { current: false };
@@ -102,6 +102,7 @@ export function useSendMessage(chat: ChatManagement) {
   const { loadingMsgs } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
   const { message } = App.useApp();
+  const { execFunctionCall, curtExecutor } = useExecutor();
   const sendMessage = useCallback(
     /**
      * 发送上下文给AI
@@ -228,20 +229,24 @@ export function useSendMessage(chat: ChatManagement) {
               reloadTopic(topic.id, result.id, res.end);
               scrollToBotton(currentPullMessage.id);
             }
+            // 调用工具
             if (res.tool_calls && res.tool_calls.length && res.end) {
               result.tool_calls = res.tool_calls;
               result.tool_call_result = result.tool_calls.map((calls) =>
                 calls.map((v) => ({
                   id: v.id,
                   name: v.function.name,
-                  desc: aiService.tools?.find((f) => f.function?.name == v.function.name)?.description,
+                  desc: curtExecutor.current?.tools?.find((f) => f.function?.name == v.function.name)?.function.description,
                   content: '',
                 })),
               );
+              chat.pushMessage(result).then(() => {
+                reloadTopic(topic.id, result.id, true);
+              });
               res.tool_calls.forEach((call, callIdx) => {
                 if (call && Array.isArray(call)) {
                   const execTask = call.map((v) => {
-                    return executorService.exec(v);
+                    return execFunctionCall(v);
                   });
                   if ((result.useTextIdx || 0) == callIdx) {
                     Promise.all(execTask).then((execResList) => {
@@ -275,7 +280,7 @@ export function useSendMessage(chat: ChatManagement) {
         },
       });
     },
-    [chat, loadingMsgs, message, reloadIndex],
+    [chat, curtExecutor, execFunctionCall, loadingMsgs, message, reloadIndex],
   );
   return { sendMessage };
 }

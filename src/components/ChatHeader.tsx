@@ -80,9 +80,9 @@ export const ChatHeader = () => {
           <MemoSearchWrap />
         </div>
       </Drawer>
-      {/* <SkipExport>
+      <SkipExport>
         <ExecutorManagerIcon />
-      </SkipExport> */}
+      </SkipExport>
       <SkipExport>
         <UserAddOutlined style={{ padding: '5px 10px' }} onClick={() => setRoleConfigShow(!roleConfigShow)} />
       </SkipExport>

@@ -136,7 +136,8 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
       if (executor != null) {
         tools.length = 0;
         executor.tools.forEach((tool) => {
-          if (chat.config.executorConfig?.selectedTools.includes(tool.function.name)) tools.push(tool);
+          if (chat.config.executorConfig?.selectedTools[chat.config.executorConfig.selectedExecutorId!]?.includes(tool.function.name))
+            tools.push(tool);
         });
       }
     });

@@ -977,39 +977,6 @@ export const Setting = ({
                         return <AiServerItem item={val} index={index} />;
                       }}
                     />
-                    {/* {userAiServer.map((val, index) => {
-                      let [name, url] = val.split('|');
-                      return (
-                        <div key={index}>
-                          <Form.Item label={index + 1 + ' 名称'}>
-                            <Input
-                              type="text"
-                              value={name}
-                              onChange={(e) => {
-                                setUserAiServer((v) => {
-                                  v[index] = e.target.value.trim() + '|' + url.trim();
-                                  return [...v];
-                                });
-                              }}
-                              autoComplete="off"
-                            />
-                          </Form.Item>
-                          <Form.Item label={index + 1 + ' 接口地址'}>
-                            <Input
-                              type="text"
-                              value={url}
-                              onChange={(e) => {
-                                setUserAiServer((v) => {
-                                  v[index] = name.trim() + '|' + e.target.value.trim();
-                                  return [...v];
-                                });
-                              }}
-                              autoComplete="off"
-                            />
-                          </Form.Item>
-                        </div>
-                      );
-                    })} */}
                     <Form.Item extra="仅支持兼容ChatGPT类型的API服务，如果地址需要跨域，可以尝试在地址前加 https://proxy.eaias.com/">
                       <Button
                         type="dashed"

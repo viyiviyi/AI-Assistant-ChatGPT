@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Executor } from '@/Models/Executor';
-import { executorService } from '@/core/executor/ExecutorService';
-import { Button, Card, Checkbox, Collapse, Flex, Form, Input, List, Space, Spin, Typography, message } from 'antd';
-import { DeleteOutlined, ExpandOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { executorService, useExecutor } from '@/core/executor/ExecutorService';
+import { Button, Card, Checkbox, Collapse, Flex, Form, Input, List, Space, Spin, Typography, message, Popconfirm } from 'antd';
+import { DeleteOutlined, DownOutlined, ExpandOutlined, PlusOutlined, RedoOutlined, ReloadOutlined, RightOutlined } from '@ant-design/icons';
 import { ModalCallback } from '../common/Modal';
+import { ChatContext } from '@/core/ChatManagement';
+import { getUuid } from '@/core/utils/utils';
+import { useScreenSize } from '@/core/hooks/hooks';
 
 const { Text, Title } = Typography;
 
@@ -16,9 +19,12 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   const [tempExecutors, setTempExecutors] = useState<Executor[]>([]);
   const [selectedExecutorId, setSelectedExecutorId] = useState<string | null>(null);
   const [selectedTools, setSelectedTools] = useState<Record<string, string[]>>({});
+  const [editExecutorId, setEditExecutorId] = useState<string>();
   const [expandedExecutorId, setExpandedExecutorId] = useState<string | null>(null);
-  const [loading, setLoading] = useState();
+  const { chatMgt } = useContext(ChatContext);
   const [form] = Form.useForm();
+  const screenSize = useScreenSize();
+  const { setExecutor } = useExecutor();
 
   // 加载执行器列表
   const loadExecutors = async () => {
@@ -34,10 +40,12 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   // 初始化加载
   useEffect(() => {
     loadExecutors();
-  }, []);
+    setSelectedExecutorId(chatMgt?.config.executorConfig?.selectedExecutorId || null);
+    setSelectedTools(chatMgt.config.executorConfig?.selectedTools || {});
+  }, [chatMgt.config.executorConfig?.selectedExecutorId, chatMgt.config.executorConfig?.selectedTools]);
 
   // 添加执行器（临时）
-  const handleAddExecutor = (values: { url: string; description: string }) => {
+  const handleAddExecutor = (values: { url: string; description: string; key: string }) => {
     if (!values.url.trim()) {
       return;
     }
@@ -50,17 +58,39 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
 
     // 直接添加到临时状态，不进行网络请求
     const now = Date.now();
-    const newExecutor: Executor = {
-      id: `executor_${now}`,
-      url: values.url,
-      description: values.description,
-      tools: [], // 初始化为空数组，在保存时再获取
-      createdAt: now,
-      updatedAt: now,
-      enabled: true,
-    };
+    const newExecutor: Executor = Object.assign(
+      tempExecutors.find((f) => editExecutorId && f.id == editExecutorId) || {
+        id: '',
+        tools: [], // 初始化为空数组，在保存时再获取
+        createdAt: now,
+        updatedAt: now,
+        enabled: true,
+      },
+      {
+        url: values.url,
+        description: values.description,
+        key: values.key,
+      },
+    );
 
-    setTempExecutors((prev) => [...prev, newExecutor]);
+    executorService.fetchToolsFromExecutor(newExecutor).then((res) => {
+      if (res.length) {
+        newExecutor.tools = res;
+        setTempExecutors((v) => [...v]);
+      }
+    });
+    if (!editExecutorId) {
+      setTempExecutors((prev) => [...prev, newExecutor]);
+    } else {
+      setTempExecutors((prev) => {
+        prev.forEach((v) => {
+          if (v.id == editExecutorId) {
+            Object.assign(v, newExecutor, { updatedAt: Date.now() });
+          }
+        });
+        return [...prev];
+      });
+    }
     form.resetFields();
   };
 
@@ -74,6 +104,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
     if (expandedExecutorId === executorId) {
       setExpandedExecutorId(null);
     }
+    if (executorId == editExecutorId) setEditExecutorId(undefined);
   };
 
   // 切换执行器选择
@@ -125,9 +156,18 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
       message.error('执行器不存在');
       return;
     }
-
-    // 直接更新为默认空数组，实际的工具列表会在保存时获取
-    setTempExecutors((prev) => prev.map((e) => (e.id === executorId ? { ...e, tools: [], updatedAt: Date.now() } : e)));
+    executorService.fetchToolsFromExecutor(executor).then((res) => {
+      if (res.length) {
+        setTempExecutors((prev) => {
+          prev.forEach((v) => {
+            if (v.id == executor.id) {
+              Object.assign(v, { tools: res }, { updatedAt: Date.now() });
+            }
+          });
+          return [...prev];
+        });
+      }
+    });
   };
 
   // 保存所有更改 - 由弹窗回调调用
@@ -151,16 +191,19 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
           await executorService.updateExecutor(executor);
         } else {
           // 添加
-          await executorService.addExecutor(executor.url, executor.description);
+          await executorService.addExecutor(executor);
         }
       }
 
-      // 重新加载原始数据
-      await loadExecutors();
-      message.success('保存成功');
+      chatMgt.config.executorConfig = {
+        selectedExecutorId: selectedExecutorId,
+        enable: true,
+        selectedTools: { ...(chatMgt.config.executorConfig?.selectedTools || {}), ...selectedTools },
+      };
+      setExecutor(tempExecutors.find((f) => f.id == selectedExecutorId));
+      await chatMgt.saveConfig();
     } catch (err) {
       console.error('Failed to save executors:', err);
-      message.error('保存失败');
       throw err;
     }
   };
@@ -171,123 +214,120 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   };
 
   return (
-    <div style={{ width: '100%' }}>
-      <Title level={4}>执行器管理</Title>
+    <div style={{ width: '100%', maxHeight: screenSize.height - 200, overflow: 'auto' }}>
+      {/* 执行器列表 */}
+      <div title="执行器列表" style={{ marginBottom: 16 }}>
+        {tempExecutors.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '48px 0' }}>
+            <Text>暂无执行器，请添加</Text>
+          </div>
+        ) : (
+          <List
+            itemLayout="vertical"
+            dataSource={tempExecutors}
+            renderItem={(executor) => {
+              const isSelected = selectedExecutorId === executor.id;
+              const isExpanded = expandedExecutorId === executor.id;
+              const executorToolIds = selectedTools[executor.id] || [];
+              return (
+                <Card key={executor.id} style={{ marginBottom: 16 }} size="small">
+                  <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+                    <Flex gap={12} align="center">
+                      <Checkbox checked={isSelected} onChange={() => handleExecutorToggle(executor.id)} />
+                      <div
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          setEditExecutorId(executor.id);
+                          form.setFieldValue('url', executor.url);
+                          form.setFieldValue('description', executor.description);
+                          form.setFieldValue('key', executor.key);
+                        }}
+                      >
+                        <Text strong>{executor.url}</Text>
+                        {executor.description && <Text style={{ marginLeft: 8, color: '#666' }}>{executor.description}</Text>}
+                      </div>
+                    </Flex>
+                    <Space size="small">
+                      <RedoOutlined title="刷新工具函数列表" onClick={() => handleRefreshTools(executor.id)} />
+                      <Popconfirm
+                        overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+                        title="确定删除？"
+                        placement="topRight"
+                        onConfirm={() => {
+                          handleDeleteExecutor(executor.id);
+                        }}
+                      >
+                        <DeleteOutlined />
+                      </Popconfirm>
+                      {isExpanded ? (
+                        <DownOutlined title="收起" onClick={() => handleToggleExpand(executor.id)} />
+                      ) : (
+                        <RightOutlined title="展开" onClick={() => handleToggleExpand(executor.id)} />
+                      )}
+                    </Space>
+                  </Flex>
 
-      {/* 添加执行器 */}
-      <Card title="添加执行器" style={{ marginBottom: 16 }} bodyStyle={{ padding: '16px' }}>
-        <Form form={form} layout="vertical" onFinish={handleAddExecutor}>
-          <Flex gap={16} style={{ marginBottom: 16 }}>
-            <Form.Item
-              name="url"
-              label="执行器地址"
-              rules={[
-                {
-                  required: true,
-                  message: '请输入执行器地址',
-                },
-                {
-                  pattern: /^https?:\/\/.+/,
-                  message: '请输入有效的URL格式（以http://或https://开头）',
-                },
-              ]}
-              style={{ flex: 1 }}
-            >
-              <Input placeholder="请输入执行器访问地址" />
-            </Form.Item>
-            <Form.Item name="description" label="备注说明" style={{ flex: 1 }}>
-              <Input placeholder="请输入执行器备注" />
-            </Form.Item>
-          </Flex>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<PlusOutlined />} loading={loading}>
-              添加执行器
+                  {/* 工具列表 */}
+                  {isExpanded && (
+                    <div style={{ marginTop: 12, paddingTop: 12 }}>
+                      <Title level={5}>函数列表</Title>
+                      {executor.tools.length === 0 ? (
+                        <Text>暂无函数</Text>
+                      ) : (
+                        <List
+                          itemLayout="vertical"
+                          dataSource={executor.tools}
+                          renderItem={(tool) => {
+                            const isToolSelected = executorToolIds.includes(tool.function.name);
+                            return (
+                              <Card key={tool.function.name} size="small" style={{ marginBottom: 8 }}>
+                                <Flex gap={12} align="start">
+                                  <Checkbox checked={isToolSelected} onChange={() => handleToolToggle(executor.id, tool.function.name)} />
+                                  <div style={{ flex: 1 }}>
+                                    <Text strong>
+                                      {tool.function.name}
+                                      {tool.function.description && (
+                                        <Text style={{ marginLeft: 20, color: '#666' }}>{tool.function.description}</Text>
+                                      )}
+                                    </Text>
+                                    <div style={{ marginTop: 8, padding: 0, borderRadius: 4 }}>
+                                      <pre style={{ margin: 0, fontSize: 12 }}>{JSON.stringify(tool, null, 2)}</pre>
+                                    </div>
+                                  </div>
+                                </Flex>
+                              </Card>
+                            );
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
+                </Card>
+              );
+            }}
+          />
+        )}
+      </div>
+      <Form form={form} onFinish={handleAddExecutor} layout={'vertical'}>
+        <Flex>
+          <Form.Item name={'url'} style={{ flex: 1 }} label={'地址'}>
+            <Input type="text" name="url" autoComplete="off" />
+          </Form.Item>
+          <Form.Item name={'description'} style={{ flex: 1 }} label={'名称'}>
+            <Input type="text" name="description" autoComplete="off" />
+          </Form.Item>
+        </Flex>
+        <Flex>
+          <Form.Item name={'key'} style={{ flex: 1 }} label={'key'}>
+            <Input type="text" name="key" autoComplete="off" />
+          </Form.Item>
+          <Form.Item label=" " style={{ marginLeft: 10, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button type="primary" htmlType="submit">
+              {editExecutorId ? '更新' : '添加'}
             </Button>
           </Form.Item>
-        </Form>
-      </Card>
-
-      {/* 执行器列表 */}
-      <Card title="执行器列表" style={{ marginBottom: 16 }} bodyStyle={{ padding: '16px' }}>
-        <Spin spinning={loading}>
-          {tempExecutors.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 0' }}>
-              <Text>暂无执行器，请添加</Text>
-            </div>
-          ) : (
-            <List
-              itemLayout="vertical"
-              dataSource={tempExecutors}
-              renderItem={(executor) => {
-                const isSelected = selectedExecutorId === executor.id;
-                const isExpanded = expandedExecutorId === executor.id;
-                const executorToolIds = selectedTools[executor.id] || [];
-
-                return (
-                  <Card key={executor.id} style={{ marginBottom: 16 }} size="small">
-                    <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
-                      <Flex gap={12} align="center">
-                        <Checkbox checked={isSelected} onChange={() => handleExecutorToggle(executor.id)} />
-                        <div>
-                          <Text strong>{executor.url}</Text>
-                          {executor.description && <Text style={{ marginLeft: 8, color: '#666' }}>{executor.description}</Text>}
-                        </div>
-                      </Flex>
-                      <Space size="small">
-                        <Button icon={<ReloadOutlined />} size="small" onClick={() => handleRefreshTools(executor.id)} loading={loading}>
-                          刷新工具
-                        </Button>
-                        <Button icon={<ExpandOutlined />} size="small" onClick={() => handleToggleExpand(executor.id)}>
-                          {isExpanded ? '收起' : '展开'}
-                        </Button>
-                        <Button danger icon={<DeleteOutlined />} size="small" onClick={() => handleDeleteExecutor(executor.id)}>
-                          删除
-                        </Button>
-                      </Space>
-                    </Flex>
-
-                    {/* 工具列表 */}
-                    {isExpanded && (
-                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
-                        <Title level={5}>函数列表</Title>
-                        {executor.tools.length === 0 ? (
-                          <Text>暂无函数</Text>
-                        ) : (
-                          <List
-                            itemLayout="vertical"
-                            dataSource={executor.tools}
-                            renderItem={(tool) => {
-                              const isToolSelected = executorToolIds.includes(tool.function.name);
-                              return (
-                                <Card key={tool.function.name} size="small" style={{ marginBottom: 8 }}>
-                                  <Flex gap={12} align="start">
-                                    <Checkbox checked={isToolSelected} onChange={() => handleToolToggle(executor.id, tool.function.name)} />
-                                    <div style={{ flex: 1 }}>
-                                      <Text strong>{tool.function.name}</Text>
-                                      {tool.function.description && (
-                                        <Text style={{ display: 'block', margin: '4px 0', color: '#666' }}>{tool.function.description}</Text>
-                                      )}
-                                      <div
-                                        style={{ marginTop: 8, backgroundColor: '#f5f5f5', padding: 12, borderRadius: 4, overflow: 'auto' }}
-                                      >
-                                        <pre style={{ margin: 0, fontSize: 12 }}>{JSON.stringify(tool, null, 2)}</pre>
-                                      </div>
-                                    </div>
-                                  </Flex>
-                                </Card>
-                              );
-                            }}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </Card>
-                );
-              }}
-            />
-          )}
-        </Spin>
-      </Card>
+        </Flex>
+      </Form>
     </div>
   );
 };
