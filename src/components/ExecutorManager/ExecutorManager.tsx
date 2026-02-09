@@ -5,7 +5,6 @@ import { Button, Card, Checkbox, Collapse, Flex, Form, Input, List, Space, Spin,
 import { DeleteOutlined, DownOutlined, ExpandOutlined, PlusOutlined, RedoOutlined, ReloadOutlined, RightOutlined } from '@ant-design/icons';
 import { ModalCallback } from '../common/Modal';
 import { ChatContext } from '@/core/ChatManagement';
-import { getUuid } from '@/core/utils/utils';
 import { useScreenSize } from '@/core/hooks/hooks';
 
 const { Text, Title } = Typography;
@@ -24,8 +23,8 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   const { chatMgt } = useContext(ChatContext);
   const [form] = Form.useForm();
   const screenSize = useScreenSize();
+  const [messageApi, contextHolder] = message.useMessage();
   const { setExecutor } = useExecutor();
-
   // 加载执行器列表
   const loadExecutors = async () => {
     try {
@@ -52,7 +51,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
 
     // 验证URL格式
     if (!values.url.startsWith('http://') && !values.url.startsWith('https://')) {
-      message.error('无效的URL格式，必须以http://或https://开头');
+      messageApi.error('无效的URL格式，必须以http://或https://开头');
       return;
     }
 
@@ -74,7 +73,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
     );
 
     executorService.fetchToolsFromExecutor(newExecutor).then((res) => {
-      if (res.length) {
+      if (res.length && Array.isArray(res)) {
         newExecutor.tools = res;
         setTempExecutors((v) => [...v]);
       }
@@ -153,11 +152,11 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   const handleRefreshTools = (executorId: string) => {
     const executor = tempExecutors.find((e) => e.id === executorId);
     if (!executor) {
-      message.error('执行器不存在');
+      messageApi.error('执行器不存在');
       return;
     }
     executorService.fetchToolsFromExecutor(executor).then((res) => {
-      if (res.length) {
+      if (res.length && Array.isArray(res)) {
         setTempExecutors((prev) => {
           prev.forEach((v) => {
             if (v.id == executor.id) {
@@ -215,6 +214,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
 
   return (
     <div style={{ width: '100%', maxHeight: screenSize.height - 200, overflow: 'auto' }}>
+      {contextHolder}
       {/* 执行器列表 */}
       <div title="执行器列表" style={{ marginBottom: 16 }}>
         {tempExecutors.length === 0 ? (
@@ -317,11 +317,11 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
             <Input type="text" name="description" autoComplete="off" />
           </Form.Item>
         </Flex>
-        <Flex>
+        <Flex gap={10}>
           <Form.Item name={'key'} style={{ flex: 1 }} label={'key'}>
             <Input type="text" name="key" autoComplete="off" />
           </Form.Item>
-          <Form.Item label=" " style={{ marginLeft: 10, display: 'flex', justifyContent: 'flex-end' }}>
+          <Form.Item label=" ">
             <Button type="primary" htmlType="submit">
               {editExecutorId ? '更新' : '添加'}
             </Button>

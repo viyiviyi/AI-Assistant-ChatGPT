@@ -6,6 +6,7 @@ import { Modal } from '../common/Modal';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { ChatContext } from '@/core/ChatManagement';
 import { executorService, useExecutor } from '@/core/executor/ExecutorService';
+import { message } from 'antd';
 
 interface ExecutorManagerIconProps {
   onExecutorChange?: (executor: Executor | null, tools: any[]) => void;
@@ -17,6 +18,8 @@ export const ExecutorManagerIcon: React.FC<ExecutorManagerIconProps> = ({ onExec
   const [iconColor, setIconColor] = useState<string>();
   const { chatMgt } = useContext(ChatContext);
   const { curtExecutor } = useExecutor();
+  const [messageApi, contextHolder] = message.useMessage();
+  executorService.message = messageApi;
   useEffect(() => {
     if (curtExecutor.current) {
       executorService.fetchHealth(curtExecutor.current).then((health) => {
@@ -51,7 +54,7 @@ export const ExecutorManagerIcon: React.FC<ExecutorManagerIconProps> = ({ onExec
   return (
     <>
       <CodeOutlined style={{ padding: '5px 10px' }} color={iconColor} onClick={() => setIsModalOpen(!isModalOpen)} />
-
+      {contextHolder}
       <Modal
         title="执行器管理"
         open={isModalOpen}

@@ -1,6 +1,5 @@
 import { Executor } from '@/Models/Executor';
 import { getDbInstance as getInstance } from '../db/IndexDbInstance';
-import { message } from 'antd';
 import { getUuid } from '../utils/utils';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ChatContext } from '../ChatManagement';
@@ -23,7 +22,10 @@ export type Tool = {
   };
 };
 
+// letthis.message.= { error: (err: string) => {} };
+
 class ExecutorService {
+  message = { error: (err: string) => {} };
   // 获取所有执行器
   async getAllExecutors(): Promise<Executor[]> {
     try {
@@ -33,7 +35,7 @@ class ExecutorService {
       return executors || [];
     } catch (error) {
       console.error('Failed to get executors:', error);
-      message.error('获取执行器列表失败');
+      this.message.error('获取执行器列表失败');
       return [];
     }
   }
@@ -48,7 +50,7 @@ class ExecutorService {
       return executors[0] || null;
     } catch (error) {
       console.error('Failed to get executor:', error);
-      message.error('获取执行器失败');
+      this.message.error('获取执行器失败');
       return null;
     }
   }
@@ -75,12 +77,11 @@ class ExecutorService {
         data: executor,
       });
 
-      message.success('添加执行器成功');
       return executor;
     } catch (error: any) {
       console.error('Failed to add executor:', error);
-      message.error(`添加执行器失败: ${error.message || '未知错误'}`);
-      throw error;
+      this.message.error(`添加执行器失败: ${error.message || '未知错误'}`);
+      return executor;
     }
   }
 
@@ -100,12 +101,11 @@ class ExecutorService {
         },
       });
 
-      message.success('更新执行器成功');
       return updatedExecutor;
     } catch (error) {
       console.error('Failed to update executor:', error);
-      message.error('更新执行器失败');
-      throw error;
+      this.message.error('更新执行器失败');
+      return executor;
     }
   }
 
@@ -116,12 +116,10 @@ class ExecutorService {
         tableName: 'Executor',
         value: id,
       });
-
-      message.success('删除执行器成功');
     } catch (error) {
       console.error('Failed to delete executor:', error);
-      message.error('删除执行器失败');
-      throw error;
+      this.message.error('删除执行器失败');
+      return;
     }
   }
 
@@ -135,7 +133,7 @@ class ExecutorService {
       return executor;
     } catch (error) {
       console.error('Failed to get executor by primary key:', error);
-      message.error('获取执行器失败');
+      this.message.error('获取执行器失败');
       return null;
     }
   }
@@ -188,6 +186,7 @@ class ExecutorService {
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
       // 如果获取失败，返回空数组
+      this.message.error('获取工具列表失败: ' + error.message);
       return [];
     }
   }
@@ -197,7 +196,7 @@ class ExecutorService {
     try {
       const executor = await this.getExecutorById(executorId);
       if (!executor) {
-        message.error('执行器不存在');
+        this.message.error('执行器不存在');
         return null;
       }
 
@@ -209,7 +208,7 @@ class ExecutorService {
       return updatedExecutor;
     } catch (error) {
       console.error('Failed to refresh executor tools:', error);
-      message.error('刷新工具列表失败');
+      this.message.error('刷新工具列表失败');
       return null;
     }
   }
