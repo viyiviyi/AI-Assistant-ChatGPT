@@ -6,6 +6,8 @@ import { DeleteOutlined, DownOutlined, ExpandOutlined, PlusOutlined, RedoOutline
 import { ModalCallback } from '../common/Modal';
 import { ChatContext } from '@/core/ChatManagement';
 import { useScreenSize } from '@/core/hooks/hooks';
+import { useService } from '@/core/AiService/ServiceProvider';
+import { KeyValueData } from '@/core/db/KeyValueData';
 
 const { Text, Title } = Typography;
 
@@ -25,6 +27,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
   const { setExecutor } = useExecutor();
+  const { reloadService } = useService();
   // 加载执行器列表
   const loadExecutors = async () => {
     try {
@@ -201,6 +204,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
       };
       setExecutor(tempExecutors.find((f) => f.id == selectedExecutorId));
       await chatMgt.saveConfig();
+      reloadService(chatMgt.getChat(), KeyValueData.instance());
     } catch (err) {
       console.error('Failed to save executors:', err);
       throw err;
