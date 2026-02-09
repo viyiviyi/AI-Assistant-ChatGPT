@@ -22,12 +22,13 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   const [selectedTools, setSelectedTools] = useState<Record<string, string[]>>({});
   const [editExecutorId, setEditExecutorId] = useState<string>();
   const [expandedExecutorId, setExpandedExecutorId] = useState<string | null>(null);
-  const { chatMgt } = useContext(ChatContext);
+  const { chatMgt, setChat } = useContext(ChatContext);
   const [form] = Form.useForm();
   const screenSize = useScreenSize();
   const [messageApi, contextHolder] = message.useMessage();
   const { setExecutor } = useExecutor();
   const { reloadService } = useService();
+
   // 加载执行器列表
   const loadExecutors = async () => {
     try {
@@ -205,6 +206,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
       setExecutor(tempExecutors.find((f) => f.id == selectedExecutorId));
       await chatMgt.saveConfig();
       reloadService(chatMgt.getChat(), KeyValueData.instance());
+      setChat(chatMgt.getChat());
     } catch (err) {
       console.error('Failed to save executors:', err);
       throw err;
@@ -218,6 +220,11 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
 
   return (
     <div style={{ width: '100%', maxHeight: screenSize.height - 200, overflow: 'auto' }}>
+      {chatMgt.gptConfig.msgCount < 2 && (chatMgt.gptConfig.msgCountMin || 0) < 2 ? (
+        <div style={{ color: '#E50', marginBottom: 10 }}>当前上下文数量限制太低，可能会因为缺失执行记录导致重复执行</div>
+      ) : (
+        <></>
+      )}
       {contextHolder}
       {/* 执行器列表 */}
       <div title="执行器列表" style={{ marginBottom: 16 }}>

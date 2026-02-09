@@ -36,7 +36,7 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
           >
             <Flex gap={16}>
               <CodeOutlined />
-              <a style={{ fontWeight: 400, fontSize: '1.3em', color: token.colorTextLabel }}>{item.desc || item.name}</a>
+              <a style={{ fontWeight: 400, color: token.colorTextLabel }}>{item.desc || item.name}</a>
               <span style={{ flex: 1 }}></span>
               <Button
                 type="link"
