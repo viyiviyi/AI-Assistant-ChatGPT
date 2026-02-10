@@ -160,6 +160,9 @@ export function useSendMessage(chat: ChatManagement) {
         if (currentChat.current) {
           if (isEnd) {
             onReaderAfter(currentChat.current.getChat(), [result]).forEach((res, idx) => {
+              if (Array.isArray(res.text)) {
+                res.text = res.text.map((txt) => txt.replace('{{execution_url}}', curtExecutor.current?.url || ''));
+              }
               currentChat.current &&
                 currentChat.current.pushMessage(res).then((r) => {
                   cb();
