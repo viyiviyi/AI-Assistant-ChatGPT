@@ -87,6 +87,7 @@ const MessageItem = ({
         }
         setEdit(false);
         setMessage({ text: ChatManagement.getMsgContent(msg) });
+        setSuccessLines(ChatManagement.getMsgContent(msg));
       });
     },
     [chat, reloadNav],
