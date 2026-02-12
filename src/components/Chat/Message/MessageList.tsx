@@ -39,15 +39,17 @@ export function MessageList({
   const [insertIndex, setInsertIndex] = useState(-1);
   const [countChar, setCountChar] = useState(0);
   const [ctxCountChar, setCtxCountChar] = useState(0);
+  const [drawPopupProps, serDrawPopupProps] = useState({ text: '', open: false, msg: topic.messages[0] });
+  const [messages, setMessages] = useState(topic.messages);
+
+  const tblRef: Parameters<typeof Table>[0]['ref'] = React.useRef(null);
+  const { sendMessage } = useSendMessage(chat);
+
   const renderMessage = useMemo<{
     [key: string]: (reloadStatus?: boolean) => void;
   }>(() => ({}), []);
-  const [drawPopupProps, serDrawPopupProps] = useState({ text: '', open: false, msg: topic.messages[0] });
-  const tblRef: Parameters<typeof Table>[0]['ref'] = React.useRef(null);
-
   const msgIdIdxMap = useMemo(() => new Map<string, number>(), []);
-  const { sendMessage } = useSendMessage(chat);
-  const screenSize = useScreenSize();
+
   /**
    * 更新字数统计 最小更新间隔： 两秒
    */
@@ -65,7 +67,6 @@ export function MessageList({
       setCtxCountChar(ctxCountChar);
     }, 2000);
   }, [chat, topic]);
-  const [messages, setMessages] = useState(topic.messages);
 
   useEffect(() => {
     /**
@@ -77,8 +78,9 @@ export function MessageList({
     };
   }, [messages, firstMsgIdxRef, msgIdIdxMap]);
   useEffect(() => {
-    tblRef.current?.scrollTo({ index: messages.length - 1 });
-  }, [messages.length]);
+    setMessages(topic.messages);
+    // tblRef.current?.scrollTo({ index: messages.length - 1 });
+  }, [topic, topic.messages]);
   /**
    * 将消息内容填入输入框
    */
@@ -145,7 +147,7 @@ export function MessageList({
         columns={[
           {
             onCell: (v) => {
-              return { style: { border: 'none', padding: 0, width: '100%', minWidth: '50vw' }, id: v.id };
+              return { style: { border: 'none', padding: 0, width: '100%', minWidth: 327 }, id: v.id };
             },
             key: 'id',
             dataIndex: 'text',
