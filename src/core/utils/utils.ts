@@ -1,3 +1,5 @@
+import { reloadTopic } from "@/components/Chat/Message/MessageList";
+
 export function getUuid() {
   if (typeof crypto === 'object') {
     if (typeof crypto.randomUUID === 'function') {

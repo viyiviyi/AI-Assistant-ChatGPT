@@ -619,14 +619,14 @@ export const Setting = ({
                         <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
                       </Form.Item>
                     </div>
-                    <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                    {/* <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
                       <Form.Item style={{ flex: '1' }} name="config_page_size" label="单页显示条数">
                         <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
                       </Form.Item>
                       <Form.Item style={{ flex: '1' }} name="config_page_repect" label="重复显示条数">
                         <InputNumber style={{ width: '100%' }} step="1" min={0} autoComplete="off" />
                       </Form.Item>
-                    </div>
+                    </div> */}
                     <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
                       <Form.Item style={{ flex: '1' }} name="config_limit_pre_height" valuePropName="checked" label="代码块限高">
                         <Switch />

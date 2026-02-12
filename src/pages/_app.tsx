@@ -24,7 +24,7 @@ export default function App({ Component, pageProps }: AppProps) {
           hashed: false,
           token: {
             colorPrimary: '#00b96b',
-            colorInfoBg: isDark ? '#3338' : '#eee8',
+            colorInfoBg: isDark ? '#3339' : '#eee9',
             colorTextBase: isDark ? '#cecece' : '#111',
             colorBgElevated: isDark ? '#222' : '#eee',
             colorLink: '#59ccccd5',
@@ -64,6 +64,12 @@ export default function App({ Component, pageProps }: AppProps) {
             },
             Modal: {
               padding: 12,
+            },
+            Table: {
+              colorBgBase: '#0000',
+              colorBgContainer: '#0000',
+              colorBgLayout: '#0000',
+              colorBgMask: '#0000',
             },
           },
           algorithm: isDark ? theme.darkAlgorithm : theme.compactAlgorithm,

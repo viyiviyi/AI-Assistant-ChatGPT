@@ -386,7 +386,6 @@ const MessageItem = ({
             flexDirection: 'column',
             marginTop: '18px',
           }}
-          id={msg.id}
         >
           <div
             style={{
@@ -506,7 +505,6 @@ const MessageItem = ({
           padding: '1em 42px 10px',
           textAlign: 'center',
         }}
-        id={msg.id}
         className={styleCss.message_box}
       >
         {contextHolder}
@@ -538,7 +536,6 @@ const MessageItem = ({
         flexDirection: 'column',
         marginTop: '12px',
       }}
-      id={msg.id}
     >
       {contextHolder}
       <div
