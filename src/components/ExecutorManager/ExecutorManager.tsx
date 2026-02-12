@@ -8,6 +8,7 @@ import { ChatContext } from '@/core/ChatManagement';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { KeyValueData } from '@/core/db/KeyValueData';
+import { MarkdownView } from '../common/MarkdownView';
 
 const { Text, Title } = Typography;
 
@@ -94,6 +95,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
         return [...prev];
       });
     }
+    setEditExecutorId(undefined)
     form.resetFields();
   };
 
@@ -302,7 +304,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
                                       )}
                                     </Text>
                                     <div style={{ marginTop: 8, padding: 0, borderRadius: 4 }}>
-                                      <pre style={{ margin: 0, fontSize: 12 }}>{JSON.stringify(tool, null, 2)}</pre>
+                                      <MarkdownView markdown={'```\n'+JSON.stringify(tool, null, 2)+'\n```'} />
                                     </div>
                                   </div>
                                 </Flex>

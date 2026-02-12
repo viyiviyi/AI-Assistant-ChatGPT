@@ -181,7 +181,8 @@ class ExecutorService {
         throw new Error(`获取工具列表失败: ${response.status}`);
       }
 
-      const data = await response.json();
+      let data = await response.json();
+      if (data && data.tools) data = data.tools;
       if (Array.isArray(data) && !data[0].type && data[0].name) {
         return data.map((v) => ({ type: 'function', function: v }));
       }
@@ -205,6 +206,7 @@ class ExecutorService {
 
       const tools = await this.fetchToolsFromExecutor(executor);
       executor.tools = tools;
+      console.log(tools);
       executor.updatedAt = Date.now();
 
       const updatedExecutor = await this.updateExecutor(executor);
