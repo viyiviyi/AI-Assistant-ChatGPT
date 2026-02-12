@@ -104,6 +104,7 @@ export function MessageList({
       chat.removeMessage(msg)?.then(() => {
         let idx = msgIdIdxMap.get(msg.id);
         delete renderMessage[msg.id];
+        setMessages([...topic.messages]);
         reloadNav(topic);
       });
     },
