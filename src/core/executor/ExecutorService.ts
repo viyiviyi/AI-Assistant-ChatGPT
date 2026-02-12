@@ -182,6 +182,9 @@ class ExecutorService {
       }
 
       const data = await response.json();
+      if (Array.isArray(data) && !data[0].type && data[0].name) {
+        return data.map((v) => ({ type: 'function', function: v }));
+      }
       return data || [];
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
