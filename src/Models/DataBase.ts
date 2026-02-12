@@ -105,6 +105,8 @@ export interface Message {
   };
   tool_calls?: ToolCalls[][];
   tool_call_result?: { id: string; name: string; desc?: string; content: string }[][];
+  isToolCall?: boolean;
+  parentId?: string;
 }
 
 export interface Topic {

@@ -222,11 +222,6 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
 
   return (
     <div style={{ width: '100%', maxHeight: screenSize.height - 200, overflow: 'auto' }}>
-      {chatMgt.gptConfig.msgCount < 2 && (chatMgt.gptConfig.msgCountMin || 0) < 2 ? (
-        <div style={{ color: '#E50', marginBottom: 10 }}>当前上下文数量限制太低，可能会因为缺失执行记录导致重复执行</div>
-      ) : (
-        <></>
-      )}
       {contextHolder}
       {/* 执行器列表 */}
       <div title="执行器列表" style={{ marginBottom: 16 }}>

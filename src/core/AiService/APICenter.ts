@@ -11,7 +11,7 @@ export class APICenter implements IAiService {
   client: OpenAIApi;
   baseUrl: string;
   tokens: ServiceTokens;
-  tools?: any[]; 
+  tools?: any[];
   constructor(baseUrl: string, tokens: ServiceTokens, config?: GptConfig, tools?: any[]) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
@@ -142,6 +142,7 @@ export class APICenter implements IAiService {
       tool_calls?: any[];
       end: boolean;
       stop?: () => void;
+      isToolCall?: boolean;
       usage?: {
         prompt_tokens: number;
         completion_tokens: number;
@@ -154,6 +155,7 @@ export class APICenter implements IAiService {
   ) {
     let full_response: string[] = [];
     let reasoning_content: string[] = [];
+    let isToolCall = false;
     let tool_calls: any[] = [];
     const headers = {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
@@ -175,7 +177,6 @@ export class APICenter implements IAiService {
       tools: this.tools && this.tools.length ? this.tools : undefined,
       tool_choice: this.tools && this.tools.length ? 'auto' : undefined,
     };
-    console.log(data);
     if (config.modelArgs?.length) {
       config.modelArgs
         .filter((f) => f.enable && f.serverUrl == this.baseUrl)
@@ -236,6 +237,7 @@ export class APICenter implements IAiService {
               text: full_response,
               reasoning_content,
               tool_calls,
+              isToolCall,
             });
             break;
           }
@@ -281,6 +283,7 @@ export class APICenter implements IAiService {
                   reasoning_content[i] = (reasoning_content[i] || '') + content;
                 }
                 if ('tool_calls' in delta && delta.tool_calls && delta.tool_calls != 'null') {
+                  isToolCall = true;
                   const content = delta.tool_calls;
                   if (tool_calls[i]) {
                     if (Array.isArray(content)) {
@@ -302,6 +305,7 @@ export class APICenter implements IAiService {
                 reasoning_content,
                 stop: stop,
                 usage: data.usage,
+                isToolCall,
               });
             } catch (error) {
               console.error(error);

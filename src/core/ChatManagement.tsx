@@ -343,12 +343,27 @@ export class ChatManagement {
     if (messages.length < msgCountMin) historyLength = 0;
     // 按照消息上下文限制截断消息
     let ctxCount = topic.overrideSettings?.msgCount === undefined ? historyLength : topic.overrideSettings?.msgCount;
+    messages = messages.slice(-ctxCount);
+    // 获取范围内消息的管理消息id
+    let parentIdList: string[] = messages.map((v) => v.parentId).filter((f) => f) as string[];
+    // g过滤掉已经在范围内内的
+    parentIdList = parentIdList.filter((f) => !messages.map((v) => v.id).includes(f));
     if (ctxCount > 0 && messages.length > ctxCount) {
-      // 不在记忆范围内 且勾选了的消息
-      let checkedMessage = messages.slice(0, messages.length - ctxCount).filter((v) => v.checked);
+      // 不在记忆范围内 且勾选了的消息; 或关联的
+      let checkedMessage = topic.messages.slice(0, messages.length - ctxCount).filter((v) => v.checked || parentIdList.includes(v.id));
       // 记忆范围内的消息
-      messages = [...checkedMessage, ...messages.slice(-ctxCount)];
+      messages = [...checkedMessage, ...messages];
     }
+    function getParentMsg(msg: Message, messages: Message[]): Message[] {
+      let result = messages;
+      if (msg.parentId && topic.messageMap[msg.parentId]) {
+        result = [topic.messageMap[msg.parentId], ...result];
+        if (topic.messageMap[msg.parentId].parentId) result = getParentMsg(topic.messageMap[msg.parentId], result);
+      }
+      return result;
+    }
+    // 如果通过parentid取到的第一条数据还有parentid，继续往前找
+    messages = [...getParentMsg(messages[0], []), ...messages];
     history = [];
     messages
       .filter((f) => !f.skipCtx)

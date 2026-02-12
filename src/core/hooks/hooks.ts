@@ -110,7 +110,7 @@ export function useSendMessage(chat: ChatManagement) {
      * @param topic 话题
      * @returns
      */
-    async (idx: number, topic: TopicMessage, skipCheckRuning = false) => {
+    async (idx: number, topic: TopicMessage, skipCheckRuning = false, parentId: string | undefined = undefined) => {
       const aiService = aiServices.current;
       if (!aiService) return;
       if (idx >= topic.messages.length) {
@@ -126,6 +126,7 @@ export function useSendMessage(chat: ChatManagement) {
         text: [],
         timestamp: time,
         topicId: topic.id,
+        parentId: parentId,
       };
       result = onReaderFirst(chat.getChat(), topic.messages[idx], result);
       if (
@@ -135,7 +136,7 @@ export function useSendMessage(chat: ChatManagement) {
           .findIndex((f) => loadingMessages[f.id]) != -1
       ) {
         console.log(idx);
-        return message.info('上下文中存在未完成的消息');
+        return message.info('存在未完成的消息');
       }
       // 因为回调函数引用了chat，而编辑配置时会创建新的chat，导致旧的chat不能被回收，导致内存溢出
       let currentChat: { current: ChatManagement | undefined } = {
@@ -147,6 +148,7 @@ export function useSendMessage(chat: ChatManagement) {
           delete loadingMsgs[result.id];
           delete loadingMessages[result.id];
           currentChat.current = undefined;
+          reloadTopic(topic.id, result.id, true);
         },
       };
       chat.pushMessage(result, idx + 1).then((r) => {
@@ -195,6 +197,7 @@ export function useSendMessage(chat: ChatManagement) {
           } else if (res.stop) {
             res.stop();
           }
+          result.isToolCall = res.isToolCall;
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;
@@ -221,6 +224,41 @@ export function useSendMessage(chat: ChatManagement) {
               });
             },
           };
+          // 调用工具
+          if (currentChat.current && res.tool_calls && res.tool_calls.length && res.end && loadingMessages[result.id]) {
+            result.tool_calls = res.tool_calls;
+            result.tool_call_result = result.tool_calls.map((calls) =>
+              calls.map((v) => ({
+                id: v.id,
+                name: v.function.name,
+                desc: curtExecutor.current?.tools?.find((f) => f.function?.name == v.function.name)?.function.description,
+                content: '',
+              })),
+            );
+            res.tool_calls.forEach((call, callIdx) => {
+              if (call && Array.isArray(call)) {
+                const execTask = call.map((v) => {
+                  return execFunctionCall(v);
+                });
+                if ((result.useTextIdx || 0) == callIdx) {
+                  Promise.all(execTask).then((execResList) => {
+                    // 回传结果
+                    setTimeout(() => {
+                      if (chat.topics.find((f) => f.id == topic.id)) {
+                        sendMessage(idx + 1, topic, true, result.id);
+                      }
+                    }, 100);
+                    execResList.forEach((r, i) => {
+                      result.tool_call_result![callIdx][i].content = r;
+                    });
+                    chat.pushMessage(result).then(() => {
+                      reloadTopic(topic.id, result.id, true);
+                    });
+                  });
+                }
+              }
+            });
+          }
           save(res.end || !loadingMsgs[result.id], () => {
             if (res.end || !loadingMsgs[result.id]) {
               delete loadingMsgs[result.id];
@@ -231,42 +269,6 @@ export function useSendMessage(chat: ChatManagement) {
             if (hasChange) {
               reloadTopic(topic.id, result.id, res.end);
               scrollToBotton(currentPullMessage.id);
-            }
-            // 调用工具
-            if (res.tool_calls && res.tool_calls.length && res.end) {
-              result.tool_calls = res.tool_calls;
-              result.tool_call_result = result.tool_calls.map((calls) =>
-                calls.map((v) => ({
-                  id: v.id,
-                  name: v.function.name,
-                  desc: curtExecutor.current?.tools?.find((f) => f.function?.name == v.function.name)?.function.description,
-                  content: '',
-                })),
-              );
-              chat.pushMessage(result).then(() => {
-                reloadTopic(topic.id, result.id, true);
-              });
-              res.tool_calls.forEach((call, callIdx) => {
-                if (call && Array.isArray(call)) {
-                  const execTask = call.map((v) => {
-                    return execFunctionCall(v);
-                  });
-                  if ((result.useTextIdx || 0) == callIdx) {
-                    Promise.all(execTask).then((execResList) => {
-                      // 回传结果
-                      setTimeout(() => {
-                        sendMessage(idx + 1, topic, true);
-                      }, 100);
-                      execResList.forEach((r, i) => {
-                        result.tool_call_result![callIdx][i].content = r;
-                      });
-                      chat.pushMessage(result).then(() => {
-                        reloadTopic(topic.id, result.id, true);
-                      });
-                    });
-                  }
-                }
-              });
             }
           });
         },
@@ -334,7 +336,7 @@ export function usePushMessage(chat: ChatManagement) {
         pushCallback(msg);
         return;
       }
-      await sendMessage(idx, topic);
+      await sendMessage(idx, topic, false, msg.id);
       pushCallback(msg);
     },
     [chat, reloadIndex, sendMessage, getHistory],

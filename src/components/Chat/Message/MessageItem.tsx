@@ -407,18 +407,14 @@ const MessageItem = ({
               >
                 {loadingMsgs[msg.id] ? (
                   <SkipExport>
-                    <Popconfirm
-                      placement="topRight"
-                      overlayInnerStyle={{ whiteSpace: 'nowrap' }}
-                      title="确定停止？"
-                      onConfirm={() => {
+                    <PauseOutlined
+                      onClick={() => {
                         if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                         delete loadingMsgs[msg.id];
                         setMessage({ text: ChatManagement.getMsgContent(msg) });
                       }}
-                    >
-                      <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
-                    </Popconfirm>
+                      style={{ color: '#ff8d8f' }}
+                    ></PauseOutlined>
                   </SkipExport>
                 ) : (
                   <></>
@@ -570,7 +566,7 @@ const MessageItem = ({
             }}
           >
             <span>{msg.ctxRole == 'assistant' ? chat.virtualRole.name : chat.user?.name}</span>
-            <Hidden hidden={!!loadingMsgs[msg.id] || !chat.config.voiceOpen || msg.ctxRole != 'assistant'}>
+            <Hidden hidden={!!loadingMessages[msg.id] || !chat.config.voiceOpen || msg.ctxRole != 'assistant'}>
               <span style={{ marginLeft: '10px' }}></span>
               <span className={styleCss.speak_button}>
                 <SkipExport>
@@ -585,18 +581,14 @@ const MessageItem = ({
             <span style={{ marginLeft: '30px' }}></span>
             <Hidden hidden={!loadingMsgs[msg.id]}>
               <SkipExport>
-                <Popconfirm
-                  placement="topRight"
-                  overlayInnerStyle={{ whiteSpace: 'nowrap' }}
-                  title="确定停止？"
-                  onConfirm={() => {
+                <PauseOutlined
+                  onClick={() => {
                     if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                     delete loadingMsgs[msg.id];
                     setMessage({ text: ChatManagement.getMsgContent(msg) });
                   }}
-                >
-                  <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
-                </Popconfirm>
+                  style={{ color: '#ff8d8f' }}
+                ></PauseOutlined>
               </SkipExport>
             </Hidden>
           </div>

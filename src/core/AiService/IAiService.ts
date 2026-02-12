@@ -34,6 +34,7 @@ export interface IAiService {
       cloud_send_id?: string;
       cloud_result_id?: string;
       searchQueries?: string[];
+      isToolCall?: boolean;
       searchResults?: {
         title: string;
         url: string;
