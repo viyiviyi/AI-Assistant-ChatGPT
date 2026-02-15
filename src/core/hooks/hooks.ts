@@ -120,7 +120,12 @@ export function useSendMessage(chat: ChatManagement) {
       if (idx < 0 && topic.messages.length) time = topic.messages[0].timestamp - 1;
       if (idx >= 0 && idx < topic.messages.length) {
         time = topic.messages[idx].timestamp + 1;
-        if (!parentId && topic.messages[idx].parentId) parentId = topic.messages[idx].parentId;
+        if (
+          !parentId &&
+          topic.messages[idx].parentId &&
+          (topic.messages[idx].ctxRole == 'user' || topic.messages[idx].isToolCall || topic.messages[idx].ctxRole == 'system')
+        )
+          parentId = topic.messages[idx].parentId;
       }
       let result: Message = {
         id: getUuid(),
@@ -255,6 +260,7 @@ export function useSendMessage(chat: ChatManagement) {
                             topicId: _topic.id,
                             ctxRole: 'system',
                             timestamp: Date.now(),
+                            parentId: getUuid(),
                           })
                           .then((msg) => {
                             setActivityTopic(_topic);
