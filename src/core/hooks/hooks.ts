@@ -99,7 +99,7 @@ export const loadingMessages: { [key: string]: boolean } = {};
 const currentPullMessage = { id: '' }; // 最新一条消息的id 用于自动滚动
 
 export function useSendMessage(chat: ChatManagement) {
-  const { loadingMsgs } = useContext(ChatContext);
+  const { loadingMsgs, setActivityTopic } = useContext(ChatContext);
   const { reloadIndex } = useReloadIndex(chat);
   const { message } = App.useApp();
   const { execFunctionCall, curtExecutor } = useExecutor();
@@ -118,7 +118,10 @@ export function useSendMessage(chat: ChatManagement) {
       }
       let time = Date.now();
       if (idx < 0 && topic.messages.length) time = topic.messages[0].timestamp - 1;
-      if (idx >= 0 && idx < topic.messages.length) time = topic.messages[idx].timestamp + 1;
+      if (idx >= 0 && idx < topic.messages.length) {
+        time = topic.messages[idx].timestamp + 1;
+        if (!parentId && topic.messages[idx].parentId) parentId = topic.messages[idx].parentId;
+      }
       let result: Message = {
         id: getUuid(),
         groupId: chat.group.id,
@@ -126,7 +129,7 @@ export function useSendMessage(chat: ChatManagement) {
         text: [],
         timestamp: time,
         topicId: topic.id,
-        parentId: parentId,
+        parentId: parentId || getUuid(),
       };
       result = onReaderFirst(chat.getChat(), topic.messages[idx], result);
       if (
@@ -238,16 +241,37 @@ export function useSendMessage(chat: ChatManagement) {
             res.tool_calls.forEach((call, callIdx) => {
               if (call && Array.isArray(call)) {
                 const execTask = call.map((v) => {
+                  if (v.function.name == 'create_new_session') {
+                    try {
+                      let text = JSON.parse(v.function.arguments).task_guidance;
+                      if (!text) return JSON.stringify({ success: false, message: '缺少新会话工作指导内容' });
+                      // text = '[新会话]\n\n' + text;
+                      chat.newTopic(text).then((_topic) => {
+                        chat
+                          .pushMessage({
+                            id: getUuid(),
+                            text: text,
+                            groupId: _topic.groupId,
+                            topicId: _topic.id,
+                            ctxRole: 'system',
+                            timestamp: Date.now(),
+                          })
+                          .then((msg) => {
+                            setActivityTopic(_topic);
+                            setTimeout(() => {
+                              sendMessage(idx + 2, _topic);
+                            }, 100);
+                          });
+                      });
+                    } catch (error) {
+                      return JSON.stringify({ success: false, message: '新会话创建失败' });
+                    }
+                    return JSON.stringify({ success: true, message: '新会话创建成功,当前会话可继续或终止。' });
+                  }
                   return execFunctionCall(v);
                 });
                 if ((result.useTextIdx || 0) == callIdx) {
                   Promise.all(execTask).then((execResList) => {
-                    // 回传结果
-                    setTimeout(() => {
-                      if (chat.topics.find((f) => f.id == topic.id)) {
-                        sendMessage(idx + 1, topic, true, result.id);
-                      }
-                    }, 100);
                     execResList.forEach((r, i) => {
                       result.tool_call_result![callIdx][i].content = r;
                     });
@@ -255,6 +279,12 @@ export function useSendMessage(chat: ChatManagement) {
                       reloadTopic(topic.id, result.id, true);
                     });
                   });
+                  // 回传结果
+                  setTimeout(() => {
+                    if (chat.topics.find((f) => f.id == topic.id)) {
+                      sendMessage(idx + 1, topic, true, result.parentId);
+                    }
+                  }, 100);
                 }
               }
             });
@@ -285,7 +315,7 @@ export function useSendMessage(chat: ChatManagement) {
         },
       });
     },
-    [chat, curtExecutor, execFunctionCall, loadingMsgs, message, reloadIndex],
+    [chat, curtExecutor, execFunctionCall, loadingMsgs, message, reloadIndex, setActivityTopic],
   );
   return { sendMessage };
 }
@@ -317,7 +347,7 @@ export function usePushMessage(chat: ChatManagement) {
       text = ChatManagement.parseText(text);
       let time = Date.now();
       if (idx == 0 && idx + 1 < topic.messages.length) time = topic.messages[idx + 1].timestamp - 1;
-      if (idx > 0 && idx < topic.messages.length) time = topic.messages[idx - 1].timestamp + 0.001;
+      if (idx > 0 && idx < topic.messages.length) time = topic.messages[idx - 1].timestamp + 1;
       let msg: Message = {
         id: '',
         groupId: chat.group.id,
@@ -326,6 +356,7 @@ export function usePushMessage(chat: ChatManagement) {
         timestamp: time,
         topicId: topic.id,
         cloudTopicId: topic.cloudTopicId,
+        parentId: getUuid(),
       };
       if (msg.text) await chat.pushMessage(msg, idx);
       if (msg.id) {
@@ -336,7 +367,7 @@ export function usePushMessage(chat: ChatManagement) {
         pushCallback(msg);
         return;
       }
-      await sendMessage(idx, topic, false, msg.id);
+      await sendMessage(idx, topic, false, msg.parentId);
       pushCallback(msg);
     },
     [chat, reloadIndex, sendMessage, getHistory],

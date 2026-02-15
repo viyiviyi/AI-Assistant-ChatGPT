@@ -298,9 +298,9 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
                                         <Text style={{ marginLeft: 20, color: '#666' }}>{tool.function.description}</Text>
                                       )}
                                     </Text>
-                                    <div style={{ marginTop: 8, padding: 0, borderRadius: 4 }}>
+                                    {/* <div style={{ marginTop: 8, padding: 0, borderRadius: 4 }}>
                                       <MarkdownView markdown={'```\n'+JSON.stringify(tool, null, 2)+'\n```'} />
-                                    </div>
+                                    </div> */}
                                   </div>
                                 </Flex>
                               </Card>

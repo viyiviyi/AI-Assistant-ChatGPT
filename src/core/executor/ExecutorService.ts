@@ -22,6 +22,25 @@ export type Tool = {
   };
 };
 
+// 新开会话工具定义
+const CREATE_NEW_SESSION_TOOL: Tool = {
+  type: 'function',
+  function: {
+    name: 'create_new_session',
+    description: '当需要时将任务分配给新的会话（新会使用全新的上下文）。',
+    parameters: {
+      type: 'object',
+      properties: {
+        task_guidance: {
+          type: 'string',
+          description: '以system的身份输入到新会话上下文的第一条引导任务执行的消息。',
+        },
+      },
+      required: ['task_guidance'],
+    },
+  },
+};
+
 // letthis.message.= { error: (err: string) => {} };
 
 class ExecutorService {
@@ -159,7 +178,7 @@ class ExecutorService {
     }
   }
 
-  // 从执行器获取tools列表
+  // 从执行器获取tools列表（包含固定的新开会话工具）
   async fetchToolsFromExecutor(executor: Executor): Promise<Tool[]> {
     try {
       // 调用执行器的API获取tools列表
@@ -183,10 +202,15 @@ class ExecutorService {
 
       let data = await response.json();
       if (data && data.tools) data = data.tools;
+      let tools: Tool[] = [];
       if (Array.isArray(data) && !data[0].type && data[0].name) {
-        return data.map((v) => ({ type: 'function', function: v }));
+        tools = data.map((v) => ({ type: 'function', function: v }));
+      } else {
+        tools = data || [];
       }
-      return data || [];
+
+      // 添加固定的新开会话工具到工具列表
+      return [...tools, CREATE_NEW_SESSION_TOOL];
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
       // 如果获取失败，返回空数组

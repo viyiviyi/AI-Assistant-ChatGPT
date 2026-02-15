@@ -48,7 +48,7 @@ export function MessageList({
   const renderMessage = useMemo<{
     [key: string]: (reloadStatus?: boolean) => void;
   }>(() => ({}), []);
-  const msgIdIdxMap = useMemo(() => new Map<string, number>(), []);
+  // const msgIdIdxMap = useMemo(() => new Map<string, number>(), []);
 
   /**
    * 更新字数统计 最小更新间隔： 两秒
@@ -68,15 +68,6 @@ export function MessageList({
     }, 2000);
   }, [chat, topic]);
 
-  useEffect(() => {
-    /**
-     * 设置当前页第一条消息的索引
-     */
-    firstMsgIdxRef.current = msgIdIdxMap.get(messages[0]?.id);
-    return () => {
-      firstMsgIdxRef.current = undefined;
-    };
-  }, [messages, firstMsgIdxRef, msgIdIdxMap]);
   useEffect(() => {
     setMessages(topic.messages);
     // tblRef.current?.scrollTo({ index: messages.length - 1 });
@@ -102,13 +93,12 @@ export function MessageList({
   const onDel = useCallback(
     (msg: Message) => {
       chat.removeMessage(msg)?.then(() => {
-        let idx = msgIdIdxMap.get(msg.id);
         delete renderMessage[msg.id];
         setMessages([...topic.messages]);
         reloadNav(topic);
       });
     },
-    [chat, msgIdIdxMap, renderMessage, reloadNav, topic],
+    [chat, renderMessage, reloadNav, topic],
   );
   useEffect(() => {
     /**
@@ -153,7 +143,7 @@ export function MessageList({
             key: 'id',
             dataIndex: 'text',
             render(value, v, i) {
-              let idx = msgIdIdxMap.get(v.id);
+              let idx = i
               if (idx === undefined) idx = messages.length - 1;
               return (
                 <div
