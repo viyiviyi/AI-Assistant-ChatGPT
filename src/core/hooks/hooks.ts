@@ -127,6 +127,7 @@ export function useSendMessage(chat: ChatManagement) {
         )
           parentId = topic.messages[idx].parentId;
       }
+      if (!parentId) parentId = getUuid();
       let result: Message = {
         id: getUuid(),
         groupId: chat.group.id,
@@ -134,7 +135,7 @@ export function useSendMessage(chat: ChatManagement) {
         text: [],
         timestamp: time,
         topicId: topic.id,
-        parentId: parentId || getUuid(),
+        parentId: parentId,
       };
       result = onReaderFirst(chat.getChat(), topic.messages[idx], result);
       if (

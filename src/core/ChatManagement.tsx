@@ -347,16 +347,14 @@ export class ChatManagement {
     messages = messages.slice(-ctxCount);
     // 获取范围内消息的管理消息id
     let parentIdList: string[] = messages.map((v) => v.parentId).filter((f) => f) as string[];
-    if (ctxCount > 0 && messages.length > ctxCount) {
+    if (ctxCount > 0 && curtMessage.length > ctxCount) {
       // 不在记忆范围内 且勾选了的消息或关联的
       let checkedMessage = curtMessage
-        .slice(0, messages.length - ctxCount)
+        .slice(0, curtMessage.length - ctxCount)
         .filter((v) => v.checked || parentIdList.includes(v.parentId || ''));
       // 记忆范围内的消息
       messages = [...checkedMessage, ...messages];
     }
-    // 如果通过parentid取到的第一条数据还有parentid，继续往前找
-    messages = [...messages];
     history = [];
     messages
       .filter((f) => !f.skipCtx)
@@ -749,6 +747,7 @@ export class ChatManagement {
     if (!topic) return message;
     message.topicId = topic.id;
     message.groupId = this.group.id;
+    if (!message.parentId) message.parentId = getUuid();
     let previousMessage: Message;
     if (insertIndex >= topic.messages.length) insertIndex = -1;
     if (insertIndex !== -1) previousMessage = topic.messages[insertIndex];
