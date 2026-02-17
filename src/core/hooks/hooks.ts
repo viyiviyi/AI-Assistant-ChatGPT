@@ -285,13 +285,14 @@ export function useSendMessage(chat: ChatManagement) {
                     chat.pushMessage(result).then(() => {
                       reloadTopic(topic.id, result.id, true);
                     });
+
+                    // 回传结果
+                    setTimeout(() => {
+                      if (chat.topics.find((f) => f.id == topic.id)) {
+                        sendMessage(idx + 1, topic, true, result.parentId);
+                      }
+                    }, 100);
                   });
-                  // 回传结果
-                  setTimeout(() => {
-                    if (chat.topics.find((f) => f.id == topic.id)) {
-                      sendMessage(idx + 1, topic, true, result.parentId);
-                    }
-                  }, 100);
                 }
               }
             });
