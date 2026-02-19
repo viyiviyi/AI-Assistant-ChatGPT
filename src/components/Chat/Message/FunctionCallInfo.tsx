@@ -66,8 +66,16 @@ const formatObjectToMarkdown = (obj: any, title: string, depth: number = 0): str
         lines.push('```');
       }
     } else {
-      // 其他类型直接展示
-      lines.push(`**${key}:** ${String(value)}`);
+      // 其他类型直接展示，如果包含换行符则放入代码块
+      const stringValue = String(value);
+      if (stringValue.includes('\n')) {
+        lines.push(`**${key}:**`);
+        lines.push('```');
+        lines.push(stringValue);
+        lines.push('```');
+      } else {
+        lines.push(`**${key}:** ${stringValue}`);
+      }
     }
     lines.push('');
   });
@@ -91,8 +99,13 @@ const formatDataForDisplay = (data: string, title: string): string => {
     // 如果是数组，序列化为JSON字符串展示
     return `**${title}:**\n\n\`\`\`json\n${JSON.stringify(parsedData, null, 2)}\n\`\`\``;
   } else {
-    // 其他情况直接展示
-    return `**${title}:**\n\n${String(parsedData)}`;
+    // 其他情况直接展示，如果包含换行符则放入代码块
+    const stringValue = String(parsedData);
+    if (stringValue.includes('\n')) {
+      return `**${title}:**\n\n\`\`\`\n${stringValue}\n\`\`\``;
+    } else {
+      return `**${title}:**\n\n${stringValue}`;
+    }
   }
 };
 
