@@ -247,7 +247,7 @@ class ExecutorService {
     try {
       // 调用执行器的API获取tools列表
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30 * 1000); // 30秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 600 * 1000); // 600秒超时
       const response = await fetch(`${executor.url}/execute`, {
         method: 'POST',
         headers: {
