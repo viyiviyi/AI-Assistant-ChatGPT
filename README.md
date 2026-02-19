@@ -20,7 +20,7 @@
 
 ## 增加了调用外部工具的功能
 
-- 一个可用的执行器在 [https://github.com/viyiviyi/aias-executor.git](https://github.com/viyiviyi/aias-executor.git)
+- 一个可用的执行器在 [https://github.com/viyiviyi/aias-executer.git](https://github.com/viyiviyi/aias-executer.git)
 - 页面会完整显示执行器调用参数和返回值
 - 因为https的限制，需要配合反向代理工具才能在`https://eaias.com`这个网页访问，或者自己搭建在内网的https服务
 
