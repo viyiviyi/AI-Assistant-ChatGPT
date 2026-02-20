@@ -93,8 +93,11 @@ const MessageItem = ({
     [chat, reloadNav],
   );
   useEffect(() => {
-    renderMessage[msg.id] = createThrottleAndDebounce((a) => {
+    renderMessage[msg.id] = createThrottleAndDebounce((isEnd:boolean) => {
       setSuccessLines(ChatManagement.getMsgContent(msg));
+      if (isEnd) {
+        setMessage({ text: ChatManagement.getMsgContent(msg) });
+      }
     }, 40);
     return () => {
       delete renderMessage[msg.id];

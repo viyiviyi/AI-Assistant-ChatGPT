@@ -1,7 +1,7 @@
 import { MarkdownView } from '@/components/common/MarkdownView';
 import { Message } from '@/Models/DataBase';
 import { CodeOutlined } from '@ant-design/icons';
-import { Button, Flex, theme } from 'antd';
+import { Button, Flex, Spin, theme } from 'antd';
 import { useState } from 'react';
 
 // 判断是否为对象
@@ -150,7 +150,7 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
                 onClick={() => {
                   setExpanded((v) => !v);
                 }}
-                loading={!item.content}
+                
               >
                 {expanded ? '隐藏' : '查看'}
               </Button>
@@ -160,7 +160,9 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
                 <MarkdownView
                   markdown={formatDataForDisplay(tool_calls?.find((f) => f.id == item.id)?.function.arguments || '', '请求参数')}
                 />
-                <MarkdownView markdown={formatDataForDisplay(item.content, '响应结果')} />
+                <Spin spinning={ !item.content}>
+                  <MarkdownView markdown={formatDataForDisplay(item.content, '响应结果')} />
+                  </Spin>
               </>
             )}
           </div>

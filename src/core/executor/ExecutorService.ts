@@ -40,11 +40,33 @@ const CREATE_NEW_SESSION_TOOL: Tool = {
     },
   },
 };
+// 等待工具定义
+const WAIT_TOOL: Tool = {
+  type: 'function',
+  function: {
+    name: 'wait',
+    description: '等待一段时间并返回自定义内容。用于模拟延迟操作或等待特定条件。',
+    parameters: {
+      type: 'object',
+      properties: {
+        duration: {
+          type: 'integer',
+          description: '等待时间（秒）。最小值为1秒，最大值为120秒。',
+        },
+        message: {
+          type: 'string',
+          description: '等待完成后返回的消息内容。',
+        },
+      },
+      required: ['duration', 'message'],
+    },
+  },
+};
 
 // letthis.message.= { error: (err: string) => {} };
 
 class ExecutorService {
-  message = { error: (err: string) => {} };
+  message = { error: (err: string) => { } };
   // 获取所有执行器
   async getAllExecutors(): Promise<Executor[]> {
     try {
@@ -209,8 +231,8 @@ class ExecutorService {
         tools = data || [];
       }
 
-      // 添加固定的新开会话工具到工具列表
-      return [...tools, CREATE_NEW_SESSION_TOOL];
+      // 添加固定的新开会话工具和等待工具到工具列表
+      return [...tools, CREATE_NEW_SESSION_TOOL, WAIT_TOOL];
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
       // 如果获取失败，返回空数组
@@ -243,8 +265,14 @@ class ExecutorService {
   }
 
   // 执行函数
+  // 执行函数
   async exec(executor: Executor, call_data: any): Promise<string> {
     try {
+      // 检查是否是等待工具调用
+      if (call_data?.name === 'wait'||call_data?.function?.name === 'wait') {
+        return await this.handleWaitTool(call_data);
+      }
+      
       // 调用执行器的API获取tools列表
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 600 * 1000); // 600秒超时
@@ -270,6 +298,43 @@ class ExecutorService {
       console.error('Failed to fetch tools from executor:', error);
       // 如果获取失败，返回空数组
       return '调用出错 err:' + error['message'] || JSON.stringify(error);
+    }
+  }
+
+  // 处理等待工具
+  private async handleWaitTool(call_data: any): Promise<string> {
+    try {
+      const args = JSON.parse(call_data?.function?.arguments || '{}');
+      const duration = args.duration;
+      const message = args.message;
+
+      // 验证参数
+      if (typeof duration !== 'number' || duration < 1 || duration > 120) {
+        return JSON.stringify({
+          error: 'duration参数必须为1-120秒之间的数字'
+        }, null, 2);
+      }
+
+      if (typeof message !== 'string') {
+        return JSON.stringify({
+          error: 'message参数必须为字符串'
+        }, null, 2);
+      }
+
+      // 等待指定时间（将秒转换为毫秒）
+      await new Promise(resolve => setTimeout(resolve, duration * 1000));
+
+      // 返回结果
+      return JSON.stringify({
+        success: true,
+        duration: duration,
+        message: message,
+        timestamp: Date.now()
+      }, null, 2);
+    } catch (error: any) {
+      return JSON.stringify({
+        error: '等待工具执行失败: ' + (error.message || '未知错误')
+      }, null, 2);
     }
   }
 }
