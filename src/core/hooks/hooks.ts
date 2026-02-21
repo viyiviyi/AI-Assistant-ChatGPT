@@ -281,6 +281,8 @@ export function useSendMessage(chat: ChatManagement) {
                   });
                   if ((result.useTextIdx || 0) == callIdx) {
                     Promise.all(execTask).then((execResList) => {
+                      delete loadingMsgs[result.id];
+                      delete loadingMessages[result.id];
                       execResList.forEach((r, i) => {
                         result.tool_call_result![callIdx][i].content = r;
                       });
@@ -292,6 +294,7 @@ export function useSendMessage(chat: ChatManagement) {
                       setTimeout(() => {
                         if (chat.topics.find((f) => f.id == topic.id) && !isStop) {
                           sendMessage(idx + 1, topic, true, result.parentId);
+                          currentChat.current = undefined;
                         }
                       }, 100);
                     });
