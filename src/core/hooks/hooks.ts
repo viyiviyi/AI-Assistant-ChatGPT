@@ -233,72 +233,86 @@ export function useSendMessage(chat: ChatManagement) {
               });
             },
           };
-          // 调用工具
-          if (currentChat.current && res.tool_calls && res.tool_calls.length && res.end && loadingMessages[result.id]) {
-            result.tool_calls = res.tool_calls;
-            result.tool_call_result = result.tool_calls.map((calls) =>
-              calls.map((v) => ({
-                id: v.id,
-                name: v.function.name,
-                desc: curtExecutor.current?.tools?.find((f) => f.function?.name == v.function.name)?.function.description,
-                content: '',
-              })),
-            );
-            res.tool_calls.forEach((call, callIdx) => {
-              if (call && Array.isArray(call)) {
-                const execTask = call.map((v) => {
-                  if (v.function.name == 'create_new_session') {
-                    try {
-                      let text = JSON.parse(v.function.arguments).task_guidance;
-                      if (!text) return JSON.stringify({ success: false, message: '缺少新会话工作指导内容' });
-                      // text = '[新会话]\n\n' + text;
-                      chat.newTopic(text).then((_topic) => {
-                        chat
-                          .pushMessage({
-                            id: getUuid(),
-                            text: text,
-                            groupId: _topic.groupId,
-                            topicId: _topic.id,
-                            ctxRole: 'system',
-                            timestamp: Date.now(),
-                            parentId: getUuid(),
-                          })
-                          .then((msg) => {
-                            setActivityTopic(_topic);
-                            setTimeout(() => {
-                              sendMessage(idx + 2, _topic);
-                            }, 100);
-                          });
-                      });
-                    } catch (error) {
-                      return JSON.stringify({ success: false, message: '新会话创建失败' });
-                    }
-                    return JSON.stringify({ success: true, message: '新会话创建成功,当前会话可继续或终止。' });
-                  }
-                  return execFunctionCall(v);
-                });
-                if ((result.useTextIdx || 0) == callIdx) {
-                  Promise.all(execTask).then((execResList) => {
-                    execResList.forEach((r, i) => {
-                      result.tool_call_result![callIdx][i].content = r;
-                    });
-                    chat.pushMessage(result).then(() => {
-                      reloadTopic(topic.id, result.id, true);
-                    });
-
-                    // 回传结果
-                    setTimeout(() => {
-                      if (chat.topics.find((f) => f.id == topic.id)) {
-                        sendMessage(idx + 1, topic, true, result.parentId);
-                      }
-                    }, 100);
-                  });
-                }
-              }
-            });
-          }
           save(res.end || !loadingMsgs[result.id], () => {
-            if (res.end || !loadingMsgs[result.id]) {
+            // 调用工具
+            if (currentChat.current && res.tool_calls && res.tool_calls.length && res.end && loadingMessages[result.id]) {
+              let isStop = false;
+              result.tool_calls = res.tool_calls;
+              result.tool_call_result = result.tool_calls.map((calls) =>
+                calls.map((v) => ({
+                  id: v.id,
+                  name: v.function.name,
+                  desc: curtExecutor.current?.tools?.find((f) => f.function?.name == v.function.name)?.function.description,
+                  content: '',
+                })),
+              );
+              res.tool_calls.forEach((call, callIdx) => {
+                if (call && Array.isArray(call)) {
+                  const execTask = call.map((v) => {
+                    if (v.function.name == 'create_new_session') {
+                      try {
+                        let text = JSON.parse(v.function.arguments).task_guidance;
+                        if (!text) return JSON.stringify({ success: false, message: '缺少新会话工作指导内容' });
+                        // text = '[新会话]\n\n' + text;
+                        chat.newTopic(text).then((_topic) => {
+                          chat
+                            .pushMessage({
+                              id: getUuid(),
+                              text: text,
+                              groupId: _topic.groupId,
+                              topicId: _topic.id,
+                              ctxRole: 'system',
+                              timestamp: Date.now(),
+                              parentId: getUuid(),
+                            })
+                            .then((msg) => {
+                              setActivityTopic(_topic);
+                              setTimeout(() => {
+                                sendMessage(idx + 2, _topic);
+                              }, 100);
+                            });
+                        });
+                      } catch (error) {
+                        return JSON.stringify({ success: false, message: '新会话创建失败' });
+                      }
+                      return JSON.stringify({ success: true, message: '新会话创建成功,当前会话可继续或终止。' });
+                    }
+                    return execFunctionCall(v);
+                  });
+                  if ((result.useTextIdx || 0) == callIdx) {
+                    Promise.all(execTask).then((execResList) => {
+                      execResList.forEach((r, i) => {
+                        result.tool_call_result![callIdx][i].content = r;
+                      });
+                      chat.pushMessage(result).then(() => {
+                        reloadTopic(topic.id, result.id, true);
+                      });
+
+                      // 回传结果
+                      setTimeout(() => {
+                        if (chat.topics.find((f) => f.id == topic.id) && !isStop) {
+                          sendMessage(idx + 1, topic, true, result.parentId);
+                        }
+                      }, 100);
+                    });
+                  }
+                }
+              });
+
+              loadingMsgs[result.id] = {
+                stop: () => {
+                  if (res.stop) res.stop();
+                  isStop = true;
+                  delete loadingMsgs[result.id];
+                  delete loadingMessages[result.id];
+                  currentChat.current = undefined;
+                  save(true, () => {
+                    reloadTopic(topic.id, result.id, true);
+                  });
+                },
+              };
+              hasChange = true;
+            } else if (res.end || !loadingMsgs[result.id]) {
               delete loadingMsgs[result.id];
               delete loadingMessages[result.id];
               hasChange = true;
