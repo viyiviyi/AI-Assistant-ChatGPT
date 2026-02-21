@@ -289,7 +289,7 @@ class ExecutorService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        return '调用出错 status code:' + response.status;
+        return '工具调用出错，服务异常 status code:' + response.status;
       }
 
       const data = await response.json();
@@ -297,7 +297,7 @@ class ExecutorService {
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
       // 如果获取失败，返回空数组
-      return '调用出错 err:' + error['message'] || JSON.stringify(error);
+      return '工具调用出错，服务异常 err:' + error['message'] || JSON.stringify(error);
     }
   }
 
