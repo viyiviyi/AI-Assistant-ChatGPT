@@ -356,26 +356,26 @@ export class ChatManagement {
       messages = [...checkedMessage, ...messages];
     }
     history = [];
-    messages
-      .filter((f) => !f.skipCtx)
-      .forEach((v) => {
-        history.push({
-          role: v.ctxRole,
-          content: ChatManagement.getMsgContent(v),
-          name: this.getNameByRole(v.ctxRole, virtualRole),
-          tool_calls: v.tool_calls ? v.tool_calls[v.useTextIdx || 0] : undefined,
-        });
-        if (v.tool_call_result && v.tool_call_result[v.useTextIdx || 0]) {
-          v.tool_call_result[v.useTextIdx || 0].forEach((v) => {
-            history.push({
-              role: 'tool',
-              content: v.content,
-              name: v.name,
-              tool_call_id: v.id,
-            });
-          });
-        }
+    messages = messages.filter((f) => !f.skipCtx);
+    messages.forEach((v) => {
+      history.push({
+        role: v.ctxRole,
+        content: ChatManagement.getMsgContent(v),
+        name: this.getNameByRole(v.ctxRole, virtualRole),
+        tool_calls: v.tool_calls ? v.tool_calls[v.useTextIdx || 0] : undefined,
       });
+      if (v.tool_call_result && v.tool_call_result[v.useTextIdx || 0]) {
+        v.tool_call_result[v.useTextIdx || 0].forEach((r) => {
+          history.push({
+            role: 'tool',
+            content: r.content,
+            name: r.name,
+            tool_call_id: r.id,
+            tool_call_name: r.name,
+          });
+        });
+      }
+    });
 
     if (topic.overrideSettings?.useConfig === undefined ? enableVirtualRole : topic.overrideSettings?.useConfig) {
       let ctxContent = history.map((v) => v.content).join(' \n');

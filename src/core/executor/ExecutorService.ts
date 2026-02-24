@@ -19,6 +19,7 @@ export type Tool = {
       };
       required: string[]; // 必传参：city
     };
+    result_use_type?: 'once' | 'last';
   };
 };
 
@@ -66,7 +67,7 @@ const WAIT_TOOL: Tool = {
 // letthis.message.= { error: (err: string) => {} };
 
 class ExecutorService {
-  message = { error: (err: string) => { } };
+  message = { error: (err: string) => {} };
   // 获取所有执行器
   async getAllExecutors(): Promise<Executor[]> {
     try {
@@ -252,7 +253,6 @@ class ExecutorService {
 
       const tools = await this.fetchToolsFromExecutor(executor);
       executor.tools = tools;
-      console.log(tools);
       executor.updatedAt = Date.now();
 
       const updatedExecutor = await this.updateExecutor(executor);
@@ -269,10 +269,10 @@ class ExecutorService {
   async exec(executor: Executor, call_data: any): Promise<string> {
     try {
       // 检查是否是等待工具调用
-      if (call_data?.name === 'wait'||call_data?.function?.name === 'wait') {
+      if (call_data?.name === 'wait' || call_data?.function?.name === 'wait') {
         return await this.handleWaitTool(call_data);
       }
-      
+
       // 调用执行器的API获取tools列表
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 600 * 1000); // 600秒超时
@@ -310,31 +310,47 @@ class ExecutorService {
 
       // 验证参数
       if (typeof duration !== 'number' || duration < 1 || duration > 120) {
-        return JSON.stringify({
-          error: 'duration参数必须为1-120秒之间的数字'
-        }, null, 2);
+        return JSON.stringify(
+          {
+            error: 'duration参数必须为1-120秒之间的数字',
+          },
+          null,
+          2,
+        );
       }
 
       if (typeof message !== 'string') {
-        return JSON.stringify({
-          error: 'message参数必须为字符串'
-        }, null, 2);
+        return JSON.stringify(
+          {
+            error: 'message参数必须为字符串',
+          },
+          null,
+          2,
+        );
       }
 
       // 等待指定时间（将秒转换为毫秒）
-      await new Promise(resolve => setTimeout(resolve, duration * 1000));
+      await new Promise((resolve) => setTimeout(resolve, duration * 1000));
 
       // 返回结果
-      return JSON.stringify({
-        success: true,
-        duration: duration,
-        message: message,
-        timestamp: Date.now()
-      }, null, 2);
+      return JSON.stringify(
+        {
+          success: true,
+          duration: duration,
+          message: message,
+          timestamp: Date.now(),
+        },
+        null,
+        2,
+      );
     } catch (error: any) {
-      return JSON.stringify({
-        error: '等待工具执行失败: ' + (error.message || '未知错误')
-      }, null, 2);
+      return JSON.stringify(
+        {
+          error: '等待工具执行失败: ' + (error.message || '未知错误'),
+        },
+        null,
+        2,
+      );
     }
   }
 }
@@ -349,12 +365,12 @@ export const useExecutor = () => {
       executorService.getExecutorById(chatMgt.config.executorConfig?.selectedExecutorId).then((res) => {
         curtExecutor.current = res;
       });
-  }, [chatMgt.config.executorConfig?.selectedExecutorId]);
+  }, [chatMgt.config.executorConfig?.selectedExecutorId, chatMgt]);
   const execFunctionCall = useCallback(async (call_data: any) => {
     if (curtExecutor.current) {
       return await executorService.exec(curtExecutor.current, call_data);
     } else {
-      return '执行器不存在';
+      return 'tool执行服务不存在';
     }
   }, []);
   return {

@@ -7,4 +7,5 @@ export type CtxItem = {
   name?: string;
   tool_calls?: ToolCalls[];
   tool_call_id?: string;
+  tool_call_name?: string;
 };

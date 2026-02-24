@@ -1,8 +1,10 @@
 import { reloadTopic } from '@/components/Chat/Message/MessageList';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { onReader, onReaderAfter, onReaderFirst, onSendBefore } from '@/middleware/execMiddleware';
+import { CtxItem } from '@/Models/CtxItem';
 import { CtxRole } from '@/Models/CtxRole';
 import { Message } from '@/Models/DataBase';
+import { Executor } from '@/Models/Executor';
 import { App } from 'antd';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { TopicMessage } from '../../Models/Topic';
@@ -188,6 +190,7 @@ export function useSendMessage(chat: ChatManagement) {
       }, 100);
       let { allCtx: ctx, history } = currentChat.current!.getAskContext(topic, idx + 1);
       const context = onSendBefore(chat.getChat(), { allCtx: ctx, history });
+      if (curtExecutor.current) hiddenResult(context, curtExecutor.current);
       await aiService.sendMessage({
         msg: topic.messages[idx],
         context: context,
@@ -343,6 +346,39 @@ export function useSendMessage(chat: ChatManagement) {
     [chat, curtExecutor, execFunctionCall, loadingMsgs, message, reloadIndex, setActivityTopic],
   );
   return { sendMessage };
+}
+
+function hiddenResult(ctx: CtxItem[], executor: Executor) {
+  let tool_result_use_type: { [key: string]: 'once' | 'last' | undefined } = {};
+  executor.tools.forEach((c) => {
+    if (c.function.result_use_type) {
+      tool_result_use_type[c.function.name] = c.function.result_use_type;
+    }
+  });
+  let usedResultName: { [key: string]: boolean } = {};
+  for (let i = ctx.length - 1; i >= 0; i--) {
+    const msg = ctx[i];
+    if (msg.role == 'tool' && msg.tool_call_name && tool_result_use_type[msg.tool_call_name]) {
+      let skip = true;
+      if (!usedResultName[msg.tool_call_name]) {
+        usedResultName[msg.tool_call_name] = true;
+        skip = false;
+        if (tool_result_use_type[msg.tool_call_name] == 'once' && i != ctx.length - 1) {
+          skip = true;
+        }
+      }
+      if (skip) {
+        try {
+          const resJson = JSON.parse(msg.content);
+          msg.content = JSON.stringify({ success: resJson.success }, null, 2);
+        } catch (error) {
+          msg.content = JSON.stringify({ success: true }, null, 2);
+        }
+      }
+    }
+    msg.tool_call_name = undefined;
+  }
+  return ctx;
 }
 
 export function usePushMessage(chat: ChatManagement) {
