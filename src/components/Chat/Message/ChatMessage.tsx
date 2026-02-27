@@ -3,7 +3,15 @@ import { TopicConfigModal } from '@/components/TopicConfig/TopicConfig';
 import { ChatContext, ChatManagement, IChat } from '@/core/ChatManagement';
 import { useSendMessage } from '@/core/hooks/hooks';
 import { TopicMessage } from '@/Models/Topic';
-import { CaretRightOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, MessageOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  CaretRightOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  MessageOutlined,
+  PauseCircleOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import { Button, Checkbox, Collapse, Flex, Input, Popconfirm, theme, Typography } from 'antd';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { SkipExport } from '../../common/SkipExport';
@@ -19,7 +27,7 @@ const MemoTopUtil = React.memo(TopUtil);
 export const ChatMessage = () => {
   const { token } = theme.useToken();
   const firstMsgIdx = useRef<number>();
-  const { chatMgt: chat, setActivityTopic, activityTopic, reloadNav, forceRender } = useContext(ChatContext);
+  const { chatMgt: chat, setActivityTopic, activityTopic, reloadNav, forceRender, loadingMsgs } = useContext(ChatContext);
   const [activityKey, setActivityKey] = useState<string[]>([chat.config.activityTopicId]);
   const [topicId, setTopicId] = useState<string>();
   const { onlyOne, closeAll, showTitle, setCloseAll: setCloasAll } = useContext(MessageContext);
@@ -37,7 +45,7 @@ export const ChatMessage = () => {
         }
       });
     },
-    [setActivityTopic, setCloasAll]
+    [setActivityTopic, setCloasAll],
   );
   const handlerDelete = useCallback(
     (topic: TopicMessage) => {
@@ -52,7 +60,7 @@ export const ChatMessage = () => {
         setNone([]);
       });
     },
-    [activityKey, activityTopic, chat, reloadNav, setActivityTopic]
+    [activityKey, activityTopic, chat, reloadNav, setActivityTopic],
   );
 
   if (onlyOne) {
@@ -159,8 +167,7 @@ function TopUtil({
             setIndeterminate(false);
             reloadTopic(v.id);
           }}
-        >
-        </Checkbox>
+        ></Checkbox>
         <Button
           shape="circle"
           type="text"
@@ -362,7 +369,7 @@ export function downloadTopic(
     assistant: boolean;
     system: boolean;
     user: boolean;
-  }
+  },
 ) {
   let str = '#' + ChatManagement.parseText(topic.name).substring(0, 64);
   str += '\n---\n';

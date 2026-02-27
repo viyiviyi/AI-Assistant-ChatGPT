@@ -5,7 +5,7 @@ import { useScreenSize, useSendMessage } from '@/core/hooks/hooks';
 import { activityScroll, createThrottleAndDebounce, getUuid, pagesUtil } from '@/core/utils/utils';
 import { Message } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
-import { PictureOutlined } from '@ant-design/icons';
+import { PauseCircleOutlined, PictureOutlined, StopOutlined, VerticalAlignTopOutlined } from '@ant-design/icons';
 import { Button, FloatButton, InputRef, Table } from 'antd';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MessageContext } from '../Chat';
@@ -33,7 +33,7 @@ export function MessageList({
   chat: ChatManagement;
   firstMsgIdxRef: React.MutableRefObject<number | undefined>;
 }) {
-  const { reloadNav, forceRender, setActivityTopic } = useContext(ChatContext);
+  const { reloadNav, forceRender, setActivityTopic, activityTopic, loadingMsgs } = useContext(ChatContext);
   const { setCite } = useContext(MessageContext);
   const { inputRef, setInput } = useInput();
   const [insertIndex, setInsertIndex] = useState(-1);
@@ -124,8 +124,25 @@ export function MessageList({
     };
   }, [renderMessage, topic.id, resetCharCount, topic.messages]);
 
+  let runingMsg = Object.entries(loadingMsgs).find((f) => activityTopic?.messageMap[f[0]]);
   return (
     <div>
+      <Hidden hidden={!runingMsg}>
+        <div style={{ position: 'absolute', left: 15, width: 64, height: 64, bottom: 0, opacity: 0.5 }}>
+          {/* 停止按钮 */}
+          <Button
+            shape={'circle'}
+            size="large"
+            icon={<PauseCircleOutlined style={{ color: '#ff8d8f' }} />}
+            onClick={() => {
+              if (runingMsg && runingMsg[1]) {
+                runingMsg[1].stop();
+                reloadTopic(topic.id);
+              }
+            }}
+          />
+        </div>
+      </Hidden>
       <Table<Message>
         bordered={false}
         size={'small'}
@@ -143,7 +160,7 @@ export function MessageList({
             key: 'id',
             dataIndex: 'text',
             render(value, v, i) {
-              let idx = i
+              let idx = i;
               if (idx === undefined) idx = messages.length - 1;
               return (
                 <div

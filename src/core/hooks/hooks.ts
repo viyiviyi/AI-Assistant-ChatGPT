@@ -159,7 +159,7 @@ export function useSendMessage(chat: ChatManagement) {
           delete loadingMsgs[result.id];
           delete loadingMessages[result.id];
           currentChat.current = undefined;
-          reloadTopic(topic.id, result.id, true);
+          reloadTopic(topic.id);
         },
       };
       chat.pushMessage(result, idx + 1).then((r) => {
@@ -195,6 +195,7 @@ export function useSendMessage(chat: ChatManagement) {
         msg: topic.messages[idx],
         context: context,
         async onMessage(res) {
+          if (!currentChat.current) return;
           if (typeof res.text == 'string') res.text = [res.text];
           let hasChange = false;
           if (currentChat.current) {
@@ -232,7 +233,7 @@ export function useSendMessage(chat: ChatManagement) {
               delete loadingMessages[result.id];
               currentChat.current = undefined;
               save(true, () => {
-                reloadTopic(topic.id, result.id, true);
+                reloadTopic(topic.id);
               });
             },
           };
@@ -313,7 +314,7 @@ export function useSendMessage(chat: ChatManagement) {
                   delete loadingMessages[result.id];
                   currentChat.current = undefined;
                   save(true, () => {
-                    reloadTopic(topic.id, result.id, true);
+                    reloadTopic(topic.id);
                   });
                 },
               };

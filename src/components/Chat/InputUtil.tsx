@@ -10,7 +10,7 @@ import {
   MessageOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
-  VerticalAlignTopOutlined
+  VerticalAlignTopOutlined,
 } from '@ant-design/icons';
 import { Button, Drawer, Flex, theme, Typography } from 'antd';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -91,7 +91,7 @@ export function InputUtil() {
       });
       return;
     },
-    [chat, inputText, role, reloadNav, setActivityTopic, pushMessage]
+    [chat, inputText, role, reloadNav, setActivityTopic, pushMessage],
   );
   const toolEle = useMemo(
     () => (
@@ -232,7 +232,7 @@ export function InputUtil() {
         ></Button>
       </div>
     ),
-    [activityTopic, closeAll, onSubmit, onlyOne, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showTitle, token.colorPrimary]
+    [activityTopic, closeAll, onSubmit, onlyOne, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showTitle, token.colorPrimary],
   );
   const editorEle = useMemo(
     () => (
@@ -260,12 +260,12 @@ export function InputUtil() {
         />
       </div>
     ),
-    [inputText, onSubmit]
+    [inputText, onSubmit],
   );
   return (
     <>
       <div className={styleCss.loading}>
-        {loading ? (
+        {/* {loading ? (
           <div className={styleCss.loading}>
             {[0, 1, 2, 3, 4].map((v) => (
               <div key={v} style={{ backgroundColor: token.colorPrimary }} className={styleCss.loadingBar}></div>
@@ -273,7 +273,7 @@ export function InputUtil() {
           </div>
         ) : (
           <div className={styleCss.loading}></div>
-        )}
+        )} */}
       </div>
       <Drawer
         placement={'left'}
