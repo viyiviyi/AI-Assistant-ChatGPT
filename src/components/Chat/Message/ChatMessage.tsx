@@ -83,7 +83,7 @@ export const ChatMessage = () => {
               <MemoTopUtil topic={topic} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
             </div>
           </Hidden>
-          <div id={'content'} style={{ flex: 1, overflow: 'auto' }}>
+          <div id={'content'} style={{ flex: 1, overflow: 'auto',height:'calc(100% - 68px)' }}>
             <MemoMessageList chat={chat} topic={topic} firstMsgIdxRef={firstMsgIdx}></MemoMessageList>
           </div>
         </div>
@@ -108,7 +108,7 @@ export const ChatMessage = () => {
         style: { border: 'none', width: '100%' },
         label: <MemoTopicTitle topic={v} onClick={() => onClickTopicTitle(v)}></MemoTopicTitle>,
         children: (
-          <div id={v.id}>
+          <div id={v.id} style={{ maxHeight: '100vh' }}>
             <>
               <TopUtil topic={v} onDle={handlerDelete} firstMsgIdxRef={firstMsgIdx} />
               <MemoMessageList chat={chat} topic={v} firstMsgIdxRef={firstMsgIdx}></MemoMessageList>

@@ -264,8 +264,8 @@ export function InputUtil() {
   );
   return (
     <>
-      <div className={styleCss.loading}>
-        {/* {loading ? (
+      {/* <div className={styleCss.loading}>
+        {loading ? (
           <div className={styleCss.loading}>
             {[0, 1, 2, 3, 4].map((v) => (
               <div key={v} style={{ backgroundColor: token.colorPrimary }} className={styleCss.loadingBar}></div>
@@ -273,8 +273,8 @@ export function InputUtil() {
           </div>
         ) : (
           <div className={styleCss.loading}></div>
-        )} */}
-      </div>
+        )}
+      </div> */}
       <Drawer
         placement={'left'}
         closable={false}
@@ -300,7 +300,8 @@ export function InputUtil() {
       <div
         style={{
           width: '100%',
-          padding: '0px 10px 5px',
+          padding: '0px 10px 0px',
+          margin: '8px 0 15px',
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
           position: 'relative',

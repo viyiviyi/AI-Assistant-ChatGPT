@@ -207,7 +207,7 @@ export const Chat = () => {
               </Content>
             </div>
             <SkipExport>
-              <div>
+              <div style={{ minHeight: 103 }}>
                 <MemoInputUtil></MemoInputUtil>
               </div>
             </SkipExport>

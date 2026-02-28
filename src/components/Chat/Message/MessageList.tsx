@@ -128,7 +128,7 @@ export function MessageList({
   return (
     <div>
       <Hidden hidden={!runingMsg}>
-        <div style={{ position: 'absolute', left: 15, width: 64, height: 64, bottom: 0, opacity: 0.5 }}>
+        <div style={{ position: 'absolute', left: 15, width: 64, height: 64, bottom: 0, opacity: 0.5, zIndex: 99 }}>
           {/* 停止按钮 */}
           <Button
             shape={'circle'}
