@@ -285,22 +285,25 @@ export function useSendMessage(chat: ChatManagement) {
                   });
                   if ((result.useTextIdx || 0) == callIdx) {
                     Promise.all(execTask).then((execResList) => {
+                      if (!loadingMsgs[result.id]) return;
                       delete loadingMsgs[result.id];
                       delete loadingMessages[result.id];
                       execResList.forEach((r, i) => {
                         result.tool_call_result![callIdx][i].content = r;
                       });
-                      chat.pushMessage(result).then(() => {
-                        reloadTopic(topic.id, result.id, true);
-                      });
-
-                      // 回传结果
-                      setTimeout(() => {
-                        if (chat.topics.find((f) => f.id == topic.id) && !isStop) {
-                          sendMessage(idx + 1, topic, true, result.parentId);
-                          currentChat.current = undefined;
-                        }
-                      }, 100);
+                      // 如果消息没有删除才继续
+                      if (topic.messageMap[result.id]) {
+                        chat.pushMessage(result).then(() => {
+                          reloadTopic(topic.id, result.id, true);
+                        });
+                        // 回传结果
+                        setTimeout(() => {
+                          if (chat.topics.find((f) => f.id == topic.id) && !isStop) {
+                            sendMessage(idx + 1, topic, true, result.parentId);
+                            currentChat.current = undefined;
+                          }
+                        }, 100);
+                      }
                     });
                   }
                 }
