@@ -1,14 +1,24 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { Executor } from '@/Models/Executor';
-import { executorService, useExecutor } from '@/core/executor/ExecutorService';
+import { executorService, Tool, useExecutor } from '@/core/executor/ExecutorService';
 import { Button, Card, Checkbox, Collapse, Flex, Form, Input, List, Space, Spin, Typography, message, Popconfirm } from 'antd';
-import { DeleteOutlined, DownOutlined, ExpandOutlined, PlusOutlined, RedoOutlined, ReloadOutlined, RightOutlined } from '@ant-design/icons';
+import {
+  CaretRightOutlined,
+  DeleteOutlined,
+  DownOutlined,
+  ExpandOutlined,
+  PlusOutlined,
+  RedoOutlined,
+  ReloadOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 import { ModalCallback } from '../common/Modal';
 import { ChatContext } from '@/core/ChatManagement';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { useService } from '@/core/AiService/ServiceProvider';
 import { KeyValueData } from '@/core/db/KeyValueData';
 import { MarkdownView } from '../common/MarkdownView';
+import { SkipExport } from '../common/SkipExport';
 
 const { Text, Title } = Typography;
 
@@ -23,6 +33,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   const [selectedTools, setSelectedTools] = useState<Record<string, string[]>>({});
   const [editExecutorId, setEditExecutorId] = useState<string>();
   const [expandedExecutorId, setExpandedExecutorId] = useState<string | null>(null);
+  const [activityKey, setActivityKey] = useState(['default']);
   const { chatMgt, setChat } = useContext(ChatContext);
   const [form] = Form.useForm();
   const screenSize = useScreenSize();
@@ -95,7 +106,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
         return [...prev];
       });
     }
-    setEditExecutorId(undefined)
+    setEditExecutorId(undefined);
     form.resetFields();
   };
 
@@ -116,14 +127,6 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
   const handleExecutorToggle = (executorId: string) => {
     const newSelectedId = selectedExecutorId === executorId ? null : executorId;
     setSelectedExecutorId(newSelectedId);
-
-    if (newSelectedId) {
-      const executor = tempExecutors.find((e) => e.id === newSelectedId);
-      if (executor) {
-        const tools = selectedTools[newSelectedId] || [];
-        const selectedToolObjects = executor.tools.filter((tool) => tools.includes(tool.function.name));
-      }
-    }
   };
 
   // 切换工具选择
@@ -136,15 +139,6 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
         ...prev,
         [executorId]: newTools,
       };
-
-      // 如果当前执行器被选中，更新回调
-      if (selectedExecutorId === executorId) {
-        const executor = tempExecutors.find((e) => e.id === executorId);
-        if (executor) {
-          const selectedToolObjects = executor.tools.filter((tool) => newTools.includes(tool.function.name));
-        }
-      }
-
       return updated;
     });
   };
@@ -214,12 +208,105 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
       throw err;
     }
   };
-
   // 暴露保存方法给父组件
   cbs.current.okCallback = () => {
     handleSave();
   };
+  const toolsToGroup = (tools: Tool[], executorToolIds: string[]): { groupName: string; checked: boolean; tools: Tool[] }[] => {
+    const data: { groupName: string; checked: boolean; tools: Tool[] }[] = [];
+    tools.forEach((tool) => {
+      let group = data.find((f) => f.groupName == (tool.groupName || 'default'));
+      if (!group) {
+        group = { groupName: tool.groupName || 'default', tools: [], checked: true };
+        data.push(group);
+      }
+      group.tools.push(tool);
+      group.checked = group.checked && executorToolIds.includes(tool.function.name);
+    });
+    return data;
+  };
+  const executorToolsGroup = (executor: Executor) => {
+    const executorToolIds = selectedTools[executor.id] || [];
+    const toolsGroup = toolsToGroup(executor.tools, executorToolIds);
+    return (
+      <Collapse
+        // ghost
+        bordered={false}
+        activeKey={activityKey}
+        onChange={(e) => setActivityKey(Array.isArray(e) ? [...e] : [e])}
+        defaultActiveKey={'default'}
+        items={toolsGroup.map((v) => {
+          return {
+            key: v.groupName,
+            forceRender: true,
+            label: (
+              <div>
+                <Typography.Title level={5} style={{ marginLeft: 10, display: 'inline-block' }}>
+                  {v.groupName}
+                </Typography.Title>
+              </div>
+            ),
+            children: (
+              <div style={{ position: 'relative' }}>
+                <label style={{ position: 'absolute', top: -50, right: 10, padding: 10 }}>
+                  <Checkbox
+                    checked={v.checked}
+                    onChange={(e) => {
+                      executorToolIds;
+                      setSelectedTools((prev) => {
+                        const executorTools = prev[executor.id] || [];
+                        const newTools = executor.tools
+                          .filter((f) => (f.groupName != v.groupName ? executorTools.includes(f.function.name) : e.target.checked))
+                          .map((v) => v.function.name);
+                        const updated = {
+                          ...prev,
+                          [executor.id]: newTools,
+                        };
+                        return updated;
+                      });
+                    }}
+                  ></Checkbox>
+                </label>
 
+                <List
+                  itemLayout="vertical"
+                  dataSource={v.tools}
+                  renderItem={(tool) => {
+                    const isToolSelected = executorToolIds.includes(tool.function.name);
+                    return (
+                      <Card key={tool.function.name} size="small" style={{ marginBottom: 8 }}>
+                        <Flex gap={12} align="start">
+                          <label style={{ padding: '0 5px' }}>
+                            <Checkbox
+                              checked={isToolSelected}
+                              onChange={(e) => {
+                                handleToolToggle(executor.id, tool.function.name);
+                              }}
+                            />
+                          </label>
+                          <div style={{ flex: 1 }}>
+                            <Text strong>
+                              {tool.function.name}
+                              {tool.function.description && (
+                                <Text style={{ marginLeft: 20, color: '#666' }}>{tool.function.description}</Text>
+                              )}
+                            </Text>
+                            {/* <div style={{ marginTop: 8, padding: 0, borderRadius: 4 }}>
+                                      <MarkdownView markdown={'```\n'+JSON.stringify(tool, null, 2)+'\n```'} />
+                                    </div> */}
+                          </div>
+                        </Flex>
+                      </Card>
+                    );
+                  }}
+                />
+              </div>
+            ),
+          };
+        })}
+      />
+    );
+  };
   return (
     <div style={{ width: '100%', maxHeight: screenSize.height - 200, overflow: 'auto' }}>
       {contextHolder}
@@ -227,7 +314,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
       <div title="执行器列表" style={{ marginBottom: 16 }}>
         {tempExecutors.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
-            <Text>暂无执行器，请添加</Text>
+            <Text>暂无执行器，请刷新重试</Text>
           </div>
         ) : (
           <List
@@ -236,7 +323,6 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
             renderItem={(executor) => {
               const isSelected = selectedExecutorId === executor.id;
               const isExpanded = expandedExecutorId === executor.id;
-              const executorToolIds = selectedTools[executor.id] || [];
               return (
                 <Card key={executor.id} style={{ marginBottom: 16 }} size="small">
                   <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
@@ -279,35 +365,7 @@ export const ExecutorManager: React.FC<ExecutorManagerProps> = ({ cbs }) => {
                   {isExpanded && (
                     <div style={{ marginTop: 12, paddingTop: 12 }}>
                       <Title level={5}>函数列表</Title>
-                      {executor.tools.length === 0 ? (
-                        <Text>暂无函数</Text>
-                      ) : (
-                        <List
-                          itemLayout="vertical"
-                          dataSource={executor.tools}
-                          renderItem={(tool) => {
-                            const isToolSelected = executorToolIds.includes(tool.function.name);
-                            return (
-                              <Card key={tool.function.name} size="small" style={{ marginBottom: 8 }}>
-                                <Flex gap={12} align="start">
-                                  <Checkbox checked={isToolSelected} onChange={() => handleToolToggle(executor.id, tool.function.name)} />
-                                  <div style={{ flex: 1 }}>
-                                    <Text strong>
-                                      {tool.function.name}
-                                      {tool.function.description && (
-                                        <Text style={{ marginLeft: 20, color: '#666' }}>{tool.function.description}</Text>
-                                      )}
-                                    </Text>
-                                    {/* <div style={{ marginTop: 8, padding: 0, borderRadius: 4 }}>
-                                      <MarkdownView markdown={'```\n'+JSON.stringify(tool, null, 2)+'\n```'} />
-                                    </div> */}
-                                  </div>
-                                </Flex>
-                              </Card>
-                            );
-                          }}
-                        />
-                      )}
+                      {executor.tools.length === 0 ? <Text>暂无函数</Text> : executorToolsGroup(executor)}
                     </div>
                   )}
                 </Card>

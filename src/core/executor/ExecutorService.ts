@@ -6,6 +6,7 @@ import { ChatContext } from '../ChatManagement';
 
 export type Tool = {
   type: 'function';
+  groupName?: string;
   function: {
     name: string; // 函数名（与本地函数一致）
     description: string;
@@ -26,6 +27,7 @@ export type Tool = {
 // 新开会话工具定义
 const CREATE_NEW_SESSION_TOOL: Tool = {
   type: 'function',
+  groupName: '内置',
   function: {
     name: 'create_new_session',
     description: '当需要时将任务分配给新的会话（新会使用全新的上下文）。',
@@ -44,6 +46,7 @@ const CREATE_NEW_SESSION_TOOL: Tool = {
 // 等待工具定义
 const WAIT_TOOL: Tool = {
   type: 'function',
+  groupName: '内置',
   function: {
     name: 'wait',
     description: '等待一段时间并返回自定义内容。用于模拟延迟操作或等待特定条件。',
@@ -227,11 +230,11 @@ class ExecutorService {
       if (data && data.tools) data = data.tools;
       let tools: Tool[] = [];
       if (Array.isArray(data) && !data[0].type && data[0].name) {
-        tools = data.map((v) => ({ type: 'function', function: v }));
+        tools = data.map((v) => ({ type: 'function', function: { ...v, groupName: undefined }, groupName: v.groupName }));
       } else {
         tools = data || [];
       }
-
+      console.log('tools', tools);
       // 添加固定的新开会话工具和等待工具到工具列表
       return [...tools, CREATE_NEW_SESSION_TOOL, WAIT_TOOL];
     } catch (error: any) {

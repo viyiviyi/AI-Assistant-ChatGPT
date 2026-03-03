@@ -52,7 +52,7 @@ export const ExecutorManagerIcon: React.FC<ExecutorManagerIconProps> = ({ onExec
     };
   }, [curtExecutor]);
   return (
-    <>
+    <div>
       <CodeOutlined style={{ padding: '5px 10px' }} color={iconColor} onClick={() => setIsModalOpen(!isModalOpen)} />
       {contextHolder}
       <Modal
@@ -64,6 +64,6 @@ export const ExecutorManagerIcon: React.FC<ExecutorManagerIconProps> = ({ onExec
           return <ExecutorManager cbs={cbs} />;
         }}
       ></Modal>
-    </>
+    </div>
   );
 };
