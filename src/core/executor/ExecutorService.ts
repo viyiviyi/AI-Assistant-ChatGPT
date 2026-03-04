@@ -234,7 +234,6 @@ class ExecutorService {
       } else {
         tools = data || [];
       }
-      console.log('tools', tools);
       // 添加固定的新开会话工具和等待工具到工具列表
       return [...tools, CREATE_NEW_SESSION_TOOL, WAIT_TOOL];
     } catch (error: any) {
