@@ -301,7 +301,7 @@ export function InputUtil() {
         style={{
           width: '100%',
           padding: '0px 10px 0px',
-          margin: '8px 0 15px',
+          margin: '8px 0 10px',
           borderRadius: token.borderRadius,
           backgroundColor: token.colorFillContent,
           position: 'relative',
