@@ -1,23 +1,19 @@
-import { Chat } from "@/components/Chat/Chat";
-import { MemoBackgroundImage } from "@/components/common/BackgroundImage";
-import { SkipExport } from "@/components/common/SkipExport";
-import { useService } from "@/core/AiService/ServiceProvider";
-import { BgConfig, BgImageStore } from "@/core/BgImageStore";
-import {
-  ChatContext,
-  ChatManagement,
-  IChat,
-  noneChat
-} from "@/core/ChatManagement";
-import { KeyValueData } from "@/core/db/KeyValueData";
-import { initTokenStore } from "@/core/tokens";
-import { scrollToBotton } from "@/core/utils/utils";
-import { TopicMessage } from "@/Models/Topic";
-import { Layout, Spin, theme } from "antd";
-import Head from "next/head";
-import { useRouter } from "next/router";
-import React, { useContext, useEffect, useState } from "react";
-import appManifest from "../../public/manifest.json";
+import { Chat } from '@/components/Chat/Chat';
+import { MemoBackgroundImage } from '@/components/common/BackgroundImage';
+import { Hidden } from '@/components/common/Hidden';
+import { SkipExport } from '@/components/common/SkipExport';
+import { useService } from '@/core/AiService/ServiceProvider';
+import { BgConfig, BgImageStore } from '@/core/BgImageStore';
+import { ChatContext, ChatManagement, IChat, noneChat } from '@/core/ChatManagement';
+import { KeyValueData } from '@/core/db/KeyValueData';
+import { initTokenStore } from '@/core/tokens';
+import { scrollToBotton } from '@/core/utils/utils';
+import { TopicMessage } from '@/Models/Topic';
+import { Layout, Spin, theme } from 'antd';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import appManifest from '../../public/manifest.json';
 
 const MemoChat = React.memo(Chat);
 
@@ -31,9 +27,7 @@ export default function Page() {
   const [chatMgt, setChatMgt] = useState<ChatManagement>(noneChat);
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
   const [currGroupId, setGroupId] = useState(groupId);
-  const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
-    chatMgt.getActivityTopic()
-  );
+  const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(chatMgt.getActivityTopic());
   const { reloadService } = useService();
 
   useEffect(() => {
@@ -43,14 +37,13 @@ export default function Page() {
     setGroupId(currentGroup);
   }, [currentGroup]);
   useEffect(() => {
-    if (typeof window == "undefined") return;
+    if (typeof window == 'undefined') return;
     setLoading(true);
     ChatManagement.load().then(async () => {
       let chats = ChatManagement.getGroups();
       if (chats.length == 0) return setLoading(false);
       let selectChat = chats[0];
-      if (currGroupId)
-        selectChat = chats.find((f) => f.group.id == currGroupId) || selectChat;
+      if (currGroupId) selectChat = chats.find((f) => f.group.id == currGroupId) || selectChat;
       BgImageStore.getInstance()
         .getBgImage()
         .then((res) => {
@@ -63,8 +56,7 @@ export default function Page() {
         reloadService(selectChat, KeyValueData.instance());
       });
       if (chatMgt.group.id == currGroupId) return setLoading(false);
-      if (!selectChat.topics.length)
-        await ChatManagement.loadTopics(selectChat);
+      if (!selectChat.topics.length) await ChatManagement.loadTopics(selectChat);
       const newChatMgt = new ChatManagement(selectChat);
       setChatMgt(newChatMgt);
 
@@ -77,7 +69,7 @@ export default function Page() {
 
       setTimeout(() => {
         // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
-        scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || "");
+        scrollToBotton(activityTopic?.messages.slice(-1)[0]?.id || '');
         setLoading(false);
       }, 500);
     });
@@ -97,7 +89,7 @@ export default function Page() {
         setActivityTopic: (topic?: TopicMessage) => {
           if (topic?.id == activityTopic?.id) return;
           setActivityTopic(topic);
-          chatMgt.config.activityTopicId = topic?.id || "";
+          chatMgt.config.activityTopicId = topic?.id || '';
           chatMgt.saveConfig();
         },
         bgConfig: bgImg,
@@ -117,12 +109,12 @@ export default function Page() {
     >
       <Layout
         style={{
-          display: "flex",
-          height: "100dvh",
-          flexDirection: "row",
-          maxHeight: "100%",
-          flexWrap: "nowrap",
-          position: "relative",
+          display: 'flex',
+          height: '100dvh',
+          flexDirection: 'row',
+          maxHeight: '100%',
+          flexWrap: 'nowrap',
+          position: 'relative',
           color: token.colorTextBase,
           backgroundColor: token.colorBgContainer,
         }}
@@ -130,25 +122,23 @@ export default function Page() {
         <SkipExport>
           <MemoBackgroundImage />
         </SkipExport>
-        <SkipExport>
+        <Hidden hidden={chatMgt.config.hiddenMask}>
           <MemoBackgroundImage
             src="url(images/mask.jpg)"
             style={{
               opacity: 0.1,
             }}
           />
-        </SkipExport>
+        </Hidden>
         <Head>
-          <title>
-            {(appManifest.name || "") + " " + (chatMgt.group.name || "")}
-          </title>
+          <title>{(appManifest.name || '') + ' ' + (chatMgt.group.name || '')}</title>
         </Head>
         <Spin
           style={{
-            margin: "50% auto",
+            margin: '50% auto',
             zIndex: 99,
-            position: "absolute",
-            width: "100%",
+            position: 'absolute',
+            width: '100%',
           }}
           spinning={loading}
         ></Spin>
