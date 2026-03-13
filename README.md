@@ -20,9 +20,11 @@
 
 ## 增加了调用外部工具的功能
 
-- 一个可用的执行器在 [https://github.com/viyiviyi/aias-executer.git](https://github.com/viyiviyi/aias-executer.git)
-- 页面会完整显示执行器调用参数和返回值
-- 因为https的限制，需要配合反向代理工具才能在`https://eaias.com`这个网页访问，或者自己搭建在内网的https服务
+**通过外部执行器，可以访问文件系统、执行命令、安装和使用mcp服务等，可以配合skill或一句话自动完成工作任务，项目开发维护等都可以，提示词自己写。**
+
+- 一个可用的执行器在 [https://github.com/viyiviyi/aias-executer.git](https://github.com/viyiviyi/aias-executer.git)，默认提供文件访问、命令行、终端（可能不能安装依赖）、http工具、浏览器工具。
+- 页面会完整显示执行器调用参数和返回值，
+- **注意**：这个东西可以使用命令行、终端、文件访问等，注意不要让ai访问敏感数据，如果安装第三方mcp或skill，请自行考虑相关风险。（可选择是否将工具暴露给ai）
 
 ## 其他
 
