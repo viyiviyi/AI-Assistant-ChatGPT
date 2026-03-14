@@ -244,41 +244,29 @@ export function MessageList({
                         }}
                       >
                         <div className={styleCss.message_item} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                          <MarkdownView markdown={ChatManagement.getMsgContent(v)} />
+                          <div style={{ display: 'flex' }}>
+                            <div style={{ flex: 1, display: 'flex' }}>
+                              <MarkdownView markdown={ChatManagement.getMsgContent(v)} />
+                            </div>
+                            <span style={{ paddingLeft: 10, opacity: 0.6 }}>
+                              <SkipExport>
+                                <Popconfirm
+                                  placement="topRight"
+                                  overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+                                  okType="danger"
+                                  title="确定删除此消息？"
+                                  onConfirm={() => {
+                                    onDel(v);
+                                  }}
+                                >
+                                  <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
+                                </Popconfirm>
+                              </SkipExport>
+                            </span>
+                          </div>
                           <div style={{ marginTop: -16 }}>
                             <FunctionCallInfo msg={v} />
                           </div>
-                        </div>
-                        <div style={{ display: 'flex', paddingLeft: 16 }}>
-                          {loadingMsgs[v.id] ? (
-                            <SkipExport>
-                              <Popconfirm
-                                placement="topRight"
-                                overlayInnerStyle={{ whiteSpace: 'nowrap' }}
-                                title={'确定停止？'}
-                                onConfirm={() => {
-                                  if (typeof loadingMsgs[v.id]?.stop == 'function') loadingMsgs[v.id]?.stop();
-                                  delete loadingMsgs[v.id];
-                                }}
-                              >
-                                <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
-                              </Popconfirm>
-                            </SkipExport>
-                          ) : (
-                            <SkipExport>
-                              <Popconfirm
-                                placement="topRight"
-                                overlayInnerStyle={{ whiteSpace: 'nowrap' }}
-                                okType="danger"
-                                title="确定删除此消息？"
-                                onConfirm={() => {
-                                  onDel(v);
-                                }}
-                              >
-                                <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
-                              </Popconfirm>
-                            </SkipExport>
-                          )}
                         </div>
                       </div>
                     </div>
