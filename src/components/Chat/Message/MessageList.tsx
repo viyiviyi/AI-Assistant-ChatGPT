@@ -215,7 +215,11 @@ export function MessageList({
                     }, 400);
                   }}
                 >
-                  {last?.isToolCall && ChatManagement.getMsgContent(v).indexOf('\n') == -1 && !loadingMsgs[v.id] && !expandMsg.includes(v.id) ? (
+                  {last?.isToolCall &&
+                  v.isToolCall &&
+                  ChatManagement.getMsgContent(v).indexOf('\n') == -1 &&
+                  !loadingMsgs[v.id] &&
+                  !expandMsg.includes(v.id) ? (
                     <div
                       className={styleCss.message_box + (chat.config.limitPreHeight ? ' limt-hight' : '')}
                       style={{
@@ -319,7 +323,7 @@ export function MessageList({
                     />
                   )}
                   {i == messages.length - 1 && <div style={{ marginTop: '2em' }}></div>}
-                  {last?.isToolCall && !loadingMsgs[v.id] && ChatManagement.getMsgContent(v).indexOf('\n') == -1 ? (
+                  {last?.isToolCall && v.isToolCall && !loadingMsgs[v.id] && ChatManagement.getMsgContent(v).indexOf('\n') == -1 ? (
                     <>
                       <span
                         style={{
