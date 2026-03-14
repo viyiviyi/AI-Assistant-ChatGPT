@@ -21,15 +21,15 @@ const safeJsonParse = (str: string): any => {
 // 格式化对象为markdown展示（支持递归展开）
 const formatObjectToMarkdown = (obj: any, title: string, depth: number = 0): string => {
   const lines: string[] = [];
-  
+
   if (!isObject(obj)) {
     // 如果不是对象，直接返回
     return `**${title}:**\n\n${String(obj)}`;
   }
-  
+
   lines.push(`**${title}:**`);
   lines.push('');
-  
+
   Object.entries(obj).forEach(([key, value]) => {
     if (isObject(value)) {
       // 如果值还是对象，根据深度决定是否继续展开
@@ -45,7 +45,7 @@ const formatObjectToMarkdown = (obj: any, title: string, depth: number = 0): str
       }
     } else if (Array.isArray(value)) {
       // 如果是数组，检查数组元素是否为对象
-      const hasObjects = value.some(item => isObject(item));
+      const hasObjects = value.some((item) => isObject(item));
       if (hasObjects && depth < 1) {
         // 数组包含对象且深度未达到限制，尝试展开数组中的对象
         lines.push(`**${key}:**`);
@@ -79,7 +79,7 @@ const formatObjectToMarkdown = (obj: any, title: string, depth: number = 0): str
     }
     lines.push('');
   });
-  
+
   return lines.join('\n');
 };
 
@@ -132,7 +132,9 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
           <div
             key={msg.id + '_' + item.id}
             style={{
-              padding: 5,
+              padding: 0,
+              paddingLeft: 5,
+              paddingRight: 10,
               marginTop: 5,
               borderRadius: 5,
               border: '1px solid ' + token.colorFillAlter,
@@ -150,7 +152,6 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
                 onClick={() => {
                   setExpanded((v) => !v);
                 }}
-                
               >
                 {expanded ? '隐藏' : '查看'}
               </Button>
@@ -160,9 +161,9 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
                 <MarkdownView
                   markdown={formatDataForDisplay(tool_calls?.find((f) => f.id == item.id)?.function.arguments || '', '请求参数')}
                 />
-                <Spin spinning={ !item.content}>
+                <Spin spinning={!item.content}>
                   <MarkdownView markdown={formatDataForDisplay(item.content, '响应结果')} />
-                  </Spin>
+                </Spin>
               </>
             )}
           </div>

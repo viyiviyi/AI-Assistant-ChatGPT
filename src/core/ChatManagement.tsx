@@ -243,6 +243,7 @@ export class ChatManagement {
     historyBefore: Array<CtxItem>;
     history: Array<CtxItem>;
     historyAfter: Array<CtxItem>;
+    ctxIds: string[];
   } {
     return ChatManagement.getAskContext(
       this.virtualRole,
@@ -265,6 +266,7 @@ export class ChatManagement {
     historyBefore: Array<CtxItem>;
     history: Array<CtxItem>;
     historyAfter: Array<CtxItem>;
+    ctxIds: string[];
   } {
     let messages: Message[] = [];
     // 获取全部消息
@@ -344,10 +346,20 @@ export class ChatManagement {
     if (messages.length < msgCountMin) historyLength = 0;
     // 按照消息上下文限制截断消息
     let ctxCount = topic.overrideSettings?.msgCount === undefined ? historyLength : topic.overrideSettings?.msgCount;
-    messages = messages.slice(-ctxCount);
-    // 获取范围内消息的管理消息id
-    let parentIdList: string[] = messages.map((v) => v.parentId).filter((f) => f) as string[];
+
     if (ctxCount > 0 && curtMessage.length > ctxCount) {
+      messages = messages.slice(-ctxCount);
+      // 获取范围内消息的管理消息id
+      let parentIdList: string[] = [];
+      messages.forEach((v) => {
+        if (!parentIdList.includes(v.parentId!)) parentIdList.push(v.parentId!);
+      });
+      // 当消息被勾选时也要自动加载有关联的内容
+      curtMessage
+        .filter((f) => f.checked && f.parentId)
+        .forEach((v) => {
+          if (!parentIdList.includes(v.parentId!)) parentIdList.push(v.parentId!);
+        });
       // 不在记忆范围内 且勾选了的消息或关联的
       let checkedMessage = curtMessage
         .slice(0, curtMessage.length - ctxCount)
@@ -357,7 +369,9 @@ export class ChatManagement {
     }
     history = [];
     messages = messages.filter((f) => !f.skipCtx);
+    let ctxIds: string[] = [];
     messages.forEach((v) => {
+      ctxIds.push(v.id);
       history.push({
         role: v.ctxRole,
         content: ChatManagement.getMsgContent(v),
@@ -449,7 +463,7 @@ export class ChatManagement {
       ...historyAfter,
     ];
 
-    return { allCtx, historyBefore, history, historyAfter };
+    return { allCtx, historyBefore, history, historyAfter, ctxIds };
   }
 
   static getNameByRole(role?: CtxRole, virtualRole?: VirtualRole, user?: User) {

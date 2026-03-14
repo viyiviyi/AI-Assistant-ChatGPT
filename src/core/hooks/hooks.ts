@@ -210,7 +210,7 @@ export function useSendMessage(chat: ChatManagement) {
           } else if (res.stop) {
             res.stop();
           }
-          result.isToolCall = res.isToolCall;
+          result.isToolCall = result.isToolCall || res.isToolCall;
           if (!topic) return res.stop ? res.stop() : undefined;
           if (!topic.cloudTopicId && res.cloud_topic_id) {
             topic.cloudTopicId = res.cloud_topic_id;

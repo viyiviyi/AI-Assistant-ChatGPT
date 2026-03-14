@@ -1,16 +1,29 @@
 import { Hidden } from '@/components/common/Hidden';
+import { MarkdownView } from '@/components/common/MarkdownView';
+import { SkipExport } from '@/components/common/SkipExport';
 import { DraePopup } from '@/components/drawimg/DrawPopup';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { useScreenSize, useSendMessage } from '@/core/hooks/hooks';
 import { activityScroll, createThrottleAndDebounce, getUuid, pagesUtil } from '@/core/utils/utils';
 import { Message } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
-import { PauseCircleOutlined, PictureOutlined, StopOutlined, VerticalAlignTopOutlined } from '@ant-design/icons';
-import { Button, FloatButton, InputRef, Table } from 'antd';
+import styleCss from '@/styles/index.module.css';
+import {
+  DeleteOutlined,
+  PauseCircleOutlined,
+  PauseOutlined,
+  PictureOutlined,
+  RetweetOutlined,
+  RightOutlined,
+  StopOutlined,
+  VerticalAlignTopOutlined,
+} from '@ant-design/icons';
+import { Button, FloatButton, InputRef, Popconfirm, Table, theme } from 'antd';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MessageContext } from '../Chat';
 import { useInput } from '../InputUtil';
 import { MemoInsertInput } from '../InsertInput';
+import { FunctionCallInfo } from './FunctionCallInfo';
 import { MemoMessageItem } from './MessageItem';
 
 let selectTimer = setTimeout(() => {}, 0);
@@ -41,6 +54,10 @@ export function MessageList({
   const [ctxCountChar, setCtxCountChar] = useState(0);
   const [drawPopupProps, serDrawPopupProps] = useState({ text: '', open: false, msg: topic.messages[0] });
   const [messages, setMessages] = useState(topic.messages);
+  const [expandMsg, setExpand] = useState<string[]>([]);
+  const [ctxIds, setCtxIds] = useState<string[]>([]);
+  const { token } = theme.useToken();
+  const screenSize = useScreenSize();
 
   const tblRef: Parameters<typeof Table>[0]['ref'] = React.useRef(null);
   const { sendMessage } = useSendMessage(chat);
@@ -70,8 +87,10 @@ export function MessageList({
 
   useEffect(() => {
     setMessages(topic.messages);
+    let { ctxIds } = chat.getAskContext(topic, topic.messages.length);
+    setCtxIds(ctxIds);
     // tblRef.current?.scrollTo({ index: messages.length - 1 });
-  }, [topic, topic.messages]);
+  }, [chat, topic, topic.messages]);
   /**
    * 将消息内容填入输入框
    */
@@ -95,6 +114,8 @@ export function MessageList({
       chat.removeMessage(msg)?.then(() => {
         delete renderMessage[msg.id];
         setMessages([...topic.messages]);
+        let { ctxIds } = chat.getAskContext(topic, topic.messages.length);
+        setCtxIds(ctxIds);
         reloadNav(topic);
       });
     },
@@ -106,6 +127,8 @@ export function MessageList({
      */
     let reload = createThrottleAndDebounce(() => {
       setMessages([...topic.messages]);
+      let { ctxIds } = chat.getAskContext(topic, topic.messages.length);
+      setCtxIds(ctxIds);
     }, 50);
     console.log('列表刷新');
     topicRender[topic.id] = (messageId?: string | number, reloadStatus: boolean = false) => {
@@ -122,7 +145,7 @@ export function MessageList({
     return () => {
       delete topicRender[topic.id];
     };
-  }, [renderMessage, topic.id, resetCharCount, topic.messages]);
+  }, [renderMessage, topic.id, resetCharCount, topic.messages, topic, chat]);
 
   let runingMsg = Object.entries(loadingMsgs).find((f) => activityTopic?.messageMap[f[0]]);
   return (
@@ -145,10 +168,13 @@ export function MessageList({
       </Hidden>
       <Table<Message>
         bordered={false}
+        dataSource={messages}
         size={'small'}
         style={{ height: '100%', backgroundColor: '#0000' }}
         onRow={(r, i) => {
-          return { style: { backgroundColor: '#0000', border: 'none', padding: 0 } };
+          return {
+            style: { backgroundColor: '#0000', border: 'none', padding: 0 },
+          };
         }}
         showHeader={false}
         virtual
@@ -162,6 +188,7 @@ export function MessageList({
             render(value, v, i) {
               let idx = i;
               if (idx === undefined) idx = messages.length - 1;
+              let last = idx == 0 ? undefined : messages[idx - 1];
               return (
                 <div
                   key={v.id}
@@ -188,29 +215,98 @@ export function MessageList({
                     }, 400);
                   }}
                 >
-                  <MemoMessageItem
-                    renderMessage={renderMessage}
-                    msg={v}
-                    onDel={onDel}
-                    rBak={rBak}
-                    onCite={setCite}
-                    onPush={() => {
-                      setInsertIndex(idx!);
-                    }}
-                    onSned={() => {
-                      activityScroll({ botton: true });
-                      sendMessage(idx!, topic);
-                    }}
-                    onCopy={() => {
-                      chat.newTopic(topic.name).then((t) => {
-                        Promise.all(
-                          topic.messages.slice(0, idx! + 1).map((m) => {
-                            return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
-                          }),
-                        ).then(() => setActivityTopic(t));
-                      });
-                    }}
-                  ></MemoMessageItem>
+                  {last?.isToolCall && v.text.indexOf('\n') == -1 && !loadingMsgs[v.id] && !expandMsg.includes(v.id) ? (
+                    <div
+                      className={styleCss.message_box + (chat.config.limitPreHeight ? ' limt-hight' : '')}
+                      style={{
+                        paddingRight: screenSize.width > 1300 ? 130 : 30,
+                      }}
+                    >
+                      <div
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          padding: 10,
+                          paddingTop: 4,
+                          paddingBottom: 2,
+                          marginTop: 1,
+                          marginLeft: 40,
+                          boxSizing: 'border-box',
+                          borderRadius: token.borderRadiusLG,
+                          border: '1px solid ' + token.colorFillAlter,
+                          backgroundColor: token.colorInfoBg,
+                          boxShadow: token.boxShadowTertiary,
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        <div className={styleCss.message_item} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                          <MarkdownView markdown={ChatManagement.getMsgContent(v)} />
+                          <div style={{ marginTop: -16 }}>
+                            <FunctionCallInfo msg={v} />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', paddingLeft: 16 }}>
+                          {loadingMsgs[v.id] ? (
+                            <SkipExport>
+                              <Popconfirm
+                                placement="topRight"
+                                overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+                                title={'确定停止？'}
+                                onConfirm={() => {
+                                  if (typeof loadingMsgs[v.id]?.stop == 'function') loadingMsgs[v.id]?.stop();
+                                  delete loadingMsgs[v.id];
+                                }}
+                              >
+                                <PauseOutlined style={{ color: '#ff8d8f' }}></PauseOutlined>
+                              </Popconfirm>
+                            </SkipExport>
+                          ) : (
+                            <SkipExport>
+                              <Popconfirm
+                                placement="topRight"
+                                overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+                                okType="danger"
+                                title="确定删除此消息？"
+                                onConfirm={() => {
+                                  onDel(v);
+                                }}
+                              >
+                                <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
+                              </Popconfirm>
+                            </SkipExport>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <MemoMessageItem
+                        renderMessage={renderMessage}
+                        msg={v}
+                        onDel={onDel}
+                        rBak={rBak}
+                        onCite={setCite}
+                        onPush={() => {
+                          setInsertIndex(idx!);
+                        }}
+                        onSned={() => {
+                          activityScroll({ botton: true });
+                          sendMessage(idx!, topic);
+                        }}
+                        onCopy={() => {
+                          chat.newTopic(topic.name).then((t) => {
+                            Promise.all(
+                              topic.messages.slice(0, idx! + 1).map((m) => {
+                                return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
+                              }),
+                            ).then(() => setActivityTopic(t));
+                          });
+                        }}
+                        inCtx={ctxIds.includes(v.id)}
+                      ></MemoMessageItem>
+                    </>
+                  )}
+
                   {idx === insertIndex && (
                     <MemoInsertInput
                       key={'insert_input'}
@@ -223,13 +319,36 @@ export function MessageList({
                     />
                   )}
                   {i == messages.length - 1 && <div style={{ marginTop: '2em' }}></div>}
+                  {last?.isToolCall && !loadingMsgs[v.id] && v.text.indexOf('\n') == -1 ? (
+                    <>
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: expandMsg.includes(v.id) ? 60 : 0,
+                          left: 10,
+                          padding: 5,
+                          cursor: 'pointer',
+                          opacity: 0.5,
+                        }}
+                        onClick={() => {
+                          setExpand((prv) => {
+                            if (prv.includes(v.id)) return prv.filter((f) => f != v.id);
+                            return [...prv, v.id];
+                          });
+                        }}
+                      >
+                        <RightOutlined />
+                      </span>
+                    </>
+                  ) : (
+                    <></>
+                  )}
                 </div>
               );
             },
           },
         ]}
         rowKey="id"
-        dataSource={messages}
         pagination={false}
         ref={tblRef}
       />

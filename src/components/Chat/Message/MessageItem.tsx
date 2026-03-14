@@ -12,6 +12,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   ForwardOutlined,
+  LinkOutlined,
   MessageOutlined,
   PauseOutlined,
   PieChartOutlined,
@@ -43,6 +44,7 @@ const MessageItem = ({
   onSned,
   onCopy,
   style,
+  inCtx,
 }: {
   msg: Message;
   renderMessage: { [key: string]: () => void };
@@ -53,6 +55,7 @@ const MessageItem = ({
   onSned: () => void;
   onCopy: () => void;
   style?: CSSProperties | undefined;
+  inCtx?: boolean;
 }) => {
   const { chatMgt: chat, loadingMsgs, reloadNav } = useContext(ChatContext);
   const topic = useMemo(() => chat.topics.find((f) => f.id == msg.topicId)!, [chat.topics, msg.topicId]);
@@ -108,7 +111,7 @@ const MessageItem = ({
     () => (
       <>
         <Checkbox
-          disabled={!aiService?.customContext}
+          disabled={!aiService?.customContext || msg.skipCtx}
           checked={msg.checked || false}
           onChange={(e) => {
             msg.checked = e.target.checked;
@@ -117,6 +120,19 @@ const MessageItem = ({
             });
           }}
         >
+          <label onClick={(e) => e.stopPropagation()} style={{ paddingRight: 5, paddingLeft: 5, marginLeft: -5, cursor: 'pointer' }}>
+            <SkipExport>
+              <LinkOutlined
+                style={{ color: !msg.skipCtx && inCtx ? '#03a05e' : undefined }}
+                onClick={(e) => {
+                  msg.skipCtx = !msg.skipCtx;
+                  chat.pushMessage(msg).then((msg) => {
+                    setMessage({ text: messageText.text });
+                  });
+                }}
+              />
+            </SkipExport>
+          </label>
           <Hidden hidden={renderType != 'document'}>
             <span>
               {'字数：'}
@@ -215,7 +231,7 @@ const MessageItem = ({
         )}
       </>
     ),
-    [aiService?.customContext, chat, ctxRole, edit, loadingMsgs, messageApi, messageText, msg, onDel, rBak, renderType, saveMsg, speak],
+    [aiService?.customContext, chat, ctxRole, edit, inCtx, loadingMsgs, messageApi, messageText.text, msg, onDel, rBak, renderType, saveMsg, speak],
   );
 
   // 下方悬浮按钮
