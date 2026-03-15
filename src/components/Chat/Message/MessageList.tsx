@@ -149,7 +149,7 @@ export function MessageList({
 
   let runingMsg = Object.entries(loadingMsgs).find((f) => activityTopic?.messageMap[f[0]]);
   return (
-    <div>
+    <>
       <Hidden hidden={!runingMsg}>
         <div style={{ position: 'absolute', left: 10, width: 64, height: 64, bottom: 0, opacity: 0.5, zIndex: 99 }}>
           {/* 停止按钮 */}
@@ -350,6 +350,6 @@ export function MessageList({
           <span style={{ marginLeft: 16 }}>上下文：{ctxCountChar}</span>
         </div>
       </Hidden>
-    </div>
+    </>
   );
 }

@@ -231,7 +231,6 @@ export function useSendMessage(chat: ChatManagement) {
               if (res.stop) res.stop();
               delete loadingMsgs[result.id];
               delete loadingMessages[result.id];
-              currentChat.current = undefined;
               save(true, () => {
                 reloadTopic(topic.id);
               });
@@ -315,7 +314,6 @@ export function useSendMessage(chat: ChatManagement) {
                   isStop = true;
                   delete loadingMsgs[result.id];
                   delete loadingMessages[result.id];
-                  currentChat.current = undefined;
                   save(true, () => {
                     reloadTopic(topic.id);
                   });

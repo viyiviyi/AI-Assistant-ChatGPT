@@ -32,6 +32,7 @@ import { MarkdownView } from '../../common/MarkdownView';
 import { SkipExport } from '../../common/SkipExport';
 import { FunctionCallInfo } from './FunctionCallInfo';
 import { Images } from './Images';
+import { reloadTopic } from './MessageList';
 import { ReasoningContent } from './ReasoningContent';
 
 const MessageItem = ({
@@ -116,7 +117,8 @@ const MessageItem = ({
           onChange={(e) => {
             msg.checked = e.target.checked;
             chat.pushMessage(msg).then((msg) => {
-              setMessage({ text: messageText.text });
+              reloadTopic(topic.id)
+              // setMessage({ text: messageText.text });
             });
           }}
         >
@@ -206,6 +208,7 @@ const MessageItem = ({
               onConfirm={() => {
                 if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                 delete loadingMsgs[msg.id];
+                delete loadingMessages[msg.id];
                 setMessage({ text: ChatManagement.getMsgContent(msg) });
                 speak('', true);
               }}
@@ -231,7 +234,22 @@ const MessageItem = ({
         )}
       </>
     ),
-    [aiService?.customContext, chat, ctxRole, edit, inCtx, loadingMsgs, messageApi, messageText.text, msg, onDel, rBak, renderType, saveMsg, speak],
+    [
+      aiService?.customContext,
+      chat,
+      ctxRole,
+      edit,
+      inCtx,
+      loadingMsgs,
+      messageApi,
+      messageText,
+      msg,
+      onDel,
+      rBak,
+      renderType,
+      saveMsg,
+      speak,
+    ],
   );
 
   // 下方悬浮按钮
@@ -429,6 +447,7 @@ const MessageItem = ({
                       onClick={() => {
                         if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                         delete loadingMsgs[msg.id];
+                        delete loadingMessages[msg.id];
                         setMessage({ text: ChatManagement.getMsgContent(msg) });
                       }}
                       style={{ color: '#ff8d8f' }}
@@ -601,6 +620,7 @@ const MessageItem = ({
                   onClick={() => {
                     if (typeof loadingMsgs[msg.id]?.stop == 'function') loadingMsgs[msg.id]?.stop();
                     delete loadingMsgs[msg.id];
+                    delete loadingMessages[msg.id];
                     setMessage({ text: ChatManagement.getMsgContent(msg) });
                   }}
                   style={{ color: '#ff8d8f' }}
