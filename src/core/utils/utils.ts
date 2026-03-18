@@ -159,7 +159,7 @@ export function scrollToBotton(id?: string) {
       const target = document.getElementById(scroolArgsCache.id);
       const offsetTop = target ? target.offsetTop : wrap.scrollHeight;
       const offsetHeight = target?.offsetHeight || wrap.offsetHeight;
-      smoothScroll(wrap, wrap.scrollTop, offsetTop + offsetHeight - wrap.offsetHeight + 40, 500);
+      smoothScroll(wrap, wrap.scrollTop, offsetTop + offsetHeight - wrap.offsetHeight, 800);
     }
   }, 500);
 }
