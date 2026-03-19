@@ -195,6 +195,7 @@ export function useSendMessage(chat: ChatManagement) {
         msg: topic.messages[idx],
         context: context,
         async onMessage(res) {
+          if (!loadingMessages[result.id]) return;
           if (!currentChat.current) return;
           if (typeof res.text == 'string') res.text = [res.text];
           let hasChange = false;
@@ -236,9 +237,9 @@ export function useSendMessage(chat: ChatManagement) {
               });
             },
           };
-          save(res.end || !loadingMsgs[result.id], () => {
+          save(res.end || !loadingMessages[result.id], () => {
             // 调用工具
-            if (currentChat.current && res.tool_calls && res.tool_calls.length && res.end && loadingMessages[result.id]) {
+            if (currentChat.current && res.tool_calls && res.tool_calls.length && res.end) {
               let isStop = false;
               result.tool_calls = res.tool_calls;
               result.tool_call_result = result.tool_calls.map((calls) =>
@@ -250,7 +251,7 @@ export function useSendMessage(chat: ChatManagement) {
                 })),
               );
               res.tool_calls.forEach((call, callIdx) => {
-                if (call && Array.isArray(call)) {
+                if (call && loadingMessages[result.id] && Array.isArray(call)) {
                   const execTask = call.map((v) => {
                     if (v.function.name == 'create_new_session') {
                       try {
@@ -292,14 +293,15 @@ export function useSendMessage(chat: ChatManagement) {
                         chat.pushMessage(result).then(() => {
                           reloadTopic(topic.id, result.id, true);
                         });
-                        if (!loadingMsgs[result.id] || isStop) return;
-                        delete loadingMsgs[result.id];
-                        delete loadingMessages[result.id];
+                        if (!loadingMessages[result.id] || isStop) return;
                         // 回传结果
                         setTimeout(() => {
-                          if (chat.topics.find((f) => f.id == topic.id) && !isStop) {
+                          if (loadingMessages[result.id] && !isStop && chat.topics.find((f) => f.id == topic.id)) {
                             sendMessage(idx + 1, topic, true, result.parentId);
+                            delete loadingMsgs[result.id];
+                            delete loadingMessages[result.id];
                             currentChat.current = undefined;
+                            reloadTopic(topic.id);
                           }
                         }, 100);
                       }
