@@ -1,11 +1,11 @@
-import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
-import { useScreenSize } from "@/core/hooks/hooks";
+import { ChatContext, ChatManagement, IChat } from '@/core/ChatManagement';
+import { useScreenSize } from '@/core/hooks/hooks';
 
-import { Button, theme, Typography } from "antd";
-import { useRouter } from "next/router";
-import { useContext } from "react";
+import { Button, theme, Typography } from 'antd';
+import { useRouter } from 'next/router';
+import { useContext } from 'react';
 
-import { Groups } from "./Groups";
+import { Groups } from './Groups';
 
 export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
   const router = useRouter();
@@ -17,9 +17,9 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
     <>
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
           maxHeight: screenSize.height - 250,
           marginBottom: 20,
         }}
@@ -27,19 +27,21 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
         <div
           style={{
             flex: 1,
-            overflow: "auto",
+            overflow: 'auto',
           }}
         >
-          <Typography.Title level={4} style={{ textAlign: "center" }}>
-            {"会话列表"}
+          <Typography.Title level={4} style={{ textAlign: 'center' }}>
+            {'会话列表'}
           </Typography.Title>
           <Groups
             onClick={(chat: IChat) => {
-              ChatManagement.toFirst(chat.group).then(() => {
-                setCurrentGroup && setCurrentGroup(chat.group.id);
-                onCacle();
-                router.replace("/chat?id=" + chat.group.id);
-              });
+              ChatManagement.toFirst(chat.group)
+                .then(() => {
+                  setCurrentGroup && setCurrentGroup(chat.group.id);
+                  onCacle();
+                  router.replace('/chat?id=' + chat.group.id);
+                })
+                .catch((e) => console.error(e));
             }}
           ></Groups>
         </div>
@@ -48,16 +50,18 @@ export const ChatList = ({ onCacle }: { onCacle: () => void }) => {
           ghost
           onClick={(e) => {
             e.stopPropagation();
-            ChatManagement.createChat().then((v) => {
-              setCurrentGroup && setCurrentGroup(v.group.id);
-              onCacle();
-              router.replace("/chat?id=" + v.group.id);
-            });
+            ChatManagement.createChat()
+              .then((v) => {
+                setCurrentGroup && setCurrentGroup(v.group.id);
+                onCacle();
+                router.replace('/chat?id=' + v.group.id);
+              })
+              .catch((e) => console.error(e));
           }}
           style={{
             marginTop: 10,
             padding: 10,
-            height: "auto",
+            height: 'auto',
             color: token.colorTextPlaceholder,
             borderColor: token.colorTextQuaternary,
           }}

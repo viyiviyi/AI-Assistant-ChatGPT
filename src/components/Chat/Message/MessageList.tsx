@@ -117,7 +117,7 @@ export function MessageList({
         let { ctxIds } = chat.getAskContext(topic, topic.messages.length);
         setCtxIds(ctxIds);
         reloadNav(topic);
-      });
+      }).catch((e) => console.error(e));
     },
     [chat, renderMessage, reloadNav, topic],
   );
@@ -291,8 +291,8 @@ export function MessageList({
                               topic.messages.slice(0, idx! + 1).map((m) => {
                                 return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
                               }),
-                            ).then(() => setActivityTopic(t));
-                          });
+                            ).then(() => setActivityTopic(t)).catch((e) => console.error(e));
+                          }).catch((e) => console.error(e));
                         }}
                         inCtx={ctxIds.includes(v.id)}
                       ></MemoMessageItem>

@@ -51,10 +51,10 @@ export default function Page() {
             v.backgroundImage = `url(${selectChat.group.background || res})`;
             return { ...v };
           });
-        });
+        }).catch((e) => console.error(e));
       initTokenStore().then(() => {
         reloadService(selectChat, KeyValueData.instance());
-      });
+      }).catch((e) => console.error(e));
       if (chatMgt.group.id == currGroupId) return setLoading(false);
       if (!selectChat.topics.length) await ChatManagement.loadTopics(selectChat);
       const newChatMgt = new ChatManagement(selectChat);
@@ -65,7 +65,7 @@ export default function Page() {
 
       newChatMgt.loadMessages().then(() => {
         setNavList([]);
-      });
+      }).catch((e) => console.error(e));
 
       setTimeout(() => {
         // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
@@ -102,7 +102,7 @@ export default function Page() {
         },
         navList,
         reloadNav: (topic: TopicMessage) => {
-          ChatManagement.loadTitleTree(topic).then(() => setNavList([]));
+          ChatManagement.loadTitleTree(topic).then(() => setNavList([])).catch((e) => console.error(e));
         },
         forceRender: false,
       }}

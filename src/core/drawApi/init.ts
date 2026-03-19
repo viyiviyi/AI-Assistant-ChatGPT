@@ -10,17 +10,17 @@ export async function init(serverUrl: string) {
   try {
     cacheStore.upscalers = [];
     await Promise.all([
-      Api.getSamplersSdapiV1SamplersGet().then((res) => (cacheStore.samplerList = res)),
-      Api.getSchedulersSdapiV1SchedulersGet().then((res) => (cacheStore.scheduleTypeList = res)),
-      Api.getPromptStylesSdapiV1PromptStylesGet().then((res) => (cacheStore.styles = res)),
+      Api.getSamplersSdapiV1SamplersGet().then((res) => (cacheStore.samplerList = res)).catch((e) => console.error(e)),
+      Api.getSchedulersSdapiV1SchedulersGet().then((res) => (cacheStore.scheduleTypeList = res)).catch((e) => console.error(e)),
+      Api.getPromptStylesSdapiV1PromptStylesGet().then((res) => (cacheStore.styles = res)).catch((e) => console.error(e)),
       Api.getUpscalersSdapiV1UpscalersGet().then((res) => {
         cacheStore.upscalers = [...(cacheStore.upscalers ?? []), ...res.filter((f) => f.name != 'None')];
-      }),
+      }).catch((e) => console.error(e)),
       Api.getLatentUpscaleModesSdapiV1LatentUpscaleModesGet().then((res) => {
         cacheStore.upscalers = [...res, ...(cacheStore.upscalers ?? [])];
-      }),
-      Api.getSdModelsSdapiV1SdModelsGet().then((res) => (cacheStore.modelList = res)),
-      Api.getSdVaesSdapiV1SdVaeGet().then((res) => (cacheStore.vaeList = res)),
+      }).catch((e) => console.error(e)),
+      Api.getSdModelsSdapiV1SdModelsGet().then((res) => (cacheStore.modelList = res)).catch((e) => console.error(e)),
+      Api.getSdVaesSdapiV1SdVaeGet().then((res) => (cacheStore.vaeList = res)).catch((e) => console.error(e)),
     ]).then(() => {
       let params = getTxt2ImgParmas();
       params.width = params.width || 512;

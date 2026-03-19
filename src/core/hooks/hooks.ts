@@ -168,7 +168,7 @@ export function useSendMessage(chat: ChatManagement) {
         reloadTopic(topic.id, idx + 1);
         scrollToBotton(result.id);
         reloadIndex(topic, idx);
-      });
+      }).catch((e) => console.error(e));
       let save = createThrottleAndDebounce((isEnd, cb: () => void = () => {}) => {
         if (currentChat.current) {
           if (isEnd) {
@@ -179,12 +179,12 @@ export function useSendMessage(chat: ChatManagement) {
               currentChat.current &&
                 currentChat.current.pushMessage(res).then((r) => {
                   cb();
-                });
+                }).catch((e) => console.error(e));
             });
           } else {
             currentChat.current.pushMessage(result).then((r) => {
               cb();
-            });
+            }).catch((e) => console.error(e));
           }
         }
       }, 100);
@@ -274,8 +274,8 @@ export function useSendMessage(chat: ChatManagement) {
                               setTimeout(() => {
                                 sendMessage(idx + 2, _topic);
                               }, 100);
-                            });
-                        });
+                            }).catch((e) => console.error(e));
+                        }).catch((e) => console.error(e));
                       } catch (error) {
                         return JSON.stringify({ success: false, message: '新会话创建失败' });
                       }
@@ -292,7 +292,7 @@ export function useSendMessage(chat: ChatManagement) {
                       if (topic.messageMap[result.id]) {
                         chat.pushMessage(result).then(() => {
                           reloadTopic(topic.id, result.id, true);
-                        });
+                        }).catch((e) => console.error(e));
                         if (!loadingMessages[result.id] || isStop) return;
                         // 回传结果
                         setTimeout(() => {
@@ -305,7 +305,7 @@ export function useSendMessage(chat: ChatManagement) {
                           }
                         }, 100);
                       }
-                    });
+                    }).catch((e) => console.error(e));
                   }
                 }
               });

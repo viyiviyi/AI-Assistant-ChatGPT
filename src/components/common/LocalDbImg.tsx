@@ -12,7 +12,8 @@ export const LocalDbImg = ({ id, alt = 'image' }: { id: string; alt?: string }) 
         else if (res instanceof Blob) {
           setSrc(URL.createObjectURL(res));
         }
-      });
+      })
+      .catch((e) => console.error(e));
   }, [id]);
   if (!src) return <Image height={100} style={{ padding: 25 }} src={'/images/loading.gif'} alt={alt} />;
   if (src == 'miss') {

@@ -10,7 +10,7 @@ export const pnginfo = async (image: Blob): Promise<any> => {
         userComment: true,
       }).then((res) => {
         resolve(Buffer.from(res.chara, "base64").toString());
-      });
+      }).catch((e) => console.error(e));
     };
     reader.readAsArrayBuffer(image);
   });

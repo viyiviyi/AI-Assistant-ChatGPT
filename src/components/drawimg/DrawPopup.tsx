@@ -50,7 +50,7 @@ export const DraePopup = ({
       setParams(param);
       setBaseUrl(url);
       setLoading(false);
-    });
+    }).catch((e) => console.error(e));
   }, [url]);
   useEffect(() => {
     params.prompt = text;
@@ -96,7 +96,7 @@ export const DraePopup = ({
                   init(baseUrl).then(() => {
                     setUrl(baseUrl);
                     txt2img(topic, msg, { ...params });
-                  });
+                  }).catch((e) => console.error(e));
                 } else {
                   txt2img(topic, msg, { ...params });
                 }

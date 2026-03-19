@@ -124,7 +124,7 @@ export const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) =>
                       } else if (typeof res == 'object') {
                         downloadBlob(res, fileName);
                       }
-                    });
+                    }).catch((e) => console.error(e));
                 }}
               />
               {/* <ZoomOutOutlined disabled={scale === 1} onClick={onZoomOut} />
@@ -140,7 +140,7 @@ export const Images = ({ msg, topic }: { msg: Message; topic: TopicMessage }) =>
                   setCurrentIdx(current == msg.imageIds?.length ? current - 1 : current);
                   chat.pushMessage(msg).then((msg) => {
                     setImageIds([...(msg.imageIds || [])]);
-                  });
+                  }).catch((e) => console.error(e));
                 }}
               />
             </Space>

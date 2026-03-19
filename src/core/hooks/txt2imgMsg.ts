@@ -14,7 +14,7 @@ let currentQuequ = quequ;
 export function useTxt2Img(chat: ChatManagement) {
   useEffect(() => {
     let url = getSdApiBaseUrl();
-    init(url).then(() => {});
+    init(url).then(() => {}).catch((e) => console.error(e));
   }, []);
   const txt2img = useCallback(
     async function (topic: TopicMessage, msg: Message, param: Img2ImgParams) {
@@ -70,7 +70,7 @@ export function useTxt2Img(chat: ChatManagement) {
           msg.imageIds = [...(msg.imageIds || [])];
           chat.pushMessage(msg).then((msg) => {
             reloadTopic(topic.id, msg.id);
-          });
+          }).catch((e) => console.error(e));
         })
         .catch((err) => {
           console.error(err);
@@ -80,7 +80,7 @@ export function useTxt2Img(chat: ChatManagement) {
           msg.imageIds = [...(msg.imageIds || [])];
           chat.pushMessage(msg).then((msg) => {
             reloadTopic(topic.id, msg.id);
-          });
+          }).catch((e) => console.error(e));
         });
     },
     [chat]

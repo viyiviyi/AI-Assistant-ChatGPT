@@ -36,7 +36,7 @@ export const TempDraePopup = ({
     init(url).then(() => {
       setBaseUrl(url);
       setLoading(false);
-    });
+    }).catch((e) => console.error(e));
   }, [url]);
   return (
     <Drawer
@@ -59,7 +59,7 @@ export const TempDraePopup = ({
                   init(baseUrl).then(() => {
                     setUrl(baseUrl);
                     txt2img(topic, msg, { ...params });
-                  });
+                  }).catch((e) => console.error(e));
                 } else {
                   txt2img(topic, msg, { ...params });
                 }

@@ -386,7 +386,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                                   console.error(err);
                                   messageApi.error('内容格式错误');
                                 }
-                              });
+                              }).catch((e) => console.error(e));
                             }}
                           >
                             {'从剪切板读取'}
@@ -417,7 +417,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                                 if (file.type == 'image/png') {
                                   pnginfo(file).then((res) => {
                                     push(res);
-                                  });
+                                  }).catch((e) => console.error(e));
                                   setLoadImageAwait(
                                     new Promise((res, rej) => {
                                       const reader = new FileReader();
@@ -495,7 +495,7 @@ export const VirtualRoleConfig = ({ chatMgt, cbs }: { chatMgt?: ChatManagement; 
                                 if (file.type == 'image/png') {
                                   pnginfo(file).then((res) => {
                                     push(res);
-                                  });
+                                  }).catch((e) => console.error(e));
                                   return false;
                                 }
                                 const fr = new FileReader();

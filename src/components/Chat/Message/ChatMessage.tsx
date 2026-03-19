@@ -58,7 +58,7 @@ export const ChatMessage = () => {
         if (next_t && !activityKey.includes(next_t?.id || '')) setActivityKey((k) => [next_t!.id, ...k]);
         reloadNav(next_t!);
         setNone([]);
-      });
+      }).catch((e) => console.error(e));
     },
     [activityKey, activityTopic, chat, reloadNav, setActivityTopic],
   );

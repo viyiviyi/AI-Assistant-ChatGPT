@@ -17,7 +17,7 @@ export class TaskQueue {
     let result = new Promise<T>((resolve, reject) => {
       tasker.cb = resolve;
       tasker.rj = reject;
-    });
+    }).catch();
     this.processQueue();
     return result;
   }

@@ -84,9 +84,12 @@ export class ChatManagement {
         .queryAll<Group>({
           tableName: 'Group',
         })
-        .then((gs) => gs.sort((l, n) => (l.index || 0) - (n.index || 0)));
+        .then((gs) => gs.sort((l, n) => (l.index || 0) - (n.index || 0)))
+        .catch((e) => [] as Group[]);
       if (!groups.length) {
-        await this.createGroup().then((v) => groups.push(v));
+        await this.createGroup()
+          .then((v) => groups.push(v))
+          .catch((e) => console.error(e));
       }
       const users = await getInstance()?.queryAll<User>({
         tableName: 'User',
@@ -170,7 +173,8 @@ export class ChatManagement {
             messageMap: {},
             titleTree: [],
           }));
-      });
+      })
+      .catch((e) => []);
     chat.topics = topics;
     for (let i = 0; i < topics.length; i++) {
       if (topics[i].id == chat.config.activityTopicId) await this.loadMessage(topics[i], true);

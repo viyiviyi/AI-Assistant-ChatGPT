@@ -174,11 +174,11 @@ export const Setting = ({
         formValus.GptConfig_model = res[0];
         form.setFieldsValue(formValus);
       }
-    });
+    }).catch((e) => console.error(e));
     aiServices.current?.getConnectors &&
       aiServices.current?.getConnectors().then((res) => {
         setConnectors(res);
-      });
+      }).catch((e) => console.error(e));
     // formValus.chat_connectors = aiServices.current?.getCurrentConnectors
     //   ?.call(aiServices.current?.getCurrentConnectors)
     //   .map((v) => v.id);
@@ -395,7 +395,7 @@ export const Setting = ({
                     chatMgt?.topics.forEach((v) => {
                       ChatManagement.loadMessage(v).then((t) => {
                         downloadTopic(v, false, chatMgt.getChat(), exportConfig);
-                      });
+                      }).catch((e) => console.error(e));
                     });
                   } else {
                     let _chat = chatMgt!.toJson();
@@ -488,7 +488,7 @@ export const Setting = ({
                           chatMgt?.fromJson(JSON.parse(e.target.result.toString())).then((chat) => {
                             setChat(chat);
                             cbs.current.cancel();
-                          });
+                          }).catch((e) => console.error(e));
                         }
                       };
                       fr.readAsText(file);
@@ -523,7 +523,7 @@ export const Setting = ({
                           location.reload();
                         }
                         cbs.current.cancel();
-                      });
+                      }).catch((e) => console.error(e));
                     },
                   });
                 }}
@@ -543,7 +543,7 @@ export const Setting = ({
                 form.setFieldValue('GptConfig_model', model || server?.defaultModel);
                 server?.models().then((res) => {
                   setModels(res);
-                });
+                }).catch((e) => console.error(e));
                 setConnectors([]);
                 server?.getConnectors &&
                   server?.getConnectors().then((res) => {

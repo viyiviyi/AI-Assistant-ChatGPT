@@ -140,7 +140,7 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
             tools.push({ ...tool, groupName: undefined });
         });
       }
-    });
+    }).catch((e) => console.error(e));
   }
   let baseUrl: BaseUrlScheam = env == 'prod' ? ProxyBaseUrl : DevBaseUrl;
   switch (botType) {

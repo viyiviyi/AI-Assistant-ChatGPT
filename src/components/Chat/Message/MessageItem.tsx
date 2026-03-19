@@ -92,7 +92,7 @@ const MessageItem = ({
         setEdit(false);
         setMessage({ text: ChatManagement.getMsgContent(msg) });
         setSuccessLines(ChatManagement.getMsgContent(msg));
-      });
+      }).catch((e) => console.error(e));
     },
     [chat, reloadNav],
   );
@@ -119,7 +119,7 @@ const MessageItem = ({
             chat.pushMessage(msg).then((msg) => {
               reloadTopic(msg.topicId);
               // setMessage({ text: messageText.text });
-            });
+            }).catch((e) => console.error(e));
           }}
         >
           <label onClick={(e) => e.stopPropagation()} style={{ paddingRight: 5, paddingLeft: 5, marginLeft: -5, cursor: 'pointer' }}>
@@ -130,7 +130,7 @@ const MessageItem = ({
                   msg.skipCtx = !msg.skipCtx;
                   chat.pushMessage(msg).then((msg) => {
                     setMessage({ text: messageText.text });
-                  });
+                  }).catch((e) => console.error(e));
                 }}
               />
             </SkipExport>
@@ -357,7 +357,7 @@ const MessageItem = ({
               setTimeout(() => {
                 saveMsg(msg, messageText.text, ctxRole).then(() => {
                   onSned();
-                });
+                }).catch((e) => console.error(e));
               }, 50);
             }}
           >

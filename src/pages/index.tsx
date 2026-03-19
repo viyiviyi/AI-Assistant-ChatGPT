@@ -1,42 +1,39 @@
-import { Chat } from "@/components/Chat/Chat";
-import { MemoBackgroundImage } from "@/components/common/BackgroundImage";
-import { SkipExport } from "@/components/common/SkipExport";
-import { useService } from "@/core/AiService/ServiceProvider";
-import { BgConfig } from "@/core/BgImageStore";
-import { ChatContext, ChatManagement, IChat } from "@/core/ChatManagement";
-import { KeyValueData } from "@/core/db/KeyValueData";
-import { initTokenStore } from "@/core/tokens";
-import { TopicMessage } from "@/Models/Topic";
-import { Layout, theme } from "antd";
-import Head from "next/head";
-import React, { useContext, useEffect, useState } from "react";
-import appManifest from "../../public/manifest.json";
-import chatConfig from "../../public/使用示例.json";
+import { Chat } from '@/components/Chat/Chat';
+import { MemoBackgroundImage } from '@/components/common/BackgroundImage';
+import { SkipExport } from '@/components/common/SkipExport';
+import { useService } from '@/core/AiService/ServiceProvider';
+import { BgConfig } from '@/core/BgImageStore';
+import { ChatContext, ChatManagement, IChat } from '@/core/ChatManagement';
+import { KeyValueData } from '@/core/db/KeyValueData';
+import { initTokenStore } from '@/core/tokens';
+import { TopicMessage } from '@/Models/Topic';
+import { Layout, theme } from 'antd';
+import Head from 'next/head';
+import React, { useContext, useEffect, useState } from 'react';
+import appManifest from '../../public/manifest.json';
+import chatConfig from '../../public/使用示例.json';
 
 const MemoChat = React.memo(Chat);
 
 export default function Page() {
   const { token } = theme.useToken();
-  const { bgConfig, loadingMsgs, currentGroup, setCurrentGroup } =
-    useContext(ChatContext);
+  const { bgConfig, loadingMsgs, currentGroup, setCurrentGroup } = useContext(ChatContext);
   const [navList, setNavList] = useState([]);
-  const [chatMgt, setChatMgt] = useState<ChatManagement>(
-    new ChatManagement(chatConfig as any)
-  );
+  const [chatMgt, setChatMgt] = useState<ChatManagement>(new ChatManagement(chatConfig as any));
   const [bgImg, setBgImg] = useState<BgConfig>(bgConfig);
-  const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(
-    chatMgt.getActivityTopic()
-  );
+  const [activityTopic, setActivityTopic] = useState<TopicMessage | undefined>(chatMgt.getActivityTopic());
 
-  chatMgt.virtualRole.avatar = "";
-  chatMgt.user.avatar = "";
+  chatMgt.virtualRole.avatar = '';
+  chatMgt.user.avatar = '';
   const { reloadService } = useService();
 
   useEffect(() => {
     ChatManagement.load().then(async () => {
-      initTokenStore().then(() => {
-        reloadService(chatMgt.toJson(), KeyValueData.instance());
-      });
+      initTokenStore()
+        .then(() => {
+          reloadService(chatMgt.toJson(), KeyValueData.instance());
+        })
+        .catch((e) => console.error(e));
       // let chats = ChatManagement.getGroups();
       // // 如果不在本地保存一份，编辑是会出错的
       // chatMgt.group.id = "1f8c8194-2392-400e-9ab1-5a91dc1f08fd";
@@ -63,7 +60,7 @@ export default function Page() {
         setActivityTopic: (topic?: TopicMessage) => {
           if (topic?.id == activityTopic?.id) return;
           setActivityTopic(topic);
-          chatMgt.config.activityTopicId = topic?.id || "";
+          chatMgt.config.activityTopicId = topic?.id || '';
           chatMgt.saveConfig();
         },
         bgConfig: bgImg,
@@ -76,19 +73,21 @@ export default function Page() {
         },
         navList,
         reloadNav: (topic: TopicMessage) => {
-          ChatManagement.loadTitleTree(topic).then(() => setNavList([]));
+          ChatManagement.loadTitleTree(topic)
+            .then(() => setNavList([]))
+            .catch((e) => console.error(e));
         },
         forceRender: true,
       }}
     >
       <Layout
         style={{
-          display: "flex",
-          height: "100dvh",
-          flexDirection: "row",
-          maxHeight: "100%",
-          flexWrap: "nowrap",
-          position: "relative",
+          display: 'flex',
+          height: '100dvh',
+          flexDirection: 'row',
+          maxHeight: '100%',
+          flexWrap: 'nowrap',
+          position: 'relative',
           color: token.colorTextBase,
           backgroundColor: token.colorBgContainer,
         }}

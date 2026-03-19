@@ -269,7 +269,7 @@ export function EditVirtualRoleSetting({
                           checked: true,
                         });
                       }
-                    });
+                    }).catch((e) => console.error(e));
                   } catch (error) {
                     messageApi.warning('读取剪切板失败');
                   }

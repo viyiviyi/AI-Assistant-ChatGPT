@@ -76,7 +76,7 @@ export function InputUtil() {
         await chat.newTopic(text).then((_topic) => {
           topic = _topic;
           setActivityTopic(_topic);
-        });
+        }).catch((e) => console.error(e));
       }
       if (!topic) return;
       activityScroll({ botton: true });
