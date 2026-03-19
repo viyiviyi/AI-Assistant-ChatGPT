@@ -1,4 +1,4 @@
-import { reloadTopic } from "@/components/Chat/Message/MessageList";
+import { reloadTopic } from '@/components/Chat/Message/MessageList';
 
 export function getUuid() {
   if (typeof crypto === 'object') {
@@ -33,7 +33,7 @@ export function pagesUtil<T>(
   pageNumber: number,
   pageSize = 20,
   repect = 10,
-  repectInEnd = true
+  repectInEnd = true,
 ): { range: T[]; totalPages: number; pageIndex: number } {
   if (arr.length <= 0) return { range: [], totalPages: 1, pageIndex: 1 };
   if (arr.length < pageSize + repect) return { range: [...arr], totalPages: 1, pageIndex: 1 };
@@ -113,7 +113,7 @@ export const onTextareaTab = (
   start: number,
   end: number,
   textarea: EventTarget & HTMLTextAreaElement,
-  shift?: boolean
+  shift?: boolean,
 ) => {
   let result = inputText;
   if (inputText.slice(start, end).includes('\n') || shift) {
@@ -156,12 +156,13 @@ export function scrollToBotton(id?: string) {
     if (window) {
       const wrap = document.getElementById('content');
       if (!wrap) return;
+      clearInterval(scroolArgsCache.animation);
       const target = document.getElementById(scroolArgsCache.id);
       const offsetTop = target ? target.offsetTop : wrap.scrollHeight;
       const offsetHeight = target?.offsetHeight || wrap.offsetHeight;
       smoothScroll(wrap, wrap.scrollTop, offsetTop + offsetHeight - wrap.offsetHeight, 800);
     }
-  }, 500);
+  }, 50);
 }
 export function scrollToTop(id?: string) {
   scroolArgsCache.to_top_id = id || '';
@@ -171,6 +172,7 @@ export function scrollToTop(id?: string) {
     if (window) {
       const wrap = document.getElementById('content');
       if (!wrap) return;
+      clearInterval(scroolArgsCache.animation);
       const target = document.getElementById(scroolArgsCache.to_top_id);
       const offsetTop = target ? target.offsetTop : 0;
       smoothScroll(wrap, wrap.scrollTop, offsetTop, 500);
