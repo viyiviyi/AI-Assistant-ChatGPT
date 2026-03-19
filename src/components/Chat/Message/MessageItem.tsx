@@ -117,7 +117,7 @@ const MessageItem = ({
           onChange={(e) => {
             msg.checked = e.target.checked;
             chat.pushMessage(msg).then((msg) => {
-              reloadTopic(topic.id)
+              reloadTopic(msg.topicId);
               // setMessage({ text: messageText.text });
             });
           }}
@@ -234,7 +234,22 @@ const MessageItem = ({
         )}
       </>
     ),
-    [aiService?.customContext, chat, ctxRole, edit, inCtx, loadingMsgs, messageApi, messageText.text, msg, onDel, rBak, renderType, saveMsg, speak, topic.id],
+    [
+      aiService?.customContext,
+      chat,
+      ctxRole,
+      edit,
+      inCtx,
+      loadingMsgs,
+      messageApi,
+      messageText.text,
+      msg,
+      onDel,
+      rBak,
+      renderType,
+      saveMsg,
+      speak,
+    ],
   );
 
   // 下方悬浮按钮
