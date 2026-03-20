@@ -26,7 +26,7 @@ export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 
   if (Array.isArray(obj) && obj.filter((f) => f.type).length == obj.length) {
     obj.forEach((v, i) => {
       lines.push(`**[${i}:]**`);
-      if (v.type == 'text' && v.text) lines.push(formatObjectToMarkdown(safeJsonParse(v.text), '', depth + 1));
+      if (v.type == 'text' && v.text) lines.push(formatObjectToMarkdown(safeJsonParse(v.text), '', depth));
       else if (v.type == 'image_url' && v.image_url && v.image_url.url) lines.push(`![图片](${v.image_url.url})`);
       else lines.push(formatObjectToMarkdown(v, '', depth + 1));
       lines.push('');
@@ -34,7 +34,7 @@ export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 
     return lines.join('\n');
   }
   if (typeof obj == 'object' && obj.type && (obj.type == 'text' || obj.type == 'image_url')) {
-    if (obj.type == 'text' && obj.text) lines.push(formatObjectToMarkdown(safeJsonParse(obj.text), '', depth + 1));
+    if (obj.type == 'text' && obj.text) lines.push(formatObjectToMarkdown(safeJsonParse(obj.text), '', depth));
     else if (obj.type == 'image_url' && obj.image_url && obj.image_url.url) lines.push(`![图片](${obj.image_url.url})`);
     else lines.push(formatObjectToMarkdown(obj, '', depth + 1));
     return lines.join('\n');
