@@ -1,5 +1,4 @@
 import { CtxItem } from '@/Models/CtxItem';
-import { number } from 'cohere-ai/core/schemas';
 
 // 判断是否为对象
 const isObject = (value: any): boolean => {
@@ -19,29 +18,27 @@ const safeJsonParse = (str: string): any => {
 export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 0): string => {
   const lines: string[] = [];
   if (typeof obj == 'string') {
-    // 如果不是对象，直接返回
-    if (!title) return obj;
-    if (obj.includes('\n')) {
-      return `**${title}:**\n\n` + '```\n' + obj + '\n```';
-    }
-    return `**${title}:**\n\n${String(obj)}`;
+    // 如果是字符串，直接返回
+    return `${String(obj)}`;
   }
-
+  if (title) lines.push(`**${title}:**`);
+  lines.push('');
   if (Array.isArray(obj) && obj.filter((f) => f.type).length == obj.length) {
-    return obj
-      .map((v) => {
-        if (v.type == 'text' && v.text) return `**${title}:**\n\n}` + v.text;
-        else if (v.type == 'image_url' && v.image_url && v.image_url.url) return `**${title}:**\n\n` + `![图片](${v.image_url.url})`;
-        else return formatObjectToMarkdown(v, '', depth + 1);
-      })
-      .join('\n');
+    obj.forEach((v, i) => {
+      lines.push(`**[${i}:]**`);
+      if (v.type == 'text' && v.text) lines.push(formatObjectToMarkdown(safeJsonParse(v.text), '', depth + 1));
+      else if (v.type == 'image_url' && v.image_url && v.image_url.url) lines.push(`![图片](${v.image_url.url})`);
+      else lines.push(formatObjectToMarkdown(v, '', depth + 1));
+      lines.push('');
+    });
+    return lines.join('\n');
   }
   if (typeof obj == 'object' && obj.type && (obj.type == 'text' || obj.type == 'image_url')) {
-    if (obj.type == 'text' && obj.text) return `**${title}:**\n\n` + obj.text;
-    else if (obj.type == 'image_url' && obj.image_url && obj.image_url.url) return `**${title}:**\n\n` + `![图片](${obj.image_url.url})`;
+    if (obj.type == 'text' && obj.text) lines.push(formatObjectToMarkdown(safeJsonParse(obj.text), '', depth + 1));
+    else if (obj.type == 'image_url' && obj.image_url && obj.image_url.url) lines.push(`![图片](${obj.image_url.url})`);
+    else lines.push(formatObjectToMarkdown(obj, '', depth + 1));
+    return lines.join('\n');
   }
-  lines.push(`**${title}:**`);
-  lines.push('');
 
   Object.entries(obj).forEach(([key, value]) => {
     if (isObject(value)) {
@@ -104,13 +101,9 @@ export const formatDataForDisplay = (data: string, title: string): string => {
 
   // 尝试解析为JSON
   const parsedData = safeJsonParse(data);
-  console.log(parsedData);
   if (typeof parsedData == 'object') {
     // 如果是对象，使用对象格式化（从深度0开始）
     return formatObjectToMarkdown(parsedData, title, 0);
-  } else if (Array.isArray(parsedData)) {
-    // 如果是数组，序列化为JSON字符串展示
-    return `**${title}:**\n\n\`\`\`json\n${JSON.stringify(parsedData, null, 2)}\n\`\`\``;
   } else {
     if (!title) return data;
     // 其他情况直接展示，如果包含换行符则放入代码块

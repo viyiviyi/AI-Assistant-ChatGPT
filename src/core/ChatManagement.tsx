@@ -395,7 +395,7 @@ export class ChatManagement {
                   tool_call_id: r.id,
                   tool_call_name: r.name,
                 });
-              } else if (Array.isArray(json)) {
+              } else if (Array.isArray(json) && json.filter((f) => f.type).length == json.length) {
                 history.push({
                   role: 'user',
                   content: json,

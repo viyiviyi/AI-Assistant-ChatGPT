@@ -39,7 +39,7 @@ export class NameMacrosPrompt implements IMiddleware {
       );
     } else {
       return input.map((v) => {
-        if (v.text) {
+        if (v.text && typeof v.text == 'string') {
           v.text = v.text
             ?.replaceAll('{{user_info}}', chat.user.bio || '')
             .replaceAll('{{current_time}}', format(new Date(), 'yyyy-MM-dd HH:mm:ss'))
