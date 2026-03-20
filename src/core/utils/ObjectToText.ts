@@ -21,21 +21,20 @@ export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 
   if (typeof obj == 'string') {
     // 如果不是对象，直接返回
     if (!title) return obj;
+    if (obj.includes('\n')) {
+      return `**${title}:**\n\n` + '```\n' + obj + '\n```';
+    }
     return `**${title}:**\n\n${String(obj)}`;
   }
 
-  if (Array.isArray(obj)) {
-    if (obj.filter((f) => f.type).length == obj.length) {
-      return obj
-        .map((v) => {
-          if (v.type == 'text' && v.text) return `**${title}:**\n\n}` + v.text;
-          else if (v.type == 'image_url' && v.image_url && v.image_url.url) return `**${title}:**\n\n` + `![图片](${v.image_url.url})`;
-          else return formatObjectToMarkdown(v, '', depth + 1);
-        })
-        .join('\n');
-    } else {
-      return obj.map((v) => formatObjectToMarkdown(v, '', depth + 1)).join('\n\n');
-    }
+  if (Array.isArray(obj) && obj.filter((f) => f.type).length == obj.length) {
+    return obj
+      .map((v) => {
+        if (v.type == 'text' && v.text) return `**${title}:**\n\n}` + v.text;
+        else if (v.type == 'image_url' && v.image_url && v.image_url.url) return `**${title}:**\n\n` + `![图片](${v.image_url.url})`;
+        else return formatObjectToMarkdown(v, '', depth + 1);
+      })
+      .join('\n');
   }
   if (typeof obj == 'object' && obj.type && (obj.type == 'text' || obj.type == 'image_url')) {
     if (obj.type == 'text' && obj.text) return `**${title}:**\n\n` + obj.text;
@@ -105,7 +104,7 @@ export const formatDataForDisplay = (data: string, title: string): string => {
 
   // 尝试解析为JSON
   const parsedData = safeJsonParse(data);
-
+  console.log(parsedData);
   if (typeof parsedData == 'object') {
     // 如果是对象，使用对象格式化（从深度0开始）
     return formatObjectToMarkdown(parsedData, title, 0);

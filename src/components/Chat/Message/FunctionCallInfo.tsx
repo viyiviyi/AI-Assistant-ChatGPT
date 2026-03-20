@@ -28,16 +28,21 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
           <div
             key={msg.id + '_' + item.id}
             style={{
-              padding: 0,
-              paddingLeft: 5,
-              paddingRight: 10,
               marginTop: 5,
               borderRadius: 5,
               border: '1px solid ' + token.colorFillAlter,
-              backgroundColor: '#282c34',
+              // backgroundColor: '#282c34',
             }}
           >
-            <Flex gap={16}>
+            <Flex
+              gap={16}
+              style={{
+                paddingLeft: 5,
+                paddingRight: 10,
+                borderRadius: 5,
+                backgroundColor: '#282c34aa',
+              }}
+            >
               <CodeOutlined />
               <a style={{ fontWeight: 400, color: token.colorTextLabel }}>{item.desc || item.name}</a>
               <span style={{ flex: 1 }}></span>
@@ -53,14 +58,20 @@ export const FunctionCallInfo = ({ msg }: { msg: Message }) => {
               </Button>
             </Flex>
             {expanded && (
-              <>
+              <div
+                style={{
+                  padding: 0,
+                  paddingLeft: 5,
+                  paddingRight: 10,
+                }}
+              >
                 <MarkdownView
                   markdown={formatDataForDisplay(tool_calls?.find((f) => f.id == item.id)?.function.arguments || '', '请求参数')}
                 />
                 <Spin spinning={!item.content}>
                   <MarkdownView markdown={formatDataForDisplay(item.content, '响应结果')} />
                 </Spin>
-              </>
+              </div>
             )}
           </div>
         );
