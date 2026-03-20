@@ -256,6 +256,7 @@ export class ChatManagement {
       this.gptConfig.msgCount,
       this.config.enableVirtualRole,
       this.gptConfig.msgCountMin ?? 0,
+      this.gptConfig.disableAutoUsingCtx,
     );
   }
   static getAskContext(
@@ -265,6 +266,7 @@ export class ChatManagement {
     historyLength: number,
     enableVirtualRole: boolean,
     msgCountMin: number,
+    disableAutoUsingCtx?: boolean,
   ): {
     allCtx: Array<CtxItem>;
     historyBefore: Array<CtxItem>;
@@ -364,10 +366,13 @@ export class ChatManagement {
         .forEach((v) => {
           if (!parentIdList.includes(v.parentId!)) parentIdList.push(v.parentId!);
         });
+      // 如果开启限制自动关联上下文数量
+      if (disableAutoUsingCtx) parentIdList = [];
       // 不在记忆范围内 且勾选了的消息或关联的
       let checkedMessage = curtMessage
         .slice(0, curtMessage.length - ctxCount)
         .filter((v) => v.checked || parentIdList.includes(v.parentId || ''));
+
       // 记忆范围内的消息
       messages = [...checkedMessage, ...messages];
     }

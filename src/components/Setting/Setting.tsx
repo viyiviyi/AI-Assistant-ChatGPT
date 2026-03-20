@@ -25,7 +25,7 @@ import {
   Select,
   Switch,
   theme,
-  Upload
+  Upload,
 } from 'antd';
 import copy from 'copy-to-clipboard';
 import { useRouter } from 'next/router';
@@ -77,6 +77,7 @@ export const Setting = ({
     GptConfig_msgCountMin: number;
     GptConfig_role: CtxRole;
     GptConfig_max_tokens: number;
+    GptConfig_disableAutoUsing: boolean;
     GptConfig_top_p: number;
     GptConfig_temperature: number;
     GptConfig_n: number;
@@ -115,6 +116,7 @@ export const Setting = ({
       GptConfig_msgCountMin: chatMgt?.gptConfig.msgCountMin,
       GptConfig_role: chatMgt?.gptConfig.role,
       GptConfig_max_tokens: chatMgt?.gptConfig.max_tokens,
+      GptConfig_disableAutoUsing: chatMgt?.gptConfig.disableAutoUsingCtx,
       GptConfig_top_p: chatMgt?.gptConfig.top_p,
       GptConfig_temperature: chatMgt?.gptConfig.temperature,
       GptConfig_n: chatMgt?.gptConfig.n,
@@ -168,17 +170,23 @@ export const Setting = ({
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
     const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[chatMgt.config.botType];
-    aiServices.current?.models().then((res) => {
-      setModels(res);
-      if (!res.includes(model || '') && res.length) {
-        formValus.GptConfig_model = res[0];
-        form.setFieldsValue(formValus);
-      }
-    }).catch((e) => console.error(e));
+    aiServices.current
+      ?.models()
+      .then((res) => {
+        setModels(res);
+        if (!res.includes(model || '') && res.length) {
+          formValus.GptConfig_model = res[0];
+          form.setFieldsValue(formValus);
+        }
+      })
+      .catch((e) => console.error(e));
     aiServices.current?.getConnectors &&
-      aiServices.current?.getConnectors().then((res) => {
-        setConnectors(res);
-      }).catch((e) => console.error(e));
+      aiServices.current
+        ?.getConnectors()
+        .then((res) => {
+          setConnectors(res);
+        })
+        .catch((e) => console.error(e));
     // formValus.chat_connectors = aiServices.current?.getCurrentConnectors
     //   ?.call(aiServices.current?.getCurrentConnectors)
     //   .map((v) => v.id);
@@ -198,6 +206,7 @@ export const Setting = ({
     chatMgt.gptConfig.role = values.GptConfig_role;
     chatMgt.gptConfig.msgCount = values.GptConfig_msgCount;
     chatMgt.gptConfig.msgCountMin = values.GptConfig_msgCountMin;
+    chatMgt.gptConfig.disableAutoUsingCtx = values.GptConfig_disableAutoUsing;
     chatMgt.gptConfig.temperature = values.GptConfig_temperature;
     chatMgt.gptConfig.top_p = values.GptConfig_top_p;
     chatMgt.gptConfig.presence_penalty = values.GptConfig_presence_penalty;
@@ -393,9 +402,11 @@ export const Setting = ({
                 onOk={() => {
                   if (exportConfig.isMarkdown) {
                     chatMgt?.topics.forEach((v) => {
-                      ChatManagement.loadMessage(v).then((t) => {
-                        downloadTopic(v, false, chatMgt.getChat(), exportConfig);
-                      }).catch((e) => console.error(e));
+                      ChatManagement.loadMessage(v)
+                        .then((t) => {
+                          downloadTopic(v, false, chatMgt.getChat(), exportConfig);
+                        })
+                        .catch((e) => console.error(e));
                     });
                   } else {
                     let _chat = chatMgt!.toJson();
@@ -485,10 +496,13 @@ export const Setting = ({
                       const fr = new FileReader();
                       fr.onloadend = (e) => {
                         if (e.target?.result) {
-                          chatMgt?.fromJson(JSON.parse(e.target.result.toString())).then((chat) => {
-                            setChat(chat);
-                            cbs.current.cancel();
-                          }).catch((e) => console.error(e));
+                          chatMgt
+                            ?.fromJson(JSON.parse(e.target.result.toString()))
+                            .then((chat) => {
+                              setChat(chat);
+                              cbs.current.cancel();
+                            })
+                            .catch((e) => console.error(e));
                         }
                       };
                       fr.readAsText(file);
@@ -515,15 +529,17 @@ export const Setting = ({
                     content: '删除操作不可逆，请谨慎操作。',
                     bodyStyle: { whiteSpace: 'nowrap' },
                     onOk: () => {
-                      ChatManagement.remove(chatMgt!.group.id).then(() => {
-                        router.push('/chat');
-                        if (ChatManagement.getGroups().length) {
-                          setChat(ChatManagement.getGroups()[0]);
-                        } else {
-                          location.reload();
-                        }
-                        cbs.current.cancel();
-                      }).catch((e) => console.error(e));
+                      ChatManagement.remove(chatMgt!.group.id)
+                        .then(() => {
+                          router.push('/chat');
+                          if (ChatManagement.getGroups().length) {
+                            setChat(ChatManagement.getGroups()[0]);
+                          } else {
+                            location.reload();
+                          }
+                          cbs.current.cancel();
+                        })
+                        .catch((e) => console.error(e));
                     },
                   });
                 }}
@@ -541,9 +557,12 @@ export const Setting = ({
                 const model =
                   typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[value] || '';
                 form.setFieldValue('GptConfig_model', model || server?.defaultModel);
-                server?.models().then((res) => {
-                  setModels(res);
-                }).catch((e) => console.error(e));
+                server
+                  ?.models()
+                  .then((res) => {
+                    setModels(res);
+                  })
+                  .catch((e) => console.error(e));
                 setConnectors([]);
                 server?.getConnectors &&
                   server?.getConnectors().then((res) => {
@@ -639,12 +658,17 @@ export const Setting = ({
                       <Form.Item style={{ flex: '1' }} name="config_disable_strikethrough" valuePropName="checked" label="禁用删除线">
                         <Switch />
                       </Form.Item>
-                      <Form.Item style={{ flex: '1' }} name="config_use_virtual_role_img" valuePropName="checked" label="角色卡设为背景">
+                      <Form.Item
+                        style={{ flex: '1' }}
+                        name="GptConfig_disableAutoUsing"
+                        valuePropName="checked"
+                        label="不自动加载tool上下文"
+                      >
                         <Switch />
                       </Form.Item>
                     </div>
                     <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
-                      <Form.Item style={{ flex: '1' }} name="config_tool_to_bottom" valuePropName="checked" label="发送按钮下移">
+                      <Form.Item style={{ flex: '1' }} name="config_use_virtual_role_img" valuePropName="checked" label="角色卡设为背景">
                         <Switch />
                       </Form.Item>
                       <Form.Item style={{ flex: '1' }} name="config_hiddenMask" valuePropName="checked" label="隐藏半透明蒙层">
@@ -652,6 +676,9 @@ export const Setting = ({
                       </Form.Item>
                     </div>
                     <div style={{ width: '100%', display: 'flex', gap: '10px' }}>
+                      <Form.Item style={{ flex: '1' }} name="config_tool_to_bottom" valuePropName="checked" label="发送按钮下移">
+                        <Switch />
+                      </Form.Item>
                       <Form.Item style={{ flex: '1' }} name="config_buttom_tool_send" valuePropName="checked" label="下方发送按钮">
                         <Switch />
                       </Form.Item>

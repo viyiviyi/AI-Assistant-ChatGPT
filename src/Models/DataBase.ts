@@ -151,6 +151,7 @@ export interface GptConfig {
   n: number;
   msgCount: number; // >=0
   msgCountMin?: number;
+  disableAutoUsingCtx?: boolean; // 是否禁用自动关联上下文
   presence_penalty?: number;
   frequency_penalty?: number;
   updateTime?: number;
