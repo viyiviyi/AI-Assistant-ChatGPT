@@ -1,10 +1,12 @@
-import { ChatContext, ChatManagement } from "@/core/ChatManagement";
-import { onSendBefore } from "@/middleware/execMiddleware";
-import { CtxRole } from "@/Models/CtxRole";
-import { VirtualRoleSetting } from "@/Models/VirtualRoleSetting";
-import { Tag, Typography } from "antd";
-import { useCallback, useContext, useMemo } from "react";
-import { MarkdownView } from "../common/MarkdownView";
+import { ChatContext, ChatManagement } from '@/core/ChatManagement';
+import { formatContentToMarkdown, formatDataForDisplay } from '@/core/utils/ObjectToText';
+import { onSendBefore } from '@/middleware/execMiddleware';
+import { CtxItem } from '@/Models/CtxItem';
+import { CtxRole } from '@/Models/CtxRole';
+import { VirtualRoleSetting } from '@/Models/VirtualRoleSetting';
+import { Tag, Typography } from 'antd';
+import { useCallback, useContext, useMemo } from 'react';
+import { MarkdownView } from '../common/MarkdownView';
 
 export const VirtualRoleConfigInfo = ({
   settings,
@@ -18,35 +20,27 @@ export const VirtualRoleConfigInfo = ({
   const { chatMgt, activityTopic } = useContext(ChatContext);
   const _chatMgt = useMemo(() => {
     return new ChatManagement({
-      id: "",
+      id: '',
       ...chatMgt,
       virtualRole: { ...chatMgt.virtualRole, settings: settings },
     });
   }, [chatMgt, settings]);
   const renderContext = useCallback(
-    (
-      ctx: Array<{
-        role: CtxRole;
-        content: string;
-      }>
-    ): {
-      role: CtxRole;
-      content: string;
-    }[] => {
+    (ctx: Array<CtxItem>): CtxItem[] => {
       return onSendBefore(_chatMgt.getChat(), { allCtx: ctx, history: [] }) as {
         role: CtxRole;
         content: string;
       }[];
     },
-    [_chatMgt]
+    [_chatMgt],
   );
   const { history, historyAfter, historyBefore } = useMemo(() => {
     const { history, historyAfter, historyBefore } = _chatMgt!.getAskContext(
       {
         ...(activityTopic || {
-          id: "",
-          groupId: "",
-          name: "",
+          id: '',
+          groupId: '',
+          name: '',
           createdAt: 0,
           messages: [],
           messageMap: {},
@@ -54,7 +48,7 @@ export const VirtualRoleConfigInfo = ({
         }),
         overrideVirtualRole: topicVirtualRole,
       },
-      activityTopic?.messages?.length || 0
+      activityTopic?.messages?.length || 0,
     );
     return {
       history: renderContext(history),
@@ -64,30 +58,30 @@ export const VirtualRoleConfigInfo = ({
   }, [_chatMgt, activityTopic, topicVirtualRole, renderContext]);
   const getTag = (role: CtxRole) => {
     switch (role) {
-      case "assistant":
-        return <Tag color="cyan">{"助理"}</Tag>;
-      case "system":
-        return <Tag color="blue">{"系统"}</Tag>;
-      case "user":
-        return <Tag color="purple">{"用户"}</Tag>;
+      case 'assistant':
+        return <Tag color="cyan">{'助理'}</Tag>;
+      case 'system':
+        return <Tag color="blue">{'系统'}</Tag>;
+      case 'user':
+        return <Tag color="purple">{'用户'}</Tag>;
     }
   };
 
   return (
-    <div style={{ wordWrap: "break-word", padding: 8 }}>
+    <div style={{ wordWrap: 'break-word', padding: 8 }}>
       <div>
         {bio ? (
           <>
-            {getTag(ChatManagement.parseTextToRole(bio, "system"))}
+            {getTag(ChatManagement.parseTextToRole(bio, 'system'))}
             <MarkdownView
-              markdown={
+              markdown={formatContentToMarkdown(
                 renderContext([
                   {
                     content: bio,
-                    role: ChatManagement.parseTextToRole(bio, "system"),
+                    role: ChatManagement.parseTextToRole(bio, 'system'),
                   },
-                ])[0].content
-              }
+                ])[0].content,
+              )}
             />
           </>
         ) : (
@@ -95,31 +89,27 @@ export const VirtualRoleConfigInfo = ({
         )}
         {historyBefore.map((v, idx) => {
           return (
-            <div key={idx + "_settint_info_item_p"}>
+            <div key={idx + '_settint_info_item_p'}>
               {getTag(v.role)}
-              <MarkdownView markdown={v.content} />
+              <MarkdownView markdown={formatContentToMarkdown(v.content)} />
             </div>
           );
         })}
-        <Typography.Text type="secondary">
-          {"...动态上下文开始"}
-        </Typography.Text>
+        <Typography.Text type="secondary">{'...动态上下文开始'}</Typography.Text>
         {history.map((v, idx) => {
           return (
-            <div key={idx + "_settint_info_item_e"}>
+            <div key={idx + '_settint_info_item_e'}>
               {getTag(v.role)}
-              <MarkdownView markdown={v.content} />
+              <MarkdownView markdown={formatContentToMarkdown(v.content)} />
             </div>
           );
         })}
-        <Typography.Text type="secondary">
-          {"...动态上下文结束"}
-        </Typography.Text>
+        <Typography.Text type="secondary">{'...动态上下文结束'}</Typography.Text>
         {historyAfter.map((v, idx) => {
           return (
-            <div key={idx + "_settint_info_item_e"}>
+            <div key={idx + '_settint_info_item_e'}>
               {getTag(v.role)}
-              <MarkdownView markdown={v.content} />
+              <MarkdownView markdown={formatContentToMarkdown(v.content)} />
             </div>
           );
         })}

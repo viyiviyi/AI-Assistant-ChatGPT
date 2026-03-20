@@ -264,6 +264,11 @@ export class APICenter implements IAiService {
               } catch (error) {
                 continue;
               }
+              if (data.error) {
+                console.error(data.error);
+                full_response = [data.error?.message ? data.error?.message : data.error];
+                continue;
+              }
               const choices: any[] = data.choices;
               if (!choices || choices.length == 0) {
                 continue;
@@ -314,6 +319,14 @@ export class APICenter implements IAiService {
             }
           }
         }
+        await onMessage({
+          error: false,
+          end: true,
+          text: full_response,
+          reasoning_content,
+          tool_calls,
+          isToolCall,
+        });
         return full_response;
       }
     } catch (error: any) {

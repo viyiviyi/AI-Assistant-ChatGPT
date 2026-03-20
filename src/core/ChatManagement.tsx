@@ -384,13 +384,52 @@ export class ChatManagement {
       });
       if (v.tool_call_result && v.tool_call_result[v.useTextIdx || 0]) {
         v.tool_call_result[v.useTextIdx || 0].forEach((r) => {
-          history.push({
-            role: 'tool',
-            content: r.content,
-            name: r.name,
-            tool_call_id: r.id,
-            tool_call_name: r.name,
-          });
+          if (r.content.startsWith('{') || r.content.startsWith('[')) {
+            try {
+              const json = JSON.parse(r.content);
+              if (typeof json == 'object' && 'type' in json && json['type'] == 'image_url') {
+                history.push({
+                  role: 'user',
+                  content: [json] as any,
+                  name: r.name,
+                  tool_call_id: r.id,
+                  tool_call_name: r.name,
+                });
+              } else if (Array.isArray(json)) {
+                history.push({
+                  role: 'user',
+                  content: json,
+                  name: r.name,
+                  tool_call_id: r.id,
+                  tool_call_name: r.name,
+                });
+              } else {
+                history.push({
+                  role: 'tool',
+                  content: r.content,
+                  name: r.name,
+                  tool_call_id: r.id,
+                  tool_call_name: r.name,
+                });
+              }
+            } catch (error) {
+              history.push({
+                role: 'tool',
+                content: r.content,
+                name: r.name,
+                tool_call_id: r.id,
+                tool_call_name: r.name,
+              });
+            }
+          } else {
+            history.push({
+              role: 'tool',
+              content: r.content,
+              name: r.name,
+              tool_call_id: r.id,
+              tool_call_name: r.name,
+            });
+          }
         });
       }
     });

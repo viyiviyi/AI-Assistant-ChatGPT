@@ -3,7 +3,6 @@ import { CtxItem } from "@/Models/CtxItem";
 import { Message } from "@/Models/DataBase";
 import { IMiddleware } from "./IMiddleware";
 import { AssistantMessagePrdfix } from "./scripts/AssistantMessagePrdfix.middleware";
-import { ContinueLastMsg } from "./scripts/ContinueLastMsg";
 import { CreataMessageForUser } from "./scripts/CreataMessageForUser";
 import { NameMacrosPrompt } from "./scripts/NameMacrosPrompt.middleware";
 import { RemoveNamePrdfix } from "./scripts/RemoveNamePrdfix.middleware";
@@ -14,7 +13,6 @@ const middlewareIndex: { [key: string]: IMiddleware } = {};
 const middlewareList: Array<IMiddleware> = [];
 
 const middlewareArr: Array<new () => IMiddleware> = [
-  ContinueLastMsg,
   CreataMessageForUser,
   UserMessagePrdfix,
   AssistantMessagePrdfix,

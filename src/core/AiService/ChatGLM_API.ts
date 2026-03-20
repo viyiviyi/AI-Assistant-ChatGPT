@@ -2,6 +2,7 @@ import { CtxItem } from '@/Models/CtxItem';
 import { Message } from '@/Models/DataBase';
 import axios from 'axios';
 import { ChatManagement } from '../ChatManagement';
+import { formatContentToMarkdown } from '../utils/ObjectToText';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
 
@@ -78,9 +79,9 @@ export class ChatGLM_API implements IAiService {
     let assistant = '';
     for (const item of data) {
       if (item.role === 'user' || item.role === 'system') {
-        user = item.content || '';
+        user = formatContentToMarkdown(item.content) || '';
       } else if (item.role === 'assistant') {
-        assistant = item.content || '';
+        assistant = formatContentToMarkdown(item.content) || '';
       }
       if (assistant) {
         messages.push([user, assistant]);

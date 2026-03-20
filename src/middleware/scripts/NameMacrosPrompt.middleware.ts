@@ -24,17 +24,34 @@ export class NameMacrosPrompt implements IMiddleware {
     });
     return context.allCtx;
   };
-  static format(chat: IChat, input: string | undefined): string | undefined {
-    return (
-      input
-        ?.replaceAll('{{user_info}}', chat.user.bio || '')
-        .replaceAll('{{current_time}}', format(new Date(), 'yyyy-MM-dd HH:mm:ss'))
-        .replace(/\{\{(char|bot)\}\}/gi, chat.virtualRole.name)
-        .replace(/\{\{(user)\}\}/gi, chat.user.name)
-        // .replaceAll("{{char}}", chat.virtualRole.name)
-        // .replaceAll("{{user}}", chat.user.name)
-        .replaceAll('<BOT>', chat.virtualRole.name)
-        .replaceAll('<USER>', chat.user.name)
-    );
+  static format(chat: IChat, input: CtxItem['content']): CtxItem['content'] {
+    if (typeof input == 'string') {
+      return (
+        input
+          ?.replaceAll('{{user_info}}', chat.user.bio || '')
+          .replaceAll('{{current_time}}', format(new Date(), 'yyyy-MM-dd HH:mm:ss'))
+          .replace(/\{\{(char|bot)\}\}/gi, chat.virtualRole.name)
+          .replace(/\{\{(user)\}\}/gi, chat.user.name)
+          // .replaceAll("{{char}}", chat.virtualRole.name)
+          // .replaceAll("{{user}}", chat.user.name)
+          .replaceAll('<BOT>', chat.virtualRole.name)
+          .replaceAll('<USER>', chat.user.name)
+      );
+    } else {
+      return input.map((v) => {
+        if (v.text) {
+          v.text = v.text
+            ?.replaceAll('{{user_info}}', chat.user.bio || '')
+            .replaceAll('{{current_time}}', format(new Date(), 'yyyy-MM-dd HH:mm:ss'))
+            .replace(/\{\{(char|bot)\}\}/gi, chat.virtualRole.name)
+            .replace(/\{\{(user)\}\}/gi, chat.user.name)
+            // .replaceAll("{{char}}", chat.virtualRole.name)
+            // .replaceAll("{{user}}", chat.user.name)
+            .replaceAll('<BOT>', chat.virtualRole.name)
+            .replaceAll('<USER>', chat.user.name);
+        }
+        return v;
+      });
+    }
   }
 }

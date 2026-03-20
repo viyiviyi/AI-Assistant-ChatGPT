@@ -20,8 +20,13 @@ export class UserMessagePrdfix implements IMiddleware {
   ): CtxItem[] => {
     let reg = new RegExp(`(^)(${chat.user.name})(:|：)\s*`, 'g');
     context.allCtx.forEach((v) => {
-      if (v.role == 'user' && !reg.test(v.content || '')) {
-        v.content = NameMacrosPrompt.format(chat, this.prompt)?.replaceAll('{{message}}', v.content || '') || '';
+      if (typeof v.content == 'string') {
+        if (v.role == 'user' && !reg.test(v.content || '')) {
+          v.content = NameMacrosPrompt.format(chat, this.prompt);
+          if (typeof v.content == 'string') {
+            v.content = v.content.replaceAll('{{message}}', v.content || '') || '';
+          }
+        }
       }
     });
     return context.allCtx;

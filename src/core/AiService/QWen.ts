@@ -1,9 +1,10 @@
-import { nextToken } from "@/core/tokens";
-import { CtxItem } from "@/Models/CtxItem";
-import { Message } from "@/Models/DataBase";
-import { getToken } from "../tokens";
-import { IAiService, InputConfig } from "./IAiService";
-import { aiServiceType, ServiceTokens } from "./ServiceProvider";
+import { nextToken } from '@/core/tokens';
+import { CtxItem } from '@/Models/CtxItem';
+import { Message } from '@/Models/DataBase';
+import { getToken } from '../tokens';
+import { formatContentToMarkdown } from '../utils/ObjectToText';
+import { IAiService, InputConfig } from './IAiService';
+import { aiServiceType, ServiceTokens } from './ServiceProvider';
 export class QWen implements IAiService {
   customContext = true;
   history = undefined;
@@ -15,8 +16,8 @@ export class QWen implements IAiService {
   }
   severConfig: any;
   setConfig?: ((config: any) => void) | undefined;
-  serverType: aiServiceType = "QWen";
-  models = async () => ["qwen-turbo", "qwen-plus",'qwen-max'];
+  serverType: aiServiceType = 'QWen';
+  models = async () => ['qwen-turbo', 'qwen-plus', 'qwen-max'];
   async sendMessage({
     context,
     onMessage,
@@ -24,16 +25,11 @@ export class QWen implements IAiService {
   }: {
     msg: Message;
     context: CtxItem[];
-    onMessage: (msg: {
-      error: boolean;
-      text: string | string[];
-      end: boolean;
-      stop?: (() => void) | undefined;
-    }) => Promise<void>;
+    onMessage: (msg: { error: boolean; text: string | string[]; end: boolean; stop?: (() => void) | undefined }) => Promise<void>;
     config: InputConfig;
   }): Promise<void> {
     if (context.length == 0) {
-      return await onMessage({ error: true, end: true, text: "请勿发送空内容。" });
+      return await onMessage({ error: true, end: true, text: '请勿发送空内容。' });
     }
     var token = getToken(this.serverType);
     const currentToken = token.current;
@@ -42,28 +38,26 @@ export class QWen implements IAiService {
       return await onMessage({
         error: true,
         end: true,
-        text: "缺少 token (API-KEY)",
+        text: '缺少 token (API-KEY)',
       });
     }
     await onMessage({
       end: false,
       error: false,
-      text: "",
+      text: '',
     });
     await this.generateChatStream(context, config, currentToken, onMessage);
   }
-  context2history(
-    context: CtxItem[]
-  ): Array<{ user: string; bot: string }> {
+  context2history(context: CtxItem[]): Array<{ user: string; bot: string }> {
     let history: Array<{ user: string; bot: string }> = [];
     let lastItem: CtxItem | undefined = undefined;
     context.forEach((v) => {
-      if (v.role == "assistant") {
-        history.push({ bot: v.content || "", user: lastItem?.content || "" });
+      if (v.role == 'assistant') {
+        history.push({ bot: formatContentToMarkdown(v.content) || '', user: formatContentToMarkdown(lastItem?.content) || '' });
         lastItem = undefined;
       } else {
         if (lastItem) {
-          history.push({ bot: "无", user: lastItem?.content || "" });
+          history.push({ bot: '无', user: formatContentToMarkdown(lastItem?.content) || '' });
         }
         lastItem = v;
       }
@@ -75,23 +69,18 @@ export class QWen implements IAiService {
     context: CtxItem[],
     config: InputConfig,
     apiKey: string,
-    onMessage: (msg: {
-      error: boolean;
-      text: string;
-      end: boolean;
-      stop?: () => void;
-    }) => void
+    onMessage: (msg: { error: boolean; text: string; end: boolean; stop?: () => void }) => void,
   ) {
-    let full_response = "";
+    let full_response = '';
     const headers = {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + apiKey,
-      "X-DashScope-SSE": "enable",
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + apiKey,
+      'X-DashScope-SSE': 'enable',
     };
     const data = {
       model: config.model,
       input: {
-        prompt: context.length ? context.slice(-1)[0].content : "",
+        prompt: context.length ? context.slice(-1)[0].content : '',
         history: this.context2history(context),
         parameters: {
           top_k: config.temperature,
@@ -101,32 +90,23 @@ export class QWen implements IAiService {
       },
     };
     const controller = new AbortController();
-    await fetch(
-      `${this.baseUrl}/api/v1/services/aigc/text-generation/generation`,
-      {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(data),
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-        signal: controller.signal,
-      }
-    )
+    await fetch(`${this.baseUrl}/api/v1/services/aigc/text-generation/generation`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(data),
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      signal: controller.signal,
+    })
       .then(async (response) => {
         if (!response.ok) {
           await onMessage({
             error: true,
             end: true,
-            text:
-              "\n\n 请求发生错误。\n\n" +
-              response.status +
-              " " +
-              response.statusText +
-              "\n\n" +
-              (await response.text()),
+            text: '\n\n 请求发生错误。\n\n' + response.status + ' ' + response.statusText + '\n\n' + (await response.text()),
           });
           return;
         }
@@ -147,18 +127,18 @@ export class QWen implements IAiService {
               });
               break;
             }
-            const decodedValue = new TextDecoder("utf-8").decode(value);
-            const lines = decodedValue.split("\n");
+            const decodedValue = new TextDecoder('utf-8').decode(value);
+            const lines = decodedValue.split('\n');
             // let d = {
             //   output: { finish_reason: "null", text: "最近" },
             //   usage: { output_tokens: 3, input_tokens: 85 },
             //   request_id: "1117fb64-5dd9-9df0-a5ca-d7ee0e97032d",
             // };
             for (const line of lines) {
-              if (line.trim() === "") {
+              if (line.trim() === '') {
                 continue;
               }
-              if (line.trim() === "data: [DONE]") {
+              if (line.trim() === 'data: [DONE]') {
                 await onMessage({
                   error: false,
                   end: true,
@@ -179,14 +159,13 @@ export class QWen implements IAiService {
                     return await onMessage({
                       error: false,
                       end: true,
-                      text:
-                        "```json\n" + JSON.stringify(data, null, 4) + "\n```",
+                      text: '```json\n' + JSON.stringify(data, null, 4) + '\n```',
                     });
                   }
                   continue;
                 }
                 const finish_reason = output.finish_reason;
-                if (finish_reason == "stop") {
+                if (finish_reason == 'stop') {
                   await onMessage({
                     error: false,
                     end: true,
@@ -207,7 +186,7 @@ export class QWen implements IAiService {
                 });
               } catch (error) {
                 console.error(error);
-                console.error("出错的内容：", line);
+                console.error('出错的内容：', line);
                 continue;
               }
             }
@@ -216,17 +195,17 @@ export class QWen implements IAiService {
         }
       })
       .catch((error) => {
-        if (error.name === "AbortError") {
+        if (error.name === 'AbortError') {
           onMessage({
             error: true,
             end: true,
-            text: full_response + "\n\n 请求已终止。",
+            text: full_response + '\n\n 请求已终止。',
           });
         } else {
           onMessage({
             error: true,
             end: true,
-            text: full_response + "\n\n 请求发生错误。\n\n" + error,
+            text: full_response + '\n\n 请求发生错误。\n\n' + error,
           });
         }
       });

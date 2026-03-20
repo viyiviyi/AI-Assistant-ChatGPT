@@ -162,13 +162,16 @@ export function useSendMessage(chat: ChatManagement) {
           reloadTopic(topic.id);
         },
       };
-      chat.pushMessage(result, idx + 1).then((r) => {
-        currentPullMessage.id = r.id;
-        Object.assign(result, r);
-        reloadTopic(topic.id, idx + 1);
-        scrollToBotton(result.id);
-        reloadIndex(topic, idx);
-      }).catch((e) => console.error(e));
+      chat
+        .pushMessage(result, idx + 1)
+        .then((r) => {
+          currentPullMessage.id = r.id;
+          Object.assign(result, r);
+          reloadTopic(topic.id, idx + 1);
+          scrollToBotton(result.id);
+          reloadIndex(topic, idx);
+        })
+        .catch((e) => console.error(e));
       let save = createThrottleAndDebounce((isEnd, cb: () => void = () => {}) => {
         if (currentChat.current) {
           if (isEnd) {
@@ -177,20 +180,26 @@ export function useSendMessage(chat: ChatManagement) {
                 res.text = res.text.map((txt) => txt.replace('{{execution_url}}', curtExecutor.current?.url || ''));
               }
               currentChat.current &&
-                currentChat.current.pushMessage(res).then((r) => {
-                  cb();
-                }).catch((e) => console.error(e));
+                currentChat.current
+                  .pushMessage(res)
+                  .then((r) => {
+                    cb();
+                  })
+                  .catch((e) => console.error(e));
             });
           } else {
-            currentChat.current.pushMessage(result).then((r) => {
-              cb();
-            }).catch((e) => console.error(e));
+            currentChat.current
+              .pushMessage(result)
+              .then((r) => {
+                cb();
+              })
+              .catch((e) => console.error(e));
           }
         }
       }, 100);
       let { allCtx: ctx, history } = currentChat.current!.getAskContext(topic, idx + 1);
-      const context = onSendBefore(chat.getChat(), { allCtx: ctx, history });
-      if (curtExecutor.current) hiddenResult(context, curtExecutor.current);
+      let context = onSendBefore(chat.getChat(), { allCtx: ctx, history });
+      if (curtExecutor.current) context = hiddenResult(context, curtExecutor.current);
       await aiService.sendMessage({
         msg: topic.messages[idx],
         context: context,
@@ -258,24 +267,28 @@ export function useSendMessage(chat: ChatManagement) {
                         let text = JSON.parse(v.function.arguments).task_guidance;
                         if (!text) return JSON.stringify({ success: false, message: '缺少新会话工作指导内容' });
                         // text = '[新会话]\n\n' + text;
-                        chat.newTopic(text).then((_topic) => {
-                          chat
-                            .pushMessage({
-                              id: getUuid(),
-                              text: text,
-                              groupId: _topic.groupId,
-                              topicId: _topic.id,
-                              ctxRole: 'system',
-                              timestamp: Date.now(),
-                              parentId: getUuid(),
-                            })
-                            .then((msg) => {
-                              setActivityTopic(_topic);
-                              setTimeout(() => {
-                                sendMessage(idx + 2, _topic);
-                              }, 100);
-                            }).catch((e) => console.error(e));
-                        }).catch((e) => console.error(e));
+                        chat
+                          .newTopic(text)
+                          .then((_topic) => {
+                            chat
+                              .pushMessage({
+                                id: getUuid(),
+                                text: text,
+                                groupId: _topic.groupId,
+                                topicId: _topic.id,
+                                ctxRole: 'system',
+                                timestamp: Date.now(),
+                                parentId: getUuid(),
+                              })
+                              .then((msg) => {
+                                setActivityTopic(_topic);
+                                setTimeout(() => {
+                                  sendMessage(idx + 2, _topic);
+                                }, 100);
+                              })
+                              .catch((e) => console.error(e));
+                          })
+                          .catch((e) => console.error(e));
                       } catch (error) {
                         return JSON.stringify({ success: false, message: '新会话创建失败' });
                       }
@@ -284,28 +297,33 @@ export function useSendMessage(chat: ChatManagement) {
                     return execFunctionCall(v);
                   });
                   if ((result.useTextIdx || 0) == callIdx) {
-                    Promise.all(execTask).then((execResList) => {
-                      execResList.forEach((r, i) => {
-                        result.tool_call_result![callIdx][i].content = r;
-                      });
-                      // 如果消息没有删除才继续
-                      if (topic.messageMap[result.id]) {
-                        chat.pushMessage(result).then(() => {
-                          reloadTopic(topic.id, result.id, true);
-                        }).catch((e) => console.error(e));
-                        if (!loadingMessages[result.id] || isStop) return;
-                        // 回传结果
-                        setTimeout(() => {
-                          if (loadingMessages[result.id] && !isStop && chat.topics.find((f) => f.id == topic.id)) {
-                            sendMessage(idx + 1, topic, true, result.parentId);
-                            delete loadingMsgs[result.id];
-                            delete loadingMessages[result.id];
-                            currentChat.current = undefined;
-                            reloadTopic(topic.id);
-                          }
-                        }, 100);
-                      }
-                    }).catch((e) => console.error(e));
+                    Promise.all(execTask)
+                      .then((execResList) => {
+                        execResList.forEach((r, i) => {
+                          result.tool_call_result![callIdx][i].content = r;
+                        });
+                        // 如果消息没有删除才继续
+                        if (topic.messageMap[result.id]) {
+                          chat
+                            .pushMessage(result)
+                            .then(() => {
+                              reloadTopic(topic.id, result.id, true);
+                            })
+                            .catch((e) => console.error(e));
+                          if (!loadingMessages[result.id] || isStop) return;
+                          // 回传结果
+                          setTimeout(() => {
+                            if (loadingMessages[result.id] && !isStop && chat.topics.find((f) => f.id == topic.id)) {
+                              sendMessage(idx + 1, topic, true, result.parentId);
+                              delete loadingMsgs[result.id];
+                              delete loadingMessages[result.id];
+                              currentChat.current = undefined;
+                              reloadTopic(topic.id);
+                            }
+                          }, 100);
+                        }
+                      })
+                      .catch((e) => console.error(e));
                   }
                 }
               });
@@ -328,7 +346,7 @@ export function useSendMessage(chat: ChatManagement) {
               hasChange = true;
               currentChat.current = undefined;
             }
-            if (hasChange) {
+            if (res.end || hasChange) {
               reloadTopic(topic.id, result.id, res.end);
               scrollToBotton(currentPullMessage.id);
             }
@@ -360,9 +378,10 @@ function hiddenResult(ctx: CtxItem[], executor: Executor) {
     }
   });
   let usedResultName: { [key: string]: boolean } = {};
+  const result: CtxItem[] = [];
   for (let i = ctx.length - 1; i >= 0; i--) {
     const msg = ctx[i];
-    if (msg.role == 'tool' && msg.tool_call_name && tool_result_use_type[msg.tool_call_name]) {
+    if (msg.tool_call_name && tool_result_use_type[msg.tool_call_name]) {
       let skip = true;
       if (!usedResultName[msg.tool_call_name]) {
         usedResultName[msg.tool_call_name] = true;
@@ -373,16 +392,22 @@ function hiddenResult(ctx: CtxItem[], executor: Executor) {
       }
       if (skip) {
         try {
-          const resJson = JSON.parse(msg.content);
-          msg.content = JSON.stringify({ success: resJson.success }, null, 2);
+          if (msg.role == 'user') continue;
+          if (typeof msg.content == 'string') {
+            const resJson = JSON.parse(msg.content);
+            msg.content = JSON.stringify({ success: resJson.success }, null, 2);
+          } else {
+            msg.content = JSON.stringify({ success: true }, null, 2);
+          }
         } catch (error) {
           msg.content = JSON.stringify({ success: true }, null, 2);
         }
       }
     }
     msg.tool_call_name = undefined;
+    result.unshift(msg);
   }
-  return ctx;
+  return result;
 }
 
 export function usePushMessage(chat: ChatManagement) {
