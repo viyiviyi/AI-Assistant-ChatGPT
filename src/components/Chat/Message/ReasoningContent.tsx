@@ -3,11 +3,17 @@ import { ChatManagement } from '@/core/ChatManagement';
 import { Message } from '@/Models/DataBase';
 import { Button, Flex, theme } from 'antd';
 import copy from 'copy-to-clipboard';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export const ReasoningContent = ({ msg }: { msg: Message }) => {
+  console.log('ReasoningContent')
   const { token } = theme.useToken();
   const [expanded, setExpanded] = useState(false);
+  const text = useMemo(() => {
+    if (typeof msg.reasoning_content == 'string') return msg.reasoning_content;
+    else if (msg.reasoning_content) return msg.reasoning_content[msg.useTextIdx || 0] || msg.reasoning_content[0];
+    return '';
+  }, [msg.reasoning_content, msg.useTextIdx]);
   return (
     <>
       {!!msg.reasoning_content?.length && (
@@ -54,7 +60,7 @@ export const ReasoningContent = ({ msg }: { msg: Message }) => {
           </Flex>
           {expanded && (
             <MarkdownView
-              markdown={ChatManagement.getMsgReasoningContent(msg)}
+              markdown={text}
               // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
             />
           )}

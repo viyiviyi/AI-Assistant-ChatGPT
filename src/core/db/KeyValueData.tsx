@@ -1,3 +1,5 @@
+import { getUuid } from '../utils/utils';
+
 export interface DatasetProvider {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -69,15 +71,20 @@ export class KeyValueData {
     this.provider.setItem(this.dataKeyPrefix + 'UIConfig', save ? JSON.stringify(this._UIConfig) : '{}');
   }
   private _defaultAiServerList = `["DeepSeek|https://api.deepseek.com","Kimi|https://proxy.eaias.com/https://api.moonshot.cn","阿里云百炼模型|https://dashscope.aliyuncs.com/compatible-mode/v1","X.AI|https://proxy.eaias.com/https://api.x.ai/v1","Gemini|https://proxy.eaias.com/https://generativelanguage.googleapis.com/v1beta/openai","OpenRouter|https://proxy.eaias.com/https://openrouter.ai/api/v1"]`;
-  private _aiServerList: string[] = [];
-  getaiServerList(): string[] {
+  private _aiServerList: AiServerConf[] = [];
+  getaiServerList(): AiServerConf[] {
     if (this._aiServerList.length) return this._aiServerList;
     let r = this.provider.getItem(this.dataKeyPrefix + 'AiServerList') || this._defaultAiServerList;
     this._aiServerList = JSON.parse(r);
     if (this._aiServerList.length == 0) this._aiServerList = JSON.parse(this._defaultAiServerList);
+    if (typeof this._aiServerList[0] == 'string') {
+      this._aiServerList = (this._aiServerList as any as string[])
+        .filter((f) => f && f != '|')
+        .map((v) => ({ name: v.split('|')[0], url: v.split('|')[1], hasToken: true, key: getUuid() }));
+    }
     return this._aiServerList;
   }
-  setaiServerList(val: string[], save: boolean = true) {
+  setaiServerList(val: AiServerConf[], save: boolean = true) {
     if (JSON.stringify(val) == this._defaultAiServerList) return;
     this._aiServerList = val;
     this.provider.setItem(this.dataKeyPrefix + 'AiServerList', save ? JSON.stringify(val) : '');
@@ -89,3 +96,11 @@ export class KeyValueData {
 }
 
 type UIConfig = { showNav?: boolean; showConfigPanl?: boolean };
+export type AiServerConf = {
+  key: string;
+  name: string;
+  url: string;
+  hasToken?: boolean;
+  compatibleOnly1System?: boolean; // 兼容不支持多个system消息
+  compatibleNoToolImg?: boolean; // 兼容tool类型的消息不允许带图片
+};

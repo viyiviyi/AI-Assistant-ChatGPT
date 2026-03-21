@@ -12,12 +12,23 @@ export class APICenter implements IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
   tools?: any[];
-  constructor(baseUrl: string, tokens: ServiceTokens, config?: GptConfig, tools?: any[]) {
+  compatibleOnly1System?: boolean;
+  compatibleNoToolImg?: boolean;
+  constructor(
+    baseUrl: string,
+    tokens: ServiceTokens,
+    config?: GptConfig,
+    tools?: any[],
+    compatibleOnly1System?: boolean,
+    compatibleNoToolImg?: boolean,
+  ) {
     this.baseUrl = baseUrl;
     this.tokens = tokens;
     this.client = new OpenAIApi();
     this.severConfig = config?.aiServerConfig || { model: '' };
     this.tools = tools;
+    this.compatibleOnly1System = compatibleOnly1System;
+    this.compatibleNoToolImg = compatibleNoToolImg;
   }
   severConfig: { model: string } = { model: '' };
   setConfig?: ((config: any) => void) | undefined = (config: any) => {
@@ -59,7 +70,7 @@ export class APICenter implements IAiService {
     }
     return axios
       .get(this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : '') + '/models?t=' + Date.now(), {
-        headers: { Authorization: 'Bearer ' + token.current, 'ngrok-skip-browser-warning': 0 },
+        headers: { Authorization: 'Bearer ' + token.current },
         timeout: 1000 * 60 * 5,
         responseType: 'json',
       })
@@ -130,6 +141,32 @@ export class APICenter implements IAiService {
     });
     this.tokens.openai!.apiKey = token.current;
     nextToken(token);
+    if (this.compatibleNoToolImg) {
+      context.forEach((f) => {
+        if (f.role == 'tool' && Array.isArray(f.content)) {
+          f.role = 'user';
+        }
+      });
+    }
+    if (this.compatibleOnly1System && context.length > 1) {
+      let c: CtxItem[] = [context[0]];
+      let lastRelu = context[0].role;
+      context.forEach((v, i) => {
+        if (i == 0) return;
+        if (v.role == 'system' && typeof c[0].content == 'string') {
+          if (lastRelu != v.role) {
+            v.role = 'user';
+          } else {
+            c[0].content += '\n\n';
+            c[0].content += v.content;
+            return;
+          }
+        }
+        lastRelu = v.role;
+        c.push(v);
+      });
+      context = c;
+    }
     await this.generateChatStream(context, config, onMessage);
   }
   async generateChatStream(
@@ -176,6 +213,7 @@ export class APICenter implements IAiService {
       presence_penalty: config.presence_penalty || undefined,
       tools: this.tools && this.tools.length ? this.tools : undefined,
       tool_choice: this.tools && this.tools.length ? 'auto' : undefined,
+      extra_body: { reasoning_split: true },
     };
     if (config.modelArgs?.length) {
       config.modelArgs

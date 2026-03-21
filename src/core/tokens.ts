@@ -28,12 +28,7 @@ export async function initTokenStore() {
       saveToken('ChatGPT', cache['ChatGPT']);
     }
   }
-  [
-    ...aiServerList,
-    ...KeyValueData.instance()
-      .getaiServerList()
-      .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
-  ].forEach((s) => {
+  [...aiServerList, ...KeyValueData.instance().getaiServerList()].forEach((s) => {
     if (!cache[s.key]) {
       cache[s.key] = getToken(s.key);
       saveToken(s.key, cache[s.key]!);

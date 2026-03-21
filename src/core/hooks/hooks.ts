@@ -146,7 +146,6 @@ export function useSendMessage(chat: ChatManagement) {
           .slice(Math.max(0, chat.gptConfig.msgCount == 0 ? 0 : idx - chat.gptConfig.msgCount) + 1, idx + 1)
           .findIndex((f) => loadingMessages[f.id]) != -1
       ) {
-        console.log(idx);
         return message.info('存在未完成的消息');
       }
       // 因为回调函数引用了chat，而编辑配置时会创建新的chat，导致旧的chat不能被回收，导致内存溢出
@@ -215,7 +214,7 @@ export function useSendMessage(chat: ChatManagement) {
               !res.reasoning_content ||
               res.reasoning_content.filter((f, i) => !result.reasoning_content || !result.reasoning_content[i]?.endsWith(f)).length > 0;
             result.text = content;
-            result.reasoning_content = res.reasoning_content || '';
+            result.reasoning_content = res.reasoning_content ? [...res.reasoning_content] : '';
             result.usage = res.usage || result.usage;
           } else if (res.stop) {
             res.stop();

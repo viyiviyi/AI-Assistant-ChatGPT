@@ -1,11 +1,11 @@
 import { aiServerList, aiServices, aiServiceType, getServiceInstance, useService } from '@/core/AiService/ServiceProvider';
 import { BgImageStore } from '@/core/BgImageStore';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
-import { KeyValueData } from '@/core/db/KeyValueData';
+import { AiServerConf, KeyValueData } from '@/core/db/KeyValueData';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { useSpeechSynthesis } from '@/core/hooks/tts';
 import { getToken, saveToken } from '@/core/tokens';
-import { downloadJson, isJson } from '@/core/utils/utils';
+import { downloadJson, getUuid, isJson } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
 import { GroupConfig } from '@/Models/DataBase';
 import { CaretRightOutlined, DownloadOutlined, GithubOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
@@ -62,7 +62,7 @@ export const Setting = ({
   });
   const [group_background, setGroup_background] = useState(chatMgt?.group.background);
   const [background, setBackground] = useState<string>();
-  const [userAiServer, setUserAiServer] = useState<string[]>([]);
+  const [userAiServer, setUserAiServer] = useState<AiServerConf[]>([]);
   const [ttsVoc, setTtsVoc] = useState<GroupConfig['voiceConfigs']>([]);
   const [modelArgs, setModelArgs] = useState<GroupConfig['modelArgs']>([]);
   const { token } = theme.useToken();
@@ -152,7 +152,7 @@ export const Setting = ({
           ...aiServerList,
           ...KeyValueData.instance()
             .getaiServerList()
-            .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
+            .map((v) => ({ name: v.name, key: v.key, hasToken: v.hasToken })),
         ].forEach((v) => {
           let t = getToken(v.key);
           d['global_tokens_' + v.key] = t.tokens;
@@ -251,10 +251,15 @@ export const Setting = ({
     KeyValueData.instance().setSlackUserToken(values.slack_user_token, values.config_saveKey);
     KeyValueData.instance().setSlackProxyUrl(values.setting_slack_proxy_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
     KeyValueData.instance().setApiTransferUrl(values.setting_api_transfer_url?.trim()?.replace(/\/$/, ''), values.config_saveKey);
-    KeyValueData.instance().setaiServerList(userAiServer.filter((f) => f && f != '|').map((v) => v.replace(/\/+$/, '')));
     let userAiServerList = userAiServer
-      .filter((f) => f && f != '|')
-      .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true }));
+      .filter((f) => f && f.name && f.url)
+      .map((v) => {
+        v.url = v.url.replace(/\/+$/, '');
+        v.name = v.name.trim();
+        v.key == v.key || getUuid();
+        return v;
+      });
+    KeyValueData.instance().setaiServerList(userAiServerList);
     [...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)), ...userAiServerList].forEach((v) => {
       let t = getToken(v.key);
       t.tokens = ((values as any)['global_tokens_' + v.key] as Array<string>)?.filter((v) => v) || [];
@@ -269,54 +274,76 @@ export const Setting = ({
     style: { padding: '0 8px' },
   };
   cbs.current.okCallback = onSave;
-  const AiServerItem = ({
-    item,
-    index,
-  }: {
-    item: {
-      name: string;
-      url: string;
-      key: string;
-    };
-    index: number;
-  }) => {
+  const AiServerItem = ({ item, index }: { item: AiServerConf; index: number }) => {
     const [url, setUrl] = useState(item.url);
     const [name, setName] = useState(item.name);
+    const [compatibleNoToolImg, setCompatibleNoToolImg] = useState(item.compatibleNoToolImg);
+    const [compatibleOnly1System, setCompatibleOnly1System] = useState(item.compatibleOnly1System);
     return (
-      <div key={index} style={{ flex: 1 }}>
-        <Form.Item label={index + 1 + ' 名称'}>
-          <Input
-            type="text"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-            }}
-            onBlur={() => {
-              setUserAiServer((v) => {
-                v[index] = name.trim() + '|' + url;
-                return v;
-              });
-            }}
-            autoComplete="off"
-          />
-        </Form.Item>
-        <Form.Item label={index + 1 + ' 接口地址'}>
-          <Input
-            type="text"
-            value={url}
-            onChange={(e) => {
-              setUrl(e.target.value);
-            }}
-            onBlur={() => {
-              setUserAiServer((v) => {
-                v[index] = name.trim() + '|' + url;
-                return v;
-              });
-            }}
-            autoComplete="off"
-          />
-        </Form.Item>
-      </div>
+      <>
+        <div key={index} style={{ flex: 1 }}>
+          <div style={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column' }}>
+            <Form.Item label={index + 1 + ' 名称'} style={{}}>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                }}
+                onBlur={() => {
+                  setUserAiServer((v) => {
+                    v[index] = { ...v[index], name: name.trim(), url };
+                    return v;
+                  });
+                }}
+                autoComplete="off"
+              />
+            </Form.Item>
+            <Form.Item label={index + 1 + ' 接口地址'}>
+              <Input
+                type="text"
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                }}
+                onBlur={() => {
+                  setUserAiServer((v) => {
+                    v[index] = { ...v[index], name: name.trim(), url };
+                    return v;
+                  });
+                }}
+                autoComplete="off"
+              />
+            </Form.Item>
+          </div>
+          <div style={{ width: '100%', display: 'flex', gap: '10px', flex: 1 }}>
+            <Form.Item style={{ flex: '1' }} valuePropName="checked" label="tool不支持列表数据">
+              <Switch
+                value={compatibleNoToolImg}
+                onChange={(e) => {
+                  setCompatibleNoToolImg(e);
+                  setUserAiServer((v) => {
+                    v[index] = { ...v[index], compatibleNoToolImg: e };
+                    return v;
+                  });
+                }}
+              />
+            </Form.Item>
+            <Form.Item style={{ flex: '1' }} valuePropName="checked" label="不支持多个system消息">
+              <Switch
+                value={compatibleOnly1System}
+                onChange={(e) => {
+                  setCompatibleOnly1System(e);
+                  setUserAiServer((v) => {
+                    v[index] = { ...v[index], compatibleOnly1System: e };
+                    return v;
+                  });
+                }}
+              />
+            </Form.Item>
+          </div>
+        </div>
+      </>
     );
   };
   return (
@@ -553,7 +580,8 @@ export const Setting = ({
               style={{ width: '100%' }}
               onChange={(value, o) => {
                 setModels([]);
-                let server = getServiceInstance(value, chatMgt!.getChat());
+                const conf = userAiServer.find((f) => f.key == value);
+                let server = getServiceInstance(value, chatMgt!.getChat(), conf);
                 const model =
                   typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[value] || '';
                 form.setFieldValue('GptConfig_model', model || server?.defaultModel);
@@ -570,14 +598,13 @@ export const Setting = ({
                   });
               }}
             >
-              {[
-                ...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)),
-                ...userAiServer.filter((f) => f && f != '|').map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
-              ].map((v) => (
-                <Select.Option key={'ai_type' + v.key} value={v.key}>
-                  {v.name}
-                </Select.Option>
-              ))}
+              {[...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)), ...userAiServer.filter((f) => f && f.key)].map(
+                (v) => (
+                  <Select.Option key={'ai_type' + v.key} value={v.key}>
+                    {v.name}
+                  </Select.Option>
+                ),
+              )}
             </Select>
           </Form.Item>
           {models.length ? (
@@ -704,18 +731,17 @@ export const Setting = ({
                 ...panlProp,
                 children: (
                   <div>
-                    <Form.Item extra="ChatGLM与ChatGPT共用了部分参数"></Form.Item>
-                    <Form.Item name="GptConfig_role" label="ChatGPT参数： role" extra={' 用户使用的角色 建议使用user'}>
+                    {/* <Form.Item name="GptConfig_role" label="ChatGPT参数： role" extra={' 用户使用的角色 建议使用user'}>
                       <Radio.Group style={{ width: '100%' }}>
                         <Radio.Button value="assistant">assistant</Radio.Button>
                         <Radio.Button value="system">system</Radio.Button>
                         <Radio.Button value="user">user</Radio.Button>
                       </Radio.Group>
-                    </Form.Item>
+                    </Form.Item> */}
                     <Form.Item
                       name="GptConfig_max_tokens"
                       label="ChatGPT参数： max_tokens"
-                      extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值；GPT3最大4K，GPT4最大8K；GPT432k最大32K；在ChatGPT是返回的内容的token限制，在ChatGLM是总内容的token限制，为方便，在ChatGLM会对这个值乘以10。"
+                      extra="指定生成文本的最大长度，不是字数；设为0表示不指定，使用官方默认值"
                     >
                       <InputNumber step="50" min={0} autoComplete="off" />
                     </Form.Item>
@@ -766,12 +792,7 @@ export const Setting = ({
                     <Form.Item style={{ flex: '1' }} name="config_saveKey" valuePropName="checked" label="保存秘钥到浏览器">
                       <Switch />
                     </Form.Item>
-                    {[
-                      ...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)),
-                      ...userAiServer
-                        .filter((f) => f && f != '|')
-                        .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true })),
-                    ]
+                    {[...aiServerList.filter((v) => !userAiServer.join(',').includes(v.key)), ...userAiServer.filter((f) => f && f.key)]
                       .filter((s) => s.hasToken)
                       .map((s) => {
                         return (
@@ -986,14 +1007,8 @@ export const Setting = ({
                 children: (
                   <div style={{ overflow: 'auto' }}>
                     <DragList
-                      data={userAiServer.map((a, i) => {
-                        return {
-                          name: a.split('|')[0],
-                          url: a.split('|')[1],
-                          key: a.split('|')[1] + i + '',
-                        };
-                      })}
-                      onChange={(d) => setUserAiServer(d.map((v) => v.name + '|' + v.url))}
+                      data={userAiServer}
+                      onChange={(d) => setUserAiServer(d)}
                       style={{
                         borderRadius: 8,
                         border: '1px solid ' + token.colorBorder,
@@ -1008,7 +1023,7 @@ export const Setting = ({
                       <Button
                         type="dashed"
                         onClick={() => {
-                          setUserAiServer((v) => [...v, '|']);
+                          setUserAiServer((v) => [...v, { key: getUuid(), name: '', url: '' }]);
                         }}
                         block
                         icon={
@@ -1085,8 +1100,7 @@ export const Setting = ({
                                 }}
                               >
                                 {userAiServer
-                                  .filter((f) => f && f != '|')
-                                  .map((v) => ({ name: v.split('|')[0], key: v.split('|')[1], hasToken: true }))
+                                  .filter((f) => f && f.key)
                                   .map((v) => (
                                     <Select.Option key={'ai_type' + v.key} value={v.key}>
                                       {v.name}

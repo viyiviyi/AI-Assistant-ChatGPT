@@ -1,5 +1,5 @@
 import { ChatGPT } from '@/core/AiService/ChatGPT';
-import { KeyValueData } from '../db/KeyValueData';
+import { AiServerConf, KeyValueData } from '../db/KeyValueData';
 import { ChatGLM_API } from './ChatGLM_API';
 import { Kamiya } from './Kamiya API';
 
@@ -121,7 +121,7 @@ export const aiServerList: {
 export const aiServices: {
   current?: IAiService;
 } = {};
-export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiService | undefined {
+export function getServiceInstance(botType: aiServiceType, chat: IChat, aiConf?: AiServerConf): IAiService | undefined {
   let tokenStore = getToken(botType);
   let tokens: ServiceTokens = {
     openai: { apiKey: tokenStore.current },
@@ -132,15 +132,18 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
   };
   let tools: any[] = [];
   if (chat.config.executorConfig && chat.config.executorConfig.selectedExecutorId && chat.config.executorConfig.enable) {
-    executorService.getExecutorById(chat.config.executorConfig.selectedExecutorId).then((executor) => {
-      if (executor != null) {
-        tools.length = 0;
-        executor.tools.forEach((tool) => {
-          if (chat.config.executorConfig?.selectedTools[chat.config.executorConfig.selectedExecutorId!]?.includes(tool.function.name))
-            tools.push({ ...tool, groupName: undefined });
-        });
-      }
-    }).catch((e) => console.error(e));
+    executorService
+      .getExecutorById(chat.config.executorConfig.selectedExecutorId)
+      .then((executor) => {
+        if (executor != null) {
+          tools.length = 0;
+          executor.tools.forEach((tool) => {
+            if (chat.config.executorConfig?.selectedTools[chat.config.executorConfig.selectedExecutorId!]?.includes(tool.function.name))
+              tools.push({ ...tool, groupName: undefined });
+          });
+        }
+      })
+      .catch((e) => console.error(e));
   }
   let baseUrl: BaseUrlScheam = env == 'prod' ? ProxyBaseUrl : DevBaseUrl;
   switch (botType) {
@@ -167,7 +170,14 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat): IAiServ
     case 'None':
       return undefined;
     default:
-      const s = new APICenter(botType, tokens, chat.gptConfig, tools);
+      const s = new APICenter(
+        aiConf ? aiConf.url : botType,
+        tokens,
+        chat.gptConfig,
+        tools,
+        aiConf?.compatibleOnly1System,
+        aiConf?.compatibleNoToolImg,
+      );
       s.serverType = botType;
       return s;
   }
@@ -177,7 +187,8 @@ export function useService() {
   const [_, setService] = useState(aiServices.current);
   let reloadService = useCallback((chat: IChat, data: KeyValueData) => {
     if (!data) return;
-    let _service: IAiService | undefined = getServiceInstance(chat.config.botType, chat);
+    let serverConf = data.getaiServerList().find((f) => f.key == chat.config.botType);
+    let _service: IAiService | undefined = getServiceInstance(chat.config.botType, chat, serverConf);
     setService(_service);
     aiServices.current = _service;
   }, []);

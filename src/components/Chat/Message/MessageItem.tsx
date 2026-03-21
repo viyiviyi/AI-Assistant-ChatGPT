@@ -84,22 +84,25 @@ const MessageItem = ({
       if (typeof msg.text == 'string') msg.text = [msg.text];
       msg.text[msg.useTextIdx || 0] = messageText;
       msg.ctxRole = ctxRole;
-      return await chat.pushMessage(msg).then((res) => {
-        if (isReloadNav) {
-          var topic = chat.topics.find((f) => f.id === msg.topicId);
-          if (topic) reloadNav(topic);
-        }
-        setEdit(false);
-        setMessage({ text: ChatManagement.getMsgContent(msg) });
-        setSuccessLines(ChatManagement.getMsgContent(msg));
-      }).catch((e) => console.error(e));
+      return await chat
+        .pushMessage(msg)
+        .then((res) => {
+          if (isReloadNav) {
+            var topic = chat.topics.find((f) => f.id === msg.topicId);
+            if (topic) reloadNav(topic);
+          }
+          setEdit(false);
+          setMessage({ text: ChatManagement.getMsgContent(msg) });
+          setSuccessLines(ChatManagement.getMsgContent(msg));
+        })
+        .catch((e) => console.error(e));
     },
     [chat, reloadNav],
   );
   useEffect(() => {
     renderMessage[msg.id] = createThrottleAndDebounce((isEnd: boolean) => {
       setSuccessLines(ChatManagement.getMsgContent(msg));
-      if (isEnd) {
+      if (isEnd || !ChatManagement.getMsgContent(msg)) {
         setMessage({ text: ChatManagement.getMsgContent(msg) });
       }
     }, 40);
@@ -116,10 +119,13 @@ const MessageItem = ({
           checked={msg.checked || false}
           onChange={(e) => {
             msg.checked = e.target.checked;
-            chat.pushMessage(msg).then((msg) => {
-              reloadTopic(msg.topicId);
-              // setMessage({ text: messageText.text });
-            }).catch((e) => console.error(e));
+            chat
+              .pushMessage(msg)
+              .then((msg) => {
+                reloadTopic(msg.topicId);
+                // setMessage({ text: messageText.text });
+              })
+              .catch((e) => console.error(e));
           }}
         >
           <label onClick={(e) => e.stopPropagation()} style={{ paddingRight: 5, paddingLeft: 5, marginLeft: -5, cursor: 'pointer' }}>
@@ -128,9 +134,12 @@ const MessageItem = ({
                 style={{ color: !msg.skipCtx && inCtx ? '#03a05e' : undefined }}
                 onClick={(e) => {
                   msg.skipCtx = !msg.skipCtx;
-                  chat.pushMessage(msg).then((msg) => {
-                    setMessage({ text: messageText.text });
-                  }).catch((e) => console.error(e));
+                  chat
+                    .pushMessage(msg)
+                    .then((msg) => {
+                      setMessage({ text: messageText.text });
+                    })
+                    .catch((e) => console.error(e));
                 }}
               />
             </SkipExport>
@@ -355,9 +364,11 @@ const MessageItem = ({
           <Button
             onClick={() => {
               setTimeout(() => {
-                saveMsg(msg, messageText.text, ctxRole).then(() => {
-                  onSned();
-                }).catch((e) => console.error(e));
+                saveMsg(msg, messageText.text, ctxRole)
+                  .then(() => {
+                    onSned();
+                  })
+                  .catch((e) => console.error(e));
               }, 50);
             }}
           >

@@ -383,6 +383,7 @@ export class ChatManagement {
       ctxIds.push(v.id);
       history.push({
         role: v.ctxRole,
+        reasoning_details: ChatManagement.getMsgReasoningContent(v) || undefined,
         content: ChatManagement.getMsgContent(v),
         name: this.getNameByRole(v.ctxRole, virtualRole),
         tool_calls: v.tool_calls ? v.tool_calls[v.useTextIdx || 0] : undefined,
@@ -394,7 +395,7 @@ export class ChatManagement {
               const json = JSON.parse(r.content);
               if (typeof json == 'object' && 'type' in json && json['type'] == 'image_url') {
                 history.push({
-                  role: 'user',
+                  role: 'tool',
                   content: [json] as any,
                   name: r.name,
                   tool_call_id: r.id,
@@ -402,7 +403,7 @@ export class ChatManagement {
                 });
               } else if (Array.isArray(json) && json.filter((f) => f.type).length == json.length) {
                 history.push({
-                  role: 'user',
+                  role: 'tool',
                   content: json,
                   name: r.name,
                   tool_call_id: r.id,
