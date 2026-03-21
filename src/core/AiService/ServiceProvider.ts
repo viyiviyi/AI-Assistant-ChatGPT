@@ -77,21 +77,21 @@ export const aiServerList: {
     name: '不启用AI',
     hasToken: false,
   },
-  {
-    key: 'ChatGPT',
-    name: 'ChatGPT',
-    hasToken: true,
-  },
+  // {
+  //   key: 'ChatGPT',
+  //   name: 'ChatGPT',
+  //   hasToken: true,
+  // },
   {
     key: 'Slack',
     name: 'Slack(Claude)',
     hasToken: false,
   },
-  {
-    key: 'APICenter',
-    name: '第三方API(兼容ChatGPT)',
-    hasToken: true,
-  },
+  // {
+  //   key: 'APICenter',
+  //   name: '第三方API(兼容ChatGPT)',
+  //   hasToken: true,
+  // },
   // {
   //   key: "Kamiya",
   //   name: "众神之谷",

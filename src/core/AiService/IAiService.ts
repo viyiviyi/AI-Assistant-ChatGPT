@@ -65,6 +65,7 @@ type chatGPTConfig = {
   model: string;
   max_tokens?: number;
   top_p?: number;
+  top_k?: number;
   user?: CtxRole;
   n?: number;
   temperature?: number;

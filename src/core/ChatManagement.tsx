@@ -402,7 +402,10 @@ export class ChatManagement {
                   tool_call_id: r.id,
                   tool_call_name: r.name,
                 });
-              } else if (Array.isArray(json) && json.filter((f) => f.type).length == json.length) {
+              } else if (
+                Array.isArray(json) &&
+                json.filter((f) => f.type && (f.type == 'image_url' || f.type == 'text')).length == json.length
+              ) {
                 history.push({
                   role: 'tool',
                   content: json,

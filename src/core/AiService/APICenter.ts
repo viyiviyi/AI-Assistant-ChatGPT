@@ -3,6 +3,7 @@ import { CtxItem } from '@/Models/CtxItem';
 import { GptConfig, Message } from '@/Models/DataBase';
 import axios from 'axios';
 import { ListModelsResponse, OpenAIApi } from 'openai';
+import { safeJsonParse } from '../utils/ObjectToText';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
 export class APICenter implements IAiService {
@@ -169,6 +170,165 @@ export class APICenter implements IAiService {
     }
     await this.generateChatStream(context, config, onMessage);
   }
+  isAnthropicAPI() {
+    return this.baseUrl.includes('/anthropic');
+  }
+
+  // 将OpenAI格式的消息转换为Anthropic格式
+  convertToAnthropicFormat(context: CtxItem[]) {
+    const messages: any[] = [];
+    let systemMessage = '';
+
+    // 分离system消息
+    let lastRule = '';
+    for (const item of context) {
+      if (item.role === 'system') {
+        if (systemMessage) {
+          systemMessage += '\n\n' + item.content;
+        } else {
+          systemMessage = item.content as string;
+        }
+      } else {
+        // 转换其他消息格式
+        const message: any = {
+          role: item.role === 'assistant' ? 'assistant' : 'user',
+          content: [],
+        };
+        if (item.reasoning_details && item.role === 'assistant') {
+          message.content.push({
+            type: 'thinking',
+            text: item.reasoning_details,
+          });
+        }
+        if (typeof item.content === 'string') {
+          if (item.role == 'tool' && lastRule == item.role) {
+            // Anthropic 有多个调用时，返回的结果需要在一个user消息内
+            const lastMsg = messages[messages.length - 1];
+            lastMsg.content.push({
+              type: item.role == 'tool' ? 'tool_result' : 'text',
+              tool_use_id: item.tool_call_id,
+              is_error: item.content.includes('"success":false') || item.content.includes('"success": false'),
+              name: item.tool_call_name,
+              ...(item.role == 'tool' ? { content: item.content } : { text: item.content }),
+            });
+            lastRule = item.role;
+            continue;
+          } else {
+            message.content.push({
+              type: item.role == 'tool' ? 'tool_result' : 'text',
+              tool_use_id: item.tool_call_id,
+              is_error: item.content.includes('"success":false') || item.content.includes('"success": false'),
+              name: item.tool_call_name,
+              ...(item.role == 'tool' ? { content: item.content } : { text: item.content }),
+            });
+          }
+        } else if (Array.isArray(item.content)) {
+          // 处理多模态内容
+          for (const contentItem of item.content) {
+            if (typeof contentItem === 'string') {
+              message.content.push({
+                type: item.role == 'tool' ? 'tool_result' : 'text',
+                tool_use_id: item.tool_call_id,
+                is_error: false,
+                name: item.tool_call_name,
+                ...(item.role == 'tool' ? { content: contentItem } : { text: contentItem }),
+              });
+            } else if (contentItem.type === 'image_url' && contentItem.image_url && contentItem.image_url.url) {
+              // 转换图像格式
+              const imageUrl = contentItem.image_url.url;
+              if (imageUrl.startsWith('data:image')) {
+                const matches = imageUrl.match(/data:image\/(\w+);base64,(.+)/);
+                if (matches) {
+                  message.content.push({
+                    type: 'image',
+                    source: {
+                      type: 'base64',
+                      media_type: `image/${matches[1]}`,
+                      data: matches[2],
+                    },
+                  });
+                }
+              }
+            }
+          }
+        }
+        if (item.tool_calls && item.role === 'assistant' && item.tool_calls.length) {
+          item.tool_calls.forEach((v) => {
+            message.content.push({
+              type: 'tool_use',
+              id: v.id,
+              tool_use_id: v.id,
+              name: v.function.name,
+              input: safeJsonParse(v.function.arguments),
+            });
+          });
+        }
+        lastRule = item.role;
+        messages.push(message);
+      }
+    }
+
+    return {
+      messages,
+      system: systemMessage || undefined,
+    };
+  }
+
+  // 转换工具格式
+  convertToolsToAnthropicFormat(tools: any[]) {
+    return tools.map((tool) => ({
+      name: tool.function.name,
+      description: tool.function.description,
+      input_schema: tool.function.parameters,
+    }));
+  }
+
+  // 解析Anthropic流式响应
+  parseAnthropicStreamLine(line: string, full_response: string[], reasoning_content: string[], tool_calls: any[], isToolCall: boolean) {
+    if (!line.startsWith('data: ')) return { success: false, isToolCall };
+
+    try {
+      const data = JSON.parse(line.substring(6));
+
+      if (data.type === 'content_block_delta') {
+        const delta = data.delta;
+        if (delta.type === 'text_delta') {
+          // 普通文本内容
+          full_response[0] = (full_response[0] || '') + delta.text;
+        } else if (delta.type === 'input_json_delta') {
+          // 工具参数更新
+          if (tool_calls[0] && tool_calls[0].length > 0) {
+            const lastTool = tool_calls[0][tool_calls[0].length - 1];
+            lastTool.function.arguments = (lastTool.function.arguments || '') + data.delta.partial_json;
+          }
+        } else if (delta.type === 'thinking_delta') {
+          // 思考内容
+          reasoning_content[0] = (reasoning_content[0] || '') + delta.thinking;
+        }
+      } else if (data.type === 'message_start') {
+        // 消息开始，可以处理metadata
+      } else if (data.type === 'message_delta') {
+        // 消息结束，可以处理usage
+      } else if (data.type === 'content_block_start') {
+        // 内容块开始
+        if (data.content_block.type === 'tool_use') {
+          isToolCall = true;
+          tool_calls[0] = tool_calls[0] || [];
+          tool_calls[0].push({
+            id: data.content_block.id,
+            type: 'function',
+            function: { arguments: '', name: data.content_block.name },
+          });
+        } else if (data.content_block.type === 'thinking') {
+          // 思考内容块开始
+          reasoning_content[0] = reasoning_content[0] || '';
+        }
+      }
+      return { success: true, isToolCall };
+    } catch (error) {
+      return { success: false, isToolCall };
+    }
+  }
   async generateChatStream(
     context: CtxItem[],
     config: InputConfig,
@@ -194,27 +354,62 @@ export class APICenter implements IAiService {
     let reasoning_content: string[] = [];
     let isToolCall = false;
     let tool_calls: any[] = [];
-    const headers = {
+    const headers: { [key: string]: string } = {
       Authorization: `Bearer ${this.tokens.openai?.apiKey}`,
       'Content-Type': 'application/json',
     };
     if (this.baseUrl.includes('https://openrouter.ai/')) {
       Object.assign(headers, { 'HTTP-Referer': 'https://eaias.com', 'X-Title': 'eaias.com' });
     }
-    const data = {
-      model: this.severConfig.model || config.model,
-      messages: context,
-      stream: true,
-      max_tokens: config.max_tokens,
-      temperature: config.temperature,
-      top_p: config.top_p || undefined,
-      n: config.n,
-      frequency_penalty: config.frequency_penalty || undefined,
-      presence_penalty: config.presence_penalty || undefined,
-      tools: this.tools && this.tools.length ? this.tools : undefined,
-      tool_choice: this.tools && this.tools.length ? 'auto' : undefined,
-      extra_body: { reasoning_split: true },
-    };
+    // 检查是否为Anthropic API
+    const isAnthropic = this.isAnthropicAPI();
+
+    let data: any;
+    let endpoint: string;
+
+    if (isAnthropic) {
+      // Anthropic API格式
+      const anthropicFormat = this.convertToAnthropicFormat(context);
+      data = {
+        model: this.severConfig.model || config.model,
+        messages: anthropicFormat.messages,
+        stream: true,
+        max_tokens: config.max_tokens,
+        temperature: config.temperature,
+        top_p: config.top_p || undefined,
+        top_k: config.top_k || undefined,
+        // Anthropic不支持frequency_penalty和presence_penalty
+      };
+
+      // 添加system消息
+      if (anthropicFormat.system) {
+        data.system = anthropicFormat.system;
+      }
+
+      // 添加工具
+      if (this.tools && this.tools.length) {
+        data.tools = this.convertToolsToAnthropicFormat(this.tools);
+      }
+
+      endpoint = '/messages';
+    } else {
+      // OpenAI兼容格式
+      data = {
+        model: this.severConfig.model || config.model,
+        messages: context,
+        stream: true,
+        max_tokens: config.max_tokens,
+        temperature: config.temperature,
+        top_p: config.top_p || undefined,
+        n: config.n,
+        frequency_penalty: config.frequency_penalty || undefined,
+        presence_penalty: config.presence_penalty || undefined,
+        tools: this.tools && this.tools.length ? this.tools : undefined,
+        tool_choice: this.tools && this.tools.length ? 'auto' : undefined,
+        extra_body: { reasoning_split: true },
+      };
+      endpoint = '/chat/completions';
+    }
     if (config.modelArgs?.length) {
       config.modelArgs
         .filter((f) => f.enable && f.serverUrl == this.baseUrl)
@@ -229,7 +424,19 @@ export class APICenter implements IAiService {
     }
     const controller = new AbortController();
     try {
-      let response = await fetch(`${this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : '')}/chat/completions`, {
+      // 构建请求URL
+      const basePath = this.baseUrl + (this.needV1Str(this.baseUrl) ? '/v1' : '');
+      const requestUrl = `${basePath}${endpoint}`;
+
+      // 对于Anthropic API，需要添加特定的版本头
+      if (isAnthropic) {
+        headers['anthropic-version'] = '2023-06-01';
+        headers['x-api-key'] = this.tokens.openai?.apiKey || '';
+        // Anthropic使用x-api-key而不是Bearer token
+        delete headers.Authorization;
+      }
+
+      let response = await fetch(requestUrl, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(data),
@@ -259,6 +466,7 @@ export class APICenter implements IAiService {
         });
         return;
       }
+      let isError = false;
       const reader = response.body?.getReader();
       const stop = () => {
         try {
@@ -286,86 +494,96 @@ export class APICenter implements IAiService {
               continue;
             }
             if (line.trim() === 'data: [DONE]') {
-              // await onMessage({
-              //   error: false,
-              //   end: true,
-              //   text: full_response,
-              //   reasoning_content,
-              //   tool_calls,
-              // });
               break;
             }
-            try {
-              let data;
-              try {
-                data = JSON.parse(line.substring(6));
-              } catch (error) {
-                continue;
-              }
-              if (data.error) {
-                console.error(data.error);
-                full_response = [data.error?.message ? data.error?.message : data.error];
-                continue;
-              }
-              const choices: any[] = data.choices;
-              if (!choices || choices.length == 0) {
-                continue;
-              }
-              for (let i = 0; i < choices.length; i++) {
-                const choice = choices[i];
-                const delta = choice.delta;
-                if (!delta) {
-                  continue;
-                }
-                if ('content' in delta && delta.content && delta.content != 'null') {
-                  const content = delta.content;
-                  full_response[i] = (full_response[i] || '') + content;
-                }
-                if ('reasoning_content' in delta && delta.reasoning_content && delta.reasoning_content != 'null') {
-                  const content = delta.reasoning_content;
-                  reasoning_content[i] = (reasoning_content[i] || '') + content;
-                }
-                if ('tool_calls' in delta && delta.tool_calls && delta.tool_calls != 'null') {
-                  isToolCall = true;
-                  const content = delta.tool_calls;
-                  if (tool_calls[i]) {
-                    if (Array.isArray(content)) {
-                      content.forEach((func, idx) => {
-                        if (tool_calls[i][idx]) {
-                          tool_calls[i][idx].function.arguments += content[idx].function.arguments;
-                        }
-                      });
-                    }
-                  } else {
-                    tool_calls[i] = content;
-                  }
-                }
-              }
+
+            if (isAnthropic) {
+              // 处理Anthropic流式响应
+              const result = this.parseAnthropicStreamLine(line, full_response, reasoning_content, tool_calls, isToolCall);
+              isError = !result.success;
+              isToolCall = result.isToolCall;
               await onMessage({
-                error: false,
+                error: !result.success,
                 end: false,
                 text: full_response,
                 reasoning_content,
                 stop: stop,
-                usage: data.usage,
+                usage: undefined, // Anthropic流式响应中不包含usage
                 isToolCall,
               });
-            } catch (error) {
-              console.error(error);
-              console.error('出错的内容：', line);
-              continue;
+            } else {
+              // 处理OpenAI兼容流式响应
+              try {
+                let data;
+                try {
+                  data = JSON.parse(line.substring(6));
+                } catch (error) {
+                  continue;
+                }
+                if (data.error) {
+                  console.error(data.error);
+                  full_response = [data.error?.message ? data.error?.message : data.error];
+                  continue;
+                }
+                const choices: any[] = data.choices;
+                if (!choices || choices.length == 0) {
+                  continue;
+                }
+                for (let i = 0; i < choices.length; i++) {
+                  const choice = choices[i];
+                  const delta = choice.delta;
+                  if (!delta) {
+                    continue;
+                  }
+                  if ('content' in delta && delta.content && delta.content != 'null') {
+                    const content = delta.content;
+                    full_response[i] = (full_response[i] || '') + content;
+                  }
+                  if ('reasoning_content' in delta && delta.reasoning_content && delta.reasoning_content != 'null') {
+                    const content = delta.reasoning_content;
+                    reasoning_content[i] = (reasoning_content[i] || '') + content;
+                  }
+                  if ('tool_calls' in delta && delta.tool_calls && delta.tool_calls != 'null') {
+                    isToolCall = true;
+                    const content = delta.tool_calls;
+                    if (tool_calls[i]) {
+                      if (Array.isArray(content)) {
+                        content.forEach((func, idx) => {
+                          if (tool_calls[i][idx]) {
+                            tool_calls[i][idx].function.arguments += content[idx].function.arguments;
+                          }
+                        });
+                      }
+                    } else {
+                      tool_calls[i] = content;
+                    }
+                  }
+                }
+                await onMessage({
+                  error: false,
+                  end: false,
+                  text: full_response,
+                  reasoning_content,
+                  stop: stop,
+                  usage: data.usage,
+                  isToolCall,
+                });
+              } catch (error) {
+                console.error(error);
+                console.error('出错的内容：', line);
+                continue;
+              }
             }
           }
         }
         await onMessage({
-          error: false,
+          error: isError,
           end: true,
           text: full_response,
           reasoning_content,
           tool_calls,
           isToolCall,
         });
-        return full_response;
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
