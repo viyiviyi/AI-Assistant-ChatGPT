@@ -1023,7 +1023,7 @@ export const Setting = ({
                       <Button
                         type="dashed"
                         onClick={() => {
-                          setUserAiServer((v) => [...v, { key: getUuid(), name: '', url: '' }]);
+                          setUserAiServer((v) => [...v, { key: getUuid(), name: '', url: '', hasToken: true }]);
                         }}
                         block
                         icon={
