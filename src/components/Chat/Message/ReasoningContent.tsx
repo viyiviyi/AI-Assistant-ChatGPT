@@ -6,7 +6,6 @@ import copy from 'copy-to-clipboard';
 import { useEffect, useMemo, useState } from 'react';
 
 export const ReasoningContent = ({ msg }: { msg: Message }) => {
-  console.log('ReasoningContent')
   const { token } = theme.useToken();
   const [expanded, setExpanded] = useState(false);
   const text = useMemo(() => {

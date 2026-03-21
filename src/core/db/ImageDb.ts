@@ -15,7 +15,7 @@ export class ImageStore {
     });
     return id;
   };
-  getImage: (id: string) => Promise<string | Blob | undefined> = async (id) => {
+  getImage: (id: string) => Promise<string | Blob> = async (id) => {
     if (cache[id]) return cache[id];
     const img = await getInstance().query_by_primaryKey<KeyValue>({
       tableName: 'ImageStorage',
@@ -25,7 +25,7 @@ export class ImageStore {
       cache[id] = img.data;
       return img.data;
     }
-    return undefined;
+    return id;
   };
   private static instance: ImageStore;
   static getInstance() {

@@ -20,7 +20,7 @@ import React, {
   MouseEventHandler,
   useContext,
   useMemo,
-  useState
+  useState,
 } from 'react';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax';
@@ -42,6 +42,8 @@ import { unified } from 'unified';
 import markdownStyle from '../../styles/markdown.module.css';
 import { SkipExport } from './SkipExport';
 import { ZoomImage } from './zoom-image';
+import { ImageStore } from '@/core/db/ImageDb';
+import { LocalDbImg } from './LocalDbImg';
 
 let speak = (text: string, stop = false) => {};
 
@@ -120,7 +122,7 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
               {last.substring(0, endIdx + 1)}
             </span>
             {last.substring(endIdx + 1)}
-          </span>
+          </span>,
         );
         str = '';
         cache = [];
@@ -140,7 +142,7 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
   }
   return mes;
 }
-
+const uuidReg = /[a-z0-9A-Z]{8}-[a-z0-9A-Z]{4}-[a-z0-9A-Z]{4}-[a-z0-9A-Z]{4}-[a-z0-9A-Z]{12}/;
 let processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -255,6 +257,9 @@ let processor = unified()
       },
       img(props: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>) {
         let imgSrc = props.src;
+        if (props.src && uuidReg.test(props.src)) {
+          return <LocalDbImg id={props.src} alt={props.alt} />;
+        }
         const img = (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -353,7 +358,7 @@ const _MarkdownView = ({
     setTimer(
       setTimeout(() => {
         setChrckTimes(0);
-      }, 400)
+      }, 400),
     );
   };
   // return <div style={{ whiteSpace: 'pre-wrap' }}>{markdown}</div>;

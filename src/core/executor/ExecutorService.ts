@@ -3,6 +3,7 @@ import { getDbInstance as getInstance } from '../db/IndexDbInstance';
 import { getUuid } from '../utils/utils';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ChatContext } from '../ChatManagement';
+import { ImageStore } from '../db/ImageDb';
 
 export type Tool = {
   type: 'function';
@@ -295,7 +296,20 @@ class ExecutorService {
       }
 
       const data = await response.json();
-      return JSON.stringify(data, null, 2) || '无返回内容';
+      // 如果mcp返回了base64的图片，保存并转换成id
+      if (typeof data == 'object') {
+        if (Array.isArray(data)) {
+          data.forEach((d) => {
+            if (d.image_url && d.image_url.url && !d.image_url.url.startsWith('http') && d.image_url.url.length >= 100) {
+              d.image_url.url = ImageStore.getInstance().saveImage(d.image_url.url);
+            }
+          });
+        } else if (data.image_url && data.image_url.url && !data.image_url.url.startsWith('http') && data.image_url.url.length >= 100) {
+          data.image_url.url = ImageStore.getInstance().saveImage(data.image_url.url);
+        }
+      }
+      console.log(data)
+      return (typeof data == 'string' ? data : JSON.stringify(data, null, 2)) || '无返回内容';
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
       // 如果获取失败，返回空数组

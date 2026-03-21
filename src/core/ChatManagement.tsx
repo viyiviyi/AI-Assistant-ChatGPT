@@ -11,6 +11,7 @@ import React from 'react';
 import { BgConfig } from './BgImageStore';
 import { ImageStore } from './db/ImageDb';
 import { getDbInstance as getInstance, setSkipDbSave } from './db/IndexDbInstance';
+import { safeJsonParse } from './utils/ObjectToText';
 import { getUuid } from './utils/utils';
 
 const defaultChat: IChat = {
@@ -839,6 +840,43 @@ export class ChatManagement {
     await ChatManagement.createMessage(message);
     return message;
   }
+  deleteMsgImages(m: Message) {
+    ImageStore.getInstance().deleteImage(m.imageIds);
+    if (Array.isArray(m.content)) {
+      m.content
+        .filter((f) => typeof f == 'object' && f.type == 'image_url')
+        .forEach((v) => {
+          if (v.image_url && v.image_url.url && !v.image_url.url.startsWith('http') && v.image_url.url.length < 100) {
+            ImageStore.getInstance().deleteImage([v.image_url.url]);
+          }
+        });
+    }
+    // 删除tool返回内容可能包含的图片
+    if (m.tool_call_result && m.tool_call_result[m.useTextIdx || 0]) {
+      m.tool_call_result[m.useTextIdx || 0].forEach((r) => {
+        if (r.content.startsWith('{') || r.content.startsWith('[')) {
+          try {
+            const json = JSON.parse(r.content);
+            if (
+              typeof json == 'object' &&
+              'type' in json &&
+              json['type'] == 'image_url' &&
+              !json.image_url.url.startsWith('http') &&
+              json.image_url.url.length < 100
+            ) {
+              ImageStore.getInstance().deleteImage([json.image_url.url]);
+            } else if (Array.isArray(json) && json.filter((f) => f.type)) {
+              json.forEach((v) => {
+                if (v.image_url && v.image_url.url && !v.image_url.url.startsWith('http') && v.image_url.url.length < 100) {
+                  ImageStore.getInstance().deleteImage([v.image_url.url]);
+                }
+              });
+            }
+          } catch (error) {}
+        }
+      });
+    }
+  }
   removeMessage(message: Message) {
     let topic = this.topics.find((f) => f.id == message.topicId);
     if (topic) {
@@ -848,7 +886,7 @@ export class ChatManagement {
       }
       delete topic.messageMap[message.id];
     }
-    ImageStore.getInstance().deleteImage(message.imageIds);
+    this.deleteMsgImages(message);
     if (this.config.enableSync) {
       return getInstance()?.update_by_primaryKey<Message>({
         tableName: 'Message',
@@ -874,7 +912,10 @@ export class ChatManagement {
         tableName: 'Message',
         condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id && !v.deleteTime,
       });
-      msgs.forEach((m) => ImageStore.getInstance().deleteImage(m.imageIds));
+      // 删除消息内可能包含的图片
+      msgs.forEach((m) => {
+        this.deleteMsgImages(m);
+      });
       await getInstance()?.delete<Message>({
         tableName: 'Message',
         condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id,

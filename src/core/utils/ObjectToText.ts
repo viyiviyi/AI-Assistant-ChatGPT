@@ -6,7 +6,7 @@ const isObject = (value: any): boolean => {
 };
 
 // 解析JSON字符串，如果不是JSON则返回原字符串
-const safeJsonParse = (str: string): any => {
+export const safeJsonParse = (str: string): any => {
   try {
     return JSON.parse(str);
   } catch {
@@ -100,7 +100,10 @@ export const formatDataForDisplay = (data: string, title: string): string => {
   }
 
   // 尝试解析为JSON
-  const parsedData = safeJsonParse(data);
+  while (typeof data == 'string' && data.startsWith('"') && data.endsWith('"')) {
+    data = safeJsonParse(data);
+  }
+  let parsedData = safeJsonParse(data);
   if (typeof parsedData == 'object') {
     // 如果是对象，使用对象格式化（从深度0开始）
     return formatObjectToMarkdown(parsedData, title, 0);

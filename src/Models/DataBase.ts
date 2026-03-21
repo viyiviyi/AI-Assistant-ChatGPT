@@ -75,6 +75,7 @@ export interface Message {
   ctxRole: CtxRole;
   reasoning_content?: string | string[];
   text: string | string[]; // 消息内容
+  content?: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }>; // 消息内容
   useTextIdx?: number;
   createTime?: number;
   timestamp: number; // 时间戳

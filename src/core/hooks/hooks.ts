@@ -9,6 +9,7 @@ import { App } from 'antd';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { TopicMessage } from '../../Models/Topic';
 import { aiServices } from '../AiService/ServiceProvider';
+import { ImageStore } from '../db/ImageDb';
 import { executorService, useExecutor } from '../executor/ExecutorService';
 import { createThrottleAndDebounce, getUuid, scrollToBotton } from '../utils/utils';
 
@@ -198,6 +199,7 @@ export function useSendMessage(chat: ChatManagement) {
       }, 100);
       let { allCtx: ctx, history } = currentChat.current!.getAskContext(topic, idx + 1);
       let context = onSendBefore(chat.getChat(), { allCtx: ctx, history });
+      context = await loadImage(context);
       if (curtExecutor.current) context = hiddenResult(context, curtExecutor.current);
       await aiService.sendMessage({
         msg: topic.messages[idx],
@@ -245,6 +247,9 @@ export function useSendMessage(chat: ChatManagement) {
               });
             },
           };
+          if (currentChat.current && res.tool_calls && res.tool_calls.length && res.end) {
+            result.tool_calls = res.tool_calls;
+          }
           save(res.end || !loadingMessages[result.id], () => {
             // 调用工具
             if (currentChat.current && res.tool_calls && res.tool_calls.length && res.end) {
@@ -368,7 +373,18 @@ export function useSendMessage(chat: ChatManagement) {
   );
   return { sendMessage };
 }
-
+async function loadImage(ctx: CtxItem[]) {
+  for (let v of ctx) {
+    if (Array.isArray(v.content)) {
+      for (let c of v.content) {
+        if (c.image_url && c.image_url.url && !c.image_url.url.startsWith('http') && c.image_url.url.length < 100) {
+          c.image_url.url = (await ImageStore.getInstance().getImage(c.image_url.url)) as string;
+        }
+      }
+    }
+  }
+  return ctx;
+}
 function hiddenResult(ctx: CtxItem[], executor: Executor) {
   let tool_result_use_type: { [key: string]: 'once' | 'last' | undefined } = {};
   executor.tools.forEach((c) => {
