@@ -454,12 +454,12 @@ export class APICenter implements IAiService {
           text: [
             '\n\n 请求发生错误。\n\n' +
               'token: ... ' +
-              headers.Authorization.slice(Math.max(-headers.Authorization.length, -10)) +
+              this.tokens.openai?.apiKey.slice(Math.max(-this.tokens.openai?.apiKey.length, -10)) +
               '\n\n' +
               response.status +
-              ' ' +
+              '  ' +
               response.statusText +
-              '\n\n' +
+              '\n```\n' +
               (await response.text()),
           ],
           reasoning_content,

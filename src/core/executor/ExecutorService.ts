@@ -308,7 +308,6 @@ class ExecutorService {
           data.image_url.url = ImageStore.getInstance().saveImage(data.image_url.url);
         }
       }
-      console.log(data)
       return (typeof data == 'string' ? data : JSON.stringify(data, null, 2)) || '无返回内容';
     } catch (error: any) {
       console.error('Failed to fetch tools from executor:', error);
