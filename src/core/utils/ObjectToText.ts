@@ -18,28 +18,17 @@ export const safeJsonParse = (str: string): any => {
 export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 0): string => {
   const lines: string[] = [];
   if (typeof obj == 'string') {
+    if (obj.startsWith('img:id:')) return `![图片](${obj.substring(7)})`
     // 如果是字符串，直接返回
     return `${String(obj)}`;
   }
-  if (title) lines.push(`**${title}:**`);
-  lines.push('');
-  if (Array.isArray(obj) && obj.filter((f) => f.type).length == obj.length) {
-    obj.forEach((v, i) => {
-      lines.push(`**[${i}:]**`);
-      if (v.type == 'text' && v.text) lines.push(formatObjectToMarkdown(safeJsonParse(v.text), '', depth));
-      else if (v.type == 'image_url' && v.image_url && v.image_url.url) lines.push(`![图片](${v.image_url.url})`);
-      else lines.push(formatObjectToMarkdown(v, '', depth + 1));
-      lines.push('');
-    });
-    return lines.join('\n');
+  if (title) lines.push(`##${'#'.repeat(depth)} ${title}:`);
+  if (typeof obj == 'object' && obj.type) {
+    if (obj.type == 'image_url' && obj.image_url && obj.image_url.url) {
+      obj.image_url.url = 'img:id:' + obj.image_url.url;
+      depth--;
+    }
   }
-  if (typeof obj == 'object' && obj.type && (obj.type == 'text' || obj.type == 'image_url')) {
-    if (obj.type == 'text' && obj.text) lines.push(formatObjectToMarkdown(safeJsonParse(obj.text), '', depth));
-    else if (obj.type == 'image_url' && obj.image_url && obj.image_url.url) lines.push(`![图片](${obj.image_url.url})`);
-    else lines.push(formatObjectToMarkdown(obj, '', depth + 1));
-    return lines.join('\n');
-  }
-
   Object.entries(obj).forEach(([key, value]) => {
     if (isObject(value)) {
       // 如果值还是对象，根据深度决定是否继续展开
@@ -64,7 +53,7 @@ export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 
           if (isObject(item)) {
             lines.push(formatObjectToMarkdown(item, `[${index}]`, depth + 1));
           } else {
-            lines.push(`[${index}]: ${String(item)}`);
+            lines.push(`[${index}]: ${formatObjectToMarkdown(item, '', depth + 1)}`);
           }
           lines.push('');
         });
@@ -84,7 +73,7 @@ export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 
         lines.push(stringValue);
         lines.push('```');
       } else {
-        lines.push(`**${key}:** ${stringValue}`);
+        lines.push(`**${key}:** ${formatObjectToMarkdown(stringValue, '')}`);
       }
     }
     lines.push('');

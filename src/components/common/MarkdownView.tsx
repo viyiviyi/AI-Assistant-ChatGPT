@@ -45,7 +45,7 @@ import { ZoomImage } from './zoom-image';
 import { ImageStore } from '@/core/db/ImageDb';
 import { LocalDbImg } from './LocalDbImg';
 
-let speak = (text: string, stop = false) => {};
+let speak = (text: string, stop = false) => { };
 
 function toTxt(node: React.ReactNode): string {
   let str = '';
@@ -109,9 +109,9 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
         arr.push(pauseMes(mes[i]));
       }
       if (reg.test(str) && typeof mes[i] == 'string' && regRight.test(mes[i])) {
-        let first = cache.shift() as string;
+        let first = cache.shift() as string || '';
         let idx = first.search(regLeft);
-        let last = cache.pop() as string;
+        let last = cache.pop() as string || '';
         let endIdx = last.search(regRight);
         arr.push(
           <span key={a++}>
@@ -180,7 +180,7 @@ let processor = unified()
       pre: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { className, children } = props;
         let times = 0;
-        let timer = setTimeout(() => {}, 0);
+        let timer = setTimeout(() => { }, 0);
         return (
           <pre
             className={className}
@@ -220,8 +220,8 @@ let processor = unified()
         const { children } = props;
         let _children = pauseMes(children);
         let times = 0;
-        let timer = setTimeout(() => {}, 0);
-        let speakTimer = setTimeout(() => {}, 0);
+        let timer = setTimeout(() => { }, 0);
+        let speakTimer = setTimeout(() => { }, 0);
         return (
           <p
             {...{ ...(props as any), children: undefined }}
@@ -346,7 +346,7 @@ const _MarkdownView = ({
     return processor.processSync(pipe(lastBlock, chatMgt)).result;
   }, [chatMgt, lastBlock]);
   const [checkTimes, setChrckTimes] = useState(0);
-  const [timer, setTimer] = useState(setTimeout(() => {}, 0));
+  const [timer, setTimer] = useState(setTimeout(() => { }, 0));
   const click: MouseEventHandler<HTMLDivElement> = (e) => {
     clearTimeout(timer);
     if (checkTimes + 1 >= 4 && doubleClick) {
