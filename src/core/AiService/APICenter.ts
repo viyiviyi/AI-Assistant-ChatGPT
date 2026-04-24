@@ -3,6 +3,7 @@ import { CtxItem } from '@/Models/CtxItem';
 import { GptConfig, Message } from '@/Models/DataBase';
 import axios from 'axios';
 import { ListModelsResponse, OpenAIApi } from 'openai';
+import { AiServerConf } from '../db/KeyValueData';
 import { safeJsonParse } from '../utils/ObjectToText';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
@@ -406,13 +407,12 @@ export class APICenter implements IAiService {
         presence_penalty: config.presence_penalty || undefined,
         tools: this.tools && this.tools.length ? this.tools : undefined,
         tool_choice: this.tools && this.tools.length ? 'auto' : undefined,
-        extra_body: { reasoning_split: true },
       };
       endpoint = '/chat/completions';
     }
     if (config.modelArgs?.length) {
       config.modelArgs
-        .filter((f) => f.enable && f.serverUrl == this.baseUrl)
+        .filter((f) => f.enable && f.modelName == this.serverType)
         .forEach(({ value: argStr }) => {
           if (argStr) {
             try {

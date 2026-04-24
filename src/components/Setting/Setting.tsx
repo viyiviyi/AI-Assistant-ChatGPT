@@ -575,7 +575,7 @@ export const Setting = ({
               </Button>
             </Button.Group>
           </Form.Item>
-          <Form.Item name="config_bot_type" label="Ai类型">
+          <Form.Item name="config_bot_type" label="模型服务">
             <Select
               style={{ width: '100%' }}
               onChange={(value, o) => {
@@ -1093,9 +1093,10 @@ export const Setting = ({
                             <Form.Item label={'生效的AI服务'}>
                               <Select
                                 style={{ width: '100%' }}
-                                value={s.serverUrl}
+                                value={s.modelName}
                                 onChange={(value, o) => {
-                                  s.serverUrl = value;
+                                  s.modelName = value;
+                                  s.serverUrl = userAiServer.find((f) => f.key == value)?.url || '';
                                   setModelArgs((v) => [...v!]);
                                 }}
                               >
