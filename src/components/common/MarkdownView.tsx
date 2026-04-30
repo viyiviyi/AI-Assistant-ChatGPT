@@ -42,10 +42,9 @@ import { unified } from 'unified';
 import markdownStyle from '../../styles/markdown.module.css';
 import { SkipExport } from './SkipExport';
 import { ZoomImage } from './zoom-image';
-import { ImageStore } from '@/core/db/ImageDb';
 import { LocalDbImg } from './LocalDbImg';
 
-let speak = (text: string, stop = false) => { };
+let speak = (text: string, stop = false) => {};
 
 function toTxt(node: React.ReactNode): string {
   let str = '';
@@ -109,9 +108,9 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
         arr.push(pauseMes(mes[i]));
       }
       if (reg.test(str) && typeof mes[i] == 'string' && regRight.test(mes[i])) {
-        let first = cache.shift() as string || '';
+        let first = (cache.shift() as string) || '';
         let idx = first.search(regLeft);
-        let last = cache.pop() as string || '';
+        let last = (cache.pop() as string) || '';
         let endIdx = last.search(regRight);
         arr.push(
           <span key={a++}>
@@ -144,10 +143,11 @@ function pauseMes(mes: React.ReactNode): React.ReactNode {
 }
 const uuidReg = /[a-z0-9A-Z]{8}-[a-z0-9A-Z]{4}-[a-z0-9A-Z]{4}-[a-z0-9A-Z]{4}-[a-z0-9A-Z]{12}/;
 let processor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkMath)
-  .use(remarkRehype, {})
+  .use(remarkParse) // 1. 解析 Markdown
+  .use(remarkMath) // 2. ✅ 先解析数学公式（remark阶段）
+  .use(remarkGfm) // 3. ✅ GFM支持（remark阶段）
+  .use(remarkRehype, {}) // 4. 转换到 rehype 阶段
+  .use(rehypeMathjax) // 5. ✅ 渲染数学公式（rehype阶段）
   .use(rehypeHighlight, {
     ignoreMissing: true,
     plainText: ['txt', 'text'],
@@ -166,9 +166,9 @@ let processor = unified()
       yaml,
       dart,
     },
-  })
-  .use(rehypeMathjax)
-  .use(rehypeFormat, { indent: 2 })
+  }) // 6. 代码高亮
+  .use(rehypeFormat, { indent: 2 }) // 7. 格式化
+  // 8. 转React组件
   // .use(remarkFrontmatter, ['yaml', 'toml'])
   .use(rehypeReact, {
     createElement,
@@ -180,7 +180,7 @@ let processor = unified()
       pre: (props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>) => {
         const { className, children } = props;
         let times = 0;
-        let timer = setTimeout(() => { }, 0);
+        let timer = setTimeout(() => {}, 0);
         return (
           <pre
             className={className}
@@ -220,8 +220,8 @@ let processor = unified()
         const { children } = props;
         let _children = pauseMes(children);
         let times = 0;
-        let timer = setTimeout(() => { }, 0);
-        let speakTimer = setTimeout(() => { }, 0);
+        let timer = setTimeout(() => {}, 0);
+        let speakTimer = setTimeout(() => {}, 0);
         return (
           <p
             {...{ ...(props as any), children: undefined }}
@@ -253,6 +253,13 @@ let processor = unified()
           >
             {_children}
           </p>
+        );
+      },
+      table(props: DetailedHTMLProps<ImgHTMLAttributes<HTMLTableElement>, HTMLTableElement>) {
+        return (
+          <div style={{ overflowY: 'auto' }}>
+            <table border={1}>{props.children}</table>
+          </div>
         );
       },
       img(props: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>) {
@@ -346,7 +353,7 @@ const _MarkdownView = ({
     return processor.processSync(pipe(lastBlock, chatMgt)).result;
   }, [chatMgt, lastBlock]);
   const [checkTimes, setChrckTimes] = useState(0);
-  const [timer, setTimer] = useState(setTimeout(() => { }, 0));
+  const [timer, setTimer] = useState(setTimeout(() => {}, 0));
   const click: MouseEventHandler<HTMLDivElement> = (e) => {
     clearTimeout(timer);
     if (checkTimes + 1 >= 4 && doubleClick) {

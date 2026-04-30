@@ -10,3 +10,13 @@
 .markdown p {
   white-space: pre-wrap;
 }
+.markdown table th,
+.markdown table td,
+.markdown table tr {
+  white-space: nowrap;
+  width: fit-content;
+}
+.markdown table th,
+.markdown table td {
+  padding: 2px 3px;
+}
