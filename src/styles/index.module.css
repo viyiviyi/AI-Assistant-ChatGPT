@@ -46,10 +46,23 @@
 .speak_button {
   display: none;
 }
-.nav_item:hover {
+.nav_item {
   position: relative;
+}
+.nav_item_del_btn {
+  display: none;
+  position: absolute;
+  right: -10px;
+  top: 7px;
+  padding-left: 10px;
+}
+
+.nav_item:hover {
   top: -1px;
   border-bottom: 1px solid #ccc5;
+}
+.nav_item:hover .nav_item_del_btn {
+  display: inline-block;
 }
 .message_box {
   position: relative;
