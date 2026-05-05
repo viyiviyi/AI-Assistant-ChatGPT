@@ -713,14 +713,14 @@ export class ChatManagement {
     return data;
   }
   static async createConfig(groupId: string, groupConfig?: GroupConfig): Promise<GroupConfig> {
+    let firstConfig = this.chatList[0];
     const data: GroupConfig = groupConfig || {
+      ...firstConfig.config,
+      middleware: [NameMacrosPrompt.key],
       id: getUuid(),
       groupId,
       enableVirtualRole: false,
-      baseUrl: '',
       activityTopicId: '',
-      botType: 'ChatGPT',
-      middleware: [NameMacrosPrompt.key],
     };
     await getInstance()?.insert<GroupConfig>({
       tableName: 'GroupConfig',
@@ -765,16 +765,15 @@ export class ChatManagement {
   static async createGptConfig(groupId: string, gptConfig?: GptConfig): Promise<GptConfig> {
     let firstConfig = this.chatList[0];
     const data: GptConfig = gptConfig || {
-      role: 'user',
-      model: 'gpt-3.5-turbo',
       max_tokens: 1024,
       top_p: 0.5,
       temperature: 0.7,
-      n: 1,
-      msgCount: 11,
       presence_penalty: 0.7,
       frequency_penalty: 1.0,
-      ...((firstConfig?.gptConfig || {}) as any),
+      ...firstConfig?.gptConfig,
+      n: 1,
+      role: 'user',
+      msgCount: 0,
       groupId,
       id: getUuid(),
     };
