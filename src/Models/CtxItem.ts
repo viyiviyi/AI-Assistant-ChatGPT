@@ -6,6 +6,7 @@ export type CtxItem = {
   content: string | { type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }[];
   name?: string;
   reasoning_details?: string;
+  reasoning_content?: string;
   tool_calls?: ToolCalls[];
   tool_call_id?: string;
   tool_call_name?: string;

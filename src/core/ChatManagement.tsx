@@ -385,6 +385,7 @@ export class ChatManagement {
       history.push({
         role: v.ctxRole,
         reasoning_details: ChatManagement.getMsgReasoningContent(v) || undefined,
+        reasoning_content: ChatManagement.getMsgReasoningContent(v) || undefined,
         content: ChatManagement.getMsgContent(v),
         name: this.getNameByRole(v.ctxRole, virtualRole),
         tool_calls: v.tool_calls ? v.tool_calls[v.useTextIdx || 0] : undefined,
