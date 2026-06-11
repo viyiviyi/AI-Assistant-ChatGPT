@@ -12,6 +12,7 @@ import { aiServices } from '../AiService/ServiceProvider';
 import { ImageStore } from '../db/ImageDb';
 import { executorService, useExecutor } from '../executor/ExecutorService';
 import { createThrottleAndDebounce, getUuid, scrollToBotton } from '../utils/utils';
+import { parseMultipleJson } from '../utils/ObjectToText';
 
 const retrieved = { current: false };
 const screenData = {
@@ -304,7 +305,7 @@ export function useSendMessage(chat: ChatManagement) {
                     Promise.all(execTask)
                       .then((execResList) => {
                         execResList.forEach((r, i) => {
-                          result.tool_call_result![callIdx][i].content = r;
+                          result.tool_call_result![callIdx][i].content = typeof r === 'string' ? r : JSON.stringify(r);
                         });
                         // 如果消息没有删除才继续
                         if (topic.messageMap[result.id]) {

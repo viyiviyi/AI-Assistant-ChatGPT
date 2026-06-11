@@ -555,9 +555,24 @@ export class APICenter implements IAiService {
                     const content = delta.tool_calls;
                     if (tool_calls[i]) {
                       if (Array.isArray(content)) {
-                        content.forEach((func, idx) => {
-                          if (tool_calls[i][idx]) {
-                            tool_calls[i][idx].function.arguments += content[idx].function.arguments;
+                        content.forEach((func) => {
+                          // 使用 func.index 来找到对应的 tool_call，而不是用数组索引
+                          const targetIndex = func.index !== undefined ? func.index : 0;
+                          if (!tool_calls[i][targetIndex]) {
+                            // 初始化新的 tool_call
+                            tool_calls[i][targetIndex] = {
+                              id: func.id || '',
+                              type: func.type || 'function',
+                              function: {
+                                name: func.function?.name || '',
+                                arguments: func.function?.arguments || '',
+                              },
+                            };
+                          } else {
+                            // 累积 arguments
+                            if (func.id) tool_calls[i][targetIndex].id = func.id;
+                            if (func.function?.name) tool_calls[i][targetIndex].function.name = func.function.name;
+                            if (func.function?.arguments) tool_calls[i][targetIndex].function.arguments += func.function.arguments;
                           }
                         });
                       }

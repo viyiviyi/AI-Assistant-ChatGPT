@@ -14,6 +14,101 @@ export const safeJsonParse = (str: string): any => {
   }
 };
 
+// 解析多个拼接的JSON对象，例如：{"a":1}{"b":2} 或 [{"c":3}][{"d":4}]
+export const parseMultipleJson = (str: string): any[] | any => {
+  if (!str || typeof str !== 'string') return str;
+  
+  str = str.trim();
+  
+  // 首先尝试作为单个JSON解析
+  try {
+    return JSON.parse(str);
+  } catch {
+    // 如果失败，尝试解析多个JSON
+  }
+  
+  const results: any[] = [];
+  let remaining = str;
+  
+  while (remaining.length > 0) {
+    remaining = remaining.trim();
+    if (!remaining) break;
+    
+    let parsed = false;
+    
+    // 尝试解析对象 {...}
+    if (remaining.startsWith('{')) {
+      let depth = 0;
+      let endIndex = -1;
+      
+      for (let i = 0; i < remaining.length; i++) {
+        const char = remaining[i];
+        if (char === '{') depth++;
+        else if (char === '}') {
+          depth--;
+          if (depth === 0) {
+            endIndex = i + 1;
+            break;
+          }
+        }
+      }
+      
+      if (endIndex > 0) {
+        try {
+          const jsonStr = remaining.substring(0, endIndex);
+          results.push(JSON.parse(jsonStr));
+          remaining = remaining.substring(endIndex);
+          parsed = true;
+        } catch (e) {
+          // 解析失败，跳出循环
+          break;
+        }
+      }
+    }
+    // 尝试解析数组 [...]
+    else if (remaining.startsWith('[')) {
+      let depth = 0;
+      let endIndex = -1;
+      
+      for (let i = 0; i < remaining.length; i++) {
+        const char = remaining[i];
+        if (char === '[') depth++;
+        else if (char === ']') {
+          depth--;
+          if (depth === 0) {
+            endIndex = i + 1;
+            break;
+          }
+        }
+      }
+      
+      if (endIndex > 0) {
+        try {
+          const jsonStr = remaining.substring(0, endIndex);
+          results.push(JSON.parse(jsonStr));
+          remaining = remaining.substring(endIndex);
+          parsed = true;
+        } catch (e) {
+          // 解析失败，跳出循环
+          break;
+        }
+      }
+    }
+    
+    // 如果没有成功解析，跳出循环
+    if (!parsed) break;
+  }
+  
+  // 如果只解析出一个结果，直接返回该结果
+  if (results.length === 1) return results[0];
+  
+  // 如果解析出多个结果，返回数组
+  if (results.length > 1) return results;
+  
+  // 如果无法解析，返回原始字符串
+  return str;
+};
+
 // 格式化对象为markdown展示（支持递归展开）
 export const formatObjectToMarkdown = (obj: any, title: string, depth: number = 0): string => {
   const lines: string[] = [];

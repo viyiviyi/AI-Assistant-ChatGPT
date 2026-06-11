@@ -11,7 +11,7 @@ import React from 'react';
 import { BgConfig } from './BgImageStore';
 import { ImageStore } from './db/ImageDb';
 import { getDbInstance as getInstance, setSkipDbSave } from './db/IndexDbInstance';
-import { safeJsonParse } from './utils/ObjectToText';
+import { parseMultipleJson, safeJsonParse } from './utils/ObjectToText';
 import { getUuid } from './utils/utils';
 
 const defaultChat: IChat = {
@@ -394,7 +394,7 @@ export class ChatManagement {
         v.tool_call_result[v.useTextIdx || 0].forEach((r) => {
           if (r.content.startsWith('{') || r.content.startsWith('[')) {
             try {
-              const json = JSON.parse(r.content);
+              const json = parseMultipleJson(r.content);
               if (typeof json == 'object' && 'type' in json && json['type'] == 'image_url') {
                 history.push({
                   role: 'tool',
@@ -859,7 +859,8 @@ export class ChatManagement {
       m.tool_call_result[m.useTextIdx || 0].forEach((r) => {
         if (r.content.startsWith('{') || r.content.startsWith('[')) {
           try {
-            const json = JSON.parse(r.content);
+            // 使用 parseMultipleJson 处理可能包含多个JSON的情况
+            const json = parseMultipleJson(r.content);
             if (
               typeof json == 'object' &&
               'type' in json &&
