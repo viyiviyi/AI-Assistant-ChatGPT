@@ -1,7 +1,7 @@
 import { aiServerList, aiServices, aiServiceType, getServiceInstance, useService } from '@/core/AiService/ServiceProvider';
 import { BgImageStore } from '@/core/BgImageStore';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
-import { AiServerConf, KeyValueData } from '@/core/db/KeyValueData';
+import { AiServerConf, ApiVendorType, KeyValueData } from '@/core/db/KeyValueData';
 import { useScreenSize } from '@/core/hooks/hooks';
 import { useSpeechSynthesis } from '@/core/hooks/tts';
 import { getToken, saveToken } from '@/core/tokens';
@@ -109,7 +109,17 @@ export const Setting = ({
     config_use_virtual_role_img: boolean;
   }>();
   const formValus = useMemo(() => {
-    const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[chatMgt.config.botType];
+    // 安全地获取 model 值
+    let model: string | undefined;
+    const modelConfig = chatMgt?.gptConfig.model;
+    
+    if (typeof modelConfig === 'string') {
+      model = modelConfig;
+    } else if (modelConfig && typeof modelConfig === 'object') {
+      const botType = chatMgt?.config.botType || 'APICenter';
+      model = modelConfig[botType];
+    }
+    
     return {
       setting_apitoken: KeyValueData.instance().getApiKey(),
       GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
@@ -169,7 +179,18 @@ export const Setting = ({
   }, [chatMgt]);
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
-    const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[chatMgt.config.botType];
+    
+    // 安全地获取 model 值
+    let model: string | undefined;
+    const modelConfig = chatMgt?.gptConfig.model;
+    
+    if (typeof modelConfig === 'string') {
+      model = modelConfig;
+    } else if (modelConfig && typeof modelConfig === 'object') {
+      const botType = chatMgt?.config.botType || 'APICenter';
+      model = modelConfig[botType];
+    }
+    
     aiServices.current
       ?.models()
       .then((res) => {
@@ -196,7 +217,18 @@ export const Setting = ({
   async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    const model = typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[values.config_bot_type];
+    
+    // 安全地获取 model 值
+    let model: string | undefined;
+    const modelConfig = chatMgt?.gptConfig.model;
+    const botType = values.config_bot_type || 'APICenter';
+    
+    if (typeof modelConfig === 'string') {
+      model = modelConfig;
+    } else if (modelConfig && typeof modelConfig === 'object') {
+      model = modelConfig[botType];
+    }
+    
     chatMgt.gptConfig.model = {
       ...(typeof chatMgt?.gptConfig.model == 'object' ? chatMgt?.gptConfig.model : {}),
       [values.config_bot_type]: values.GptConfig_model || model,
@@ -277,6 +309,7 @@ export const Setting = ({
   const AiServerItem = ({ item, index }: { item: AiServerConf; index: number }) => {
     const [url, setUrl] = useState(item.url);
     const [name, setName] = useState(item.name);
+    const [vendorType, setVendorType] = useState<ApiVendorType>(item.vendorType || 'auto');
     const [compatibleNoToolImg, setCompatibleNoToolImg] = useState(item.compatibleNoToolImg);
     const [compatibleOnly1System, setCompatibleOnly1System] = useState(item.compatibleOnly1System);
     return (
@@ -313,6 +346,23 @@ export const Setting = ({
                   });
                 }}
                 autoComplete="off"
+              />
+            </Form.Item>
+            <Form.Item label={index + 1 + ' API兼容类型'} extra="选择API的兼容格式，Auto为自动检测">
+              <Select
+                value={vendorType}
+                onChange={(value) => {
+                  setVendorType(value);
+                  setUserAiServer((v) => {
+                    v[index] = { ...v[index], vendorType: value };
+                    return v;
+                  });
+                }}
+                options={[
+                  { label: '自动检测 (Auto)', value: 'auto' },
+                  { label: 'OpenAI 兼容', value: 'openai' },
+                  { label: 'Anthropic 兼容', value: 'anthropic' },
+                ]}
               />
             </Form.Item>
           </div>
@@ -582,8 +632,17 @@ export const Setting = ({
                 setModels([]);
                 const conf = userAiServer.find((f) => f.key == value);
                 let server = getServiceInstance(value, chatMgt!.getChat(), conf);
-                const model =
-                  typeof chatMgt?.gptConfig.model == 'string' ? chatMgt?.gptConfig.model : chatMgt?.gptConfig.model[value] || '';
+                
+                // 安全地获取 model 值
+                let model: string | undefined;
+                const modelConfig = chatMgt?.gptConfig.model;
+                
+                if (typeof modelConfig === 'string') {
+                  model = modelConfig;
+                } else if (modelConfig && typeof modelConfig === 'object') {
+                  model = modelConfig[value] || '';
+                }
+                
                 form.setFieldValue('GptConfig_model', model || server?.defaultModel);
                 server
                   ?.models()

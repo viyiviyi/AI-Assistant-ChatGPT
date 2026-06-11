@@ -716,7 +716,7 @@ export class ChatManagement {
   static async createConfig(groupId: string, groupConfig?: GroupConfig): Promise<GroupConfig> {
     let firstConfig = this.chatList[0];
     const data: GroupConfig = groupConfig || {
-      ...firstConfig.config,
+      ...(firstConfig?.config || {}),
       middleware: [NameMacrosPrompt.key],
       id: getUuid(),
       groupId,

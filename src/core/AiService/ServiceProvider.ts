@@ -166,7 +166,15 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat, aiConf?:
     case 'CohereAi':
       return new CohereAi(chat.config.userServerUrl || baseUrl.cohereAi, tokens, chat.gptConfig);
     case 'APICenter':
-      return new APICenter(KeyValueData.instance().getApiTransferUrl() || '', tokens, chat.gptConfig, tools);
+      return new APICenter(
+        KeyValueData.instance().getApiTransferUrl() || '',
+        tokens,
+        chat.gptConfig,
+        tools,
+        aiConf?.vendorType,
+        aiConf?.compatibleOnly1System,
+        aiConf?.compatibleNoToolImg,
+      );
     case 'None':
       return undefined;
     default:
@@ -175,6 +183,7 @@ export function getServiceInstance(botType: aiServiceType, chat: IChat, aiConf?:
         tokens,
         chat.gptConfig,
         tools,
+        aiConf?.vendorType,
         aiConf?.compatibleOnly1System,
         aiConf?.compatibleNoToolImg,
       );

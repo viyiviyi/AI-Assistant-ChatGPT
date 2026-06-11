@@ -3,7 +3,7 @@ import { CtxItem } from '@/Models/CtxItem';
 import { GptConfig, Message } from '@/Models/DataBase';
 import axios from 'axios';
 import { ListModelsResponse, OpenAIApi } from 'openai';
-import { AiServerConf } from '../db/KeyValueData';
+import { AiServerConf, ApiVendorType } from '../db/KeyValueData';
 import { safeJsonParse } from '../utils/ObjectToText';
 import { IAiService, InputConfig } from './IAiService';
 import { aiServiceType, ServiceTokens } from './ServiceProvider';
@@ -14,6 +14,7 @@ export class APICenter implements IAiService {
   baseUrl: string;
   tokens: ServiceTokens;
   tools?: any[];
+  vendorType?: ApiVendorType;
   compatibleOnly1System?: boolean;
   compatibleNoToolImg?: boolean;
   constructor(
@@ -21,6 +22,7 @@ export class APICenter implements IAiService {
     tokens: ServiceTokens,
     config?: GptConfig,
     tools?: any[],
+    vendorType?: ApiVendorType,
     compatibleOnly1System?: boolean,
     compatibleNoToolImg?: boolean,
   ) {
@@ -29,6 +31,7 @@ export class APICenter implements IAiService {
     this.client = new OpenAIApi();
     this.severConfig = config?.aiServerConfig || { model: '' };
     this.tools = tools;
+    this.vendorType = vendorType;
     this.compatibleOnly1System = compatibleOnly1System;
     this.compatibleNoToolImg = compatibleNoToolImg;
   }
@@ -172,6 +175,10 @@ export class APICenter implements IAiService {
     await this.generateChatStream(context, config, onMessage);
   }
   isAnthropicAPI() {
+    // 如果显式指定了供应商类型，优先使用配置
+    if (this.vendorType === 'anthropic') return true;
+    if (this.vendorType === 'openai') return false;
+    // 否则自动检测（向后兼容）
     return this.baseUrl.includes('/anthropic');
   }
 

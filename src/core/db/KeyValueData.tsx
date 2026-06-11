@@ -80,7 +80,13 @@ export class KeyValueData {
     if (typeof this._aiServerList[0] == 'string') {
       this._aiServerList = (this._aiServerList as any as string[])
         .filter((f) => f && f != '|')
-        .map((v) => ({ name: v.split('|')[0], url: v.split('|')[1], hasToken: true, key: getUuid() }));
+        .map((v) => ({ 
+          name: v.split('|')[0], 
+          url: v.split('|')[1], 
+          hasToken: true, 
+          key: getUuid(),
+          vendorType: 'auto' as ApiVendorType // 默认为自动检测
+        }));
     }
     return this._aiServerList;
   }
@@ -96,11 +102,14 @@ export class KeyValueData {
 }
 
 type UIConfig = { showNav?: boolean; showConfigPanl?: boolean };
+export type ApiVendorType = 'openai' | 'anthropic' | 'auto';
+
 export type AiServerConf = {
   key: string;
   name: string;
   url: string;
   hasToken?: boolean;
+  vendorType?: ApiVendorType; // API供应商兼容类型：openai、anthropic或auto自动检测
   compatibleOnly1System?: boolean; // 兼容不支持多个system消息
   compatibleNoToolImg?: boolean; // 兼容tool类型的消息不允许带图片
 };
