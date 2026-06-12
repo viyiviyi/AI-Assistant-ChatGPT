@@ -117,7 +117,12 @@ export class ImageStore {
     return this.saveMultimodalFile(imageBase64);
   };
 
-  // 获取多模态文件
+  // 获取多模态文件（同步版本，从缓存读取）
+  getMultimodalFileSync = (id: string): MultimodalFile | null => {
+    return cache[id] || null;
+  };
+
+  // 获取多模态文件（异步版本，支持从 DB 加载）
   getMultimodalFile: (id: string) => Promise<MultimodalFile | null> = async (id) => {
     if (cache[id]) return cache[id];
 
@@ -163,7 +168,7 @@ export class ImageStore {
 
   // 根据元数据查询文件
   queryFilesByType = async (fileType: MultimodalFileMetadata['fileType']): Promise<MultimodalFile[]> => {
-    const allFiles = await getInstance().query_all<KeyValue>({
+    const allFiles = await getInstance().queryAll<KeyValue>({
       tableName: 'ImageStorage',
     });
 
@@ -173,13 +178,18 @@ export class ImageStore {
   };
 
   // 删除多模态文件
+  deleteMultimodalFile = (id: string) => {
+    delete cache[id];
+    getInstance()?.delete_by_primaryKey({
+      tableName: 'ImageStorage',
+      value: id,
+    });
+  };
+
+  // 兼容旧版 API
   deleteImage = (ids?: string[]) => {
     ids?.forEach((id) => {
-      delete cache[id];
-      getInstance()?.delete_by_primaryKey({
-        tableName: 'ImageStorage',
-        value: id,
-      });
+      this.deleteMultimodalFile(id);
     });
   };
 
@@ -196,9 +206,12 @@ export class ImageStore {
 
     cache[id] = file;
 
-    await getInstance().update<KeyValue>({
+    await getInstance().update_by_primaryKey<KeyValue>({
       tableName: 'ImageStorage',
-      data: { id, data: file },
+      value: id,
+      handle: (record) => {
+        record.data = file;
+      },
     });
 
     return true;

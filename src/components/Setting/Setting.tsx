@@ -231,7 +231,7 @@ export const Setting = ({
     
     chatMgt.gptConfig.model = {
       ...(typeof chatMgt?.gptConfig.model == 'object' ? chatMgt?.gptConfig.model : {}),
-      [values.config_bot_type]: values.GptConfig_model || model,
+      [values.config_bot_type]: values.GptConfig_model || model || '',
     };
     chatMgt.gptConfig.n = values.GptConfig_n;
     chatMgt.gptConfig.max_tokens = values.GptConfig_max_tokens;

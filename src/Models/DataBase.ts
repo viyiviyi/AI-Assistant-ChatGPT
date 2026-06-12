@@ -94,7 +94,8 @@ export interface Message {
     snippet: string;
   }[];
   skipCtx?: boolean;
-  imageIds?: string[];
+  imageIds?: string[]; // 仅作为图片生成功能保存图片的列表，与多模态无关
+  multimodalFileIds?: string[]; // 多模态文件ID列表（图片、文档、音频、视频等）
   imagesAlts?: { [key: string]: string };
   usage?: {
     prompt_tokens: number;

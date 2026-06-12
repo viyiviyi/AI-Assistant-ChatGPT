@@ -1,26 +1,137 @@
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
-import { usePushMessage, useScreenSize } from '@/core/hooks/hooks';
-import { activityScroll, scrollToBotton, scrollToTop } from '@/core/utils/utils';
+import { usePushMessage, useScreenSize, useSendMessage, useReloadIndex } from '@/core/hooks/hooks';
+import { activityScroll, scrollToBotton, scrollToTop, getUuid } from '@/core/utils/utils';
 import { CtxRole } from '@/Models/CtxRole';
+import { Message } from '@/Models/DataBase';
+import { PendingFile } from '@/components/common/MultimodalInput';
+import { ImageStore } from '@/core/db/ImageDb';
+import { reloadTopic } from './Message/MessageList';
+import { AttachmentPanel } from './AttachmentPanel';
 import styleCss from '@/styles/index.module.css';
 import {
   AlignLeftOutlined,
   CaretLeftOutlined,
   CommentOutlined,
   MessageOutlined,
+  PaperClipOutlined,
   VerticalAlignBottomOutlined,
   VerticalAlignMiddleOutlined,
   VerticalAlignTopOutlined,
 } from '@ant-design/icons';
-import { Button, Drawer, Flex, theme, Typography } from 'antd';
+import { Button, Drawer, Flex, Popover, theme, Typography, Badge, message } from 'antd';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { MemoBackgroundImage } from '../common/BackgroundImage';
 import { Hidden } from '../common/Hidden';
 import { SkipExport } from '../common/SkipExport';
 import { TextEditor } from '../common/TextEditor';
+import { MultimodalInput } from '../common/MultimodalInput';
 import { MemoNavigation } from '../Nav/Navigation';
 import { MessageContext } from './Chat';
 import { CtxRoleButton } from './CtxRoleButton';
+
+// 辅助函数：读取文件为 base64
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// 辅助函数：压缩图片
+async function compressImage(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    img.onload = () => {
+      // 计算目标尺寸
+      let targetWidth = img.width;
+      let targetHeight = img.height;
+      
+      // 根据文件大小决定最大尺寸
+      const fileSizeKB = file.size / 1024;
+      const maxSize = fileSizeKB > 8 ? 2048 : 1080; // 超过8K使用2K，否则1080P
+      
+      // 如果图片尺寸超过限制，进行缩放
+      if (img.width > maxSize || img.height > maxSize) {
+        if (img.width > img.height) {
+          targetWidth = maxSize;
+          targetHeight = (img.height / img.width) * maxSize;
+        } else {
+          targetHeight = maxSize;
+          targetWidth = (img.width / img.height) * maxSize;
+        }
+      }
+      
+      // 设置画布尺寸
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      
+      // 绘制图片
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        
+        // 转换为 JPEG 格式，质量 0.85
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('图片压缩失败'));
+            }
+          },
+          'image/jpeg',
+          0.85
+        );
+      } else {
+        reject(new Error('无法获取 Canvas 上下文'));
+      }
+    };
+    
+    img.onerror = () => reject(new Error('图片加载失败'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// 辅助函数：处理文件（压缩图片 + 大小检查）
+async function processFile(file: File): Promise<{ data: string; processedFile: File }> {
+  // 检查文件大小（最大 50MB）
+  const maxSize = 50 * 1024 * 1024; // 50MB
+  if (file.size > maxSize) {
+    throw new Error(`文件 "${file.name}" 超过 50MB 限制`);
+  }
+  
+  let processedFile = file;
+  let base64: string;
+  
+  // 如果是图片，进行压缩
+  if (file.type.startsWith('image/')) {
+    try {
+      const compressedBlob = await compressImage(file);
+      
+      // 创建新的 File 对象（JPEG 格式）
+      const fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+      processedFile = new File([compressedBlob], fileName, {
+        type: 'image/jpeg',
+        lastModified: Date.now(),
+      });
+      
+      // 读取压缩后的图片为 base64
+      base64 = await readFileAsBase64(processedFile);
+    } catch (error) {
+      // 压缩失败，抛出错误，不保留文件
+      throw new Error(`图片 "${file.name}" 压缩失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  } else {
+    // 非图片文件，直接读取
+    base64 = await readFileAsBase64(file);
+  }
+  
+  return { data: base64, processedFile };
+}
 
 const inputRef = React.createRef<HTMLInputElement>();
 const objs = { setInput: (s: string | ((s: string) => string)) => {} };
@@ -36,13 +147,17 @@ export function InputUtil() {
   const [inputText, setInputText] = useState({ text: '' });
   const [loading, setLoading] = useState(0);
   const [showNav, setShowNav] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const { chatMgt: chat, activityTopic, setActivityTopic, reloadNav } = useContext(ChatContext);
   const { onlyOne, setOnlyOne, closeAll, showTitle, setShowTitle, setCloseAll: setCloasAll } = useContext(MessageContext);
   const screenSize = useScreenSize();
   const { token } = theme.useToken();
   const [role, setRole] = useState<[CtxRole, boolean]>(['user', true]);
   const { pushMessage } = usePushMessage(chat);
+  const { sendMessage } = useSendMessage(chat);
+  const { reloadIndex } = useReloadIndex(chat);
   const [showCtxRoleButton, setShowCtxRoleButton] = useState(false);
+  const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
   objs.setInput = (input: string | ((s: string) => string)) => {
     let next_input = inputText.text;
     if (typeof input == 'function') {
@@ -79,19 +194,128 @@ export function InputUtil() {
         }).catch((e) => console.error(e));
       }
       if (!topic) return;
+      
       activityScroll({ botton: true });
       setLoading((v) => ++v);
       setInputText({ text: '' });
-      pushMessage(text, topic.messages.length || 0, topic, role, () => {
-        setRole(['user', true]);
-        if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
-        setTimeout(() => {
-          setLoading((v) => --v);
-        }, 500);
-      });
+      
+      // 如果有待发送的文件，先处理并存入数据库
+      let multimodalFileIds: string[] = [];
+      let failedFiles: string[] = [];
+      
+      if (pendingFiles.length > 0) {
+        const imageStore = ImageStore.getInstance();
+        
+        // 使用 Promise.allSettled 并行处理所有文件
+        const results = await Promise.allSettled(
+          pendingFiles.map(async (pendingFile): Promise<{ success: boolean; fileId?: string; fileName: string; error?: string }> => {
+            try {
+              // 处理文件（压缩图片 + 大小检查）
+              const { data: base64, processedFile } = await processFile(pendingFile.file);
+              
+              // 存入 IndexedDB
+              const fileId = imageStore.saveMultimodalFile(base64, {
+                fileName: processedFile.name,
+                mimeType: processedFile.type,
+              });
+              
+              return { success: true, fileId, fileName: pendingFile.file.name };
+            } catch (error) {
+              return { 
+                success: false, 
+                fileName: pendingFile.file.name,
+                error: error instanceof Error ? error.message : '未知错误'
+              };
+            }
+          })
+        );
+        
+        // 处理结果
+        results.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            const value = result.value;
+            if (value.success && value.fileId) {
+              multimodalFileIds.push(value.fileId);
+            } else if (!value.success) {
+              failedFiles.push(`${value.fileName}: ${value.error || '未知错误'}`);
+            }
+          }
+        });
+        
+        // 显示错误提示
+        if (failedFiles.length > 0) {
+          message.error({
+            content: (
+              <div>
+                <div>以下文件处理失败：</div>
+                {failedFiles.map((msg, i) => (
+                  <div key={i} style={{ fontSize: '12px', marginTop: '4px' }}>• {msg}</div>
+                ))}
+              </div>
+            ),
+            duration: 5,
+          });
+        }
+        
+        // 清空待发送文件列表
+        setPendingFiles([]);
+      }
+      
+      // 如果有附加的多模态文件，在文本后添加说明
+      let finalText = text;
+      if (multimodalFileIds.length > 0 && !text) {
+        finalText = `[附件: ${multimodalFileIds.length} 个文件]`;
+      }
+      
+      // 关键：先创建消息并附加 multimodalFileIds，然后再调用 pushMessage
+      // 这样可以确保在 sendMessage 被调用时，消息已经包含完整的 multimodalFileIds
+      const time = Date.now();
+      const tempMsg: Message = {
+        id: '',
+        groupId: chat.group.id,
+        ctxRole: role[0],
+        text: finalText,
+        timestamp: time,
+        topicId: topic.id,
+        cloudTopicId: topic.cloudTopicId,
+        parentId: getUuid(),
+      };
+      
+      // 附加多模态文件 ID
+      if (multimodalFileIds.length > 0) {
+        tempMsg.multimodalFileIds = multimodalFileIds;
+      }
+      
+      // 先保存消息到数据库（此时 tempMsg 已包含 multimodalFileIds）
+      if (topic) {
+        const topicId = topic.id;
+        const msgIdx = topic.messages.length || 0;
+        
+        await chat.pushMessage(tempMsg, msgIdx);
+        
+        // 重新加载索引
+        const updatedTopic = chat.topics.find(t => t.id === topicId);
+        if (updatedTopic) {
+          reloadIndex(updatedTopic, updatedTopic.messages.length - 1);
+          reloadTopic(updatedTopic.id, updatedTopic.messages.length - 1);
+          
+          // 现在消息已经包含 multimodalFileIds，可以安全地发送给 AI
+          // 使用 sendMessage 直接发送，跳过 pushMessage 的重复逻辑
+          if (role[1]) {  // 如果是在线模式
+            await sendMessage(updatedTopic.messages.length - 1, updatedTopic, false, tempMsg.parentId);
+          }
+        }
+      }
+      
+      setRole(['user', true]);
+      if (/^#{1,5}\s/.test(finalText)) reloadNav(topic!);
+      setTimeout(() => {
+        setLoading((v) => --v);
+      }, 500);
+      
       return;
     },
-    [chat, inputText, role, reloadNav, setActivityTopic, pushMessage],
+    [chat, inputText, role, reloadNav, setActivityTopic, pendingFiles],
   );
   const toolEle = useMemo(
     () => (
@@ -171,15 +395,25 @@ export function InputUtil() {
           {activityTopic?.name}
         </Typography.Text>
         <span style={{ flex: 1 }}></span>
-        {/* <Button
-            shape="round"
+        
+        {/* 多模态文件按钮 */}
+        <Badge count={pendingFiles.length} offset={[-5, 10]} size="small">
+          <Button
+            shape="circle"
+            size="large"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {}}
-          >
-            <SkipExport>
-              <PlusOutlined />
-            </SkipExport>
-          </Button> */}
+            onClick={() => setShowAttachmentPanel(!showAttachmentPanel)}
+            icon={
+              <SkipExport>
+                <PaperClipOutlined style={{ color: pendingFiles.length > 0 || showAttachmentPanel ? token.colorPrimary : undefined }} />
+              </SkipExport>
+            }
+            style={{
+              backgroundColor: pendingFiles.length > 0 || showAttachmentPanel ? token.colorPrimaryBg : undefined,
+            }}
+          />
+        </Badge>
+        
         <span style={{ marginLeft: 10 }}></span>
         <Button
           shape="round"
@@ -232,7 +466,7 @@ export function InputUtil() {
         ></Button>
       </div>
     ),
-    [activityTopic, closeAll, onSubmit, onlyOne, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showTitle, token.colorPrimary],
+    [activityTopic, closeAll, onSubmit, onlyOne, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showTitle, token.colorPrimary, pendingFiles, showAttachmentPanel],
   );
   const editorEle = useMemo(
     () => (
@@ -318,6 +552,17 @@ export function InputUtil() {
               left: 0,
               borderRadius: token.borderRadius,
               backgroundColor: token.colorFillContent,
+            }}
+          />
+        )}
+        {showAttachmentPanel && (
+          <AttachmentPanel
+            files={pendingFiles}
+            onFilesChange={setPendingFiles}
+            style={{
+              position: 'absolute',
+              bottom: 'calc(100% + 37px)',
+              left: 0,
             }}
           />
         )}

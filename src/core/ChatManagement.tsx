@@ -382,11 +382,42 @@ export class ChatManagement {
     let ctxIds: string[] = [];
     messages.forEach((v) => {
       ctxIds.push(v.id);
+      
+      // 构建内容：检查是否有多模态文件
+      let content: string | Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = ChatManagement.getMsgContent(v);
+      
+      // 如果有多模态文件，转换为数组格式
+      if (v.multimodalFileIds && v.multimodalFileIds.length > 0) {
+        const multimodalContents: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
+        
+        // 添加文本内容
+        const textContent = ChatManagement.getMsgContent(v);
+        if (textContent) {
+          multimodalContents.push({ type: 'text', text: textContent });
+        }
+        
+        // 添加多模态文件（目前只支持图片）
+        for (const fileId of v.multimodalFileIds) {
+          const file = ImageStore.getInstance().getMultimodalFileSync(fileId);
+          if (file && file.metadata.fileType === 'image' && typeof file.data === 'string') {
+            multimodalContents.push({
+              type: 'image_url',
+              image_url: { url: file.data },
+            });
+          }
+        }
+        
+        // 只有当有多模态内容时才使用数组格式
+        if (multimodalContents.length > 0) {
+          content = multimodalContents;
+        }
+      }
+      
       history.push({
         role: v.ctxRole,
         reasoning_details: ChatManagement.getMsgReasoningContent(v) || undefined,
         reasoning_content: ChatManagement.getMsgReasoningContent(v) || undefined,
-        content: ChatManagement.getMsgContent(v),
+        content: content,
         name: this.getNameByRole(v.ctxRole, virtualRole),
         tool_calls: v.tool_calls ? v.tool_calls[v.useTextIdx || 0] : undefined,
       });
@@ -844,7 +875,14 @@ export class ChatManagement {
     return message;
   }
   deleteMsgImages(m: Message) {
+    // 删除 imageIds（图片生成功能）
     ImageStore.getInstance().deleteImage(m.imageIds);
+    
+    // 删除 multimodalFileIds（多模态文件）
+    if (m.multimodalFileIds && m.multimodalFileIds.length > 0) {
+      ImageStore.getInstance().deleteImage(m.multimodalFileIds);
+    }
+    
     if (Array.isArray(m.content)) {
       m.content
         .filter((f) => typeof f == 'object' && f.type == 'image_url')
@@ -972,7 +1010,15 @@ export class ChatManagement {
       tableName: 'Message',
       condition: (v) => v.groupId == groupId,
     });
-    msgs.forEach((m) => ImageStore.getInstance().deleteImage(m.imageIds));
+    msgs.forEach((m) => {
+      // 删除 imageIds（图片生成功能）
+      ImageStore.getInstance().deleteImage(m.imageIds);
+      
+      // 删除 multimodalFileIds（多模态文件）
+      if (m.multimodalFileIds && m.multimodalFileIds.length > 0) {
+        ImageStore.getInstance().deleteImage(m.multimodalFileIds);
+      }
+    });
     await getInstance()?.delete<Message>({
       tableName: 'Message',
       condition: (v) => v.groupId == groupId,

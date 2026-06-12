@@ -32,6 +32,7 @@ import { MarkdownView } from '../../common/MarkdownView';
 import { SkipExport } from '../../common/SkipExport';
 import { FunctionCallInfo } from './FunctionCallInfo';
 import { Images } from './Images';
+import { MultimodalDisplay } from './MultimodalDisplay';
 import { reloadTopic } from './MessageList';
 import { ReasoningContent } from './ReasoningContent';
 
@@ -524,6 +525,10 @@ const MessageItem = ({
                     <span></span>
                   </div>
                 </Tooltip>
+                {/* 多模态内容显示（放在文字前面） */}
+                {msg.multimodalFileIds && msg.multimodalFileIds.length > 0 && (
+                  <MultimodalDisplay fileIds={msg.multimodalFileIds} />
+                )}
                 {Content}
                 {/* <RuningText></RuningText> */}
                 <Images msg={msg} topic={topic} />
@@ -557,6 +562,10 @@ const MessageItem = ({
         className={styleCss.message_box}
       >
         {contextHolder}
+        {/* 多模态内容显示（放在文字前面） */}
+        {msg.multimodalFileIds && msg.multimodalFileIds.length > 0 && (
+          <MultimodalDisplay fileIds={msg.multimodalFileIds} />
+        )}
         {Content}
         <Images msg={msg} topic={topic} />
         <div
@@ -694,6 +703,10 @@ const MessageItem = ({
             }}
             className={chat.config.autoWrapCode ? 'auto-wrap' : undefined}
           >
+            {/* 多模态内容显示（放在文字前面） */}
+            {msg.multimodalFileIds && msg.multimodalFileIds.length > 0 && (
+              <MultimodalDisplay fileIds={msg.multimodalFileIds} />
+            )}
             {Content}
             {/* <RuningText></RuningText> */}
             <Images msg={msg} topic={topic} />
