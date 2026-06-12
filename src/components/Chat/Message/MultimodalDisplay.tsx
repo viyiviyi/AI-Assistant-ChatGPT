@@ -1,16 +1,27 @@
 import { ImageStore, MultimodalFile } from '@/core/db/ImageDb';
-import { FileOutlined, FileImageOutlined, FilePdfOutlined, PlayCircleOutlined } from '@ant-design/icons';
-import { Flex, Image as AntdImage, Typography, theme } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { ChatContext } from '@/core/ChatManagement';
+import { FileOutlined, FileImageOutlined, FilePdfOutlined, PlayCircleOutlined, DeleteOutlined, CloseOutlined } from '@ant-design/icons';
+import { Flex, Image as AntdImage, Typography, theme, Button, Popconfirm } from 'antd';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
+import { useRouter } from 'next/router';
 
 export interface MultimodalDisplayProps {
   fileIds: string[];
+  messageId?: string; // 用于删除时更新消息
+  editable?: boolean; // 是否可编辑（显示删除按钮）
 }
 
 const { Text } = Typography;
 
-export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds }) => {
+export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ 
+  fileIds, 
+  messageId,
+  editable = false 
+}) => {
   const { token } = theme.useToken();
+  const router = useRouter();
+  const { chatMgt: chat } = useContext(ChatContext);
+  
   const [files, setFiles] = useState<MultimodalFile[]>([]);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
@@ -33,6 +44,20 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
     setFiles(loadedFiles);
   }, [fileIds, imageStore]);
 
+  // 处理浏览器返回事件
+  const handleBackButton = useMemo(() => {
+    return () => {
+      setPreviewVisible(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('popstate', handleBackButton);
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, [handleBackButton]);
+
   if (!files || files.length === 0) {
     return null;
   }
@@ -53,6 +78,39 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
     }
   };
 
+  // 删除文件
+  const deleteFile = async (index: number) => {
+    const file = files[index];
+    if (!file) return;
+
+    // 从 IndexedDB 删除
+    await imageStore.deleteMultimodalFile(file.id);
+
+    // 从文件列表中移除
+    const newFiles = files.filter((_, i) => i !== index);
+    setFiles(newFiles);
+
+    // 如果有 messageId，更新消息
+    if (messageId && chat) {
+      const topic = chat.topics.find(t => t.messages.some(m => m.id === messageId));
+      if (topic) {
+        const msg = topic.messages.find(m => m.id === messageId);
+        if (msg && msg.multimodalFileIds) {
+          // 从消息中移除文件 ID
+          msg.multimodalFileIds = msg.multimodalFileIds.filter(id => id !== file.id);
+          
+          // 如果为空，删除字段
+          if (msg.multimodalFileIds.length === 0) {
+            delete msg.multimodalFileIds;
+          }
+          
+          // 更新消息
+          await chat.pushMessage(msg).catch((e) => console.error(e));
+        }
+      }
+    }
+  };
+
   // 渲染单个文件
   const renderFile = (file: MultimodalFile, index: number) => {
     const { fileType, fileName, mimeType, fileSize } = file.metadata;
@@ -65,15 +123,10 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
           key={file.id}
           style={{
             position: 'relative',
-            cursor: 'pointer',
             borderRadius: token.borderRadius,
             overflow: 'hidden',
             border: `1px solid ${token.colorBorder}`,
             backgroundColor: token.colorFillContent,
-          }}
-          onClick={() => {
-            setPreviewIndex(index);
-            setPreviewVisible(true);
           }}
         >
           <AntdImage
@@ -84,8 +137,14 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
               maxHeight: 300,
               objectFit: 'contain',
               display: 'block',
+              cursor: 'pointer',
             }}
             preview={false}
+            onClick={() => {
+              setPreviewIndex(index);
+              setPreviewVisible(true);
+              router.push(location.href.split('#')[0] + '#multimodal');
+            }}
           />
           {fileName && (
             <div
@@ -101,9 +160,29 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}
             >
-              {fileName}
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{fileName}</span>
+              {editable && (
+                <Popconfirm
+                  title="确定删除此附件？"
+                  onConfirm={() => deleteFile(index)}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <CloseOutlined 
+                    style={{ 
+                      marginLeft: 8, 
+                      cursor: 'pointer',
+                      fontSize: 14,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </Popconfirm>
+              )}
             </div>
           )}
         </div>
@@ -116,6 +195,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
         <div
           key={file.id}
           style={{
+            position: 'relative',
             borderRadius: token.borderRadius,
             overflow: 'hidden',
             border: `1px solid ${token.colorBorder}`,
@@ -134,12 +214,36 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
             您的浏览器不支持视频播放
           </video>
           {fileName && (
-            <div style={{ padding: '8px 12px' }}>
-              <Text strong>{fileName}</Text>
-              {fileSize && (
-                <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
-                  ({(fileSize / 1024 / 1024).toFixed(2)} MB)
-                </Text>
+            <div style={{ 
+              padding: '8px 12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div>
+                <Text strong>{fileName}</Text>
+                {fileSize && (
+                  <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
+                    ({(fileSize / 1024 / 1024).toFixed(2)} MB)
+                  </Text>
+                )}
+              </div>
+              {editable && (
+                <Popconfirm
+                  title="确定删除此附件？"
+                  onConfirm={() => deleteFile(index)}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <Button 
+                    type="text" 
+                    danger 
+                    size="small"
+                    icon={<DeleteOutlined />}
+                  >
+                    删除
+                  </Button>
+                </Popconfirm>
               )}
             </div>
           )}
@@ -153,6 +257,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
         <div
           key={file.id}
           style={{
+            position: 'relative',
             borderRadius: token.borderRadius,
             padding: '12px',
             border: `1px solid ${token.colorBorder}`,
@@ -163,12 +268,36 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
             您的浏览器不支持音频播放
           </audio>
           {fileName && (
-            <div style={{ marginTop: 8 }}>
-              <Text strong>{fileName}</Text>
-              {fileSize && (
-                <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
-                  ({(fileSize / 1024 / 1024).toFixed(2)} MB)
-                </Text>
+            <div style={{ 
+              marginTop: 8,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div>
+                <Text strong>{fileName}</Text>
+                {fileSize && (
+                  <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
+                    ({(fileSize / 1024 / 1024).toFixed(2)} MB)
+                  </Text>
+                )}
+              </div>
+              {editable && (
+                <Popconfirm
+                  title="确定删除此附件？"
+                  onConfirm={() => deleteFile(index)}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <Button 
+                    type="text" 
+                    danger 
+                    size="small"
+                    icon={<DeleteOutlined />}
+                  >
+                    删除
+                  </Button>
+                </Popconfirm>
               )}
             </div>
           )}
@@ -181,6 +310,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
       <div
         key={file.id}
         style={{
+          position: 'relative',
           borderRadius: token.borderRadius,
           padding: '12px',
           border: `1px solid ${token.colorBorder}`,
@@ -204,10 +334,31 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
               </Text>
             )}
           </div>
+          {editable && (
+            <Popconfirm
+              title="确定删除此附件？"
+              onConfirm={() => deleteFile(index)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button 
+                type="text" 
+                danger 
+                size="small"
+                icon={<DeleteOutlined />}
+              >
+                删除
+              </Button>
+            </Popconfirm>
+          )}
         </Flex>
       </div>
     );
   };
+
+  // 过滤出图片文件用于预览
+  const imageFiles = files.filter(f => f.metadata.fileType === 'image');
+  const imageIndices = files.map((f, i) => f.metadata.fileType === 'image' ? i : -1).filter(i => i !== -1);
 
   return (
     <div style={{ marginBottom: 12 }}>
@@ -215,15 +366,25 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({ fileIds })
         {files.map((file, index) => renderFile(file, index))}
       </Flex>
 
-      {/* 图片预览 - 使用隐藏的图片组 */}
-      <AntdImage.PreviewGroup
-        preview={{
-          current: previewIndex,
-          visible: previewVisible,
-          onVisibleChange: (visible) => setPreviewVisible(visible),
-        }}
-        items={files.filter(f => f.metadata.fileType === 'image').map(f => f.data as string)}
-      />
+      {/* 图片预览 - 使用 PreviewGroup */}
+      {imageFiles.length > 0 && (
+        <AntdImage.PreviewGroup
+          preview={{
+            visible: previewVisible,
+            current: previewIndex,
+            onVisibleChange: (visible) => {
+              setPreviewVisible(visible);
+              if (!visible) {
+                router.back();
+              }
+            },
+            onChange: (current) => {
+              setPreviewIndex(current);
+            },
+          }}
+          items={imageFiles.map(f => f.data as string)}
+        />
+      )}
     </div>
   );
 };

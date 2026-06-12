@@ -527,7 +527,7 @@ const MessageItem = ({
                 </Tooltip>
                 {/* 多模态内容显示（放在文字前面） */}
                 {msg.multimodalFileIds && msg.multimodalFileIds.length > 0 && (
-                  <MultimodalDisplay fileIds={msg.multimodalFileIds} />
+                  <MultimodalDisplay fileIds={msg.multimodalFileIds} messageId={msg.id} editable={true} />
                 )}
                 {Content}
                 {/* <RuningText></RuningText> */}
@@ -564,7 +564,7 @@ const MessageItem = ({
         {contextHolder}
         {/* 多模态内容显示（放在文字前面） */}
         {msg.multimodalFileIds && msg.multimodalFileIds.length > 0 && (
-          <MultimodalDisplay fileIds={msg.multimodalFileIds} />
+          <MultimodalDisplay fileIds={msg.multimodalFileIds} messageId={msg.id} editable={true} />
         )}
         {Content}
         <Images msg={msg} topic={topic} />
@@ -705,7 +705,7 @@ const MessageItem = ({
           >
             {/* 多模态内容显示（放在文字前面） */}
             {msg.multimodalFileIds && msg.multimodalFileIds.length > 0 && (
-              <MultimodalDisplay fileIds={msg.multimodalFileIds} />
+              <MultimodalDisplay fileIds={msg.multimodalFileIds} messageId={msg.id} editable={true} />
             )}
             {Content}
             {/* <RuningText></RuningText> */}
