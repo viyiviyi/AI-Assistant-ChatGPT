@@ -43,6 +43,7 @@ import markdownStyle from '../../styles/markdown.module.css';
 import { SkipExport } from './SkipExport';
 import { ZoomImage } from './zoom-image';
 import { LocalDbImg } from './LocalDbImg';
+import { MarkdownImg } from './MarkdownImg';
 
 let speak = (text: string, stop = false) => {};
 
@@ -263,57 +264,7 @@ let processor = unified()
         );
       },
       img(props: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>) {
-        let imgSrc = props.src;
-        if (props.src && uuidReg.test(props.src)) {
-          return <LocalDbImg id={props.src} alt={props.alt} />;
-        }
-        const img = (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={props.src}
-            alt={props.alt}
-            onClick={(e) => {
-              e.stopPropagation();
-              let modal = Modal.success({
-                icon: null,
-                footer: null,
-                title: null,
-                width: '100vw',
-                style: { top: 0 },
-                styles: {
-                  content: { padding: 0 },
-                },
-                content: (
-                  <>
-                    <div
-                      style={{
-                        position: 'fixed',
-                        left: 0,
-                        top: 0,
-                        width: '100%',
-                        height: '100dvh',
-                        overflow: 'auto',
-                        zIndex: 99,
-                      }}
-                    >
-                      <span
-                        style={{ cursor: 'pointer', position: 'fixed', top: 0, right: 10, padding: 10, zIndex: 1, color: '#fff' }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          modal.destroy();
-                        }}
-                      >
-                        ✖
-                      </span>
-                      <ZoomImage src={imgSrc} alt={props.alt} />
-                    </div>
-                  </>
-                ),
-              });
-            }}
-          />
-        );
-        return img;
+        return <MarkdownImg src={props.src} alt={props.alt} />;
       },
     },
   });
