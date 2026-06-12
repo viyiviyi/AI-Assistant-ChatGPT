@@ -217,6 +217,7 @@ export function InputUtil() {
               const fileId = imageStore.saveMultimodalFile(base64, {
                 fileName: processedFile.name,
                 mimeType: processedFile.type,
+                fileSize: processedFile.size, // ✅ 显式传递处理后文件的大小
               });
               
               return { success: true, fileId, fileName: pendingFile.file.name };
@@ -315,7 +316,7 @@ export function InputUtil() {
       
       return;
     },
-    [chat, inputText, role, reloadNav, setActivityTopic, pendingFiles],
+    [chat, inputText, role, reloadNav, setActivityTopic, pendingFiles, reloadIndex, sendMessage],
   );
   const toolEle = useMemo(
     () => (
@@ -466,7 +467,7 @@ export function InputUtil() {
         ></Button>
       </div>
     ),
-    [activityTopic, closeAll, onSubmit, onlyOne, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showTitle, token.colorPrimary, pendingFiles, showAttachmentPanel],
+    [activityTopic, closeAll, onSubmit, onlyOne, screenSize.width, setCloasAll, setOnlyOne, setShowTitle, showTitle, token.colorPrimary, token.colorPrimaryBg, pendingFiles, showAttachmentPanel],
   );
   const editorEle = useMemo(
     () => (

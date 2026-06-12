@@ -1,6 +1,6 @@
 import { ImageStore, MultimodalFile } from '@/core/db/ImageDb';
 import { ChatContext } from '@/core/ChatManagement';
-import { FileOutlined, FileImageOutlined, FilePdfOutlined, PlayCircleOutlined, DeleteOutlined, CloseOutlined } from '@ant-design/icons';
+import { FileOutlined, FileImageOutlined, FilePdfOutlined, PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Flex, Image as AntdImage, Typography, theme, Button, Popconfirm } from 'antd';
 import React, { useEffect, useState, useContext, useMemo } from 'react';
 import { useRouter } from 'next/router';
@@ -27,21 +27,26 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
   const [previewIndex, setPreviewIndex] = useState(0);
   const imageStore = ImageStore.getInstance();
 
-  // 加载文件
+  // 加载文件（支持从数据库异步加载）
   useEffect(() => {
     if (!fileIds || fileIds.length === 0) {
       setFiles([]);
       return;
     }
 
-    const loadedFiles: MultimodalFile[] = [];
-    for (const id of fileIds) {
-      const file = imageStore.getMultimodalFileSync(id);
-      if (file) {
-        loadedFiles.push(file);
+    const loadFiles = async () => {
+      const loadedFiles: MultimodalFile[] = [];
+      for (const id of fileIds) {
+        // 使用异步方法，如果缓存没有则从数据库加载
+        const file = await imageStore.getMultimodalFile(id);
+        if (file) {
+          loadedFiles.push(file);
+        }
       }
-    }
-    setFiles(loadedFiles);
+      setFiles(loadedFiles);
+    };
+
+    loadFiles();
   }, [fileIds, imageStore]);
 
   // 处理浏览器返回事件
@@ -173,7 +178,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
                   okText="确定"
                   cancelText="取消"
                 >
-                  <CloseOutlined 
+                  <DeleteOutlined 
                     style={{ 
                       marginLeft: 8, 
                       cursor: 'pointer',
@@ -220,14 +225,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-              <div>
-                <Text strong>{fileName}</Text>
-                {fileSize && (
-                  <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
-                    ({(fileSize / 1024 / 1024).toFixed(2)} MB)
-                  </Text>
-                )}
-              </div>
+              <Text strong>{fileName}</Text>
               {editable && (
                 <Popconfirm
                   title="确定删除此附件？"
@@ -240,9 +238,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
                     danger 
                     size="small"
                     icon={<DeleteOutlined />}
-                  >
-                    删除
-                  </Button>
+                  />
                 </Popconfirm>
               )}
             </div>
@@ -274,14 +270,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-              <div>
-                <Text strong>{fileName}</Text>
-                {fileSize && (
-                  <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
-                    ({(fileSize / 1024 / 1024).toFixed(2)} MB)
-                  </Text>
-                )}
-              </div>
+              <Text strong>{fileName}</Text>
               {editable && (
                 <Popconfirm
                   title="确定删除此附件？"
@@ -294,9 +283,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
                     danger 
                     size="small"
                     icon={<DeleteOutlined />}
-                  >
-                    删除
-                  </Button>
+                  />
                 </Popconfirm>
               )}
             </div>
@@ -328,11 +315,6 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
                 {mimeType}
               </Text>
             )}
-            {fileSize && (
-              <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
-                ({(fileSize / 1024 / 1024).toFixed(2)} MB)
-              </Text>
-            )}
           </div>
           {editable && (
             <Popconfirm
@@ -346,9 +328,7 @@ export const MultimodalDisplay: React.FC<MultimodalDisplayProps> = ({
                 danger 
                 size="small"
                 icon={<DeleteOutlined />}
-              >
-                删除
-              </Button>
+              />
             </Popconfirm>
           )}
         </Flex>

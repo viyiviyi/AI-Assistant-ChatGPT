@@ -56,6 +56,7 @@ export class ImageStore {
     options?: {
       fileName?: string;
       mimeType?: string;
+      fileSize?: number; // ✅ 新增
       description?: string;
       tags?: string[];
     }
@@ -63,7 +64,7 @@ export class ImageStore {
     const id = getUuid();
     const now = Date.now();
 
-    let fileSize: number | undefined;
+    let fileSize: number | undefined = options?.fileSize; // ✅ 优先使用传入的大小
     let mimeType = options?.mimeType;
 
     if (typeof fileData === 'string') {
