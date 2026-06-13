@@ -464,10 +464,33 @@ export function InputUtil() {
           input={inputText}
           autoFocus={false}
           onKeyUp={(e) => (e.key === 's' && e.altKey && onSubmit(false)) || (e.key === 'Enter' && e.ctrlKey && onSubmit(true))}
+          onPasteImage={async (imageFiles) => {
+            // 检查数量限制
+            if (pendingFiles.length + imageFiles.length > 10) {
+              messageApi.warning(`最多只能上传 10 个文件，当前已有 ${pendingFiles.length} 个`);
+              return;
+            }
+            
+            // 为每个图片生成预览并添加到待发送文件列表
+            const newPendingFiles = [...pendingFiles];
+            for (const file of imageFiles) {
+              let preview: string | undefined;
+              if (file.type.startsWith('image/')) {
+                try {
+                  preview = await readFileAsBase64(file);
+                } catch (error) {
+                  console.error('生成预览失败:', error);
+                }
+              }
+              newPendingFiles.push({ file, preview });
+            }
+            
+            setPendingFiles(newPendingFiles);
+          }}
         />
       </div>
     ),
-    [inputText, onSubmit],
+    [inputText, onSubmit, pendingFiles],
   );
   return (
     <>
