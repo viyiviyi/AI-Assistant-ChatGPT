@@ -437,10 +437,11 @@ export function usePushMessage(chat: ChatManagement) {
      * @param idx 目标索引
      * @param topic
      * @param role [消息的角色，是否发送网络请求]
-     * @param pushCallback
+     * @param pushCallback 推送后的回调函数（可选）
+     * @param multimodalFileIds 多模态文件ID列表（可选，放在最后保持兼容）
      * @returns
      */
-    async function (text: string, idx: number, topic: TopicMessage, role: [CtxRole, boolean], pushCallback: (msg: Message) => void) {
+    async function (text: string, idx: number, topic: TopicMessage, role: [CtxRole, boolean], pushCallback?: (msg: Message) => void, multimodalFileIds?: string[]) {
       if (idx < 0) return;
       text = text.trim();
       const aiService = aiServices.current;
@@ -464,17 +465,23 @@ export function usePushMessage(chat: ChatManagement) {
         cloudTopicId: topic.cloudTopicId,
         parentId: getUuid(),
       };
-      if (msg.text) await chat.pushMessage(msg, idx);
+      
+      // 附加多模态文件ID
+      if (multimodalFileIds && multimodalFileIds.length > 0) {
+        msg.multimodalFileIds = multimodalFileIds;
+      }
+      
+      if (msg.text || msg.multimodalFileIds?.length) await chat.pushMessage(msg, idx);
       if (msg.id) {
         reloadIndex(topic, idx);
         reloadTopic(topic.id, idx);
       }
       if (skipRequest) {
-        pushCallback(msg);
+        if (pushCallback) pushCallback(msg);
         return;
       }
       await sendMessage(idx, topic, false, msg.parentId);
-      pushCallback(msg);
+      if (pushCallback) pushCallback(msg);
     },
     [chat, reloadIndex, sendMessage, getHistory],
   );
