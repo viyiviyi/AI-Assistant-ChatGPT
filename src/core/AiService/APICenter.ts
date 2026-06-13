@@ -205,7 +205,7 @@ export class APICenter implements IAiService {
         if (item.reasoning_details && item.role === 'assistant') {
           message.content.push({
             type: 'thinking',
-            text: item.reasoning_details,
+            thinking: item.reasoning_details,
           });
         }
         if (typeof item.content === 'string') {
@@ -271,8 +271,11 @@ export class APICenter implements IAiService {
             });
           });
         }
+        // 过滤内容为空的内容快
+        message.content = message.content.filter((f: any) => f.type != 'text' || f.text);
         lastRule = item.role;
-        messages.push(message);
+        if (message.content.length)
+          messages.push(message);
       }
     }
 
@@ -425,7 +428,7 @@ export class APICenter implements IAiService {
             try {
               const args = JSON.parse(argStr);
               Object.assign(data, args);
-            } catch (error) {}
+            } catch (error) { }
           }
         });
     }
@@ -460,14 +463,14 @@ export class APICenter implements IAiService {
           end: true,
           text: [
             '\n\n 请求发生错误。\n\n' +
-              'token: ... ' +
-              this.tokens.openai?.apiKey.slice(Math.max(-this.tokens.openai?.apiKey.length, -10)) +
-              '\n\n' +
-              response.status +
-              '  ' +
-              response.statusText +
-              '\n```\n' +
-              (await response.text()),
+            'token: ... ' +
+            this.tokens.openai?.apiKey.slice(Math.max(-this.tokens.openai?.apiKey.length, -10)) +
+            '\n\n' +
+            response.status +
+            '  ' +
+            response.statusText +
+            '\n```\n' +
+            (await response.text()),
           ],
           reasoning_content,
         });
@@ -478,7 +481,7 @@ export class APICenter implements IAiService {
       const stop = () => {
         try {
           controller.abort();
-        } catch (error) {}
+        } catch (error) { }
       };
       if (reader) {
         while (true) {
