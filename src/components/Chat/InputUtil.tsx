@@ -282,6 +282,10 @@ export function InputUtil() {
 
       setRole(['user', true]);
       if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
+      
+      // 发送后自动收起附件面板
+      setShowAttachmentPanel(false);
+      
       setTimeout(() => {
         setLoading((v) => --v);
       }, 500);
@@ -486,6 +490,9 @@ export function InputUtil() {
             }
             
             setPendingFiles(newPendingFiles);
+            
+            // 粘贴图片后自动展开附件面板
+            setShowAttachmentPanel(true);
           }}
         />
       </div>
