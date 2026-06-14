@@ -256,6 +256,9 @@ export function InputUtil() {
 
         // 清空待发送文件列表
         setPendingFiles([]);
+        
+        // 清空后自动收起附件面板
+        setShowAttachmentPanel(false);
       }
 
       // 如果有待发送的文件，已处理并存入数据库，multimodalFileIds 已准备好
@@ -282,9 +285,6 @@ export function InputUtil() {
 
       setRole(['user', true]);
       if (/^#{1,5}\s/.test(text)) reloadNav(topic!);
-      
-      // 发送后自动收起附件面板
-      setShowAttachmentPanel(false);
       
       setTimeout(() => {
         setLoading((v) => --v);
