@@ -471,7 +471,7 @@ export function InputUtil() {
           onPasteImage={async (imageFiles) => {
             // 检查数量限制
             if (pendingFiles.length + imageFiles.length > 10) {
-              messageApi.warning(`最多只能上传 10 个文件，当前已有 ${pendingFiles.length} 个`);
+              message.warning(`最多只能上传 10 个文件，当前已有 ${pendingFiles.length} 个`);
               return;
             }
             
