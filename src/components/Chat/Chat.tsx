@@ -188,7 +188,7 @@ export const Chat = () => {
                           (showConfigs ? 340 : 0) -
                           (showNav ? 300 + Math.min(50, Math.max(5, screenSize.width - 1200)) : 0) -
                           120
-                        : '100vw',
+                        : 'calc(100vw - 2px)',
                     minWidth: 300,
                   }}
                 >
