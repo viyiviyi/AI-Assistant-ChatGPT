@@ -35,6 +35,7 @@
     "react-avatar-editor": "^13.0.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "18.2.0",
+    "react-virtuoso": "^4.18.11",
     "rehype-external-links": "^2.0.1",
     "rehype-format": "^4.0.1",
     "rehype-highlight": "^6.0.0",

@@ -20,6 +20,7 @@ import React, {
   MouseEventHandler,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import rehypeHighlight from 'rehype-highlight';
@@ -270,39 +271,87 @@ let processor = unified()
   });
 
 // 创建解析方法
+const cacheSize = 64;
+
+/** 按段落分割流式内容，避免在未闭合的代码块内劈裂 */
+function splitStreamingContent(markdown: string): { complete: string; incomplete: string } {
+  if (!markdown) return { complete: '', incomplete: '' };
+  // 统计 ``` 出现次数
+  let fenceCount = 0;
+  let lastFenceIdx = -1;
+  let searchIdx = 0;
+  while (true) {
+    const idx = markdown.indexOf('```', searchIdx);
+    if (idx === -1) break;
+    fenceCount++;
+    lastFenceIdx = idx;
+    searchIdx = idx + 3;
+  }
+  if (fenceCount % 2 === 1) {
+    // 在未闭合的代码块中 — 在最后一个 ``` 处分割
+    return {
+      complete: markdown.substring(0, lastFenceIdx),
+      incomplete: markdown.substring(lastFenceIdx),
+    };
+  }
+  // 不在代码块中 — 在最后一个 \n\n 处分割
+  const lastBreak = markdown.lastIndexOf('\n\n');
+  if (lastBreak >= 0) {
+    return {
+      complete: markdown.substring(0, lastBreak),
+      incomplete: markdown.substring(lastBreak + 2),
+    };
+  }
+  // 没有段落分隔 — 全部作为不完整内容
+  return { complete: '', incomplete: markdown };
+}
+
 const _MarkdownView = ({
   markdown,
   menu,
   doubleClick,
-  lastBlockLines = 0,
+  isStreaming = false,
 }: {
   markdown: string;
   menu?: MenuProps;
   doubleClick?: React.MouseEventHandler<HTMLDivElement>;
-  lastBlockLines?: number;
+  isStreaming?: boolean;
 }) => {
   const { chatMgt } = useContext(ChatContext);
   speak = useSpeak();
-  const firstBlock = useMemo(() => {
-    if (lastBlockLines) {
-      let lines = markdown.split('\n');
-      if (lines.length > lastBlockLines) return lines.slice(0, lines.length - lastBlockLines).join('\n');
-    }
-    return markdown;
-  }, [lastBlockLines, markdown]);
-  const lastBlock = useMemo(() => {
-    if (lastBlockLines) {
-      let lines = markdown.split('\n');
-      if (lines.length > lastBlockLines) return lines.slice(-lastBlockLines).join('\n');
-    }
-    return '';
-  }, [lastBlockLines, markdown]);
+  // 流式输出时按段落分割，完整段落走 markdown 管道，正在输出的段显示为纯文本
+  const { complete, incomplete } = useMemo(
+    () => (isStreaming ? splitStreamingContent(markdown) : { complete: markdown, incomplete: '' }),
+    [markdown, isStreaming],
+  );
+  const contentCacheRef = useRef<Map<string, React.ReactNode>>(new Map());
   const renderedContent = useMemo(() => {
-    return processor.processSync(pipe(firstBlock, chatMgt)).result;
-  }, [chatMgt, firstBlock]);
-  const renderedLastContent = useMemo(() => {
-    return processor.processSync(pipe(lastBlock, chatMgt)).result;
-  }, [chatMgt, lastBlock]);
+    if (!complete) return null;
+    try {
+      const processed = pipe(complete, chatMgt);
+      const cached = contentCacheRef.current.get(processed);
+      if (cached) return cached;
+      const result = processor.processSync(processed).result;
+      if (contentCacheRef.current.size >= cacheSize) {
+        const firstKey = contentCacheRef.current.keys().next().value;
+        if (firstKey !== undefined) contentCacheRef.current.delete(firstKey);
+      }
+      contentCacheRef.current.set(processed, result);
+      return result;
+    } catch (e) {
+      console.error('MarkdownView: processSync error', e);
+      return (
+        <pre style={{ overflow: 'auto', maxHeight: '50vh', whiteSpace: 'pre-wrap' }}>
+          <code>{complete}</code>
+        </pre>
+      );
+    }
+  }, [chatMgt, complete]);
+  const renderedIncomplete = useMemo(() => {
+    if (!incomplete) return null;
+    // 正在输出的段 — 纯文本显示，不做 markdown 处理
+    return <span style={{ whiteSpace: 'pre-wrap' }}>{incomplete}</span>;
+  }, [incomplete]);
   const [checkTimes, setChrckTimes] = useState(0);
   const [timer, setTimer] = useState(setTimeout(() => {}, 0));
   const click: MouseEventHandler<HTMLDivElement> = (e) => {
@@ -323,7 +372,7 @@ const _MarkdownView = ({
   return (
     <div className={markdownStyle.markdown} onClick={click}>
       {renderedContent}
-      {lastBlock ? renderedLastContent : null}
+      {renderedIncomplete}
     </div>
   );
 };

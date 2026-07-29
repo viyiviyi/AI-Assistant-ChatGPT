@@ -414,13 +414,13 @@ const MessageItem = ({
                 setMessage({ text: ChatManagement.getMsgContent(msg) });
                 setEdit(true);
               }}
-              // lastBlockLines={loadingMsgs[msg.id] ? 3 : 0}
+              isStreaming={!!loadingMsgs[msg.id]}
             />
           </>
         )}
       </div>
     );
-  }, [edit, EditUtil, renderType, messageText, chat.config.disableStrikethrough, successLines, saveMsg, msg, ctxRole]);
+  }, [msg, successLines, edit, EditUtil, renderType, messageText, chat.config.disableStrikethrough, loadingMsgs, saveMsg, ctxRole]);
 
   if (renderType == 'document') {
     return (

@@ -142,6 +142,18 @@ export const onTextareaTab = (
   return result;
 };
 
+type ScrollHook = (id: string) => boolean;
+const scrollHooksBottom: ScrollHook[] = [];
+const scrollHooksTop: ScrollHook[] = [];
+export function addScrollHook(hook: ScrollHook, mode: 'bottom' | 'top' = 'bottom') {
+  const arr = mode === 'bottom' ? scrollHooksBottom : scrollHooksTop;
+  arr.push(hook);
+  return () => {
+    const idx = arr.indexOf(hook);
+    if (idx >= 0) arr.splice(idx, 1);
+  };
+}
+
 const scroolArgsCache = {
   id: '',
   animation: 0 as any,
@@ -154,6 +166,7 @@ export function scrollToBotton(id?: string) {
   if (scroolArgsCache.lastRunTime + 500 > Date.now()) return;
   setTimeout(() => {
     if (window) {
+      if (scrollHooksBottom.some(fn => fn(scroolArgsCache.id))) return;
       const wrap = document.getElementById('content');
       if (!wrap) return;
       clearInterval(scroolArgsCache.animation);
@@ -170,6 +183,7 @@ export function scrollToTop(id?: string) {
   if (scroolArgsCache.lastRunTime + 500 > Date.now()) return;
   setTimeout(() => {
     if (window) {
+      if (scrollHooksTop.some(fn => fn(scroolArgsCache.to_top_id))) return;
       const wrap = document.getElementById('content');
       if (!wrap) return;
       clearInterval(scroolArgsCache.animation);
@@ -202,7 +216,7 @@ const smoothScroll = (target: HTMLElement, startPosition: number, targetPosition
 };
 
 export const createThrottleAndDebounce = (func: (...args: any[]) => void, delay: number): ((...args: any[]) => void) => {
-  let timerId = setTimeout(() => {}, 0);
+  let timerId = setTimeout(() => { }, 0);
   let lastExecTime = 0;
 
   return (...args: any[]) => {

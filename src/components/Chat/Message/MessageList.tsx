@@ -4,29 +4,25 @@ import { SkipExport } from '@/components/common/SkipExport';
 import { DraePopup } from '@/components/drawimg/DrawPopup';
 import { ChatContext, ChatManagement } from '@/core/ChatManagement';
 import { useScreenSize, useSendMessage } from '@/core/hooks/hooks';
-import { activityScroll, createThrottleAndDebounce, getUuid, pagesUtil } from '@/core/utils/utils';
+import { activityScroll, createThrottleAndDebounce, getUuid, addScrollHook } from '@/core/utils/utils';
 import { Message } from '@/Models/DataBase';
 import { TopicMessage } from '@/Models/Topic';
 import styleCss from '@/styles/index.module.css';
 import {
   DeleteOutlined,
   PauseCircleOutlined,
-  PauseOutlined,
-  PictureOutlined,
-  RetweetOutlined,
   RightOutlined,
-  StopOutlined,
-  VerticalAlignTopOutlined,
 } from '@ant-design/icons';
-import { Button, FloatButton, InputRef, Popconfirm, Table, theme } from 'antd';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Button, InputRef, Popconfirm, theme } from 'antd';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { MessageContext } from '../Chat';
 import { useInput } from '../InputUtil';
 import { MemoInsertInput } from '../InsertInput';
 import { FunctionCallInfo } from './FunctionCallInfo';
 import { MemoMessageItem } from './MessageItem';
 
-let selectTimer = setTimeout(() => {}, 0);
+let selectTimer = setTimeout(() => { }, 0);
 
 // 这里可能造成内存泄漏 重新渲染ChatMessage时必须清除
 const topicRender: {
@@ -36,6 +32,152 @@ export function reloadTopic(topicId: string, messageId?: string | number, reload
   topicRender[topicId] && topicRender[topicId](messageId, reloadStatus);
 }
 export const ctxInsertInputRef = React.createRef<InputRef>();
+
+// 消息行组件：定义在模块级别（非 MessageList 内部），避免 Virtuoso 因组件引用变化而卸载/重装
+interface MessageRowProps {
+  msg: Message;
+  idx: number;
+  messages: Message[];
+  chat: ChatManagement;
+  topic: TopicMessage;
+  onDel: (msg: Message) => void;
+  rBak: (v: Message) => void;
+  renderMessage: { [key: string]: (reloadStatus?: boolean) => void };
+  setCite: (message: Message) => void;
+  ctxIds: string[];
+  insertIndex: number;
+  setInsertIndex: (idx: number) => void;
+  getMsgCallbacks: (id: string) => { onPush: () => void; onSned: () => void; onCopy: () => void };
+  expandMsg: string[];
+  setExpand: React.Dispatch<React.SetStateAction<string[]>>;
+  drawPopupProps: { text: string; open: boolean; msg: Message };
+  serDrawPopupProps: (v: { text: string; open: boolean; msg: Message }) => void;
+}
+const MessageRow = React.memo((props: MessageRowProps) => {
+  const { msg, idx, messages, chat, topic, onDel, rBak, renderMessage, setCite,
+    ctxIds, insertIndex, setInsertIndex, getMsgCallbacks, expandMsg, setExpand,
+    drawPopupProps, serDrawPopupProps } = props;
+  const { loadingMsgs } = useContext(ChatContext);
+  const { token } = theme.useToken();
+  const screenSize = useScreenSize();
+  const last = idx === 0 ? undefined : messages[idx - 1];
+  const callbacks = getMsgCallbacks(msg.id);
+  const showInsert = idx === insertIndex;
+  const limitPreHeight = chat.config.limitPreHeight;
+  return (
+    <div
+      onMouseUp={(e) => {
+        clearTimeout(selectTimer);
+        selectTimer = setTimeout(() => {
+          let text = window.getSelection?.()?.toString();
+          if (drawPopupProps.text != text) {
+            drawPopupProps.text = text || '';
+            drawPopupProps.msg = msg;
+            serDrawPopupProps({ ...drawPopupProps });
+          }
+        }, 400);
+      }}
+      onTouchEnd={(e) => {
+        clearTimeout(selectTimer);
+        selectTimer = setTimeout(() => {
+          let text = window.getSelection?.()?.toString();
+          if (drawPopupProps.text != text) {
+            drawPopupProps.text = text || '';
+            drawPopupProps.msg = msg;
+            serDrawPopupProps({ ...drawPopupProps });
+          }
+        }, 400);
+      }}
+    >
+      {last?.isToolCall && msg.isToolCall &&
+        ChatManagement.getMsgContent(msg).indexOf('\n') == -1 &&
+        !loadingMsgs[msg.id] && !expandMsg.includes(msg.id) ? (
+        <div
+          className={styleCss.message_box + (limitPreHeight ? ' limt-hight' : '')}
+          style={{ paddingRight: screenSize.width > 1300 ? 130 : 30 }}
+        >
+          <div style={{
+            flex: 1, display: 'flex', padding: 10, paddingTop: 4, paddingBottom: 2,
+            marginTop: 1, marginLeft: 40, boxSizing: 'border-box',
+            borderRadius: token.borderRadiusLG,
+            border: '1px solid ' + token.colorFillAlter,
+            backgroundColor: token.colorInfoBg,
+            boxShadow: token.boxShadowTertiary, lineHeight: 1.7,
+          }}>
+            <div className={styleCss.message_item} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex' }}>
+                <div style={{ flex: 1, display: 'flex' }}>
+                  <MarkdownView markdown={ChatManagement.getMsgContent(msg)} />
+                </div>
+                <span style={{ paddingLeft: 10, opacity: 0.6 }}>
+                  <SkipExport>
+                    <Popconfirm
+                      placement="topRight"
+                      overlayInnerStyle={{ whiteSpace: 'nowrap' }}
+                      okType="danger"
+                      title="确定删除此消息？"
+                      onConfirm={() => onDel(msg)}
+                    >
+                      <DeleteOutlined style={{ color: '#ff8d8f' }} />
+                    </Popconfirm>
+                  </SkipExport>
+                </span>
+              </div>
+              <div style={{ marginTop: -16 }}>
+                <FunctionCallInfo msg={msg} />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <MemoMessageItem
+            renderMessage={renderMessage}
+            msg={msg}
+            onDel={onDel}
+            rBak={rBak}
+            onCite={setCite}
+            onPush={callbacks.onPush}
+            onSned={callbacks.onSned}
+            onCopy={callbacks.onCopy}
+            inCtx={ctxIds.includes(msg.id)}
+          />
+        </>
+      )}
+
+      {showInsert && (
+        <MemoInsertInput
+          key={'insert_input'}
+          insertIndex={idx + 1}
+          topic={topic}
+          chat={chat}
+          onHidden={() => setInsertIndex(-1)}
+        />
+      )}
+      {last?.isToolCall && msg.isToolCall && !loadingMsgs[msg.id]
+        && ChatManagement.getMsgContent(msg).indexOf('\n') == -1 && (
+          <span
+            style={{
+              position: 'absolute',
+              top: expandMsg.includes(msg.id) ? 60 : 0,
+              left: 10, padding: 5, cursor: 'pointer', opacity: 0.5,
+            }}
+            onClick={() => {
+              setExpand((prv) => {
+                if (prv.includes(msg.id)) return prv.filter((f) => f != msg.id);
+                return [...prv, msg.id];
+              });
+            }}
+          >
+            <RightOutlined />
+          </span>
+        )}
+    </div>
+  );
+});
+MessageRow.displayName = 'MessageRow';
+
+// 使用 Virtuoso 代替 Ant Table virtual，避免行高变化导致 O(n) 重排
 
 export function MessageList({
   topic,
@@ -59,8 +201,46 @@ export function MessageList({
   const { token } = theme.useToken();
   const screenSize = useScreenSize();
 
-  const tblRef: Parameters<typeof Table>[0]['ref'] = React.useRef(null);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
+  const isAtBottomRef = useRef(true);
   const { sendMessage } = useSendMessage(chat);
+
+  // 缓存消息列表，供稳定 callbacks 中获取最新索引
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+
+  // 缓存每行的稳定回调引用，保障 React.memo(MemoMessageItem) 正常工作
+  const callbackCacheRef = useRef<Map<string, { onPush: () => void; onSned: () => void; onCopy: () => void }>>(new Map());
+  const getMsgCallbacks = useCallback((msgId: string) => {
+    let cached = callbackCacheRef.current.get(msgId);
+    if (!cached) {
+      cached = {
+        onPush: () => {
+          const idx = messagesRef.current.findIndex((m) => m.id === msgId);
+          if (idx >= 0) setInsertIndex(idx);
+        },
+        onSned: () => {
+          const idx = messagesRef.current.findIndex((m) => m.id === msgId);
+          if (idx >= 0) {
+            activityScroll({ botton: true });
+            sendMessage(idx, topic);
+          }
+        },
+        onCopy: () => {
+          const idx = messagesRef.current.findIndex((m) => m.id === msgId);
+          chat.newTopic(topic.name).then((t) => {
+            Promise.all(
+              topic.messages.slice(0, idx + 1).map((m) => {
+                return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
+              }),
+            ).then(() => setActivityTopic(t)).catch((e) => console.error(e));
+          }).catch((e) => console.error(e));
+        },
+      };
+      callbackCacheRef.current.set(msgId, cached);
+    }
+    return cached;
+  }, [chat, setActivityTopic, sendMessage, topic]);
 
   const renderMessage = useMemo<{
     [key: string]: (reloadStatus?: boolean) => void;
@@ -147,9 +327,70 @@ export function MessageList({
     };
   }, [renderMessage, topic.id, resetCharCount, topic.messages, topic, chat]);
 
+  // 拦截 scrollToBotton/scrollToTop → Virtuoso scrollToIndex
+  useEffect(() => {
+    const getTargetIdx = (targetId: string): number => {
+      // 空 ID 或 topic ID → 滚动到底/顶部
+      if (!targetId || targetId === topic.id) return -1;
+      return topic.messages.findIndex((m) => m.id === targetId);
+    };
+    const cleanupBottom = addScrollHook((targetId: string) => {
+      const idx = getTargetIdx(targetId);
+      if (idx >= 0) {
+        virtuosoRef.current?.scrollToIndex({ index: idx, behavior: 'auto', align: 'end' });
+        return true;
+      }
+      if (idx === -1 && topic.messages.length > 0 && (!targetId || targetId === topic.id)) {
+        virtuosoRef.current?.scrollToIndex({ index: topic.messages.length - 1, behavior: 'auto', align: 'end' });
+        return true;
+      }
+      return false;
+    }, 'bottom');
+    const cleanupTop = addScrollHook((targetId: string) => {
+      const idx = getTargetIdx(targetId);
+      if (idx >= 0) {
+        virtuosoRef.current?.scrollToIndex({ index: idx, behavior: 'auto', align: 'start' });
+        return true;
+      }
+      if (idx === -1 && topic.messages.length > 0 && (!targetId || targetId === topic.id)) {
+        virtuosoRef.current?.scrollToIndex({ index: 0, behavior: 'auto', align: 'start' });
+        return true;
+      }
+      return false;
+    }, 'top');
+    return () => { cleanupBottom(); cleanupTop(); };
+  }, [topic]);
+
+  const itemContent = useCallback((_index: number, _data: Message) => {
+    return (
+      <MessageRow
+        key={_data.id}
+        msg={_data}
+        idx={_index}
+        messages={messages}
+        chat={chat}
+        topic={topic}
+        onDel={onDel}
+        rBak={rBak}
+        renderMessage={renderMessage}
+        setCite={setCite}
+        ctxIds={ctxIds}
+        insertIndex={insertIndex}
+        setInsertIndex={setInsertIndex}
+        getMsgCallbacks={getMsgCallbacks}
+        expandMsg={expandMsg}
+        setExpand={setExpand}
+        drawPopupProps={drawPopupProps}
+        serDrawPopupProps={serDrawPopupProps}
+      />
+    );
+  }, [messages, chat, topic, onDel, rBak, renderMessage, setCite, ctxIds,
+    insertIndex, setInsertIndex, getMsgCallbacks, expandMsg, setExpand,
+    drawPopupProps, serDrawPopupProps]);
+
   let runingMsg = Object.entries(loadingMsgs).find((f) => activityTopic?.messageMap[f[0]]);
   return (
-    <>
+    <div style={{ width: '100%', overflowX: 'hidden' }}>
       <Hidden hidden={!runingMsg}>
         <div style={{ position: 'absolute', left: 10, width: 64, height: 64, bottom: 0, opacity: 0.5, zIndex: 99 }}>
           {/* 停止按钮 */}
@@ -166,183 +407,25 @@ export function MessageList({
           />
         </div>
       </Hidden>
-      <Table<Message>
-        bordered={false}
-        dataSource={messages}
-        size={'small'}
-        style={{ height: '100%', backgroundColor: '#0000' }}
-        onRow={(r, i) => {
-          return {
-            style: { backgroundColor: '#0000', border: 'none', padding: 0 },
-          };
+      <Virtuoso
+        ref={virtuosoRef}
+        data={messages}
+        itemContent={itemContent}
+        followOutput={'smooth'}
+        overscan={1800}
+        style={{ height: '100%', width: 'calc(100% - 2px)' }}
+        components={{
+          Header: () => <div style={{ height: 0 }} />,
+          Footer: () => <div style={{ height: '2em' }} />,
         }}
-        showHeader={false}
-        virtual
-        columns={[
-          {
-            onCell: (v) => {
-              return { style: { border: 'none', padding: 0, width: '100%', minWidth: 327 }, id: v.id };
-            },
-            key: 'id',
-            dataIndex: 'text',
-            render(value, v, i) {
-              let idx = i;
-              if (idx === undefined) idx = messages.length - 1;
-              let last = idx == 0 ? undefined : messages[idx - 1];
-              return (
-                <div
-                  key={v.id}
-                  onMouseUp={(e) => {
-                    clearTimeout(selectTimer);
-                    selectTimer = setTimeout(() => {
-                      let text = window.getSelection?.()?.toString();
-                      if (drawPopupProps.text != text) {
-                        drawPopupProps.text = text || '';
-                        drawPopupProps.msg = v;
-                        serDrawPopupProps({ ...drawPopupProps });
-                      }
-                    }, 400);
-                  }}
-                  onTouchEnd={(e) => {
-                    clearTimeout(selectTimer);
-                    selectTimer = setTimeout(() => {
-                      let text = window.getSelection?.()?.toString();
-                      if (drawPopupProps.text != text) {
-                        drawPopupProps.text = text || '';
-                        drawPopupProps.msg = v;
-                        serDrawPopupProps({ ...drawPopupProps });
-                      }
-                    }, 400);
-                  }}
-                >
-                  {last?.isToolCall &&
-                  v.isToolCall &&
-                  ChatManagement.getMsgContent(v).indexOf('\n') == -1 &&
-                  !loadingMsgs[v.id] &&
-                  !expandMsg.includes(v.id) ? (
-                    <div
-                      className={styleCss.message_box + (chat.config.limitPreHeight ? ' limt-hight' : '')}
-                      style={{
-                        paddingRight: screenSize.width > 1300 ? 130 : 30,
-                      }}
-                    >
-                      <div
-                        style={{
-                          flex: 1,
-                          display: 'flex',
-                          padding: 10,
-                          paddingTop: 4,
-                          paddingBottom: 2,
-                          marginTop: 1,
-                          marginLeft: 40,
-                          boxSizing: 'border-box',
-                          borderRadius: token.borderRadiusLG,
-                          border: '1px solid ' + token.colorFillAlter,
-                          backgroundColor: token.colorInfoBg,
-                          boxShadow: token.boxShadowTertiary,
-                          lineHeight: 1.7,
-                        }}
-                      >
-                        <div className={styleCss.message_item} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex' }}>
-                            <div style={{ flex: 1, display: 'flex' }}>
-                              <MarkdownView markdown={ChatManagement.getMsgContent(v)} />
-                            </div>
-                            <span style={{ paddingLeft: 10, opacity: 0.6 }}>
-                              <SkipExport>
-                                <Popconfirm
-                                  placement="topRight"
-                                  overlayInnerStyle={{ whiteSpace: 'nowrap' }}
-                                  okType="danger"
-                                  title="确定删除此消息？"
-                                  onConfirm={() => {
-                                    onDel(v);
-                                  }}
-                                >
-                                  <DeleteOutlined style={{ color: '#ff8d8f' }}></DeleteOutlined>
-                                </Popconfirm>
-                              </SkipExport>
-                            </span>
-                          </div>
-                          <div style={{ marginTop: -16 }}>
-                            <FunctionCallInfo msg={v} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <MemoMessageItem
-                        renderMessage={renderMessage}
-                        msg={v}
-                        onDel={onDel}
-                        rBak={rBak}
-                        onCite={setCite}
-                        onPush={() => {
-                          setInsertIndex(idx!);
-                        }}
-                        onSned={() => {
-                          activityScroll({ botton: true });
-                          sendMessage(idx!, topic);
-                        }}
-                        onCopy={() => {
-                          chat.newTopic(topic.name).then((t) => {
-                            Promise.all(
-                              topic.messages.slice(0, idx! + 1).map((m) => {
-                                return chat.pushMessage({ ...m, topicId: t.id, id: getUuid() });
-                              }),
-                            ).then(() => setActivityTopic(t)).catch((e) => console.error(e));
-                          }).catch((e) => console.error(e));
-                        }}
-                        inCtx={ctxIds.includes(v.id)}
-                      ></MemoMessageItem>
-                    </>
-                  )}
-
-                  {idx === insertIndex && (
-                    <MemoInsertInput
-                      key={'insert_input'}
-                      insertIndex={idx + 1}
-                      topic={topic}
-                      chat={chat}
-                      onHidden={() => {
-                        setInsertIndex(-1);
-                      }}
-                    />
-                  )}
-                  {i == messages.length - 1 && <div style={{ marginTop: '2em' }}></div>}
-                  {last?.isToolCall && v.isToolCall && !loadingMsgs[v.id] && ChatManagement.getMsgContent(v).indexOf('\n') == -1 ? (
-                    <>
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: expandMsg.includes(v.id) ? 60 : 0,
-                          left: 10,
-                          padding: 5,
-                          cursor: 'pointer',
-                          opacity: 0.5,
-                        }}
-                        onClick={() => {
-                          setExpand((prv) => {
-                            if (prv.includes(v.id)) return prv.filter((f) => f != v.id);
-                            return [...prv, v.id];
-                          });
-                        }}
-                      >
-                        <RightOutlined />
-                      </span>
-                    </>
-                  ) : (
-                    <></>
-                  )}
-                </div>
-              );
-            },
-          },
-        ]}
-        rowKey="id"
-        pagination={false}
-        ref={tblRef}
+        atBottomThreshold={50}
+        onScroll={(e) => {
+          const st = e.currentTarget.scrollTop;
+          const sh = e.currentTarget.scrollHeight;
+          const ch = e.currentTarget.clientHeight;
+          isAtBottomRef.current = st + ch >= sh - 50;
+          if (!isAtBottomRef.current) activityScroll({});
+        }}
       />
       <Hidden hidden={(topic.overrideSettings?.renderType || chat.config.renderType) != 'document' || topic.messages.length < 1}>
         <div style={{ fontSize: '.8em', textAlign: 'center', opacity: 0.5 }}>
@@ -350,6 +433,6 @@ export function MessageList({
           <span style={{ marginLeft: 16 }}>上下文：{ctxCountChar}</span>
         </div>
       </Hidden>
-    </>
+    </div>
   );
 }
