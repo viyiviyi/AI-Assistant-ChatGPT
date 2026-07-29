@@ -390,7 +390,7 @@ export function MessageList({
 
   let runingMsg = Object.entries(loadingMsgs).find((f) => activityTopic?.messageMap[f[0]]);
   return (
-    <div style={{ width: '100%', overflowX: 'hidden' }}>
+    <>
       <Hidden hidden={!runingMsg}>
         <div style={{ position: 'absolute', left: 10, width: 64, height: 64, bottom: 0, opacity: 0.5, zIndex: 99 }}>
           {/* 停止按钮 */}
@@ -413,7 +413,7 @@ export function MessageList({
         itemContent={itemContent}
         followOutput={'smooth'}
         overscan={1800}
-        style={{ height: '100%', width: 'calc(100% - 2px)' }}
+        style={{ height: '100%' }}
         components={{
           Header: () => <div style={{ height: 0 }} />,
           Footer: () => <div style={{ height: '2em' }} />,
@@ -433,6 +433,6 @@ export function MessageList({
           <span style={{ marginLeft: 16 }}>上下文：{ctxCountChar}</span>
         </div>
       </Hidden>
-    </div>
+    </>
   );
 }
