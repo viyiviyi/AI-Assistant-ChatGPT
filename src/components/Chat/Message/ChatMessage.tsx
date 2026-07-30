@@ -381,7 +381,7 @@ export function downloadTopic(
     } else if (v.ctxRole === 'assistant' && role.assistant) {
       if (useRole) str += virtualRole.name + ':\n';
       str += ChatManagement.getMsgContent(v).replace(/^#+\s*\n/, '') + '\n\n';
-    } else if (v.ctxRole === 'user' && role.system) {
+    } else if (v.ctxRole === 'user' && role.user) {
       if (useRole) str += chat.user.name + ':\n';
       str += ChatManagement.getMsgContent(v).replace(/^#+\s*\n/, '') + '\n\n';
     }

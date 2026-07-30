@@ -112,14 +112,14 @@ export const Setting = ({
     // 安全地获取 model 值
     let model: string | undefined;
     const modelConfig = chatMgt?.gptConfig.model;
-    
+
     if (typeof modelConfig === 'string') {
       model = modelConfig;
     } else if (modelConfig && typeof modelConfig === 'object') {
       const botType = chatMgt?.config.botType || 'APICenter';
       model = modelConfig[botType];
     }
-    
+
     return {
       setting_apitoken: KeyValueData.instance().getApiKey(),
       GptConfig_msgCount: chatMgt?.gptConfig.msgCount,
@@ -179,18 +179,18 @@ export const Setting = ({
   }, [chatMgt]);
   useEffect(() => {
     BgImageStore.getInstance().getBgImage().then(setBackground);
-    
+
     // 安全地获取 model 值
     let model: string | undefined;
     const modelConfig = chatMgt?.gptConfig.model;
-    
+
     if (typeof modelConfig === 'string') {
       model = modelConfig;
     } else if (modelConfig && typeof modelConfig === 'object') {
       const botType = chatMgt?.config.botType || 'APICenter';
       model = modelConfig[botType];
     }
-    
+
     aiServices.current
       ?.models()
       .then((res) => {
@@ -217,18 +217,18 @@ export const Setting = ({
   async function onSave() {
     let values = form.getFieldsValue();
     if (!chatMgt) return;
-    
+
     // 安全地获取 model 值
     let model: string | undefined;
     const modelConfig = chatMgt?.gptConfig.model;
     const botType = values.config_bot_type || 'APICenter';
-    
+
     if (typeof modelConfig === 'string') {
       model = modelConfig;
     } else if (modelConfig && typeof modelConfig === 'object') {
       model = modelConfig[botType];
     }
-    
+
     chatMgt.gptConfig.model = {
       ...(typeof chatMgt?.gptConfig.model == 'object' ? chatMgt?.gptConfig.model : {}),
       [values.config_bot_type]: values.GptConfig_model || model || '',
@@ -488,7 +488,9 @@ export const Setting = ({
                   } else {
                     let _chat = chatMgt!.toJson();
                     _chat.group.background = undefined;
-                    downloadJson(JSON.stringify(_chat), chatMgt!.group.name + '_eaias.com');
+                    Promise.all(_chat.topics.map(v => ChatManagement.loadMessage(v))).then(res => {
+                      downloadJson(JSON.stringify(_chat), chatMgt!.group.name + '_eaias.com');
+                    });
                   }
                   setShowExportModal(false);
                 }}
@@ -632,17 +634,17 @@ export const Setting = ({
                 setModels([]);
                 const conf = userAiServer.find((f) => f.key == value);
                 let server = getServiceInstance(value, chatMgt!.getChat(), conf);
-                
+
                 // 安全地获取 model 值
                 let model: string | undefined;
                 const modelConfig = chatMgt?.gptConfig.model;
-                
+
                 if (typeof modelConfig === 'string') {
                   model = modelConfig;
                 } else if (modelConfig && typeof modelConfig === 'object') {
                   model = modelConfig[value] || '';
                 }
-                
+
                 form.setFieldValue('GptConfig_model', model || server?.defaultModel);
                 server
                   ?.models()

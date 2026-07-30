@@ -173,36 +173,37 @@ export class ChatManagement {
             messages: [],
             messageMap: {},
             titleTree: [],
+            loadAll: false
           }));
       })
       .catch((e) => []);
     chat.topics = topics;
     for (let i = 0; i < topics.length; i++) {
-      if (topics[i].id == chat.config.activityTopicId) await this.loadMessage(topics[i], true);
+      if (topics[i].id == chat.config.activityTopicId) await this.loadMessage(topics[i]);
       // else this.loadMessage(topics[i], true);
     }
   }
-  async loadMessages() {
-    for (let i = 0; i < this.topics.length; i++) {
-      await ChatManagement.loadMessage(this.topics[i], true);
-    }
-  }
-  static async loadMessage(topic: TopicMessage, onlyTitle = false) {
-    // if (topic.loadAll) return;
-    topic.loadAll = true;
+  // async loadMessages() {
+  //   for (let i = 0; i < this.topics.length; i++) {
+  //     await ChatManagement.loadMessage(this.topics[i], true);
+  //   }
+  // }
+  static async loadMessage(topic: TopicMessage) {
     let msgs = await getInstance()?.query<Message>({
       tableName: 'Message',
-      condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id && !v.deleteTime,
-      //  && (!onlyTitle || /^#{1,5}\s/.test(v.text)),
+      condition: (v) => v.groupId == topic.groupId && v.topicId == topic.id && !v.deleteTime //&& (!onlyTitle || /^#{1,5}\s/.test(v.text)),
     });
+
     // 排序
     msgs
       .sort((s, n) => s.timestamp - n.timestamp || (n.createTime || 0) - (s.createTime || 0))
       .forEach((v) => {
         topic.messageMap[v.id] = v;
       });
+
     topic.messages = msgs;
     await this.loadTitleTree(topic);
+    topic.loadAll = true;
   }
   static async loadTitleTree(topic: TopicMessage) {
     if (!topic) return;
@@ -382,20 +383,20 @@ export class ChatManagement {
     let ctxIds: string[] = [];
     messages.forEach((v) => {
       ctxIds.push(v.id);
-      
+
       // 构建内容：检查是否有多模态文件
       let content: string | Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = ChatManagement.getMsgContent(v);
-      
+
       // 如果有多模态文件，转换为数组格式
       if (v.multimodalFileIds && v.multimodalFileIds.length > 0) {
         const multimodalContents: Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }> = [];
-        
+
         // 添加文本内容
         const textContent = ChatManagement.getMsgContent(v);
         if (textContent) {
           multimodalContents.push({ type: 'text', text: textContent });
         }
-        
+
         // 添加多模态文件（目前只支持图片）
         for (const fileId of v.multimodalFileIds) {
           const file = ImageStore.getInstance().getMultimodalFileSync(fileId);
@@ -406,13 +407,13 @@ export class ChatManagement {
             });
           }
         }
-        
+
         // 只有当有多模态内容时才使用数组格式
         if (multimodalContents.length > 0) {
           content = multimodalContents;
         }
       }
-      
+
       history.push({
         role: v.ctxRole,
         reasoning_details: ChatManagement.getMsgReasoningContent(v) || undefined,
@@ -481,12 +482,12 @@ export class ChatManagement {
       historyBefore = [
         ...(virtualRole.bio
           ? [
-              {
-                role: ChatManagement.parseTextToRole(virtualRole.bio, 'system'),
-                content: ChatManagement.parseText(virtualRole.bio),
-                name: this.getNameByRole(ChatManagement.parseTextToRole(virtualRole.bio, 'system'), virtualRole),
-              },
-            ]
+            {
+              role: ChatManagement.parseTextToRole(virtualRole.bio, 'system'),
+              content: ChatManagement.parseText(virtualRole.bio),
+              name: this.getNameByRole(ChatManagement.parseTextToRole(virtualRole.bio, 'system'), virtualRole),
+            },
+          ]
           : []),
         // 助理设定
         ...ChatManagement.parseSetting(
@@ -877,12 +878,12 @@ export class ChatManagement {
   deleteMsgImages(m: Message) {
     // 删除 imageIds（图片生成功能）
     ImageStore.getInstance().deleteImage(m.imageIds);
-    
+
     // 删除 multimodalFileIds（多模态文件）
     if (m.multimodalFileIds && m.multimodalFileIds.length > 0) {
       ImageStore.getInstance().deleteImage(m.multimodalFileIds);
     }
-    
+
     if (Array.isArray(m.content)) {
       m.content
         .filter((f) => typeof f == 'object' && f.type == 'image_url')
@@ -914,7 +915,7 @@ export class ChatManagement {
                 }
               });
             }
-          } catch (error) {}
+          } catch (error) { }
         }
       });
     }
@@ -1013,7 +1014,7 @@ export class ChatManagement {
     msgs.forEach((m) => {
       // 删除 imageIds（图片生成功能）
       ImageStore.getInstance().deleteImage(m.imageIds);
-      
+
       // 删除 multimodalFileIds（多模态文件）
       if (m.multimodalFileIds && m.multimodalFileIds.length > 0) {
         ImageStore.getInstance().deleteImage(m.multimodalFileIds);
@@ -1137,7 +1138,7 @@ export const noneChat = new ChatManagement(defaultChat);
 const obj: { [key: string]: any } = {};
 let context = {
   chatMgt: noneChat,
-  setChat: (chat: IChat) => {},
+  setChat: (chat: IChat) => { },
   activityTopic: obj.topic as TopicMessage | undefined,
   setActivityTopic: (topic?: TopicMessage) => {
     obj.topic = topic;
@@ -1148,12 +1149,12 @@ let context = {
     backgroundSize: 'cover',
     opacity: 0.5,
   } as BgConfig,
-  setBgConfig: (img?: string) => {},
+  setBgConfig: (img?: string) => { },
   loadingMsgs: {} as { [key: string]: { stop: () => void } },
   navList: [],
-  reloadNav: (topic: TopicMessage) => {},
+  reloadNav: (topic: TopicMessage) => { },
   currentGroup: '',
-  setCurrentGroup: (groupId: string) => {},
+  setCurrentGroup: (groupId: string) => { },
   /**
   这个参数是用来让首页正常渲染的，请不要随便将值设置为 true , 因为会导致渲染全部的消息（包括隐藏的）
   */

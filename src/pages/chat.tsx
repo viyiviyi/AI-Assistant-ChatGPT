@@ -63,9 +63,9 @@ export default function Page() {
       const activityTopic = newChatMgt.getActivityTopic();
       setActivityTopic(activityTopic);
 
-      newChatMgt.loadMessages().then(() => {
-        setNavList([]);
-      }).catch((e) => console.error(e));
+      // newChatMgt.loadMessages().then(() => {
+      //   setNavList([]);
+      // }).catch((e) => console.error(e));
 
       setTimeout(() => {
         // 有可能滚动无效，但是去获取渲染完成的事件更麻烦
@@ -87,10 +87,19 @@ export default function Page() {
         activityTopic,
         loadingMsgs,
         setActivityTopic: (topic?: TopicMessage) => {
+
           if (topic?.id == activityTopic?.id) return;
-          setActivityTopic(topic);
-          chatMgt.config.activityTopicId = topic?.id || '';
-          chatMgt.saveConfig();
+          if (topic && !topic?.loadAll) {
+            ChatManagement.loadMessage(topic).then(() => {
+              setActivityTopic(topic);
+              chatMgt.config.activityTopicId = topic?.id || '';
+              chatMgt.saveConfig();
+            })
+          } else {
+            setActivityTopic(topic);
+            chatMgt.config.activityTopicId = topic?.id || '';
+            chatMgt.saveConfig();
+          }
         },
         bgConfig: bgImg,
         setBgConfig(image) {
