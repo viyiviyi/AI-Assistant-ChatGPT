@@ -653,6 +653,7 @@ export class ChatManagement {
       messages: [],
       messageMap: {},
       titleTree: [],
+      loadAll: true
     };
     this.topics.push(_topic);
     this.config.activityTopicId = topic.id;
