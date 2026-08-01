@@ -341,7 +341,15 @@ export function MessageList({
         return true;
       }
       if (idx === -1 && topic.messages.length > 0 && (!targetId || targetId === topic.id)) {
-        virtuosoRef.current?.scrollToIndex({ index: topic.messages.length - 1, behavior: 'auto', align: 'end' });
+        const last = topic.messages.length - 1;
+        // 先用估算高度跳到大致位置，触发底部条目渲染
+        virtuosoRef.current?.scrollToIndex({ index: last, behavior: 'auto', align: 'end' });
+        // 等底部条目渲染并实测后，直接贴到滚动容器真实底部（scrollHeight 反映实测高度）
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER });
+          });
+        });
         return true;
       }
       return false;
@@ -413,6 +421,11 @@ export function MessageList({
         itemContent={itemContent}
         followOutput={'smooth'}
         overscan={1800}
+        defaultItemHeight={600}
+        initialTopMostItemIndex={{
+          index: Math.max(messages.length - 1, 0),
+          align: 'end',
+        }}
         style={{ height: '100%' }}
         components={{
           Header: () => <div style={{ height: 0 }} />,
