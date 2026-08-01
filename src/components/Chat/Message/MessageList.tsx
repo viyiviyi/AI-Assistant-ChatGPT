@@ -203,11 +203,51 @@ export function MessageList({
 
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const isAtBottomRef = useRef(true);
+  // 用户真实滚动意图：通过滚轮/触摸事件判断（scroll 事件会被测量修正触发，不可靠）
+  const userScrolledRef = useRef(false);
+  const scrollerElRef = useRef<HTMLElement | null>(null);
+  const markUserScroll = useCallback(() => {
+    userScrolledRef.current = true;
+  }, []);
+  const stickToBottom = useCallback(() => {
+    virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER });
+  }, []);
+  const handleScrollerRef = useCallback(
+    (ref: HTMLElement | null | Window) => {
+      if (ref === null || ref === window) return;
+      const el = ref as HTMLElement;
+      if (scrollerElRef.current && scrollerElRef.current !== el) {
+        scrollerElRef.current.removeEventListener('wheel', markUserScroll);
+        scrollerElRef.current.removeEventListener('touchstart', markUserScroll);
+      }
+      scrollerElRef.current = el;
+      el.addEventListener('wheel', markUserScroll, { passive: true });
+      el.addEventListener('touchstart', markUserScroll, { passive: true });
+    },
+    [markUserScroll],
+  );
   const { sendMessage } = useSendMessage(chat);
 
   // 缓存消息列表，供稳定 callbacks 中获取最新索引
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
+
+  // 按消息内容估算渲染高度，供 Virtuoso 初始构建 size tree（实测后自动替换）
+  const heightEstimates = useMemo(
+    () =>
+      messages.map((m) => {
+        const text = ChatManagement.getMsgContent(m);
+        if (!text) return 90;
+        const rawLines = text.split('\n').length;
+        const wrappedLines = Math.ceil(text.length / 45);
+        const lines = Math.max(rawLines, wrappedLines);
+        let h = 130 + lines * 24;
+        const fences = (text.match(/```/g) || []).length;
+        if (fences >= 2) h += (fences / 2) * 40;
+        return Math.max(90, Math.min(h, 3000));
+      }),
+    [messages],
+  );
 
   // 缓存每行的稳定回调引用，保障 React.memo(MemoMessageItem) 正常工作
   const callbackCacheRef = useRef<Map<string, { onPush: () => void; onSned: () => void; onCopy: () => void }>>(new Map());
@@ -271,6 +311,15 @@ export function MessageList({
     setCtxIds(ctxIds);
     // tblRef.current?.scrollTo({ index: messages.length - 1 });
   }, [chat, topic, topic.messages]);
+  // 初始加载后贴到真实底部：条目陆续实测会把内容往下推，周期性重新贴底直到测量稳定
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const interval = setInterval(() => {
+      if (!userScrolledRef.current) stickToBottom();
+    }, 100);
+    const stop = setTimeout(() => clearInterval(interval), 2000);
+    return () => { clearInterval(interval); clearTimeout(stop); };
+  }, [topic.id, messages.length, stickToBottom]);
   /**
    * 将消息内容填入输入框
    */
@@ -417,11 +466,13 @@ export function MessageList({
       </Hidden>
       <Virtuoso
         ref={virtuosoRef}
+        scrollerRef={handleScrollerRef}
         data={messages}
         itemContent={itemContent}
         followOutput={'smooth'}
-        overscan={1800}
+        overscan={{ main: 6000, reverse: 6000 }}
         defaultItemHeight={600}
+        heightEstimates={heightEstimates}
         initialTopMostItemIndex={{
           index: Math.max(messages.length - 1, 0),
           align: 'end',
