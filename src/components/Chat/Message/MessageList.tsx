@@ -394,11 +394,11 @@ export function MessageList({
         // 先用估算高度跳到大致位置，触发底部条目渲染
         virtuosoRef.current?.scrollToIndex({ index: last, behavior: 'auto', align: 'end' });
         // 等底部条目渲染并实测后，直接贴到滚动容器真实底部（scrollHeight 反映实测高度）
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER });
-          });
-        });
+        // requestAnimationFrame(() => {
+        //   requestAnimationFrame(() => {
+        //     virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER });
+        //   });
+        // });
         return true;
       }
       return false;
