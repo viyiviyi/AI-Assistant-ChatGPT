@@ -1,4 +1,4 @@
-import { Chat } from '@/components/Chat/Chat';
+import dynamic from 'next/dynamic';
 import { MemoBackgroundImage } from '@/components/common/BackgroundImage';
 import { Hidden } from '@/components/common/Hidden';
 import { SkipExport } from '@/components/common/SkipExport';
@@ -15,6 +15,8 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import appManifest from '../../public/manifest.json';
 
+// Chat 依赖浏览器 API（IndexedDB、requestAnimationFrame 等），禁止服务端预渲染
+const Chat = dynamic(() => import('@/components/Chat/Chat').then((m) => m.Chat), { ssr: false });
 const MemoChat = React.memo(Chat);
 
 export default function Page() {
