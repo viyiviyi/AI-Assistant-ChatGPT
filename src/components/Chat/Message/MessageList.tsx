@@ -66,6 +66,8 @@ const MessageRow = React.memo((props: MessageRowProps) => {
   const limitPreHeight = chat.config.limitPreHeight;
   return (
     <div
+      data-msg-id={msg.id}
+      style={{ display: 'flow-root' }}
       onMouseUp={(e) => {
         clearTimeout(selectTimer);
         selectTimer = setTimeout(() => {
@@ -386,19 +388,13 @@ export function MessageList({
     const cleanupBottom = addScrollHook((targetId: string) => {
       const idx = getTargetIdx(targetId);
       if (idx >= 0) {
+        // 测量高度已修正（flow-root 阻止 margin 塌陷），scrollToIndex 原生精确
         virtuosoRef.current?.scrollToIndex({ index: idx, behavior: 'auto', align: 'end' });
         return true;
       }
       if (idx === -1 && topic.messages.length > 0 && (!targetId || targetId === topic.id)) {
         const last = topic.messages.length - 1;
-        // 先用估算高度跳到大致位置，触发底部条目渲染
         virtuosoRef.current?.scrollToIndex({ index: last, behavior: 'auto', align: 'end' });
-        // 等底部条目渲染并实测后，直接贴到滚动容器真实底部（scrollHeight 反映实测高度）
-        // requestAnimationFrame(() => {
-        //   requestAnimationFrame(() => {
-        //     virtuosoRef.current?.scrollTo({ top: Number.MAX_SAFE_INTEGER });
-        //   });
-        // });
         return true;
       }
       return false;
@@ -488,7 +484,6 @@ export function MessageList({
           const sh = e.currentTarget.scrollHeight;
           const ch = e.currentTarget.clientHeight;
           isAtBottomRef.current = st + ch >= sh - 50;
-          if (!isAtBottomRef.current) activityScroll({});
         }}
       />
       <Hidden hidden={(topic.overrideSettings?.renderType || chat.config.renderType) != 'document' || topic.messages.length < 1}>
